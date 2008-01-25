@@ -7,7 +7,7 @@
   <name>Master POM for transfer</name>
   <version>1.1-SNAPSHOT</version>
   <scm>
-        <connection>scm:svn:https://rdc.lctl.gov/svn/transfer/trunk/transfer-maven</connection>
+        <connection>scm:svn:https://rdc.lctl.gov/svn/transfer/branches/continuum-testing/transfer-maven</connection>
         <tag>HEAD</tag>
         <url>https://rdc.lctl.gov/trac/transfer/browser</url>
   </scm>
