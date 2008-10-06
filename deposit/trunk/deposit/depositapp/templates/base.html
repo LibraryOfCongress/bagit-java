@@ -1,5 +1,5 @@
 <html>
-	<body>
+    <body>
         <div id="header">
             {% block header %}
                 {% if user.is_authenticated %}
@@ -11,15 +11,15 @@
         </div>
         {% if messages %}  
             <div id="messages">
-            	<ul>  
-	                {% for message in messages %}  
-	                    <li>{{ message }}</li>  
-	                {% endfor %}
+                <ul>  
+                    {% for message in messages %}  
+                        <li>{{ message }}</li>  
+                    {% endfor %}
                 </ul>  
             </div>  
         {% endif %}
         <div id="content">
             {% block content %}{% endblock %}
         </div>
-	</body>
+    </body>
 </html>

@@ -30,5 +30,6 @@ class UserForm(ModelForm):
 class DepositUserForm(ModelForm):
     class Meta:
         model = models.User
-        fields = ('first_name', 'last_name', 'email','organization','address','phone')
+        fields = ('first_name', 'last_name', 'email','organization',
+            'address','phone')
     

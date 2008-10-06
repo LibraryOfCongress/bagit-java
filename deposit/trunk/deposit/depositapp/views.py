@@ -12,13 +12,15 @@ from django.contrib.auth.forms import PasswordChangeForm
 
 def index(request):
     if request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('user_url', args=[request.user.username]))
-    return HttpResponseRedirect(reverse('login_url'))    
+        return HttpResponseRedirect(reverse('user_url',
+                args=[request.user.username]))
+    return HttpResponseRedirect(reverse('login_url'))
 
 def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
     if request.method == 'POST':
         request.POST = request.POST.__copy__()
-        request.POST[redirect_field_name] = reverse('user_url', args=[request.POST['username']])
+        request.POST[redirect_field_name] = reverse('user_url',
+                args=[request.POST['username']])
     return base_login(request, "login.html",  redirect_field_name)
 
 def logout(request):
@@ -42,14 +44,18 @@ def user(request, username, command = None):
             password_form = PasswordChangeForm(request.user, request.POST)
             if password_form.is_valid():
                 password_form.save()
-                request.user.message_set.create(message="Your password was changed.")
-                return HttpResponseRedirect(reverse('user_url', args=[user.username]))
+                request.user.message_set.create(
+                        message="Your password was changed.")
+                return HttpResponseRedirect(reverse('user_url',
+                        args=[user.username]))
         elif command == "update" and request.method == "POST":
             user_form = user_form_class(request.POST, instance=user)
             if user_form.is_valid():
                 user_form.save()
-                request.user.message_set.create(message="Your information has been updated.")
-                return HttpResponseRedirect(reverse('user_url', args=[user.username]))
+                request.user.message_set.create(
+                        message="Your information has been updated.")
+                return HttpResponseRedirect(reverse('user_url',
+                        args=[user.username]))
         else:
             password_form = PasswordChangeForm(request.user)
             user_form = user_form_class(instance=user)            
@@ -57,10 +63,10 @@ def user(request, username, command = None):
         is_user = False
         password_form = None
         user_form = None
-    print type(user)
-    print user.email
-    print type(deposit_user)
-    return render_to_response('user.html', {'deposit_user': deposit_user, 'user':user, 'is_user':is_user, 'projects':models.Project.objects, 'password_form':password_form, 'user_form':user_form}, context_instance=RequestContext(request))
+    return render_to_response('user.html', {'deposit_user': deposit_user,
+            'user':user, 'is_user':is_user, 'projects':models.Project.objects,
+            'password_form':password_form, 'user_form':user_form},
+            context_instance=RequestContext(request))
 
 def transfer(request, transfer_id):
     if not request.user.is_authenticated():
@@ -74,7 +80,8 @@ def transfer(request, transfer_id):
     transfer_class = getattr(models, transfer.transfer_type)
     transfer_sub = transfer_class.objects.get(id=transfer_id)
     template_name = "%s.html" % transfer.transfer_type.lower()
-    return render_to_response(template_name, {'transfer':transfer_sub}, context_instance=RequestContext(request))    
+    return render_to_response(template_name, {'transfer':transfer_sub},
+            context_instance=RequestContext(request))    
 
 def project(request, project_id):
     if request.method == 'POST':
@@ -83,7 +90,8 @@ def project(request, project_id):
         project = models.Project.objects.get(id=project_id)
     except models.Project.DoesNotExist:
        raise Http404
-    return render_to_response("project.html", {'project':project}, context_instance=RequestContext(request))    
+    return render_to_response("project.html", {'project':project},
+            context_instance=RequestContext(request))
 
 def create_transfer(request, transfer_type):
     if not request.user.is_authenticated():
@@ -98,15 +106,19 @@ def create_transfer(request, transfer_type):
         if form.is_valid():
             new_object = form.save(commit=False)                     
             new_object.project = models.Project.objects.get(id=project_id)
-            new_object.user = models.User.objects.filter(user__pk=request.user.pk)[0]
+            new_object.user = models.User.objects.filter(
+                    user__pk=request.user.pk)[0]
             new_object.save()
-            request.user.message_set.create(message="The transfer was registered.  A confirmation has been sent to %s and %s." % (new_object.user.user.email, new_object.project.contact_email))
+            request.user.message_set.create(message="The transfer was registered.  A confirmation has been sent to %s and %s." % 
+                    (new_object.user.user.email, new_object.project.contact_email))
             return HttpResponseRedirect(new_object.get_absolute_url())
     else:
         form = form_class()
 
     # Create the template, context, response
-    return render_to_response(template_name, {'form':form, 'project_id':project_id, 'transfer_type':transfer_type}, context_instance=RequestContext(request))
+    return render_to_response(template_name, {'form':form,
+            'project_id':project_id, 'transfer_type':transfer_type},
+            context_instance=RequestContext(request))
 
 def list_transfer(request):
     if not request.user.is_authenticated():
@@ -119,10 +131,14 @@ def list_transfer(request):
         #Make sure user has user_id
         if request.user.username != request.GET['username']:
             return HttpResponseForbidden()
-        transfers = models.Transfer.objects.filter(user__user__username=request.GET['username'])
+        transfers = models.Transfer.objects.filter(
+                user__username=request.GET['username'])
     elif request.GET.has_key('project_id'):
         #Make sure that user is associated with project
-        if not request.user.is_staff and not request.user.is_superuser and len(request.user.get_profile().projects.filter(id=request.GET['project_id'])) == 0:
+        if not request.user.is_staff and not request.user.is_superuser and \
+            len(request.user.user_ptr.projects.filter(id=request.GET['project_id'])) == 0:
             return HttpResponseForbidden()
-        transfers = models.Transfer.objects.filter(project__id=request.GET['project_id'])        
-    return render_to_response("transfer_list.html", {'transfers':transfers}, context_instance=RequestContext(request))
+        transfers = models.Transfer.objects.filter(
+                project__id=request.GET['project_id'])
+    return render_to_response("transfer_list.html", {'transfers':transfers}, 
+            context_instance=RequestContext(request))

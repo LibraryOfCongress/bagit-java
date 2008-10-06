@@ -17,8 +17,10 @@ class Project(models.Model):
     contact_phone = models.CharField(max_length=10)
     contact_email = models.EmailField()
     shipping_address = models.CharField(max_length=255)
-    network_transfer_type = models.CharField(max_length=50, blank=True, null=True, choices=NETWORK_TRANSFER_TYPES)
-    shipment_transfer_type = models.CharField(max_length=50, blank=True, null=True, choices=SHIPMENT_TRANSFER_TYPES)
+    network_transfer_type = models.CharField(max_length=50, blank=True, 
+            null=True, choices=NETWORK_TRANSFER_TYPES)
+    shipment_transfer_type = models.CharField(max_length=50, blank=True, 
+            null=True, choices=SHIPMENT_TRANSFER_TYPES)
     
     def __unicode__(self):
         return u'%s' % (self.name)
@@ -42,8 +44,10 @@ class User(User):
 
 class Transfer(models.Model):
     #Supplied list of packages included in transfer.
-    #This is only a hint and may differ from what is discovered when the delivered packages are examined.
-    package_ids = models.CharField(max_length=255, help_text="List of packages included in the transfer.")
+    #This is only a hint and may differ from what is discovered when the
+    #delivered packages are examined.
+    package_ids = models.CharField(max_length=255, 
+        help_text="List of packages included in the transfer.")
     user = models.ForeignKey('User')
     project = models.ForeignKey('Project')
     transfer_type = models.CharField(max_length=50, editable=False)
@@ -56,13 +60,18 @@ class Transfer(models.Model):
         return reverse('transfer_url', args=[self.id])
 
 class Ndnp(models.Model):
-    lccns = models.CharField(max_length=255, help_text="List of LCCNs included in the transfer.")
+    lccns = models.CharField(max_length=255,
+            help_text="List of LCCNs included in the transfer.")
 
 class NetworkTransfer(Transfer):
-    location = models.URLField(verify_exists=False, help_text="URL from which the package is to be retrieved.")
-    username = models.CharField(max_length=100, null=True, blank=True, help_text="Optional. Username needed to access the package.")
-    password = models.CharField(max_length=100, null=True, blank=True, help_text="Optional. Password needed to access the package.")
-    estimated_size = models.IntegerField(help_text="Estimated size of the complete package in GB.")
+    location = models.URLField(verify_exists=False,
+            help_text="URL from which the package is to be retrieved.")
+    username = models.CharField(max_length=100, null=True, blank=True,
+            help_text="Optional. Username needed to access the package.")
+    password = models.CharField(max_length=100, null=True, blank=True,
+            help_text="Optional. Password needed to access the package.")
+    estimated_size = models.IntegerField(
+            help_text="Estimated size of the complete package in GB.")
 
     def __init__(self, *args, **kwargs):
         apply(super(NetworkTransfer,self).__init__,args, kwargs)
@@ -80,15 +89,20 @@ class ShipmentTransfer(Transfer):
         ('DVD', 'dvd'),
         ('CD','cd')
     )
-    ship_date = models.DateField(help_text="Date the package is shipped or will be shipped.")
-    ship_method = models.CharField(max_length=100, help_text="The shipping service for the shipment, e.g., FedEx.")
-    ship_tracking_number = models.CharField(max_length=150, help_text="The tracking number that identifies the shipment with the shipping service.")
-    media_type = models.CharField(max_length=20, choices=MEDIA_TYPES, help_text="The type of media that is being shipped.")
-    #List of identifiers for the media, e.g., drive names or serial numbers
-    media_identifiers = models.CharField(max_length=255, null=True, blank=True, help_text="Optional.  Identifiers for the media, e.g., a list of hard drive serial numbers.")
-    number_media_shipped = models.IntegerField(help_text="The number of media being shipped.")
-    #Additional 
-    addl_equipment = models.CharField(max_length=255, null=True, blank=True, help_text="Optional.  Any additional equipment being shipped, e.g., cables.")
+    ship_date = models.DateField(
+            help_text="Date the package is shipped or will be shipped.")
+    ship_method = models.CharField(max_length=100,
+            help_text="The shipping service for the shipment, e.g., FedEx.")
+    ship_tracking_number = models.CharField(max_length=150,
+            help_text="The tracking number that identifies the shipment with the shipping service.")
+    media_type = models.CharField(max_length=20, choices=MEDIA_TYPES,
+            help_text="The type of media that is being shipped.")
+    media_identifiers = models.CharField(max_length=255, null=True, blank=True,
+            help_text="Optional.  Identifiers for the media, e.g., a list of hard drive serial numbers.")
+    number_media_shipped = models.IntegerField(
+            help_text="The number of media being shipped.")
+    addl_equipment = models.CharField(max_length=255, null=True, blank=True,
+            help_text="Optional.  Any additional equipment being shipped, e.g., cables.")
 
     def __init__(self, *args, **kwargs):
         apply(super(ShipmentTransfer,self).__init__,args, kwargs)
