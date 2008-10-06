@@ -1,15 +1,69 @@
 [
-    {        
-       "pk": 1, 
+    {
+        "pk": 1, 
+        "model": "depositapp.project", 
+        "fields": {
+            "name": "NDNP", 
+            "network_transfer_type": "NdnpNetworkTransfer", 
+            "contact_email": "ramu@loc.gov", 
+            "shipment_transfer_type": "NdnpShipmentTransfer", 
+            "shipping_address": "101 Independence Ave., SE, Washington, DC", 
+            "contact_name": "Ray Murray", 
+            "contact_phone": "2027071234"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "depositapp.project", 
+        "fields": {
+            "name": "NDIIPP", 
+            "network_transfer_type": "NetworkTransfer", 
+            "contact_email": "mgal@loc.gov", 
+            "shipment_transfer_type": "ShipmentTransfer", 
+            "shipping_address": "Building 22, Fort Meade, MD", 
+            "contact_name": "Michelle Gallinger", 
+            "contact_phone": "2027072345"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "depositapp.user", 
+        "fields": {
+            "phone": "3011234567", 
+            "groups": [], 
+            "address": "12 Main St., San Diego, CA", 
+            "user_permissions": [], 
+            "organization": "California Digital Library", 
+            "projects": [
+                2
+            ]
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "depositapp.user", 
+        "fields": {
+            "phone": "9081234567", 
+            "groups": [], 
+            "address": "17 8th St., New York, NY", 
+            "user_permissions": [], 
+            "organization": "New York Public Library", 
+            "projects": [
+                1
+            ]
+        }
+    }, 
+    {
+        "pk": 1, 
         "model": "auth.user", 
         "fields": {
             "username": "justin", 
-            "first_name": "", 
-            "last_name": "", 
+            "first_name": "Justin", 
+            "last_name": "Littman", 
             "is_active": true, 
             "is_superuser": true, 
             "is_staff": true, 
-            "last_login": "2008-09-25 09:51:06", 
+            "last_login": "2008-10-06 10:28:07", 
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$87ac9$932af0a77ce2ca87d78be6a678d82531ce37ce96", 
@@ -59,16 +113,16 @@
         "fields": {
             "username": "jane", 
             "first_name": "Jane", 
-            "last_name": "Brown", 
+            "last_name": "Smith", 
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": false, 
-            "last_login": "2008-09-25 06:05:35", 
+            "last_login": "2008-10-06 10:31:33", 
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$815c3$82c3ce218807fd367a4a95bdb56de17d3b0df07f", 
             "email": "jane@example.com", 
-            "date_joined": "2008-09-25 06:05:35"
+            "date_joined": "2008-10-06 10:31:33"
         }
     }, 
     {
@@ -77,68 +131,16 @@
         "fields": {
             "username": "jim", 
             "first_name": "Jim", 
-            "last_name": "Smith", 
+            "last_name": "Brown", 
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": false, 
-            "last_login": "2008-09-25 07:23:24", 
+            "last_login": "2008-10-06 10:39:57", 
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$fc21d$14bcc2f314777bc22f39342826b12bddf261c08e", 
             "email": "jim@example.com", 
-            "date_joined": "2008-09-25 06:06:30"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "depositapp.project", 
-        "fields": {
-            "name": "NDNP", 
-            "network_transfer_type": "NdnpNetworkTransfer", 
-            "contact_email": "ramu@loc.gov", 
-            "shipment_transfer_type": "NdnpShipmentTransfer", 
-            "shipping_address": "101 Independence Ave., SE, Washington, DC", 
-            "contact_name": "Ray Murray", 
-            "contact_phone": "2027071234"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "depositapp.project", 
-        "fields": {
-            "name": "NDIIPP", 
-            "network_transfer_type": "NetworkTransfer", 
-            "contact_email": "mgal@loc.gov", 
-            "shipment_transfer_type": "ShipmentTransfer", 
-            "shipping_address": "Building 22, Fort Meade, MD", 
-            "contact_name": "Michelle Gallinger", 
-            "contact_phone": "2027072345"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "depositapp.user", 
-        "fields": {
-            "organization": "California Digital Library", 
-            "projects": [
-                2
-            ], 
-            "user": 4, 
-            "phone": "3011234567", 
-            "address": "12 Main St., San Diego, CA"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "depositapp.user", 
-        "fields": {
-            "organization": "New York Public Library", 
-            "projects": [
-                1
-            ], 
-            "user": 5, 
-            "phone": "9081234567", 
-            "address": "17 8th St., New York, NY"
+            "date_joined": "2008-10-06 10:33:10"
         }
     }
 ]

@@ -2,10 +2,12 @@
 
 {% block content %}
 
-<form action="create{{ transfer_type }}" method="POST">
-	{{ form.as_p }}
-    <input type="hidden" name="project_id" value="{{ project_id }}" />
-	<input type="submit" value="Submit" />
-</form>
+<div id="create{{ transfer_type }}">
+    <form action="create{{ transfer_type }}" method="POST">
+        {{ form.as_p }}
+        <input type="hidden" name="project_id" value="{{ project_id }}" />
+        <input type="submit" value="Submit" />
+    </form>
+</div>
 
 {% endblock %}

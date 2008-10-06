@@ -26,8 +26,8 @@ class Project(models.Model):
     def get_absolute_url(self):
         return reverse('project_url', args=[self.id])
     
-class User(models.Model):
-    user = models.ForeignKey(User, unique=True)
+class User(User):
+    #user = models.ForeignKey(User, unique=True)
     organization = models.CharField(max_length=150)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=10)

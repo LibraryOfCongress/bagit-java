@@ -1,75 +1,102 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<h1>User info</h1>
-<dl>
-	<dt>username</dt><dd>{{ user.username }}</dd>
-	<dt>is active</dt><dd>{{ user.is_active }}</dd>
-	<dt>first name</dt><dd>{{ user.first_name }}</dd>
-	<dt>last name</dt><dd>{{ user.last_name }}</dd>
-	<dt>address</dt><dd>{{ user_profile.address }}</dd>
-	<dt>email</dt><dd>{{ user.email }}</dd>
-    {% if user_profile %}
-        <dt>organization</dt><dd>{{ user_profile.organization }}</dd>
-        <dt>phone</dt><dd>{{ user_profile.phone }}</dd>
-    {% else %}
-        <dt>staff</dt><dd>{{ user.is_staff }}</dd>
-        <dt>superuser</dt><dd>{{ user.is_superuser }}</dd>
-    {% endif %}
-</dl>
-
+<div id="user">
+    <h1>User {{ user.username }}</h1>
+    <div id="userDetails">
+        <h2>User details</h2>
+        <dl>
+            <dt>is active</dt><dd>{{ user.is_active }}</dd>
+            <dt>first name</dt><dd>{{ user.first_name }}</dd>
+            <dt>last name</dt><dd>{{ user.last_name }}</dd>                        
+            <dt>email</dt><dd>{{ user.email }}</dd>
+            {% if deposit_user %}
+                <dt>address</dt><dd>{{ deposit_user.address }}</dd>
+                <dt>organization</dt><dd>{{ deposit_user.organization }}</dd>
+                <dt>phone</dt><dd>{{ deposit_user.phone }}</dd>
+            {% else %}
+                <dt>staff</dt><dd>{{ user.is_staff }}</dd>
+                <dt>superuser</dt><dd>{{ user.is_superuser }}</dd>
+            {% endif %}
+        </dl>
+    </div>
 {% if is_user %}
-    {% if user_profile %}
-        <h1>Initiate a new transfer</h1>
-            {% for project in user_profile.projects.all %}			
-                <li><a href="{{ project.get_absolute_url }}">{{ project }}</a>:
-                    <ul>
-                        {% if project.network_transfer_type %}
-                            <li><a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">{{ project.get_network_transfer_type_display }}</a></li>
-                        {% endif %}
-                        {% if project.shipment_transfer_type %}
-                            <li><a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">{{ project.get_shipment_transfer_type_display }}</a></li>
-                        {% endif %}				
-                    </ul>
-                </li>
-            {% endfor %}
-
-        <h1>Reports</h1>
-        <ul>
-            <li><a href="{% url transfers_url %}?username={{ user.username }}">List my transfers</a></li>
-            <li>List transfers by project:
-                <ul>
-                    {% for project in user_profile.projects.all %}			
-                        <li><a href="{% url transfers_url %}?project_id={{ project.id }}">{{ project }}</a></li>
-                    {% endfor %}
-                </ul>
-            </li>
-        </ul>
-    {% else %}
-        {% if user.is_staff or user.is_superuser %}
-            <h1>Administer</h1>
-            <a href="{% url admin_url %}">Go to Admin Site</a>
-            
-            <h1>Reports</h1>
+    {% if deposit_user %}
+        <div id="initiateTransfer">
+            <h2>Initiate a new transfer</h2>
             <ul>
+                {% for project in deposit_user.projects.all %}			
+                    <li><a href="{{ project.get_absolute_url }}">{{ project }}</a>:
+                        <ul>
+                            {% if project.network_transfer_type %}
+                                <li><a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">{{ project.get_network_transfer_type_display }}</a></li>
+                            {% endif %}
+                            {% if project.shipment_transfer_type %}
+                                <li><a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">{{ project.get_shipment_transfer_type_display }}</a></li>
+                            {% endif %}				
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div id="reports">
+            <h2>Reports</h2>
+            <ul>
+                <li><a href="{% url transfers_url %}?username={{ user.username }}">List my transfers</a></li>
                 <li>List transfers by project:
                     <ul>
-                        {% for project in projects.all %}			
+                        {% for project in deposit_user.projects.all %}			
                             <li><a href="{% url transfers_url %}?project_id={{ project.id }}">{{ project }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
             </ul>
+        </div>
+        
+    {% else %}
+        {% if user.is_staff or user.is_superuser %}
+            <div id="administer">
+                <h2>Administer</h2>
+                <a href="{% url admin_url %}">Go to Admin Site</a>
+            </div>
+            
+            <div id="reports">
+                <h2>Reports</h2>
+                <ul>
+                    <li>List transfers by project:
+                        <ul>
+                            {% for project in projects.all %}			
+                                <li><a href="{% url transfers_url %}?project_id={{ project.id }}">{{ project }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
             
         {% endif %}
     {% endif %}
 
-    <h1>Update user info</h1>
-    <p>You're the user so you should get the option of updating info about yourself.</p>
+    <div id="updateUserDetails">
+        <h2>Update user info</h2>
+        <form method="post" action='{% url user_command_url user.username "update" %}'>
+            {{ user_form.as_p }}
+            <input type="submit" value="update" />
+        </form>        
+    </div>
 
-    <h1>Change password</h1>
-    <p>You're the user so you should get the option to change your password.</p>
+    <div id="changePassword">
+        <h2>Change password</h2>
+        {% if password_form.errors %}
+            <p>Please try to change your password again.</p>
+        {% endif %}        
+        <form method="post" action='{% url user_command_url user.username "password" %}'>
+            {{ password_form.as_p }}
+            <input type="submit" value="change" />
+        </form>
+        
+        
+    </div>
 {% endif %}
 
 {% endblock %}

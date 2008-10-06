@@ -2,12 +2,16 @@
 
 {% block content %}
 
-<h1>Project info</h1>
-<dl>
-	<dt>name</dt><dd>{{ project.name }}</dd>
-    <dt>contact name</dt><dd>{{ project.contact_name }}</dd>
-    <dt>phone number</dt><dd>{{ project.contact_phone }}</dd>
-    <dt>email</dt><dd>{{ project.contact_email }}</dd>
-    <dt>shipping address</dt><dd>{{ project.shipping_address }}</dd>    
-</dl>
+<div id="project">
+    <h1>Project {{ project.name }}</h1>
+    <div id="projectDetails">
+        <h2>Project details</h2>
+        <dl>
+            <dt>contact name</dt><dd>{{ project.contact_name }}</dd>
+            <dt>phone number</dt><dd>{{ project.contact_phone }}</dd>
+            <dt>email</dt><dd>{{ project.contact_email }}</dd>
+            <dt>shipping address</dt><dd>{{ project.shipping_address }}</dd>    
+        </dl>
+    </div>
+</div>
 {% endblock %} 

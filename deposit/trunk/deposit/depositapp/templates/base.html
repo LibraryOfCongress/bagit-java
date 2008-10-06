@@ -10,10 +10,12 @@
             {% endblock %}
         </div>
         {% if messages %}  
-            <div id="messages">  
-                {% for message in messages %}  
-                    <p>{{ message }}</p>  
-                {% endfor %}  
+            <div id="messages">
+            	<ul>  
+	                {% for message in messages %}  
+	                    <li>{{ message }}</li>  
+	                {% endfor %}
+                </ul>  
             </div>  
         {% endif %}
         <div id="content">

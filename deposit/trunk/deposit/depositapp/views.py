@@ -8,6 +8,7 @@ import deposit.depositapp.models as models
 import deposit.depositapp.forms as forms
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
+from django.contrib.auth.forms import PasswordChangeForm
 
 def index(request):
     if request.user.is_authenticated():
@@ -23,21 +24,43 @@ def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
 def logout(request):
     return logout_then_login(request, login_url=reverse('login_url'))
 
-def user(request, username):
+def user(request, username, command = None):    
     try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        raise Http404
-    try:
-        user_profile = user.get_profile()
+        deposit_user = models.User.objects.get(username=username)
+        user = deposit_user
+        user_form_class = forms.DepositUserForm
     except models.User.DoesNotExist:
-        user_profile = None
+        deposit_user = None
+        try:
+            user = User.objects.get(username=username)
+            user_form_class = forms.UserForm
+        except User.DoesNotExist:
+            raise Http404
     if request.user.is_authenticated() and request.user.username == username:
         is_user = True
+        if command == "password" and request.method == "POST":
+            password_form = PasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                request.user.message_set.create(message="Your password was changed.")
+                return HttpResponseRedirect(reverse('user_url', args=[user.username]))
+        elif command == "update" and request.method == "POST":
+            user_form = user_form_class(request.POST, instance=user)
+            if user_form.is_valid():
+                user_form.save()
+                request.user.message_set.create(message="Your information has been updated.")
+                return HttpResponseRedirect(reverse('user_url', args=[user.username]))
+        else:
+            password_form = PasswordChangeForm(request.user)
+            user_form = user_form_class(instance=user)            
     else:
         is_user = False
-    
-    return render_to_response('user.html', {'user_profile': user_profile, 'is_user':is_user, 'projects':models.Project.objects}, context_instance=RequestContext(request))
+        password_form = None
+        user_form = None
+    print type(user)
+    print user.email
+    print type(deposit_user)
+    return render_to_response('user.html', {'deposit_user': deposit_user, 'user':user, 'is_user':is_user, 'projects':models.Project.objects, 'password_form':password_form, 'user_form':user_form}, context_instance=RequestContext(request))
 
 def transfer(request, transfer_id):
     if not request.user.is_authenticated():
@@ -78,7 +101,6 @@ def create_transfer(request, transfer_type):
             new_object.user = models.User.objects.filter(user__pk=request.user.pk)[0]
             new_object.save()
             request.user.message_set.create(message="The transfer was registered.  A confirmation has been sent to %s and %s." % (new_object.user.user.email, new_object.project.contact_email))
-            print request.user.message_set
             return HttpResponseRedirect(new_object.get_absolute_url())
     else:
         form = form_class()
