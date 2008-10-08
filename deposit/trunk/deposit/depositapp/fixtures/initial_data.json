@@ -1,6 +1,19 @@
 [
     {
         "pk": 1, 
+        "model": "auth.group", 
+        "fields": {
+            "name": "admins", 
+            "permissions": [
+                22, 
+                25, 
+                23, 
+                26
+            ]
+        }
+    }, 
+    {
+        "pk": 1, 
         "model": "depositapp.project", 
         "fields": {
             "name": "NDNP", 
@@ -84,7 +97,9 @@
             "is_superuser": false, 
             "is_staff": true, 
             "last_login": "2008-09-25 06:01:57", 
-            "groups": [], 
+            "groups": [
+                1
+            ], 
             "user_permissions": [], 
             "password": "sha1$f99ab$d5c76781da01af5b8e5a737efdddd6d8b08b8875", 
             "email": "mgal@loc.gov", 
@@ -102,7 +117,9 @@
             "is_superuser": false, 
             "is_staff": true, 
             "last_login": "2008-09-25 06:04:06", 
-            "groups": [], 
+            "groups": [
+                1
+            ], 
             "user_permissions": [], 
             "password": "sha1$3bd8c$3c16507637b3a6a2a1afac8963dfc92c9bf6f609", 
             "email": "ramu@loc.gov", 
