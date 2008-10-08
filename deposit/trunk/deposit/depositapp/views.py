@@ -9,6 +9,8 @@ import deposit.depositapp.forms as forms
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.forms import PasswordChangeForm
+from deposit.depositapp.queries import TransferQuery
+
 
 def index(request):
     if request.user.is_authenticated():
@@ -63,9 +65,11 @@ def user(request, username, command = None):
         is_user = False
         password_form = None
         user_form = None
+    q = TransferQuery()
+    q.include_received=False
     return render_to_response('user.html', {'deposit_user': deposit_user,
-            'user':user, 'is_user':is_user, 'projects':models.Project.objects,
-            'password_form':password_form, 'user_form':user_form},
+            'user':user, 'is_user':is_user, 'projects':models.Project.objects.all(),
+            'password_form':password_form, 'user_form':user_form, 'query':q},
             context_instance=RequestContext(request))
 
 def transfer(request, transfer_id):
@@ -93,6 +97,23 @@ def project(request, project_id):
     return render_to_response("project.html", {'project':project},
             context_instance=RequestContext(request))
 
+def transfer_received(request, transfer_id):
+    if request.method == 'GET':
+        return HttpResponseNotAllowed()
+    if not request.user.is_authenticated() or not request.user.is_staff:
+        return HttpResponseForbidden()
+    try:
+        transfer = models.Transfer.objects.get(id=transfer_id)
+    except Transfer.DoesNotExist:
+       raise Http404
+    transfer.received(request.user)
+    transfer.save()
+    request.user.message_set.create(message="The transfer was marked as received.  A notification has been sent to %s." % 
+            (transfer.user.email))
+
+    return HttpResponseRedirect(reverse('transfer_url',
+            args=[transfer_id]))
+
 def create_transfer(request, transfer_type):
     if not request.user.is_authenticated():
         return HttpResponseForbidden()
@@ -106,11 +127,11 @@ def create_transfer(request, transfer_type):
         if form.is_valid():
             new_object = form.save(commit=False)                     
             new_object.project = models.Project.objects.get(id=project_id)
-            new_object.user = models.User.objects.filter(
-                    user__pk=request.user.pk)[0]
+            new_object.user = models.User.objects.get(
+                username=request.user.username)
             new_object.save()
             request.user.message_set.create(message="The transfer was registered.  A confirmation has been sent to %s and %s." % 
-                    (new_object.user.user.email, new_object.project.contact_email))
+                    (new_object.user.email, new_object.project.contact_email))
             return HttpResponseRedirect(new_object.get_absolute_url())
     else:
         form = form_class()
@@ -125,20 +146,16 @@ def list_transfer(request):
         return HttpResponseForbidden()
     if request.method == 'POST':
         return HttpResponseNotAllowed()
-    if not request.GET.has_key('username') and not request.GET.has_key('project_id'):
+    q = TransferQuery(request=request)
+    if not q.username and not q.project_id:
         return HttpResponseBadRequest()
-    if request.GET.has_key('username'):
-        #Make sure user has user_id
-        if request.user.username != request.GET['username']:
+    if q.username and request.user.username != q.username:
             return HttpResponseForbidden()
-        transfers = models.Transfer.objects.filter(
-                user__username=request.GET['username'])
-    elif request.GET.has_key('project_id'):
+    if q.project_id and not request.user.is_staff and not \
+            request.user.is_superuser and \
+            len(request.user.user_ptr.projects.filter(id=q.project_id)) == 0:
         #Make sure that user is associated with project
-        if not request.user.is_staff and not request.user.is_superuser and \
-            len(request.user.user_ptr.projects.filter(id=request.GET['project_id'])) == 0:
-            return HttpResponseForbidden()
-        transfers = models.Transfer.objects.filter(
-                project__id=request.GET['project_id'])
-    return render_to_response("transfer_list.html", {'transfers':transfers}, 
+        return HttpResponseForbidden()
+    transfers = q.query()
+    return render_to_response("transfer_list.html", {'query':q,'transfers':transfers}, 
             context_instance=RequestContext(request))

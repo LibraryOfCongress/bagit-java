@@ -1,6 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as AuthUser
 from django.core.urlresolvers import reverse
+from datetime import datetime
 
 class Project(models.Model):
     NETWORK_TRANSFER_TYPES = (
@@ -17,6 +18,8 @@ class Project(models.Model):
     contact_phone = models.CharField(max_length=10)
     contact_email = models.EmailField()
     shipping_address = models.CharField(max_length=255)
+    received_policy = models.TextField(
+        help_text="Policy for marking a transfer as received.")
     network_transfer_type = models.CharField(max_length=50, blank=True, 
             null=True, choices=NETWORK_TRANSFER_TYPES)
     shipment_transfer_type = models.CharField(max_length=50, blank=True, 
@@ -28,7 +31,7 @@ class Project(models.Model):
     def get_absolute_url(self):
         return reverse('project_url', args=[self.id])
     
-class User(User):
+class User(AuthUser):
     #user = models.ForeignKey(User, unique=True)
     organization = models.CharField(max_length=150)
     address = models.CharField(max_length=255)
@@ -48,16 +51,24 @@ class Transfer(models.Model):
     #delivered packages are examined.
     package_ids = models.CharField(max_length=255, 
         help_text="List of packages included in the transfer.")
-    user = models.ForeignKey('User')
-    project = models.ForeignKey('Project')
+    user = models.ForeignKey(User)
+    project = models.ForeignKey(Project)
     transfer_type = models.CharField(max_length=50, editable=False)
     create_timestamp = models.DateTimeField(auto_now_add=True, editable=False)
+    received_timestamp = models.DateTimeField(null=True)
+    received_by = models.ForeignKey(AuthUser, null=True, related_name="transfers_received")
 
     def __unicode__(self):
         return u'%s %s' % (self.transfer_type, self.id)    
         
     def get_absolute_url(self):
         return reverse('transfer_url', args=[self.id])
+        
+    def received(self, user):
+        if self.received_timestamp:
+            raise "AlreadyReceivedException"
+        self.received_by = user
+        self.received_timestamp = datetime.now()
 
 class Ndnp(models.Model):
     lccns = models.CharField(max_length=255,

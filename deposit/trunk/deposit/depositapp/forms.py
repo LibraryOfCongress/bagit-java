@@ -5,22 +5,22 @@ from django.contrib.auth.models import User
 class NetworkTransferForm(ModelForm):
     class Meta:
         model = models.NetworkTransfer
-        exclude = ('project','user')
+        exclude = ('project','user','received_timestamp', 'received_by')
         
 class ShipmentTransferForm(ModelForm):
     class Meta:
         model = models.ShipmentTransfer
-        exclude = ('project','user')
+        exclude = ('project','user','received_timestamp', 'received_by')
 
 class NdnpNetworkTransferForm(ModelForm):
     class Meta:
         model = models.NdnpNetworkTransfer
-        exclude = ('project','user')
+        exclude = ('project','user','received_timestamp', 'received_by')
         
 class NdnpShipmentTransferForm(ModelForm):
     class Meta:
         model = models.NdnpShipmentTransfer
-        exclude = ('project','user')
+        exclude = ('project','user','received_timestamp', 'received_by')
 
 class UserForm(ModelForm):
     class Meta:

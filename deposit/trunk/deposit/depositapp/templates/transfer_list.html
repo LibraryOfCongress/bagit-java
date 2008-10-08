@@ -1,7 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div id="filters">
+    <h2>Filters</h2>
+    <form method="get" action=".">
+        {% if query.username %}
+            <input type="hidden" name="username" value="{{ query.username }}" />
+        {% endif %}
+        {% if query.project_id %}
+            <input type="hidden" name="project_id" value="{{ query.project_id }}" />
+        {% endif %}
+        <input type="checkbox" name="include_received" {% if query.include_received %} checked="true" {% endif %} />
+        <label for="include_received">
+		    Include received
+		</label>
+        <br />
+        <input type="submit" value="refresh" />
+    </form>
+</div>
 <div id="transferList">
+    <h2>Transfer List</h2>
     <table>
         <thead>
             <tr>
@@ -10,6 +28,7 @@
                 <th>User</th>
                 <th>Transfer type</th>
                 <th>Initiated</th>
+                <th>Received</th>
                 <th>Package ids</th>
             </tr>
         {% for transfer in transfers %}
@@ -19,6 +38,7 @@
             <td><a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></td>
             <td>{{ transfer.transfer_type }}</td>
             <td>{{ transfer.create_timestamp }}</td>
+            <td>{% if transfer.received_timestamp %}{{ transfer.received_timestamp }}{% endif %}
             <td>{{ transfer.package_ids }}</td>        
         </tr>
         {% endfor %}

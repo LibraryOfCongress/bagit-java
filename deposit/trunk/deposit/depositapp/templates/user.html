@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load query_tags %}
 
 {% block content %}
 <div id="user">
@@ -28,7 +29,7 @@
                 {% for project in deposit_user.projects.all %}
                     <li><a href="{{ project.get_absolute_url }}">{{ project }}</a>:
                         <ul>
-                            {% if project.network_transfer_type %}
+                            {% if project.network_transfer_type %}                            
                                 <li><a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">{{ project.get_network_transfer_type_display }}</a></li>
                             {% endif %}
                             {% if project.shipment_transfer_type %}
@@ -43,11 +44,11 @@
         <div id="reports">
             <h2>Reports</h2>
             <ul>
-                <li><a href="{% url transfers_url %}?username={{ user.username }}">List my transfers</a></li>
+                <li><a href="{% url transfers_url %}?{% querystring query username=user.username  %}">List my transfers</a></li>
                 <li>List transfers by project:
                     <ul>
                         {% for project in deposit_user.projects.all %}
-                            <li><a href="{% url transfers_url %}?project_id={{ project.id }}">{{ project }}</a></li>
+                            <li><a href="{% url transfers_url %}?{% querystring query project_id=project.id  %}">{{ project }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -66,8 +67,8 @@
                 <ul>
                     <li>List transfers by project:
                         <ul>
-                            {% for project in projects.all %}
-                                <li><a href="{% url transfers_url %}?project_id={{ project.id }}">{{ project }}</a></li>
+                            {% for project in projects %}
+                                <li><a href="{% url transfers_url %}?{% querystring query project_id=project.id  %}">{{ project }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>

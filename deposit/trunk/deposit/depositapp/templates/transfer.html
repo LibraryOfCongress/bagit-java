@@ -4,14 +4,32 @@
 <div id="transfer">
     <h1>Transfer {{ transfer.id }}</h1>
     <div id="transferDetails">
-        <h1>Transfer details</h1>
+        <h2>Transfer details</h2>
         <dl>
             <dt>Package ids</dt><dd>{{ transfer.package_ids }}</dd>
             <dt>User</dt><dd><a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></dd>
             <dt>Project</dt><dd><a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></dd>
             <dt>Initiated</dt><dd>{{ transfer.create_timestamp }}</dd>
+            {% if transfer.received_timestamp %}
+                <dt>Received</dt><dd>{{ transfer.received_timestamp }}</dd>
+                <dt>Received by</dt><dd><a href="{% url user_url transfer.received_by.username %}">{{ transfer.received_by}}</a></dd>
+            {% else %}
+                <dt>Received</dt><dd>Not yet received</dd>
+            {% endif %}            
             {% block transfer_content %}{% endblock %}
         </dl>
     </div>
+    <div id="receivedPolicy">
+        <h2>Reminder of received policy for {{ transfer.project }}:</h2>
+        <p>{{ transfer.project.received_policy }}</p>
+    </div>
+    {% if user.is_staff and not transfer.received_timestamp %}
+        <div id="markReceived">
+            <h2>Mark received</h2>
+            <form method="post" action="{% url transfer_received_url transfer.id %}">
+                <input type="submit" value="mark received" />
+            </form>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
