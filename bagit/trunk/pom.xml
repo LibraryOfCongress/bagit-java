@@ -15,8 +15,8 @@
     </developer>
   </developers>  
   <scm>
-    <connection>scm:svn:https://rdc.lctl.gov/svn/bigr/trunk/bagit</connection>
-    <url>https://rdc.lctl.gov/trac/bigr/browser</url>
+    <connection>scm:svn:https://rdc.lctl.gov/svn/transfer/bagit/trunk</connection>
+    <url>https://rdc.lctl.gov/trac/transfer/browser</url>
   </scm>
   <build>
     <extensions>
