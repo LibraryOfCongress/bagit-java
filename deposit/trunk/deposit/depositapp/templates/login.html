@@ -1,16 +1,33 @@
 {% extends "base.html" %}
 
-{% block header %}{% endblock %}
+{% block title %}Deposit APP{% endblock title %}
+
+{% block link %}
+	{{ block.super }}
+	<style type="text/css" >
+	@import url(/media/css/deposit_login.css);
+	</style>
+{% endblock link %}
 
 {% block content %}
 
-{% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+	{% if form.errors %}
+	    <p>Your username and password didn't match. Please try again.</p>
+	{% endif %}
 
-<form method="post" action=".">
-    {{ form.as_p }}
-    <input type="submit" value="login" />
-</form>
+   <div id="login">
+   <h1>Login</h1>
+	<form method="post" action=".">
+	   <fieldset>
+	   		{{ form.username.errors }}
+		   <label for="user">Username</label>&nbsp;{{ form.username }}<br />
+	   		{{ form.password.errors }}
+		   <label for="pswd">Password</label>&nbsp;{{ form.password }}<br />
+	   </fieldset>
+		<fieldset id="submit">
+	    	<input class="submit" name="submit" type="submit" value="Login" />&nbsp;&nbsp;<a href="#">Forgot login information?</a>
+		</fieldset>
+	</form>
+   </div>
 
-{% endblock %}
+{% endblock content %}
