@@ -1,51 +1,44 @@
 {% extends "base.html" %}
 {% load query_tags %}
 
-{% block content %}
-<div id="user">
-    <h1>User {{ user.username }}</h1>
-    <div id="userDetails">
-        <h2>User details</h2>
-        <dl>
-            <dt>is active</dt><dd>{{ user.is_active }}</dd>
-            <dt>first name</dt><dd>{{ user.first_name }}</dd>
-            <dt>last name</dt><dd>{{ user.last_name }}</dd>                        
-            <dt>email</dt><dd>{{ user.email }}</dd>
-            {% if deposit_user %}
-                <dt>address</dt><dd>{{ deposit_user.address }}</dd>
-                <dt>organization</dt><dd>{{ deposit_user.organization }}</dd>
-                <dt>phone</dt><dd>{{ deposit_user.phone }}</dd>
-            {% else %}
-                <dt>staff</dt><dd>{{ user.is_staff }}</dd>
-                <dt>superuser</dt><dd>{{ user.is_superuser }}</dd>
-            {% endif %}
-        </dl>
-    </div>
-{% if is_user %}
-    {% if deposit_user %}
-        <div id="initiateTransfer">
-            <h2>Initiate a new transfer</h2>
-            <ul>
-                {% for project in deposit_user.projects.all %}
-                    <li><a href="{{ project.get_absolute_url }}">{{ project }}</a>:
-                        <ul>
-                            {% if project.network_transfer_type %}                            
-                                <li><a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">{{ project.get_network_transfer_type_display }}</a></li>
-                            {% endif %}
-                            {% if project.shipment_transfer_type %}
-                                <li><a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">{{ project.get_shipment_transfer_type_display }}</a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+{% block link %}
+	{{ block.super }}
+	<style type="text/css" >
+	@import url(/media/css/deposit_2col.css);
+	@import url(css/deposit_forms.css);
+	</style>
+{% endblock link %}
 
-        <div id="reports">
-            <h2>Reports</h2>
+{% block nav %}
+  <div id="nav">
+    <ul id="navlist">
+      <li id="home">|&nbsp;<a class="on" href="{% url user_url user.username %}">>Home</a></li>
+      {% for project in deposit_user.projects.all %}
+        {% if project.network_transfer_type %}
+	      <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
+        {% endif %}
+        {% if project.shipment_transfer_type %}
+	      <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock nav %}
+
+{% block content %}
+
+<div id="leftbox">
+  <div id="page_head">
+    <h1>Overview</h1>
+  </div>
+  <div id="overview_content">
+  {% if is_user %}
+    {% if deposit_user %}
+      <div id="reports">
+	    <h3>My Transfers <span>(23)</span></h3>
             <ul>
                 <li><a href="{% url transfers_url %}?{% querystring query username=user.username  %}">List my transfers</a></li>
-                <li>List transfers by project:
+				    <li><h3 class="border">Transfers by Project</h3></li>
                     <ul>
                         {% for project in deposit_user.projects.all %}
                             <li><a href="{% url transfers_url %}?{% querystring query project_id=project.id  %}">{{ project }}</a></li>
@@ -53,19 +46,18 @@
                     </ul>
                 </li>
             </ul>
-        </div>
-        
+      </div>
     {% else %}
-        {% if user.is_staff or user.is_superuser %}
+      {% if user.is_staff or user.is_superuser %}
             <div id="administer">
                 <h2>Administer</h2>
                 <a href="{% url admin_url %}">Go to Admin Site</a>
             </div>
-            
+
             <div id="reports">
-                <h2>Reports</h2>
+		    <h3>My Transfers <span>(23)</span></h3>
                 <ul>
-                    <li>List transfers by project:
+				    <li><h3 class="border">Transfers by Project</h3></li>
                         <ul>
                             {% for project in projects %}
                                 <li><a href="{% url transfers_url %}?{% querystring query project_id=project.id  %}">{{ project }}</a></li>
@@ -74,30 +66,87 @@
                     </li>
                 </ul>
             </div>
-            
-        {% endif %}
+      {% endif %}
     {% endif %}
+  {% endif %}
+  </div>
 
-    <div id="updateUserDetails">
-        <h2>Update user info</h2>
+  <div id="userDetails">
+    <h3>User Details</h3>
+    <ul>
+      <li>Is Active?: {{ user.is_active }}</li>
+      <li>First Name: {{ user.first_name }}</li>
+      <li>Last Name: {{ user.last_name }}</li>
+      <li>Email: {{ user.email }}</li>
+      {% if deposit_user %}
+          <li>Address: {{ deposit_user.address }}</li>
+          <li>Organization: {{ deposit_user.organization }}</li>
+          <li>Phone: {{ deposit_user.phone }}</li>
+      {% else %}
+          <li>Staff: {{ user.is_staff }}</li>
+          <li>Superuser: {{ user.is_superuser }}</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div id="updateUserDetails">
         <form method="post" action='{% url user_command_url user.username "update" %}'>
-            {{ user_form.as_p }}
-            <input type="submit" value="update" />
-        </form>        
-    </div>
+		   	<fieldset>
+		   		<label for="id_first_name">First Name</label>&nbsp;<input id="id_first_name" name="first_name" type="text" maxlength="30" value="{{ user.first_name }}" /><br />
+		   		<label for="id_last_name">Last Name</label>&nbsp;<input id="id_last_name" name="last_name" type="text" maxlength="30" value="{{ user.last_name }}" /><br />
+		   		<label for="id_email">E-mail Address</label>&nbsp;<input id="id_email" name="email" type="text" maxlength="75" value="{{ user.email }}" /><br />
+		   		<label for="id_organization">Organization</label>&nbsp;<input id="id_organization" name="organization" type="text" maxlength="150" value="{{ user.organization }}" /><br />
+		   		<label for="id_address">Address</label>&nbsp;<input id="id_address" name="address" type="text" maxlength="255" value="{{ user.address }}" /><br />
+		   		<label for="id_phone">Phone</label>&nbsp;<input id="id_phone" name="phone" type="text" maxlength="10" value="{{ user.phone }}" /><br />
+		   	</fieldset>
+		  	<fieldset id="submit">
+		   		<input class="submit" name="submit" type="submit" value="Update" />
+			</fieldset>
+        </form>
+  </div>
 
-    <div id="changePassword">
-        <h2>Change password</h2>
+  <div id="changePassword">
+        <h2>Change Password</h2>
         {% if password_form.errors %}
             <p>Please try to change your password again.</p>
-        {% endif %}        
+        {% endif %}
         <form method="post" action='{% url user_command_url user.username "password" %}'>
-            {{ password_form.as_p }}
-            <input type="submit" value="change" />
+		   	<fieldset>
+		   		<label for="id_old_password">Old Password</label>&nbsp;<input id="id_old_password" name="old_password" type="password" /><br />
+		   		<label for="id_new_password1">New Password</label>&nbsp;<input id="id_new_password1" name="new_password1" type="password" /><br />
+		   		<label for="id_new_password2">New Password confirmation</label>&nbsp;<input id="id_new_password2" name="new_password2" type="password" /><br />
+		   	</fieldset>
+		  	<fieldset id="submit">
+		   		<input class="submit" name="submit" type="submit" value="Change" />
+			</fieldset>
         </form>
-        
-        
-    </div>
-{% endif %}
+  </div>
 
-{% endblock %}
+</div>
+
+<div id="rightbox">
+  {% if is_user %}
+    {% if deposit_user %}
+      <div id="initiateTransfer">
+      {% for project in deposit_user.projects.all %}
+        {% if project.network_transfer_type %}
+        <div id="nettrans">
+	      <img class="title" src="/media/images/createtrans.gif" alt="Create Network Transfer" width="88" height="66" />
+	      <span>
+	      <a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}"><img src="/media/images/nettransbut.gif" alt="{{ project.get_network_transfer_type_display }}" width="35" height="35" /></a></span>
+        </div>
+        {% endif %}
+        {% if project.shipment_transfer_type %}
+        <div id="shiptrans">
+	      <img class="title" src="/media/images/createshiptrans.gif" alt="Create Network Transfer" width="107" height="75" />
+	      <span>
+	      <a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}"><img src="/media/images/shiptransbut.gif" alt="{{ project.get_shipment_transfer_type_display }}" width="30" height="26" /></a></span>
+        </div>
+        {% endif %}
+      {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+{% endblock content %}
