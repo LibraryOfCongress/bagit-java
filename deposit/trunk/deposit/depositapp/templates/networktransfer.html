@@ -1,7 +1,13 @@
 {% extends "transfer.html" %}
 
+{% block title %}New Network Transfer - Deposit APP{% endblock title %}
+
+<div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
+  <h1>New Network Transfer</h1>
+</div>
+
 {% block transfer_content %}
-    {{ block.supper }}
+    {{ block.super }}
     <dt>Location</dt><dd>{{ transfer.location }}</dd>
     <dt>Username</dt><dd>{{ transfer.username }}</dd>
     <dt>Password</dt><dd>{{ transfer.password }}</dd>
