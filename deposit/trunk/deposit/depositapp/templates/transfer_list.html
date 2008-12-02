@@ -1,5 +1,29 @@
 {% extends "base.html" %}
 
+{% block link %}
+	{{ block.super }}
+	<style type="text/css" >
+	@import url(/media/css/deposit_table.css);
+	@import url(css/deposit_forms.css);
+	</style>
+{% endblock link %}
+
+{% block nav %}
+  <div id="nav">
+    <ul id="navlist">
+      <li id="home">|&nbsp;<a class="on" href="{% url user_url user.username %}">>Home</a></li>
+      {% for project in deposit_user.projects.all %}
+        {% if project.network_transfer_type %}
+	      <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
+        {% endif %}
+        {% if project.shipment_transfer_type %}
+	      <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock nav %}
+
 {% block content %}
 <div id="filters">
     <h2>Filters</h2>
@@ -18,32 +42,38 @@
         <input type="submit" value="refresh" />
     </form>
 </div>
-<div id="transferList">
-    <h2>Transfer List</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Transfer</th>
-                <th>Project</th>
-                <th>User</th>
-                <th>Transfer type</th>
-                <th>Initiated</th>
-                <th>Received</th>
-                <th>Package ids</th>
-            </tr>
+<div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
+	<h1>My Transfers</h1>
+</div>
+<div id="content">
+  <div id="transferList">
+    <table border="0">
+	    <tr>
+        	<th class="tabs on" scope="col">All Transfers</th>
+	        <th class="tabs pagenav" colspan="2" scope="col"><a href="#"><img src="images/prev.gif" alt="previous" width="9" height="9" /></a>&nbsp;PAGE: <a href="#">1</a>&nbsp;<a href="#"><img src="images/next.gif" alt="next" width="9" height="9" /></a></th>
+      	</tr>
+      	<tr>
+      	  <th scope="col">Transfer</th>
+      	  <th scope="col">Project</th>
+      	  <th scope="col">User</th>
+      	  <th scope="col">Transfer Type</th>
+      	  <th scope="col">Initiated</th>
+      	  <th scope="col">Package IDs</th>
+      	  <th scope="col">Status</th>
+      	</tr>
         {% for transfer in transfers %}
         <tr>
-            <td><a href="{{ transfer.get_absolute_url }}">{{ transfer.id }}</a></td>
+            <td><a class="bold" href="{{ transfer.get_absolute_url }}">{{ transfer.id }}</a></td>
             <td><a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></td>
             <td><a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></td>
             <td>{{ transfer.transfer_type }}</td>
             <td>{{ transfer.create_timestamp }}</td>
             <td>{% if transfer.received_timestamp %}{{ transfer.received_timestamp }}{% endif %}
-            <td>{{ transfer.package_ids }}</td>        
+            <td>{{ transfer.package_ids }}</td>
         </tr>
         {% endfor %}
 
     </table>
+  </div>
 </div>
-
 {% endblock %}
