@@ -8,11 +8,11 @@
 
 {% block transfer_content %}
     {{ block.super }}
-    <dt>Ship date</dt><dd>{{ transfer.ship_date }}</dd>
-    <dt>Ship method</dt><dd>{{ transfer.ship_method }}</dd>
-    <dt>Tracking number</dt><dd>{{ transfer.ship_tracking_number }}</dd>
-    <dt>Media type</dt><dd>{{ transfer.get_media_type_display }}</dd>
-    <dt>Media identifiers</dt><dd>{{ transfer.media_identifiers }}</dd>
-    <dt>Number of media shipped</dt><dd>{{ transfer.number_media_shipped }}</dd>
-    <dt>Additional equipment</dt><dd>{{ transfer.addl_equipment }}</dd>
+    <li>Ship date: {{ transfer.ship_date }}</li>
+    <li>Ship method: {{ transfer.ship_method }}</li>
+    <li>Tracking number: {{ transfer.ship_tracking_number }}</li>
+    <li>Media type: {{ transfer.get_media_type_display }}</li>
+    <li>Media identifiers: {{ transfer.media_identifiers }}</li>
+    <li>Number of media shipped: {{ transfer.number_media_shipped }}</li>
+    <li>Additional equipment: {{ transfer.addl_equipment }}</li>
 {% endblock %}

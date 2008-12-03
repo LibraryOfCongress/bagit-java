@@ -8,8 +8,8 @@
 
 {% block transfer_content %}
     {{ block.super }}
-    <dt>Location</dt><dd>{{ transfer.location }}</dd>
-    <dt>Username</dt><dd>{{ transfer.username }}</dd>
-    <dt>Password</dt><dd>{{ transfer.password }}</dd>
-    <dt>Estimated size</dt><dd>{{ transfer.estimated_size }}</dd>
+    <li>Location: {{ transfer.location }}</li>
+    <li>Username: {{ transfer.username }}</li>
+    <li>Password: {{ transfer.password }}</li>
+    <li>Estimated size: {{ transfer.estimated_size }}</li>
 {% endblock %}
