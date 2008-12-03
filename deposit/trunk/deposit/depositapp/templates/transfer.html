@@ -40,8 +40,8 @@
             {% else %}
                 <li>Received: Not yet received</li>
             {% endif %}
+	        {% block transfer_content %}{% endblock %}
 	    </ul>
-        {% block transfer_content %}{% endblock %}
     </div>
     <div id="receivedPolicy">
 	    <h3 class="red">Reminder of received policy for {{ transfer.project }}:</h3>
