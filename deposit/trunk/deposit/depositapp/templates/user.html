@@ -88,7 +88,8 @@
     </ul>
   </div>
 
-  <div id="updateUserDetails">
+<div id="updateUserDetails">
+  <div id="bottom_nav">
         <form method="post" action='{% url user_command_url user.username "update" %}'>
 		   	<fieldset>
 		   		<label for="id_first_name">First Name</label>&nbsp;<input id="id_first_name" name="first_name" type="text" maxlength="30" value="{{ user.first_name }}" /><br />
@@ -103,8 +104,10 @@
 			</fieldset>
         </form>
   </div>
+</div>
 
-  <div id="changePassword">
+<div id="changePassword">
+  <div id="bottom_nav">
         <h2>Change Password</h2>
         {% if password_form.errors %}
             <p>Please try to change your password again.</p>
@@ -120,6 +123,7 @@
 			</fieldset>
         </form>
   </div>
+</div>
 
 </div>
 
