@@ -75,3 +75,31 @@
 	text-transform: uppercase;
 	border: 1px solid #f60;
 }
+#bottom_nav {
+	width:auto;
+	margin: 1em 0 0 0;
+	padding: 1em 1em 1em 1em;
+	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
+}
+#bottom_nav form {
+	width: 60em;
+	margin: 0 0 0 0;
+	padding: 0;
+}
+#bottom_nav form fieldset {
+	width: 30em;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#bottom_nav form fieldset#submit input.submit {
+	width: auto;
+	margin: 0;
+	padding: 0.3em;
+	background-color: #fff;
+	font-weight: 900;
+	font: bold 0.9em/1.1em Verdana, Arial, Helvetica, sans-serif;
+	color: #f60;
+	text-transform: uppercase;
+	border: 1px solid #f60;
+}
