@@ -1,0 +1,164 @@
+/* RDC Deposit CSS Document */
+#content {
+	width: auto;
+	padding: 0em 0 1em 0;
+	margin: 1em;
+	background-color: #fff;
+	border: 0;
+}
+h2 {
+	font-size: 1em;
+	padding: 1em 0.5em 0.5em 0;
+	margin: 0;
+	color: #000;
+}
+h3 {
+	font-size: 1em;
+	padding: 1em 0 0 0;
+	color: #000;
+	margin: 0;
+}
+h3.border {
+	background: transparent url(../images/tabledot.gif) top left repeat-x;
+}
+p {
+	margin: 0 0 0 0;
+	padding: 0.5em 0.5em 1.5em 0;
+	font: normal 0.90em/1.3em Verdana, Arial, Helvetica, sans-serif;
+}
+#leftbox {
+	float: left;
+	width: 53em;
+	padding: 0;
+	margin: 0em 0 1em 0;
+	background-color: #fff;
+	background-repeat: no-repeat;
+	background-position: right top;
+	border: 0;
+}
+#page_head {
+	width: auto;
+	height: auto;
+	margin: 0;
+	font:normal 90%/100% verdana, helvetica, sans-serif;
+	background: transparent url(../images/ph_top.gif) top left repeat-x;
+	text-align:left;
+	padding: 0 0 2px 0;
+}
+#page_head h1 {
+	color: #900;
+	padding: 1em 0 1em 1em;
+	margin: 0;
+	font: bold 1.4em/1.1em Georgia, "Times New Roman", Times, serif;
+	display: block;
+	background: transparent url(../images/ph_bot.gif) bottom left repeat-x;
+}
+#leftbox #overview_content {
+	margin: 1em auto 0 0;
+	padding: 1em;
+	border: 0.1em solid #ccc;
+}
+#leftbox #overview_content ul {
+	padding: 1em 1em 1.5em 0;
+	margin: 0 0 0 0;
+}
+#leftbox #overview_content ul li {
+	list-style-type: none;
+	background: transparent;
+	font: normal 0.85em/1.5em verdana, helvetica, sans-serif;
+	color: #333;
+	padding: 0em 0 0em 0; 
+	margin: 0 0 0 0;
+}
+#leftbox #overview_content ul li a {
+	color: #369;
+}
+#rightbox {
+	width: auto;
+	padding: 0 0.5em 0.5em 0.5em;
+	border: 0;
+	margin: 0 auto 1em 53.5em;
+}
+#rightbox #nettrans {
+	border: 0.1em solid #3373a1;
+	width: 15em;
+	height: 13em;
+	background: #F8FFFF url(../images/nettransdot1.gif) top left repeat;
+}
+#rightbox #shiptrans {
+	border: 0.1em solid #96c;
+	background: #FFF8FF url(../images/shiptransdot1.gif) top left repeat;
+	width: 15em;
+	height: 13em;
+	margin: 1em 0 0 0;
+}
+#rightbox #nettrans img.title, #rightbox #shiptrans img.title {
+	margin: 1em auto auto 1em;
+}
+#rightbox #nettrans span, #rightbox #shiptrans span {
+	margin: 2.5em 0 0 0;
+	padding: 0;
+	text-align: right;
+	display: block;
+	height: 4em;
+	background: #f8ffff url(../images/nettransdot2.gif) top left repeat;
+}
+#rightbox #shiptrans span {
+	margin: 2.0em 0 0 0;
+	background: #fff8ff url(../images/shiptransdot2.gif) top left repeat;
+}
+#rightbox #nettrans span img, #rightbox #shiptrans span img {
+	padding: 0;
+	margin: 1em;
+	border: 0;
+}
+#
+#
+#content form {
+	width: 68.4em;
+	margin: 1em 0 0 0;
+	padding: 0;
+}
+#content form fieldset {
+	width: auto;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#content form fieldset#submit {
+	width: auto;
+	margin: 0 auto 0 0;
+	padding: 0;
+	border: 0;
+}
+#content form fieldset label {
+	font: bold 1.0em/1.3em Arial, Helvetica, sans-serif;
+	margin: 1em auto 1em 1em;
+}
+#content form fieldset label span {
+	font: normal 0.9em/1.3em Arial, Helvetica, sans-serif;
+}
+#content form fieldset input {
+	width: 50em;
+	font: normal 1.0em/1.3em Arial, Helvetica, sans-serif;
+	margin: 0 auto 1em 1em;
+}
+#content form fieldset input.short {
+	width: 9.7em;
+}
+#content form fieldset select {
+	width: 10em;
+	font: normal 1.0em/1.3em Arial, Helvetica, sans-serif;
+	margin: 0 auto 1em 1em;
+}
+#content form fieldset input.submit {
+	width: auto;
+	background-color: #fff;
+	font-weight: 900;
+	font: bold 1.1em/1.1em Verdana, Arial, Helvetica, sans-serif;
+	color: #f60;
+	text-transform: uppercase;
+	margin: 0;
+	border: 1px solid #f60;
+	padding: 0.3em;
+}
