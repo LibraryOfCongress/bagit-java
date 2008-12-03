@@ -50,7 +50,7 @@ table td {
 	text-align: left;
 	vertical-align: top;
 	padding: 0.5em 0.5em 0.5em 1.0em;
-	background: transparent url(../images/tabledot.gif) bottom left repeat-x;
+	background: transparent url(/media/images/tabledot.gif) bottom left repeat-x;
 }
 td.last {
 	background: transparent;

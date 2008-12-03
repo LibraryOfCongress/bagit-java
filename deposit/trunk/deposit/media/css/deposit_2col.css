@@ -19,7 +19,7 @@ h3 {
 	margin: 0;
 }
 h3.border {
-	background: transparent url(../images/tabledot.gif) top left repeat-x;
+	background: transparent url(/media/images/tabledot.gif) top left repeat-x;
 }
 p {
 	margin: 0 0 0 0;
@@ -41,7 +41,7 @@ p {
 	height: auto;
 	margin: 0;
 	font:normal 90%/100% verdana, helvetica, sans-serif;
-	background: transparent url(../images/ph_top.gif) top left repeat-x;
+	background: transparent url(/media/images/ph_top.gif) top left repeat-x;
 	text-align:left;
 	padding: 0 0 2px 0;
 }
@@ -51,7 +51,7 @@ p {
 	margin: 0;
 	font: bold 1.4em/1.1em Georgia, "Times New Roman", Times, serif;
 	display: block;
-	background: transparent url(../images/ph_bot.gif) bottom left repeat-x;
+	background: transparent url(/media/images/ph_bot.gif) bottom left repeat-x;
 }
 #leftbox #overview_content {
 	margin: 1em auto 0 0;
@@ -83,11 +83,11 @@ p {
 	border: 0.1em solid #3373a1;
 	width: 15em;
 	height: 13em;
-	background: #F8FFFF url(../images/nettransdot1.gif) top left repeat;
+	background: #F8FFFF url(/media/images/nettransdot1.gif) top left repeat;
 }
 #rightbox #shiptrans {
 	border: 0.1em solid #96c;
-	background: #FFF8FF url(../images/shiptransdot1.gif) top left repeat;
+	background: #FFF8FF url(/media/images/shiptransdot1.gif) top left repeat;
 	width: 15em;
 	height: 13em;
 	margin: 1em 0 0 0;
@@ -101,19 +101,18 @@ p {
 	text-align: right;
 	display: block;
 	height: 4em;
-	background: #f8ffff url(../images/nettransdot2.gif) top left repeat;
+	background: #f8ffff url(/media/images/nettransdot2.gif) top left repeat;
 }
 #rightbox #shiptrans span {
 	margin: 2.0em 0 0 0;
-	background: #fff8ff url(../images/shiptransdot2.gif) top left repeat;
+	background: #fff8ff url(/media/images/shiptransdot2.gif) top left repeat;
 }
 #rightbox #nettrans span img, #rightbox #shiptrans span img {
 	padding: 0;
 	margin: 1em;
 	border: 0;
 }
-#
-#
+/* RDC deposit_forms */
 #content form {
 	width: 68.4em;
 	margin: 1em 0 0 0;
@@ -161,4 +160,32 @@ p {
 	margin: 0;
 	border: 1px solid #f60;
 	padding: 0.3em;
+}
+#bottom_nav {
+	width:auto;
+	margin: 1em 0 0 0;
+	padding: 1em 1em 1em 1em;
+	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
+}
+#bottom_nav form {
+	width: 60em;
+	margin: 0 0 0 0;
+	padding: 0;
+}
+#bottom_nav form fieldset {
+	width: 30em;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#bottom_nav form fieldset#submit input.submit {
+	width: auto;
+	margin: 0;
+	padding: 0.3em;
+	background-color: #fff;
+	font-weight: 900;
+	font: bold 0.9em/1.1em Verdana, Arial, Helvetica, sans-serif;
+	color: #f60;
+	text-transform: uppercase;
+	border: 1px solid #f60;
 }

@@ -57,7 +57,7 @@
 	width:auto;
 	margin: 1em 0 0 0;
 	padding: 1em 1em 1em 1em;
-	background: #fff url(../images/tabledot.gif) top left repeat-x;
+	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
 }
 #content #bottom_nav form {
 	width: 60em;

@@ -38,7 +38,7 @@ div#page_head {
 	height: auto;
 	margin: 0;
 	font:normal 0.9em/1em verdana, helvetica, sans-serif;
-	background: transparent url(../images/ph_top.gif) top left repeat-x;
+	background: transparent url(/media/images/ph_top.gif) top left repeat-x;
 	text-align:left;
 	padding: 0 0 2px 0;
 }
@@ -48,7 +48,7 @@ div#page_head h1 {
 	margin: 0;
 	font: bold 1.4em/1.1em Georgia, "Times New Roman", Times, serif;
 	display: block;
-	background: transparent url(../images/ph_bot.gif) bottom left repeat-x;
+	background: transparent url(/media/images/ph_bot.gif) bottom left repeat-x;
 }
 p {
 	margin: 0 0 0 0;
@@ -200,7 +200,7 @@ div#content div#bottom_nav {
 	width:auto;
 	margin: 1em 0 0 0;
 	padding: 1em 1em 1em 1em;
-	background: #fff url(../images/tabledot.gif) top left repeat-x;
+	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
 }
 div#content div#bottom_nav form {
 	width: 60em;
