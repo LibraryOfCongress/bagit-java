@@ -3,16 +3,15 @@
 {% block content %}
 
 <div id="project">
-    <h1>Project {{ project.name }}</h1>
     <div id="projectDetails">
-        <h2>Project details</h2>
-        <dl>
-            <dt>contact name</dt><dd>{{ project.contact_name }}</dd>
-            <dt>phone number</dt><dd>{{ project.contact_phone }}</dd>
-            <dt>email</dt><dd>{{ project.contact_email }}</dd>
-            <dt>shipping address</dt><dd>{{ project.shipping_address }}</dd>
-            <dt>received policy</dt><dd><p>{{ project.received_policy }}</p></dd>
-        </dl>
+	    <h3>Project {{ project.name }} details</h3>
+	    <ul>
+	      <li>Contact Name: {{ project.contact_name }}</li>
+	      <li>Phone Number: {{ project.contact_phone }}</li>
+	      <li>Email: {{ project.contact_email }}</li>
+	      <li>Shipping Sddress: {{ project.shipping_address }}</li>
+	      <li>received policy: <p>{{ project.received_policy }}</p></li>
+	    </ul>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
