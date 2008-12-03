@@ -30,8 +30,8 @@ urlpatterns = patterns('',
 
 # media route - only uncomment for development environments!
 # should serve up with apache/lighttpd/etc in production
-
+#
 #urlpatterns += patterns('',
-#    url(r"(?P<path>.*)", 'django.views.static.serve',
+#    url(r'^media/(?P<path>.*)$', 'django.views.static.serve',
 #        {'document_root': MEDIA_ROOT}, name="media"),
 #)
