@@ -27,7 +27,7 @@
 
 <div id="transfer">
     <div id="transferDetails">
-        <h3>Transfer {{ transfer.id }} details</h3>
+	    <h3>Transfer {{ transfer.id }} details</h3>
 	    <ul>
 	      <li>Package IDs: {{ transfer.package_ids }}</li>
 	      <li>User: <a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></li>
@@ -35,7 +35,7 @@
 	      <li>Initiated: {{ transfer.create_timestamp }}</li>
 	      <li>Received: Not yet received</li>
             {% if transfer.received_timestamp %}
-                <li>Received</dt><dd>{{ transfer.received_timestamp }}</li>
+                <li>Received: {{ transfer.received_timestamp }}</li>
                 <li>Received by: <a href="{% url user_url transfer.received_by.username %}">{{ transfer.received_by}}</a></li>
             {% else %}
                 <li>Received: Not yet received</li>

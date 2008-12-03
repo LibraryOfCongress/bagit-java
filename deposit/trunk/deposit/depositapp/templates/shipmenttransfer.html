@@ -2,10 +2,11 @@
 
 {% block title %}New Shipment Transfer - Deposit APP{% endblock title %}
 
-<div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
-  <h1>New Shipment Transfer</h1>
+<div id="page_head">
+  <h3>New Shipment Transfer</h3>
 </div>
 
+<div id="content">
 {% block transfer_content %}
     {{ block.super }}
     <li>Ship date: {{ transfer.ship_date }}</li>
@@ -16,3 +17,4 @@
     <li>Number of media shipped: {{ transfer.number_media_shipped }}</li>
     <li>Additional equipment: {{ transfer.addl_equipment }}</li>
 {% endblock %}
+</div>

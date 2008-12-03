@@ -26,12 +26,22 @@
 
 {% block content %}
 
+<div id="page_head">
+  <h2>New Transfer</h2>
+</div>
+
 <div id="create{{ transfer_type }}">
+  <div id="bottom_nav">
     <form action="create{{ transfer_type }}" method="POST">
+	   	<fieldset>
         {{ form.as_p }}
+        </fieldset>
         <input type="hidden" name="project_id" value="{{ project_id }}" />
-        <input type="submit" value="Submit" />
+	  	<fieldset id="submit">
+	   		<input class="submit" name="submit" type="submit" value="Submit" />
+		</fieldset>
     </form>
+  </div>
 </div>
 
 {% endblock %}
