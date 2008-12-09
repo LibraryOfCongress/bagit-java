@@ -11,7 +11,7 @@
 {% block nav %}
   <div id="nav">
     <ul id="navlist">
-      <li id="home">|&nbsp;<a class="on" href="{% url user_url user.username %}">>Home</a></li>
+      <li id="home">|&nbsp;<a class="on" href="{% url overview_url user.username %}">>Home</a></li>
       {% for project in deposit_user.projects.all %}
         {% if project.network_transfer_type %}
 	      <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
@@ -25,7 +25,8 @@
 {% endblock nav %}
 
 {% block content %}
-<div id="filters">
+<div id="content">
+  <div id="filters">
     <h2>Filters</h2>
     <form method="get" action=".">
         {% if query.username %}
@@ -41,11 +42,10 @@
         <br />
         <input type="submit" value="refresh" />
     </form>
-</div>
-<div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
+  </div>
+  <div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
 	<h1>My Transfers</h1>
-</div>
-<div id="content">
+  </div>
   <div id="transferList">
     <table border="0">
 	    <tr>
