@@ -9,19 +9,7 @@
 {% endblock link %}
 
 {% block nav %}
-  <div id="nav">
-    <ul id="navlist">
-      <li id="home">|&nbsp;<a class="on" href="{% url overview_url user.username %}">>Home</a></li>
-      {% for project in deposit_user.projects.all %}
-        {% if project.network_transfer_type %}
-	      <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
-        {% endif %}
-        {% if project.shipment_transfer_type %}
-	      <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
+	{{ block.super }}
 {% endblock nav %}
 
 {% block content %}
