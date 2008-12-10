@@ -25,8 +25,10 @@
 {% endblock nav %}
 
 {% block content %}
-<div id="content">
-  <div id="filters">
+  <div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
+	<h1>My Transfers</h1>
+  </div>
+  <div id="bottom_nav">
     <h2>Filters</h2>
     <form method="get" action=".">
         {% if query.username %}
@@ -39,12 +41,11 @@
         <label for="include_received">
 		    Include received
 		</label>
-        <br />
-        <input type="submit" value="refresh" />
+		<br/>
+	  <fieldset id="submit">
+	      <input class="submit" name="submit" type="submit" value="Refresh" />
+      </fieldset>
     </form>
-  </div>
-  <div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
-	<h1>My Transfers</h1>
   </div>
   <div id="transferList">
     <table border="0">
@@ -75,5 +76,4 @@
 
     </table>
   </div>
-</div>
 {% endblock %}
