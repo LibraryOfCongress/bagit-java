@@ -7,6 +7,11 @@ from deposit.settings import MEDIA_URL, MEDIA_ROOT
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^media/(?P<path>.*)$', 'django.views.static.serve',
+        {'document_root': MEDIA_ROOT}, name="media"),
+)
+urlpatterns += patterns('',
+#urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     url(r'^admin/$', admin.site.root, name="admin_url"),
     url(r'^login/$', 'deposit.depositapp.views.login', name="login_url"),    
@@ -14,6 +19,7 @@ urlpatterns = patterns('',
     url(r'^user/(?P<username>\w+)/(?P<command>\w+)$',
             'deposit.depositapp.views.user', name="user_command_url"),
     url(r'^user/(?P<username>\w+)$', 'deposit.depositapp.views.user', name="user_url"),
+    url(r'^overview/(?P<username>\w+)$', 'deposit.depositapp.views.overview', name="overview_url"),
     url(r'^transfer/create(?P<transfer_type>\w+)$',
             'deposit.depositapp.views.create_transfer', name="create_transfer_url"),
     url(r'^transfer/(?P<transfer_id>\d+)/received$',
@@ -32,6 +38,6 @@ urlpatterns = patterns('',
 # should serve up with apache/lighttpd/etc in production
 #
 #urlpatterns += patterns('',
-#    url(r'^media/(?P<path>.*)$', 'django.views.static.serve',
+#    url(r'^(?P<path>.*)$', 'django.views.static.serve',
 #        {'document_root': MEDIA_ROOT}, name="media"),
 #)
