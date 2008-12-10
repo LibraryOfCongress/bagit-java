@@ -21,12 +21,39 @@ def index(request):
 def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
     if request.method == 'POST':
         request.POST = request.POST.__copy__()
-        request.POST[redirect_field_name] = reverse('user_url',
+        request.POST[redirect_field_name] = reverse('overview_url',
                 args=[request.POST['username']])
     return base_login(request, "login.html",  redirect_field_name)
 
 def logout(request):
     return logout_then_login(request, login_url=reverse('login_url'))
+
+def overview(request, username, command = None):    
+    try:
+        deposit_user = models.User.objects.get(username=username)
+        user = deposit_user
+        user_form_class = forms.DepositUserForm
+    except models.User.DoesNotExist:
+        deposit_user = None
+        try:
+            user = User.objects.get(username=username)
+            user_form_class = forms.UserForm
+        except User.DoesNotExist:
+            raise Http404
+    if request.user.is_authenticated() and request.user.username == username:
+        is_user = True
+        password_form = PasswordChangeForm(request.user)
+        user_form = user_form_class(instance=user)            
+    else:
+        is_user = False
+        password_form = None
+        user_form = None
+    q = TransferQuery()
+    q.include_received=False
+    return render_to_response('overview.html', {'deposit_user': deposit_user,
+            'user':user, 'is_user':is_user, 'projects':models.Project.objects.all(),
+            'password_form':password_form, 'user_form':user_form, 'query':q},
+            context_instance=RequestContext(request))
 
 def user(request, username, command = None):    
     try:
@@ -152,8 +179,8 @@ def list_transfer(request):
     if q.username and request.user.username != q.username:
             return HttpResponseForbidden()
     if q.project_id and not request.user.is_staff and not \
-            request.user.is_superuser and \
-            len(request.user.user_ptr.projects.filter(id=q.project_id)) == 0:
+            request.user.is_superuser:
+#            len(request.user.user_ptr.projects.filter(id=q.project_id)) == 0:
         #Make sure that user is associated with project
         return HttpResponseForbidden()
     transfers = q.query()
