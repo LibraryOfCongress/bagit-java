@@ -30,11 +30,22 @@
 	    </div>
 		{% endblock header %}
 		{% block nav %}
-	    <div id="nav">
-	       <ul id="navlist">
-	        <li id="contactadmin">|&nbsp;&nbsp;<img src="/media/images/mail.gif" alt="" width="18" height="7" /><a href="#">Contact Admin</a></li>
-	      </ul>
-	    </div>
+		  <div id="nav">
+			<ul id="navlist">
+			  <li id="home">|&nbsp;<a class="on" href="{% url overview_url user.username %}">>Home</a></li>
+			  {% for project in deposit_user.projects.all %}
+				{% if project.network_transfer_type %}
+				  <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
+				{% endif %}
+				{% if project.shipment_transfer_type %}
+				  <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
+				{% endif %}
+			  {% endfor %}
+			  {% if user.is_staff or user.is_superuser %}
+				<li id="home"><a href="{% url admin_url %}">Go to Admin Site</a></li>
+			  {% endif %}
+			</ul>
+		  </div>
 		{% endblock nav %}
 	    <div id="content"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
 			{% if messages %}
