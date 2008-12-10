@@ -27,7 +27,12 @@
 {% block content %}
 
 <div id="page_head">
-  <h2>New Transfer</h2>
+  {% ifequal transfer_type "NetworkTransfer" %}
+  <h2>New Network Transfer</h2>
+  {% endifequal %}
+  {% ifequal transfer_type "ShipmentTransfer" %}
+  <h2>New Shipment Transfer</h2>
+  {% endifequal %}
 </div>
 
 <div id="create{{ transfer_type }}">
