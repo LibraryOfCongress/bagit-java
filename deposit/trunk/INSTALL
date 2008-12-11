@@ -1,6 +1,4 @@
-Instructions for building the deposit web application stack on solaris10. This
-includes instructions for Apache, Python, PostgreSQL
-install
+Instructions for building the deposit web application stack on stock solaris10. 
 
 - install sun studio (compilers)
   http://developers.sun.com/sunstudio/
@@ -13,7 +11,7 @@ install
   chown user:group /opt/local # avoid having to install as root
 
 - get deposit source code
-  cd /opt/local
+  Cd /opt/local
   svn export https://rdc.lctl.gov/svn/transfer/deposit/tags/{release_tag} 
   ln -s {release_tag} deposit
 
