@@ -1,10 +1,11 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import login as base_login, logout_then_login
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseBadRequest, HttpResponseForbidden
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic.create_update import create_object
 
@@ -29,7 +30,7 @@ def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
 def logout(request):
     return logout_then_login(request, login_url=reverse('login_url'))
 
-def overview(request, username, command = None):    
+def overview(request, username):    
     try:
         deposit_user = models.User.objects.get(username=username)
         user = deposit_user
@@ -105,13 +106,10 @@ def transfer(request, transfer_id):
         return HttpResponseForbidden()
     if request.method == 'POST':
         return HttpResponseNotAllowed()
-    try:
-        transfer = models.Transfer.objects.get(id=transfer_id)
-    except Transfer.DoesNotExist:
-       raise Http404
-    transfer_class = getattr(models, transfer.transfer_type)
+    trans = get_object_or_404(models.Transfer, id=transfer_id)
+    transfer_class = getattr(models, trans.transfer_type)
     transfer_sub = transfer_class.objects.get(id=transfer_id)
-    template_name = "%s.html" % transfer.transfer_type.lower()
+    template_name = "%s.html" % trans.transfer_type.lower()
     return render_to_response(template_name, {'transfer':transfer_sub},
             context_instance=RequestContext(request))    
 
@@ -121,9 +119,9 @@ def project(request, project_id):
     try:
         project = models.Project.objects.get(id=project_id)
     except models.Project.DoesNotExist:
-       raise Http404
+        raise Http404
     return render_to_response("project.html", {'project':project},
-            context_instance=RequestContext(request))
+        context_instance=RequestContext(request))
 
 def transfer_received(request, transfer_id):
     if request.method == 'GET':
@@ -169,22 +167,41 @@ def create_transfer(request, transfer_type):
             'project_id':project_id, 'transfer_type':transfer_type},
             context_instance=RequestContext(request))
 
-def list_transfer(request):
-    if not request.user.is_authenticated():
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        return HttpResponseNotAllowed()
+@login_required
+def transfer_list(request):
+    """
+    List all the relevant transfer info for a user and a project.
+    """
+    # FIXME: what's the required logic here?  This is a confusing.
+    # Attempt to send a user who asks for something they can't have back to
+    # their home page with a helpful message.
     q = TransferQuery(request=request)
     if not q.username and not q.project_id:
-        return HttpResponseBadRequest()
+        request.user.message_set.create('Bad project request.')
+        # FIXME: if there's no username, where should it redirect?
+        # I'm just guessing here.
+        return HttpResponseRedirect(reverse('overview_url', 
+            args=[request.user.username]))
+    # FIXME: Should a superuser be able to see another user's stuff?
     if q.username and request.user.username != q.username:
-            return HttpResponseForbidden()
-    if q.project_id and not request.user.is_staff and not \
-            request.user.is_superuser:
-#            len(request.user.user_ptr.projects.filter(id=q.project_id)) == 0:
-        #Make sure that user is associated with project
-        return HttpResponseForbidden()
+        request.user.message_set.create(message='Invalid user')
+        return HttpResponseRedirect(reverse('overview_url', 
+            args=[request.user.username]))
+    # Verify that this user is either associated with this project
+    # or is staff/superuser (in which case let them through)
+    if q.project_id \
+        and not request.user.is_staff \
+        and not request.user.is_superuser:
+        project = get_object_or_404(models.Project, id=q.project_id)
+        if not request.user in project.users.all():
+            request.user.message_set.create(message='Invalid project')
+            return HttpResponseRedirect(reverse('overview_url',
+                args=[request.user.username]))
+    # FIXME: this seems to let unaffiliated users see all transfers,
+    # i.e. the missing 'else' here where there's a username but not 
+    # a project_id.
     transfers = q.query()
-    return render_to_response("transfer_list.html", {'query':q,'transfers':transfers}, 
-            context_instance=RequestContext(request))
+    return render_to_response('transfer_list.html', 
+        {'query': q, 'transfers': transfers}, 
+        context_instance=RequestContext(request))
 
