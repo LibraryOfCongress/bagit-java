@@ -36,7 +36,7 @@ class User(AuthUser):
     organization = models.CharField(max_length=150)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=10)
-    projects = models.ManyToManyField(Project)    
+    projects = models.ManyToManyField(Project, related_name='users')    
 
     def __unicode__(self):
         return u'%s' % (self.user.username)
