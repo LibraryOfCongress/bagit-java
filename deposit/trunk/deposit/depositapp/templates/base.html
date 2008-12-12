@@ -1,11 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
+    <head>
 	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=iso-8859-1" />
-		<title>{% block title %}Deposit APP{% endblock title %} - Repository Development Center (Library of Congress)</title>
+            <title>{% block title %}Deposit APP{% endblock title %} - Repository Development Center (Library of Congress)</title>
     {% block link %}
-		<link rel="stylesheet" type="text/css" media="print" href="/media/css/deposit_print.css" />
-		<link rel="stylesheet" type="text/css" href="/media/css/deposit.css" />
+            <link rel="stylesheet" type="text/css" media="print" href="/media/css/deposit_print.css" />
+            <link rel="stylesheet" type="text/css" href="/media/css/deposit.css" />
     {% endblock link %}
 	</head>
     <body >
@@ -48,16 +48,16 @@
 		  </div>
 		{% endblock nav %}
 	    <div id="content"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
-			{% if messages %}
-				<div id="messages">
-					<ul>
-						{% for message in messages %}
-							<li>{{ message }}</li>
-						{% endfor %}
-					</ul>
-				</div>
-			{% endif %}
-			{% block content %}{% endblock content %}
+                {% if messages %}
+                    <div id="messages">
+                        <ul>
+                            {% for message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock content %}
 	    </div>
 		<div id="footer">
 		   <ul id="footlist">
