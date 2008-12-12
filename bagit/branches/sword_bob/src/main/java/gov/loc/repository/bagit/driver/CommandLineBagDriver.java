@@ -8,6 +8,7 @@ import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.bagwriter.FileSystemBagWriter;
+import gov.loc.repository.bagit.bagwriter.SwordSerializedBagWriter;
 import gov.loc.repository.bagit.bagwriter.TarBagWriter;
 import gov.loc.repository.bagit.bagwriter.ZipBagWriter;
 import gov.loc.repository.bagit.completion.DefaultCompletionStrategy;
@@ -49,11 +50,13 @@ public class CommandLineBagDriver {
 	
 	public static final String OPTION_SOURCE = "source";
 	public static final String OPTION_DESTINATION = "dest";
+	public static final String OPTION_BAG_DIR = "bagDir";
 	public static final String OPTION_MISSING_BAGIT_TOLERANT = "missingBagItTolerant";
 	public static final String OPTION_WRITER = "writer";
 	public static final String OPTION_PAYLOAD = "payload";
 	public static final String OPTION_EXCLUDE_PAYLOAD_DIR = "excludePayloadDir";
 	public static final String OPTION_BASE_URL = "baseUrl";
+	public static final String OPTION_URL = "url";
 	public static final String OPTION_EXCLUDE_BAG_INFO = "excludeBagInfo";
 	public static final String OPTION_NO_UPDATE_PAYLOAD_OXUM = "noUpdatePayloadOxum";
 	public static final String OPTION_NO_UPDATE_BAGGING_DATE = "noUpdateBaggingDate";
@@ -66,6 +69,7 @@ public class CommandLineBagDriver {
 	public static final String VALUE_WRITER_FILESYSTEM = "filesystem";
 	public static final String VALUE_WRITER_ZIP = "zip";
 	public static final String VALUE_WRITER_TAR = "tar";
+	public static final String VALUE_WRITER_SWORD = "sword";
 	
 	private static final Log log = LogFactory.getLog(CommandLineBagDriver.class);
 	
@@ -80,10 +84,12 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(OPTION_SOURCE, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(OPTION_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter missingBagItTolerantParam = new Switch(OPTION_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, "missingbagittolerant", "Tolerant of a missing bag-it.txt.");
-		Parameter writerParam = new FlaggedOption(OPTION_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, 'w', "writer", MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1} and {2}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_ZIP));
+		Parameter writerParam = new FlaggedOption(OPTION_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_SWORD), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, 'w', "writer", MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1} and {2}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_ZIP, VALUE_WRITER_SWORD));
 		Parameter payloadParam = new UnflaggedOption(OPTION_PAYLOAD, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload.");
 		Parameter excludePayloadDirParam = new Switch(OPTION_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, "excludepayloaddir", "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(OPTION_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
+		Parameter urlParam = new FlaggedOption(OPTION_URL, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, 'u', "url", "The url to be used in creating a resource using SWORD/BOB.");
+		Parameter bagDirParam = new FlaggedOption(OPTION_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, 'b', "bagDir", "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(OPTION_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, "excludebaginfo", "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(OPTION_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, "noupdatepayloadoxum", "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
 		Parameter noUpdateBaggingDateParam = new Switch(OPTION_NO_UPDATE_BAGGING_DATE, JSAP.NO_SHORTFLAG, "noupdatebaggingdate", "Does not update Bagging-Date in bag-info.txt when completing a bag.");
@@ -96,7 +102,7 @@ public class CommandLineBagDriver {
 		Map<String, SimpleJSAP> jsapMap = new HashMap<String, SimpleJSAP>();
 		jsapMap.put(OPERATION_ISVALID, new SimpleJSAP("bag isvalid", "Checks validity of a bag.", new Parameter[] { sourceParam, missingBagItTolerantParam, versionParam }));
 		jsapMap.put(OPERATION_ISCOMPLETE, new SimpleJSAP("bag iscomplete", "Checks completeness of a bag.", new Parameter[] { sourceParam, missingBagItTolerantParam, versionParam }));
-		jsapMap.put(OPERATION_WRITE, new SimpleJSAP("bag write", "Writes a bag in a specified format.", new Parameter[] { sourceParam, destParam, writerParam }));
+		jsapMap.put(OPERATION_WRITE, new SimpleJSAP("bag write", "Writes a bag in a specified format.", new Parameter[] { sourceParam, destParam, writerParam, urlParam, bagDirParam }));
 		jsapMap.put(OPERATION_COMPLETE, new SimpleJSAP("bag complete", "Completes a bag and then writes in a specified format.", new Parameter[] { sourceParam, destParam, writerParam, excludeBagInfoParam, noUpdateBaggingDateParam, noUpdateBagSizeParam, noUpdatePayloadOxumParam, excludeTagManifestParam, tagManifestAlgorithmParam, payloadManifestAlgorithmParam, versionParam }));
 		jsapMap.put(OPERATION_CREATE, new SimpleJSAP("bag create", "Creates a bag from supplied files/directories, completes the bag, and then writes in a specified format.", new Parameter[] { destParam, payloadParam, writerParam, excludeBagInfoParam, noUpdateBaggingDateParam, noUpdateBagSizeParam, noUpdatePayloadOxumParam, excludeTagManifestParam, tagManifestAlgorithmParam, payloadManifestAlgorithmParam, versionParam }));
 		jsapMap.put(OPERATION_MAKE_HOLEY, new SimpleJSAP("bag makeholey", "Add holes to a bag and then writes in a specified format.", new Parameter[] { sourceParam, destParam, baseUrlParam, writerParam, excludePayloadDirParam}));
@@ -104,13 +110,13 @@ public class CommandLineBagDriver {
 		jsapMap.put(OPERATION_CHECK_PAYLOAD_OXUM, new SimpleJSAP("bag checkpayloadoxum", "Generates Payload-Oxum and checks against Payload-Oxum in bag-info.txt.", new Parameter[] { sourceParam }));
 		
 		if (args.length == 0) {
-			System.out.println("Error: An operation is required.");
+			System.err.println("Error: An operation is required.");
 			printUsage(jsapMap.keySet());
 			return RETURN_ERROR;
 		}		
 		String operation = args[0];		
 		if (! jsapMap.containsKey(operation)) {
-			System.out.println("Error: Unknown operation.");
+			System.err.println("Error: Unknown operation.");
 			printUsage(jsapMap.keySet());
 			return RETURN_ERROR;
 		}
@@ -164,6 +170,13 @@ public class CommandLineBagDriver {
 				writer = new ZipBagWriter(destFile);
 			} else if (VALUE_WRITER_TAR.equals(config.getString(OPTION_WRITER))) {
 				writer = new TarBagWriter(destFile);
+			} else if (VALUE_WRITER_SWORD.equals(config.getString(OPTION_WRITER))) {
+				String collectionURL = config.getString(OPTION_URL);
+				if (collectionURL == null) {
+					System.err.println("Error: If writing to a SWORD serialized bag writer, a collection url must be provided.");
+					return RETURN_ERROR;					
+				}
+				writer = new SwordSerializedBagWriter(config.getString(OPTION_BAG_DIR), collectionURL);
 			}
 			
 			DefaultCompletionStrategy strategy = new DefaultCompletionStrategy();

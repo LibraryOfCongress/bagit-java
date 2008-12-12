@@ -23,10 +23,14 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  * Commons IO - http://commons.apache.org/io/license.html
  * Commons Codec - http://commons.apache.org/codec/license.html
  * Commons VFS - http://commons.apache.org/vfs/license.html
+ * Commons HttpClient - http://hc.apache.org/httpclient-3.x/license.html
  * Ant - http://ant.apache.org/license.html
  * Log4j - http://logging.apache.org/log4j/1.2/license.html
 
 RELEASE NOTES:
+Changes in 2.3:
+1. Implemented writer for depositing serialized bags using SWORD.
+
 Changes in 2.1:
 1. Changed Payload-Ossum to Payload-Oxsum.
 2. Updated separator for manifests.

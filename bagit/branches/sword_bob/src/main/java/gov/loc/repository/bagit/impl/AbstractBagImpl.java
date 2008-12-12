@@ -361,6 +361,9 @@ public abstract class AbstractBagImpl implements Bag {
 	
 	public void write(BagWriter writer) {
 		log.info("Writing bag");
+		
+		writer.open(this);
+		
 		for(String filepath : this.tagMap.keySet()) {
 			BagFile bagFile = this.tagMap.get(filepath);
 			if (bagFile.exists()) {
