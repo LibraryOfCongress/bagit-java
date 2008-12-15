@@ -26,10 +26,13 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  * Commons HttpClient - http://hc.apache.org/httpclient-3.x/license.html
  * Ant - http://ant.apache.org/license.html
  * Log4j - http://logging.apache.org/log4j/1.2/license.html
-
+ * Dom4j - http://www.dom4j.org/dom4j-1.6.1/license.html
+ * Jaxen - http://fisheye.codehaus.org/browse/~raw,r=1340/trunk/jaxen/jaxen/LICENSE.txt
+ 
 RELEASE NOTES:
 Changes in 2.3:
 1. Implemented writer for depositing serialized bags using SWORD.
+2. Implemented writer for depositing unserialized bags using BOB.
 
 Changes in 2.1:
 1. Changed Payload-Ossum to Payload-Oxsum.

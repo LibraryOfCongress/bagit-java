@@ -2,7 +2,6 @@ package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.utilities.SimpleResult;
 
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
 

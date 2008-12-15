@@ -127,6 +127,24 @@
       <version>2.1</version>
     </dependency>
     <dependency>
+        <groupId>dom4j</groupId>
+        <artifactId>dom4j</artifactId>
+        <version>1.6.1</version>
+    </dependency>
+    <!--Runtime requirement of dom4j-->
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <version>1.1.1</version>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>xom</artifactId>
+          <groupId>xom</groupId>
+        </exclusion>
+      </exclusions>        
+    </dependency>        
+    <dependency>
       <groupId>classworlds</groupId>
       <artifactId>classworlds</artifactId>
       <version>1.1</version>
