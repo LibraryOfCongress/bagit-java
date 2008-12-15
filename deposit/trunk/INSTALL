@@ -11,22 +11,28 @@ Instructions for building the deposit web application stack on stock solaris10.
   chown user:group /opt/local # avoid having to install as root
 
 - get deposit source code
-  Cd /opt/local
+  cd /opt/local
   svn export https://rdc.lctl.gov/svn/transfer/deposit/tags/{release_tag} 
   ln -s {release_tag} deposit
 
 - install postgresql 
-  TODO
-
+  wget http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2Fsource%2Fv8.3.5%2Fpostgresql-8.3.5.tar.gz
+  tar xvfz postgresql-8.3.5.tar.gz
+  cd postgresql-8.3.5
+  ./configure --without-readline --prefix=/opt/local/postgresql-8.3.5
+  make install
+  
 - install python2.6
   ./configure --prefix=/opt/local/python2.6 --enable-shared --with-solaris
   make install
 
-- install easy_install
-  wget http://peak.telecommunity.com/dist/ez_setup.py
-  python ez_setup.py
-
 - install psycopg2
+  wget http://www.initd.org/pub/software/psycopg/psycopg2-2.0.8.tar.gz
+  tar xvfz psycopg2-2.0.8.tar.gz
+  cd psycopg2-2.0.8
+  edit setup.cfg to have this line:
+    library_dirs=/opt/local/postgresql/lib:/opt/local/python2.6/lib
+  python setup.py install
 
 - django
   wget http://www.djangoproject.com/download/1.0/tarball/
@@ -36,10 +42,10 @@ Instructions for building the deposit web application stack on stock solaris10.
   python setup.py install
 
 - set system runtime library path
-  pfexec crle -c /var/ld/ld.config -l /lib:/usr/lib:/opt/local/python2.6/lib:/opt/local/postgresql/lib
+  pfexec crle -c /var/ld/ld.config -l /lib:/usr/lib:/opt/local/python/lib:/opt/local/postgresql/lib
   
 - build and configure deposit application
-  cp /opt/local/deposit/conf/settings-qa.py /opt/local/deposit/deposit/settings.py
+  cp /opt/local/deposit/conf/depositqa-settings.py /opt/local/deposit/deposit/settings.py
   edit /opt/local/deposit/deposit/settings.py and change DATABASE_PASSWORD
   cd /opt/local/deposit/deposit
   python manage.py syncdb
@@ -52,7 +58,7 @@ Instructions for building the deposit web application stack on stock solaris10.
   ./configure --prefix=/opt/local/apache2
   make
   make install
-  cp /opt/local/deposit/conf/httpd-qa.conf /opt/local/apache2/conf/httpd.conf
+  cp /opt/local/deposit/conf/depositqa-httpd.conf /opt/local/apache2/conf/httpd.conf
 
 - mod_wsgi
   wget http://modwsgi.googlecode.com/files/mod_wsgi-2.3.tar.gz
