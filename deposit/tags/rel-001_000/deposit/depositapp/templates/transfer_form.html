@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block link %}
+	{{ block.super }}
+	<style type="text/css" >
+	@import url(/media/css/deposit_table.css);
+	@import url(/media/css/deposit_forms.css);
+	</style>
+{% endblock link %}
+
+{% block nav %}
+	{{ block.super }}
+{% endblock nav %}
+
+{% block content %}
+
+<div id="page_head">
+  {% ifequal transfer_type "NetworkTransfer" %}
+  <h3 class="red">New Network Transfer</h3>
+  {% endifequal %}
+  {% ifequal transfer_type "ShipmentTransfer" %}
+  <h3 class="red">New Shipment Transfer</h3>
+  {% endifequal %}
+</div>
+
+<div id="create{{ transfer_type }}">
+  <div id="bottom_nav">
+    <form action="create{{ transfer_type }}" method="POST">
+	   	<fieldset>
+        {{ form.as_p }}
+        </fieldset>
+        <input type="hidden" name="project_id" value="{{ project_id }}" />
+	  	<fieldset id="submit">
+	   		<input class="submit" name="submit" type="submit" value="Submit" />
+		</fieldset>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
