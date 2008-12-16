@@ -156,9 +156,6 @@ public abstract class AbstractBagImpl implements Bag {
 			}
 				
 		} else if (file.isFile()) {
-			if (file.toString().indexOf('\\') != -1) {
-				throw new UnsupportedOperationException("This Library does not support \\ in filepaths.");
-			}
 			
 			//If file, add to payloadMap
 			String filepath = this.getBagConstants().getDataDirectory() + "/";
@@ -166,7 +163,11 @@ public abstract class AbstractBagImpl implements Bag {
 				filepath += FilenameHelper.removeBasePath(rootDir.toString(), file.toString());
 			} else {
 				filepath += file.toString();
-			}			
+			}
+			if (filepath.indexOf('\\') != -1) {
+				throw new UnsupportedOperationException("This Library does not support \\ in filepaths: " + filepath);
+			}
+			
 			log.debug(MessageFormat.format("Adding {0} to payload.", filepath));
 			this.payloadMap.put(filepath, new FileBagFile(filepath, file));
 		}

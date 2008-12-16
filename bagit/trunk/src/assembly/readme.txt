@@ -27,6 +27,9 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  * Log4j - http://logging.apache.org/log4j/1.2/license.html
 
 RELEASE NOTES:
+Changes in 2.2:
+1. Fixed bug with Window filepaths.
+
 Changes in 2.1:
 1. Changed Payload-Ossum to Payload-Oxsum.
 2. Updated separator for manifests.
