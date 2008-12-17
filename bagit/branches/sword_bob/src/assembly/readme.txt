@@ -34,6 +34,9 @@ Changes in 2.3:
 1. Implemented writer for depositing serialized bags using SWORD.
 2. Implemented writer for depositing unserialized bags using BOB.
 
+Changes in 2.2:
+1. Fixed bug with Window filepaths.
+
 Changes in 2.1:
 1. Changed Payload-Ossum to Payload-Oxsum.
 2. Updated separator for manifests.
