@@ -14,6 +14,7 @@ from deposit.sword.basicauth import logged_in_or_basicauth
 def service(request):
     user, projects = _init(request)
     return render_to_response('service.xml', dictionary=locals(),
+                              mimetype="application/atomsvc+xml",
                               context_instance=RequestContext(request))
 
 
@@ -30,6 +31,7 @@ def collection(request, project_id):
     if request.method == 'GET':
         transfers = list(project.transfers.all())
         return render_to_response('collection.xml', dictionary=locals(),
+                                  mimetype="application/atom+xml",
                                   context_instance=RequestContext(request))
 
     # otherwise we need to create a new transfer
@@ -41,7 +43,7 @@ def collection(request, project_id):
         #transfer.project = project
         #transfer.save()
 
-    return HttpResponseNotAllowed()
+    return HttpResponseForbidden()
 
 
 def entry(request, entry_id):
