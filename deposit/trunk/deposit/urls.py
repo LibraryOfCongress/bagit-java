@@ -19,6 +19,7 @@ urlpatterns += patterns('',
 )
 
 urlpatterns += patterns('deposit.depositapp.views',
+    url(r'^$', 'index', name='home_url'),
     url(r'^login/$', 'login', name='login_url'),    
     url(r'^logout/$', 'logout', name='logout_url'),
 
@@ -37,6 +38,10 @@ urlpatterns += patterns('deposit.depositapp.views',
         name='transfer_received_url'),
 
     url(r'^project/(?P<project_id>\d+)$', 'project', name='project_url'),
+)
 
-    (r'^.*$', 'index'),
+urlpatterns += patterns('deposit.sword.views',
+    url(r'^api/service$', 'service', name='sword_service_url'),    
+    url(r'^api/collection/(?P<project_id>\d+)$', 'collection', 
+        name='sword_collection_url')
 )

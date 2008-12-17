@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service xmlns="http://www.w3.org/2007/app"
+         xmlns:atom="http://www.w3.org/2005/Atom"
+         xmlns:sword="http://purl.org/net/sword/"
+         xmlns:bob="http://deposit.loc.gov/bob"
+         xmlns:dcterms="http://purl.org/dc/terms/">
+    <sword:version>1.3</sword:version>
+    <bob:version>1.0</bob:version>
+    <workspace>
+        {% for project in projects %}
+        <collection href="{% url sword_collection_url project.id %}">
+            <atom:title>{{ project.name }}</atom:title>
+            <accept>application/zip</accept>
+            <sword:formatNamespace>http://purl.oclc.org/net/bagit</sword:formatNamespace>
+        </collection>
+        {% endfor %}
+    </workspace>
+</service>

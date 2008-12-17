@@ -52,7 +52,7 @@ class Transfer(models.Model):
     package_ids = models.CharField(max_length=255, 
         help_text="List of packages included in the transfer.")
     user = models.ForeignKey(User)
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, related_name="transfers")
     transfer_type = models.CharField(max_length=50, editable=False)
     create_timestamp = models.DateTimeField(auto_now_add=True, editable=False)
     received_timestamp = models.DateTimeField(null=True)
