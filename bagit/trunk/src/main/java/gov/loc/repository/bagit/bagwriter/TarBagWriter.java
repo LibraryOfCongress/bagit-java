@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.bagwriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.MessageFormat;
 
 import org.apache.commons.io.FileUtils;
@@ -11,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
 
+import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
 
@@ -20,7 +22,8 @@ public class TarBagWriter implements BagWriter {
 	
 	private static final int BUFFERSIZE = 65536;
 	
-	private TarOutputStream out = null;
+	private OutputStream out = null;
+	private TarOutputStream tarOut = null;
 	private String bagDir = null;
 	
 	public TarBagWriter(File bagFile) {
@@ -30,7 +33,7 @@ public class TarBagWriter implements BagWriter {
 			if (parentDir != null && ! parentDir.exists()) {
 				FileUtils.forceMkdir(parentDir);
 			}
-			this.out = new TarOutputStream(new FileOutputStream(bagFile));
+			this.out = new FileOutputStream(bagFile);
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
@@ -38,10 +41,19 @@ public class TarBagWriter implements BagWriter {
 		
 	}
 	
+	public TarBagWriter(String bagDir, OutputStream out) {
+		this.bagDir = bagDir;
+		this.out = out;
+	}
+	
+	public void open(Bag bag) {
+		this.tarOut = new TarOutputStream(this.out);
+	}
+	
 	public void close() {
 		try {
-			if (this.out != null) {
-				this.out.close();
+			if (this.tarOut != null) {
+				this.tarOut.close();
 			}
 		}
 		catch(Exception ex) {
@@ -64,15 +76,15 @@ public class TarBagWriter implements BagWriter {
 			//Add tar entry
 			TarEntry entry = new TarEntry(this.bagDir + "/" + filepath);
 			entry.setSize(bagFile.getSize());
-			out.putNextEntry(entry);
+			tarOut.putNextEntry(entry);
 			InputStream in = bagFile.newInputStream();
 			byte[] dataBytes = new byte[BUFFERSIZE];
 			int nread = in.read(dataBytes);
 			while (nread > 0) {
-				this.out.write(dataBytes, 0, nread);
+				this.tarOut.write(dataBytes, 0, nread);
 			    nread = in.read(dataBytes);
 			}
-			out.closeEntry();
+			tarOut.closeEntry();
 			in.close();
 		}
 		catch (Exception ex) {

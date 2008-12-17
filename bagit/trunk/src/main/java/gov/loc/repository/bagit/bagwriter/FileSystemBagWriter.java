@@ -9,6 +9,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
 
@@ -23,7 +24,10 @@ public class FileSystemBagWriter implements BagWriter {
 	
 	public FileSystemBagWriter(File bagDir, boolean skipIfPayloadFileExists) {
 		this.skipIfPayloadFileExists = skipIfPayloadFileExists;
-		this.bagDir = bagDir;
+		this.bagDir = bagDir;		
+	}
+	
+	public void open(Bag bag) {
 		try {
 			if (bagDir.exists()) {
 				if (! bagDir.isDirectory()) {
