@@ -4,15 +4,15 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('Ed Summers', 'ehs@pobox.com'),
+    # ('Your Name', 'your_email@domain.com'),
 )
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'postgresql_psycopg2'
-DATABASE_NAME = 'deposit'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'deposit'             # Not used with sqlite3.
-DATABASE_PASSWORD = 'DATABASE_PASSWORD'         # Not used with sqlite3.
+DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = 'deposit.db'   # Or path to database file if using sqlite3.
+DATABASE_USER = ''             # Not used with sqlite3.
+DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
@@ -77,6 +77,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'deposit.depositapp',    
+    'deposit.sword',
     'django.contrib.admin',
 )
 
@@ -84,4 +85,5 @@ AUTH_PROFILE_MODULE = "depositapp.user"
 
 REALM = 'LC Deposit'
 
-STORAGE = '/opt/local/storage'
+STORAGE = '/tmp/deposit_storage'
+

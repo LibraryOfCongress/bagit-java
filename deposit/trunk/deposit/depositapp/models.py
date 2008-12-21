@@ -32,7 +32,6 @@ class Project(models.Model):
         return reverse('project_url', args=[self.id])
     
 class User(AuthUser):
-    #user = models.ForeignKey(User, unique=True)
     organization = models.CharField(max_length=150)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=10)
@@ -46,9 +45,9 @@ class User(AuthUser):
 
 
 class Transfer(models.Model):
-    #Supplied list of packages included in transfer.
-    #This is only a hint and may differ from what is discovered when the
-    #delivered packages are examined.
+    # Supplied list of packages included in transfer.
+    # This is only a hint and may differ from what is discovered when the
+    # delivered packages are examined.
     package_ids = models.CharField(max_length=255, 
         help_text="List of packages included in the transfer.")
     user = models.ForeignKey(User)

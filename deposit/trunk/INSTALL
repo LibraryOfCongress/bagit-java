@@ -1,4 +1,5 @@
 Instructions for building the deposit web application stack on stock solaris10. 
+If you only want to work with the code as a developer see DEVELOP.
 
 - install sun studio (compilers)
   http://developers.sun.com/sunstudio/

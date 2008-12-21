@@ -3,8 +3,6 @@ import base64
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 
-#############################################################################
-#
 def view_or_basicauth(view, request, test_func, realm = "", *args, **kwargs):
     """
     This is a helper function used by both 'logged_in_or_basicauth' and
@@ -41,9 +39,8 @@ def view_or_basicauth(view, request, test_func, realm = "", *args, **kwargs):
     response.status_code = 401
     response['WWW-Authenticate'] = 'Basic realm="%s"' % realm
     return response
+
     
-#############################################################################
-#
 def logged_in_or_basicauth(realm = ""):
     """
     A simple decorator that requires a user to be logged in. If they are not
@@ -81,8 +78,7 @@ def logged_in_or_basicauth(realm = ""):
         return wrapper
     return view_decorator
 
-#############################################################################
-#
+
 def has_perm_or_basicauth(perm, realm = ""):
     """
     This is similar to the above decorator 'logged_in_or_basicauth'
