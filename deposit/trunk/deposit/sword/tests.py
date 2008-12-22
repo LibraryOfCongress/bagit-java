@@ -96,3 +96,15 @@ class SwordTests(TwillTest):
         tc.go(url('/api/collection/1'))
         tc.code('403')
 
+    def test_right_collection_project_login(self):
+        # make sure a project user can see the feed for their project
+        tc.add_auth(REALM, HOME, 'jane', 'jane')
+        tc.go(url('/api/collection/2'))
+        tc.code('200')
+
+    def test_post_collection(self):
+        tc.add_auth(REALM, HOME, 'jane', 'jane')
+        b = twill.get_browser()
+        mb = b._browser
+        mb.open(url('/api/collection/2'), 'data')
+

@@ -1,4 +1,5 @@
 import md5 
+from tempfile import NamedTemporaryFile
 
 from django.template import RequestContext
 from django.views.decorators.http import require_GET
@@ -8,7 +9,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 
 from deposit.sword.basicauth import logged_in_or_basicauth 
 from deposit.depositapp import models
-from deposit.settings import REALM
+from deposit.settings import REALM, STORAGE
 
 
 @require_GET
@@ -38,8 +39,9 @@ def collection(request, project_id):
 
     # otherwise we need to create a new transfer
     elif request.method == 'POST':
-        post_data = PostData(request)
-        filename, tmpfile = _data(request)
+        filename, md5 = _data(request)
+        expected_md5 = request.META.get('Content-MD5')
+        return HttpResponse("%s - %s" % (filename, md5))
 
     return HttpResponseForbidden()
 
@@ -65,24 +67,24 @@ def _user_projects(request):
 
 def _data(request):
     """streams data from the body of a PUT or POST to a file and returns
+    a temporary filename where the stream was stored, as well as its md5
     """
-    expected_md5 = request.META.get('Content-MD5')
     found_md5 = md5.new()
     content_length = int(request.META.get('HTTP_CONTENT_LENGTH', 
         request.META.get('CONTENT_LENGTH',1)))
 
+    tmp = NamedTemporaryFile(dir=STORAGE, delete=False)
     input = request.environ['wsgi.input']
     while True:
+        if content_length <= 0:
+            break
         buffer_size = min(content_length, 1024)
         bytes = input.read(buffer_size)
+        tmp.write(bytes)
         found_md5.update(bytes)
-        #content-length -= buffer_size
+        content_length -= buffer_size
 
-    if m.hexdigest() != expected_md5:
-        raise "uhoh"
-
-    return "ok"
-
+    return tmp.name, found_md5.hexdigest()
 
 class ErrorChecksumMismatch(HttpResponse):
     status_code = 412
