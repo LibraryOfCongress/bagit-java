@@ -69,6 +69,13 @@ class Transfer(models.Model):
         self.received_by = user
         self.received_timestamp = datetime.now()
 
+class TransferFile(models.Model):
+    transfer = models.ForeignKey(Transfer, related_name="transfer_files")
+    filename = models.CharField(max_length=500)
+    mimetype = models.CharField(max_length=50)
+    created = models.DateTimeField(auto_now_add=True)
+    md5 = models.CharField(max_length=50)
+
 class Ndnp(models.Model):
     lccns = models.CharField(max_length=255,
             help_text="List of LCCNs included in the transfer.")

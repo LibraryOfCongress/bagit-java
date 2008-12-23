@@ -39,9 +39,23 @@ def collection(request, project_id):
 
     # otherwise we need to create a new transfer
     elif request.method == 'POST':
-        filename, md5 = _data(request)
-        expected_md5 = request.META.get('Content-MD5')
-        return HttpResponse("%s - %s" % (filename, md5))
+        mimetype = request.META.get('HTTP_CONTENT_TYPE', '')
+        if mimetype != 'application/zip':
+            return UnsupportedMediaType()
+
+        try:
+            filename, md5 = _save_data(project, request)
+            tf = models.TransferFile()
+            tf.filename = filename
+            tf.md5 = md5
+            tf.project = project
+            tf.mimetype = mimetype
+            tf.save()
+        except:
+            pass
+            # uhoh
+
+        return Created("%s - %s" % (filename, md5))
 
     return HttpResponseForbidden()
 
@@ -65,26 +79,79 @@ def _user_projects(request):
     user = get_object_or_404(models.User,id=request.user.id)
     return (user, list(user.projects.all()))
 
-def _data(request):
-    """streams data from the body of a PUT or POST to a file and returns
-    a temporary filename where the stream was stored, as well as its md5
-    """
-    found_md5 = md5.new()
-    content_length = int(request.META.get('HTTP_CONTENT_LENGTH', 
-        request.META.get('CONTENT_LENGTH',1)))
 
-    tmp = NamedTemporaryFile(dir=STORAGE, delete=False)
+def _save_data(request):
+    expected_md5 = _get_md5(request)
+    content_length = _get_content_length(request)
+    output = _get_file(request)
+
     input = request.environ['wsgi.input']
+    found_md5 = md5.new()
     while True:
         if content_length <= 0:
             break
         buffer_size = min(content_length, 1024)
         bytes = input.read(buffer_size)
-        tmp.write(bytes)
+        output.write(bytes)
         found_md5.update(bytes)
         content_length -= buffer_size
+    output.close()
 
-    return tmp.name, found_md5.hexdigest()
+    if expected_md5 != found_md5:
+        os.remove(output.name)
+        raise MD5Mismatch("Content-MD5 header said md5 was %s but server received content with MD5 of %s" % (expected_md5, found_md5))
 
-class ErrorChecksumMismatch(HttpResponse):
-    status_code = 412
+    return f.name(), expected_md5 
+
+
+def _get_file(request):
+    return file('storage/blah', 'w')
+
+
+def _get_md5(request):
+    expected_md5 = request.META.get('Content-MD5', None)
+    if not expected_md5:
+        raise MD5Missing
+    return expected_md5.lower()
+
+
+def _get_content_length():
+    l = request.META.get('HTTP_CONTENT_LENGTH', None)
+    if not l: 
+        raise ContentLengthMissing()
+    try:
+        l = int(l)
+    except ValueError:
+        raise ContentLengthInvalid(l)
+    return l
+
+
+def _get_mimetype():
+    mimetype = request.META.get('HTTP_CONTENT_TYPE', None)
+    return mimetype
+
+
+class MD5Missing(Exception):
+    pass
+
+
+class MD5Mismatch(Exception):
+    pass
+
+
+class InvalidFileDisposition(Exception):
+    pass
+
+
+class ContentLengthMissing:
+    pass
+
+
+class ContentLengthInvalid:
+    pass
+
+class UnsupportedMediaType(HttpResponse):
+    status_code = 415
+
+class Created(HttpResponse):
+    status_code = 201
