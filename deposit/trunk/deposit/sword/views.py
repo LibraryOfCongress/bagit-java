@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseForbidden, \
 from django.shortcuts import render_to_response, get_object_or_404
 
 from deposit.sword.basicauth import logged_in_or_basicauth 
+from deposit.sword.dblogger import log
 from deposit.depositapp import models
 from deposit.settings import REALM, STORAGE
 
@@ -39,21 +40,19 @@ def collection(request, project_id):
 
     # otherwise we need to create a new transfer
     elif request.method == 'POST':
-        mimetype = request.META.get('HTTP_CONTENT_TYPE', '')
+        mimetype = _get_content_type(request)
+        log.info("user=%s posting %s to project=%s" % (user, mimetype, project))
         if mimetype != 'application/zip':
             return UnsupportedMediaType()
 
-        try:
-            filename, md5 = _save_data(project, request)
-            tf = models.TransferFile()
-            tf.filename = filename
-            tf.md5 = md5
-            tf.project = project
-            tf.mimetype = mimetype
-            tf.save()
-        except:
-            pass
-            # uhoh
+        filename, md5 = _save_data(request)
+
+        t = models.Transfer(user=user, project=project)
+        t.save()
+
+        f = models.TransferFile(transfer=transfer, filename=filename,
+                                md5=md5, mimetype=mimetype)
+        f.save()
 
         return Created("%s - %s" % (filename, md5))
 
@@ -88,20 +87,23 @@ def _save_data(request):
     input = request.environ['wsgi.input']
     found_md5 = md5.new()
     while True:
+        print "content_length=%s" % content_length
         if content_length <= 0:
             break
         buffer_size = min(content_length, 1024)
+        print "reading %s bytes" % buffer_size
         bytes = input.read(buffer_size)
         output.write(bytes)
         found_md5.update(bytes)
         content_length -= buffer_size
     output.close()
 
-    if expected_md5 != found_md5:
-        os.remove(output.name)
-        raise MD5Mismatch("Content-MD5 header said md5 was %s but server received content with MD5 of %s" % (expected_md5, found_md5))
+    #if expected_md5 != found_md5.hexdigest():
+    #    os.remove(output.name)
+    #    raise MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
+    print "returning"
 
-    return f.name(), expected_md5 
+    return output.name(), expected_md5 
 
 
 def _get_file(request):
@@ -109,14 +111,14 @@ def _get_file(request):
 
 
 def _get_md5(request):
-    expected_md5 = request.META.get('Content-MD5', None)
+    expected_md5 = request.META.get('HTTP_CONTENT_MD5', None)
     if not expected_md5:
         raise MD5Missing
     return expected_md5.lower()
 
 
-def _get_content_length():
-    l = request.META.get('HTTP_CONTENT_LENGTH', None)
+def _get_content_length(request):
+    l = request.META.get('CONTENT_LENGTH', None)
     if not l: 
         raise ContentLengthMissing()
     try:
@@ -126,8 +128,8 @@ def _get_content_length():
     return l
 
 
-def _get_mimetype():
-    mimetype = request.META.get('HTTP_CONTENT_TYPE', None)
+def _get_content_type(request):
+    mimetype = request.META.get('CONTENT_TYPE', None)
     return mimetype
 
 
