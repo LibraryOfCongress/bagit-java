@@ -1,16 +1,22 @@
+import os
+import re
 import md5 
-from tempfile import NamedTemporaryFile
 
 from django.template import RequestContext
 from django.views.decorators.http import require_GET
 from django.http import HttpResponse, HttpResponseForbidden, \
-    HttpResponseNotAllowed
+    HttpResponseNotAllowed, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 
 from deposit.sword.basicauth import logged_in_or_basicauth 
-from deposit.sword.dblogger import log
-from deposit.depositapp import models
+from deposit.sword import exceptions
+from deposit.sword.responses import UnsupportedMediaType, PreConditionFailed, \
+    Created
+from deposit.depositapp.models import User, Project
+from deposit.sword.models import SwordTransfer, TransferFile
 from deposit.settings import REALM, STORAGE
+
+BAGIT = 'http://purl.org/net/sword-types/bagit'
 
 
 @require_GET
@@ -27,9 +33,9 @@ def collection(request, project_id):
     user, projects = _user_projects(request)
 
     # make sure the user has access to this project
-    project = get_object_or_404(models.Project, id=project_id)
+    project = get_object_or_404(Project, id=project_id)
     if project not in projects:
-        return HttpResponseForbidden()
+        return HttpResponseForbidden("You don't have permission to view/modify this collection")
 
     # if getting the collection just give 'em an atom feed for the project
     if request.method == 'GET':
@@ -40,27 +46,42 @@ def collection(request, project_id):
 
     # otherwise we need to create a new transfer
     elif request.method == 'POST':
-        mimetype = _get_content_type(request)
-        log.info("user=%s posting %s to project=%s" % (user, mimetype, project))
-        if mimetype != 'application/zip':
-            return UnsupportedMediaType()
+        transfer = None
+        response = HttpResponseForbidden("ERROR: must perform GET or POST to collection URI")
+        try:
+            mimetype = _get_content_type(request)
+            if mimetype != 'application/zip':
+                return UnsupportedMediaType("ERROR: must POST application/zip to collection URI")
+            packaging = _get_packaging(request)
+            transfer = SwordTransfer(user=user, project=project,
+                                     packaging=packaging)
+            transfer.save()
+            transfer_file = _save_data(request, transfer)
+            transfer_file.save()
+            response = Created(transfer)
+        except exceptions.PackagingInvalid, e:
+            response = UnsupportedMediaType("ERROR: %s" % e)
+        except exceptions.MD5Missing, e:
+            response = PreConditionFailed("ERROR: %s" % e)
+        except exceptions.MD5Mismatch, e:
+            response = PreConditionFailed("ERROR: %s" % e)
+        except exceptions.ContentDispositionInvalid, e:
+            response = PreConditionFailed("ERROR: %s" % e)
+        except Exception, e:
+            import traceback
+            traceback.print_exc()
+            response = HttpResponseServerError("Server Error: see log")
 
-        filename, md5 = _save_data(request)
-
-        t = models.Transfer(user=user, project=project)
-        t.save()
-
-        f = models.TransferFile(transfer=transfer, filename=filename,
-                                md5=md5, mimetype=mimetype)
-        f.save()
-
-        return Created("%s - %s" % (filename, md5))
-
-    return HttpResponseForbidden()
+    return response 
 
 
-def entry(request, entry_id):
-    pass
+@logged_in_or_basicauth()
+def entry(request, project_id, transfer_id):
+    user, projects = _user_projects(request)
+    transfer = get_object_or_404(SwordTransfer, project__id=project_id, id=transfer_id)
+    if transfer.project not in projects:
+        return HttpResponseForbidden("You don't have permission to view/modify this collection")
+    return render_to_response('entry.xml', {'transfer': transfer})
 
 
 def _user_projects(request):
@@ -70,61 +91,81 @@ def _user_projects(request):
     # if the AuthUser is staff let them see all the projects
     user = request.user
     if user.is_staff:
-        return (user, list(models.Project.objects.all()))
+        return (user, list(Project.objects.all()))
 
     # otherwise we need to cast the django.contrib.auth.models.User
     # as a deposit.depositapp.models.User so we an see what projects
     # they have access to
-    user = get_object_or_404(models.User,id=request.user.id)
+    user = get_object_or_404(User,id=request.user.id)
     return (user, list(user.projects.all()))
 
 
-def _save_data(request):
+def _save_data(request, transfer):
     expected_md5 = _get_md5(request)
     content_length = _get_content_length(request)
-    output = _get_file(request)
+    output_filename = _get_filename(request)
+    mimetype = _get_content_type(request)
+    tf = TransferFile(transfer=transfer, filename=output_filename, 
+                    mimetype=mimetype)
 
     input = request.environ['wsgi.input']
+    if not os.path.isdir(transfer.storage_dir):
+        os.makedirs(transfer.storage_dir)
+    output = file(tf.storage_filename, 'w')
     found_md5 = md5.new()
     while True:
-        print "content_length=%s" % content_length
         if content_length <= 0:
             break
         buffer_size = min(content_length, 1024)
-        print "reading %s bytes" % buffer_size
         bytes = input.read(buffer_size)
         output.write(bytes)
         found_md5.update(bytes)
         content_length -= buffer_size
     output.close()
 
-    #if expected_md5 != found_md5.hexdigest():
-    #    os.remove(output.name)
-    #    raise MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
-    print "returning"
+    if expected_md5 != found_md5.hexdigest():
+        os.remove(output.name)
+        raise exceptions.MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
 
-    return output.name(), expected_md5 
+    tf.mimetype = expected_md5
+    tf.save()
+    return tf
 
 
-def _get_file(request):
-    return file('storage/blah', 'w')
+def _get_filename(request):
+    header = request.META.get('HTTP_CONTENT_DISPOSITION', None)
+    if header == None:
+        raise exceptions.ContentDispositionInvalid("Content-disposition header missing")
+
+    match = re.search(r'filename=(.+)', header)
+    if not match:
+        raise exceptions.ContentDispositionInvalid('Content-disposition header "%s" missing filename part' % header)
+
+    filename = match.group(1)
+    if filename.startswith('/'):
+        raise exceptions.ContentDispositionInvalid('Content-disposition header "%s" has absolute filename' % header)
+
+    if '..' in filename:
+        raise exceptions.ContentDispositionInvalid('Content-disposition header "%s" cannot walk directories' % header)
+
+    return filename
 
 
 def _get_md5(request):
     expected_md5 = request.META.get('HTTP_CONTENT_MD5', None)
     if not expected_md5:
-        raise MD5Missing
+        raise exceptions.MD5Missing('please supply Content-md5 header')
     return expected_md5.lower()
 
 
 def _get_content_length(request):
     l = request.META.get('CONTENT_LENGTH', None)
     if not l: 
-        raise ContentLengthMissing()
+        raise exceptions.ContentLengthMissing()
     try:
         l = int(l)
     except ValueError:
-        raise ContentLengthInvalid(l)
+        raise exceptions.ContentLengthInvalid(l)
     return l
 
 
@@ -133,27 +174,10 @@ def _get_content_type(request):
     return mimetype
 
 
-class MD5Missing(Exception):
-    pass
-
-
-class MD5Mismatch(Exception):
-    pass
-
-
-class InvalidFileDisposition(Exception):
-    pass
-
-
-class ContentLengthMissing:
-    pass
-
-
-class ContentLengthInvalid:
-    pass
-
-class UnsupportedMediaType(HttpResponse):
-    status_code = 415
-
-class Created(HttpResponse):
-    status_code = 201
+def _get_packaging(request):
+    packaging = request.META.get('HTTP_X_PACKAGING', None)
+    if packaging == None:
+        raise exceptions.PackagingInvalid("missing packaging")
+    if packaging != BAGIT:
+        raise exceptions.PackagingInvalid("this service only accepts BAGIT X-packaging: %s" % BAGIT)
+    return packaging

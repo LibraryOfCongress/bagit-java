@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom"
+       xmlns:sword="http://purl.org/net/sword">
+  <title>{{ transfer.project.name }} Transfer #{{ transfer.id }}</title>
+  <id>uuid:{{ transfer.uuid }}</id>
+  <author>
+      <name>{{ transfer.user.first_name }} {{ transfer.user.last_name }}</name>
+      <email>{{ transfer.user.email }}</email>
+  </author>
+  <updated>{{ transfer.updated_rfc3339 }}</updated>
+  <published>{{ transfer.created_rfc3339 }}</published>
+  <link rel="edit" href="{% url sword_entry_url transfer.project.id transfer.id %}" /> 
+  <sword:packaging>{{ transfer.packaging }}</sword:packaging>
+</entry>

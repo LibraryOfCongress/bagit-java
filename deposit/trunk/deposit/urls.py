@@ -43,5 +43,7 @@ urlpatterns += patterns('deposit.depositapp.views',
 urlpatterns += patterns('deposit.sword.views',
     url(r'^api/service$', 'service', name='sword_service_url'),    
     url(r'^api/collection/(?P<project_id>\d+)$', 'collection', 
-        name='sword_collection_url')
+        name='sword_collection_url'),
+    url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)$', 'entry',
+        name='sword_entry_url')
 )

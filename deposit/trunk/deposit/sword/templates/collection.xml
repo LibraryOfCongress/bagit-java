@@ -8,11 +8,14 @@
       {% for transfer in transfers %}
       <entry>
           <title></title>
-          <author><name>{{ transfer.user.name }}</name></author>
+          <author>
+              <name>{{ transfer.user.first_name }} {{ transfer.user.last_name }}</name>
+              <email>{{ transfer.user.email }}</email>
+          </author>
           <link />
-          <id></id>
+          <id>uuid:{{ transfer.uuid }}</id>
           <updated></updated>
-          <published></published>
+          <published>{{ transfer.created_rfc3339 }}</published>
       </entry>
       {% endfor %}
 </feed>

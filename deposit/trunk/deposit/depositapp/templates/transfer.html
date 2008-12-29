@@ -21,10 +21,10 @@
 	      <li>Package IDs: {{ transfer.package_ids }}</li>
 	      <li>User: <a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></li>
 	      <li>Project: <a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></li>
-	      <li>Initiated: {{ transfer.create_timestamp }}</li>
+	      <li>Initiated: {{ transfer.created }}</li>
 	      <li>Received: Not yet received</li>
-            {% if transfer.received_timestamp %}
-                <li>Received: {{ transfer.received_timestamp }}</li>
+            {% if transfer.received %}
+                <li>Received: {{ transfer.received }}</li>
                 <li>Received by: <a href="{% url user_url transfer.received_by.username %}">{{ transfer.received_by}}</a></li>
             {% else %}
                 <li>Received: Not yet received</li>
@@ -36,7 +36,7 @@
 	    <h3 class="red">Reminder of received policy for {{ transfer.project }}:</h3>
         <p>{{ transfer.project.received_policy }}</p>
     </div>
-    {% if user.is_staff and not transfer.received_timestamp %}
+    {% if user.is_staff and not transfer.received %}
         <div id="markReceived">
 	      <div id="bottom_nav">
             <h3>Mark received</h3>

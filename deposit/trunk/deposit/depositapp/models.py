@@ -1,7 +1,12 @@
+import uuid
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
 from django.core.urlresolvers import reverse
-from datetime import datetime
+
+def generate_uuid():
+    return str(uuid.uuid4())
 
 class Project(models.Model):
     NETWORK_TRANSFER_TYPES = (
@@ -53,9 +58,10 @@ class Transfer(models.Model):
     user = models.ForeignKey(User)
     project = models.ForeignKey(Project, related_name="transfers")
     transfer_type = models.CharField(max_length=50, editable=False)
-    create_timestamp = models.DateTimeField(auto_now_add=True, editable=False)
-    received_timestamp = models.DateTimeField(null=True)
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    received = models.DateTimeField(null=True)
     received_by = models.ForeignKey(AuthUser, null=True, related_name="transfers_received")
+    uuid = models.CharField(max_length=50, default=generate_uuid)
 
     def __unicode__(self):
         return u'%s %s' % (self.transfer_type, self.id)    
@@ -64,10 +70,10 @@ class Transfer(models.Model):
         return reverse('transfer_url', args=[self.id])
         
     def received(self, user):
-        if self.received_timestamp:
+        if self.received:
             raise "AlreadyReceivedException"
         self.received_by = user
-        self.received_timestamp = datetime.now()
+        self.received = datetime.now()
 
 class Ndnp(models.Model):
     lccns = models.CharField(max_length=255,

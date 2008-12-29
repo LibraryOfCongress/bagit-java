@@ -56,8 +56,8 @@
             <td><a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></td>
             <td><a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></td>
             <td>{{ transfer.transfer_type }}</td>
-            <td>{{ transfer.create_timestamp }}</td>
-            <td>{% if transfer.received_timestamp %}{{ transfer.received_timestamp }}{% endif %}
+            <td>{{ transfer.created }}</td>
+            <td>{% if transfer.received %}{{ transfer.received }}{% endif %}
             <td>{{ transfer.package_ids }}</td>
         </tr>
         {% endfor %}

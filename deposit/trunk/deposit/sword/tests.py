@@ -1,3 +1,4 @@
+import md5
 from StringIO import StringIO
 from xml.etree import ElementTree as ET
 
@@ -6,10 +7,13 @@ from django.core.handlers.wsgi import WSGIHandler
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-import twill
-from twill import commands as tc
+import httplib2
+import wsgi_intercept
+import wsgi_intercept.httplib2_intercept
 
-from deposit.settings import REALM
+from deposit.settings import REALM, STORAGE
+from deposit.depositapp.models import Project, User
+from deposit.sword.models import SwordTransfer, TransferFile
 
 HOST = '127.0.0.1'
 PORT = 9876
@@ -25,41 +29,29 @@ def url(path):
     return HOME + path
 
 
-class TwillTest(TestCase):
+class SwordTests(TestCase):
 
     def setUp(self):
-        tc.reset_browser()
         app = AdminMediaHandler(WSGIHandler())
-        twill.add_wsgi_intercept(HOST, PORT, lambda: app)
-        twill.set_output(StringIO())
+        wsgi_intercept.httplib2_intercept.install()
+        wsgi_intercept.add_wsgi_intercept(HOST, PORT, lambda: app)
+        self.client = httplib2.Http()
 
     def tearDown(self):
-        twill.remove_wsgi_intercept(HOST, PORT)
-
-    def assertXpathEqual(self, path, text):
-        xml = tc.show()
-        doc = ET.fromstring(xml)
-        e = doc.find(path)
-        if not e:
-            self.fail("element not found for %s" % path)
-        if e.text != text:
-            self.fail("%s not equal to %s" % (e.text, text))
-
- 
-class SwordTests(TwillTest):
+        wsgi_intercept.remove_wsgi_intercept(HOST, PORT)
 
     def test_service_no_login(self):
         # unauthenticated user looking at service document
-        tc.go(url('/api/service'))
-        tc.code('401')
+        response, content = self.client.request(url('/api/service'))
+        self.assertEqual(response['status'], '401')
 
     def test_service_with_staff_login(self):
         # superuser looking at service document should see all project
         # collections
-        tc.add_auth(REALM, HOME, 'justin', 'justin')
-        tc.go(url('/api/service'))
-        tc.code('200')
-        doc = ET.fromstring(tc.show())
+        self.client.add_credentials('justin', 'justin')
+        response, content = self.client.request(url('/api/service'))
+        self.assertEqual(response['status'], '200')
+        doc = ET.fromstring(_munge(content))
         c = doc.findall('.//{%(app)s}collection' % NS)
         self.assertEqual(len(c), 2)
         self.assertEqual(c[0].findtext('{%(atom)s}title' % NS), 'NDNP')
@@ -70,10 +62,10 @@ class SwordTests(TwillTest):
     def test_service_with_project_login(self):
         # an authenticated user should only see the projects they are
         # associated with in the service document
-        tc.add_auth(REALM, HOME, 'jane', 'jane')
-        tc.go(url('/api/service'))
-        tc.code('200')
-        doc = ET.fromstring(tc.show())
+        self.client.add_credentials('jane', 'jane')
+        response, content = self.client.request(url('/api/service'))
+        self.assertEqual(response['status'], '200')
+        doc = ET.fromstring(_munge(content))
         c = doc.findall('.//{%(app)s}collection' % NS)
         self.assertEqual(len(c), 1)
         self.assertEqual(c[0].findtext('{%(atom)s}title' % NS), 'NDIIPP')
@@ -81,30 +73,73 @@ class SwordTests(TwillTest):
 
     def test_collection_no_login(self):
         # must be authenticated to see a collection
-        tc.go(url('/api/collection/1'))
-        tc.code('401')
+        response, content = self.client.request(url('/api/collection/1'))
+        self.assertEqual(response['status'], '401')
 
     def test_collection_superuser_login(self):
         # superuser sould be able to see collections
-        tc.add_auth(REALM, HOME, 'justin', 'justin')
-        tc.go(url('/api/collection/1'))
-        tc.code('200')
+        self.client.add_credentials('justin', 'justin')
+        response, content = self.client.request(url('/api/collection/1'))
+        self.assertEqual(response['status'], '200')
 
     def test_wrong_collection_project_login(self):
         # must be associated with a project to see its collection
-        tc.add_auth(REALM, HOME, 'jane', 'jane')
-        tc.go(url('/api/collection/1'))
-        tc.code('403')
+        self.client.add_credentials('jane', 'jane')
+        response, content = self.client.request(url('/api/collection/1'))
+        self.assertEqual(response['status'], '403')
 
     def test_right_collection_project_login(self):
         # make sure a project user can see the feed for their project
-        tc.add_auth(REALM, HOME, 'jane', 'jane')
-        tc.go(url('/api/collection/2'))
-        tc.code('200')
+        self.client.add_credentials('jane', 'jane')
+        response, content = self.client.request(url('/api/collection/2'))
+        self.assertEqual(response['status'], '200')
 
-    def a_test_post_collection(self):
-        tc.add_auth(REALM, HOME, 'jane', 'jane')
-        b = twill.get_browser()
-        mb = b._browser
-        mb.open(url('/api/collection/2'), 'data')
+    def test_post_collection(self):
+        # should be able to post application/zip to collection URI
+        self.client.add_credentials('jane', 'jane')
+        content = 'foobar'
+        m = md5.new()
+        m.update(content)
+        headers = {
+                    'Content-type': 'application/zip',
+                    'Content-md5': m.hexdigest(),
+                    'Content-disposition': 'attachment ; filename=foobar.txt',
+                    'X-packaging': 'http://purl.org/net/sword-types/bagit'
+                  }
+        response, content = self.client.request(url('/api/collection/2'), 
+                                                method='POST', body=content,
+                                                headers=headers)
+        self.assertEqual(response['status'], '201')
+        # TODO check the content
 
+
+class SwordModelTests(TestCase):
+
+    def test_transfer(self):
+        project = Project.objects.get(name='NDIIPP')
+        user = User.objects.get(username='jane')
+
+        transfer = SwordTransfer()
+        transfer.ip_address='127.0.0.1'
+        transfer.project=project
+        transfer.user = user
+        transfer.save()
+
+        self.assertTrue(len(transfer.uuid) > 0)
+        self.assertEqual(transfer.storage_dir, '/tmp/deposit_storage/2/%s' % \
+                         transfer.uuid)
+
+        transfer_file = TransferFile()
+        transfer_file.transfer = transfer
+        transfer_file.filename = 'README.txt'
+        transfer_file.mimetype = 'text/plain'
+        transfer_file.md5 = '9572f7ca62720f31cd80a3a9333a702c'
+        transfer_file.save()
+
+        self.assertEqual(transfer_file.storage_filename,
+                '/tmp/deposit_storage/2/%s/README.txt' % transfer.uuid)
+
+# for some reason the wsgi_intercept w/ httplib2 results in duplicated content
+# so this is a hack to cut it in half
+def _munge(content):
+    return content[0:len(content)/2]

@@ -33,7 +33,7 @@ class TransferQuery():
     def query(self):
         q = Q()
         if not self.include_received:
-            q = q & Q(received_timestamp__isnull=True)
+            q = q & Q(received__isnull=True)
         if self.username:
             q = q & Q(user__username=self.username)
         if self.project_id:
