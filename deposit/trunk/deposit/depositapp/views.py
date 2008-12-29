@@ -132,7 +132,7 @@ def transfer_received(request, transfer_id):
         transfer = models.Transfer.objects.get(id=transfer_id)
     except Transfer.DoesNotExist:
        raise Http404
-    transfer.received(request.user)
+    transfer.update_received(request.user)
     transfer.save()
     request.user.message_set.create(message="The transfer was marked as received.  A notification has been sent to %s." % 
             (transfer.user.email))
@@ -170,36 +170,55 @@ def create_transfer(request, transfer_type):
 @login_required
 def transfer_list(request):
     """
-    List all the relevant transfer info for a user and a project.
+    List all the relevant transfer info for a user or project or both.
+    If any of the following conditions are not met, set a useful message 
+    and send the user back to their page (where that message should 
+    display).
+
+    1. Any request must at least specify a username or a project id,
+    or it is invalid.
+
+    2. To see a particular project's info, a user must be at least 
+    one of:
+
+        a) explicitly associated with a project
+        b) a superuser
+        c) a staff member
+
+    3. Only staff or superusers may see another user's projects.
     """
-    # FIXME: what's the required logic here?  This is a confusing.
-    # Attempt to send a user who asks for something they can't have back to
-    # their home page with a helpful message.
     q = TransferQuery(request=request)
+
+    # Verify condition 1.  This must be true, kick them up if not.
     if not q.username and not q.project_id:
-        request.user.message_set.create('Bad project request.')
-        # FIXME: if there's no username, where should it redirect?
-        # I'm just guessing here.
+        request.user.message_set.create(message='Bad listing request.')
         return HttpResponseRedirect(reverse('overview_url', 
             args=[request.user.username]))
-    # FIXME: Should a superuser be able to see another user's stuff?
-    if q.username and request.user.username != q.username:
-        request.user.message_set.create(message='Invalid user')
-        return HttpResponseRedirect(reverse('overview_url', 
-            args=[request.user.username]))
-    # Verify that this user is either associated with this project
-    # or is staff/superuser (in which case let them through)
-    if q.project_id \
-        and not request.user.is_staff \
-        and not request.user.is_superuser:
+
+    # Verify condition 2.  Kick them up if not, also.
+    if q.project_id:
+        allow = False
         project = get_object_or_404(models.Project, id=q.project_id)
-        if not request.user in project.users.all():
-            request.user.message_set.create(message='Invalid project')
-            return HttpResponseRedirect(reverse('overview_url',
+        # 2b and 2c.
+        if request.user.is_superuser or request.user.is_staff:
+            allow = True
+        else:
+            # 2a.
+            if request.user in project.users.all():
+                allow = True
+        if not allow:
+            request.user.message_set.create(message='Invalid transfer project')
+            return HttpResponseRedirect(reverse('overview_url', 
                 args=[request.user.username]))
-    # FIXME: this seems to let unaffiliated users see all transfers,
-    # i.e. the missing 'else' here where there's a username but not 
-    # a project_id.
+
+    # Verify condition 3.
+    if q.username and request.user.username != q.username:
+        if not (request.user.is_staff or request.user.is_superuser):
+            request.user.message_set.create(message='Invalid transfer user')
+            return HttpResponseRedirect(reverse('overview_url', 
+                args=[request.user.username]))
+
+    # If they've made it this far, it's a valid request.
     transfers = q.query()
     return render_to_response('transfer_list.html', 
         {'query': q, 'transfers': transfers}, 

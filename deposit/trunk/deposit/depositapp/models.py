@@ -69,7 +69,8 @@ class Transfer(models.Model):
     def get_absolute_url(self):
         return reverse('transfer_url', args=[self.id])
         
-    def received(self, user):
+    def update_received(self, user):
+        """Update received and received_by."""
         if self.received:
             raise "AlreadyReceivedException"
         self.received_by = user
