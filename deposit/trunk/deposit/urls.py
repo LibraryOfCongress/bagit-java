@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
-from django.core.urlresolvers import reverse
 from django.contrib import admin
+from django.core.urlresolvers import reverse
 
 from deposit.settings import MEDIA_URL, MEDIA_ROOT
 
@@ -16,14 +16,19 @@ urlpatterns = patterns('',
 urlpatterns += patterns('',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': MEDIA_ROOT}, name='media'),
-)
+    )
+
+# Use built-in login screen.
+urlpatterns += patterns('django.contrib.auth.views',
+    url(r'^login/$', 'login', {'template_name': 'login.html'},
+        name='login_url'),
+    )
 
 urlpatterns += patterns('deposit.depositapp.views',
     url(r'^$', 'index', name='home_url'),
-    url(r'^login/$', 'login', name='login_url'),    
     url(r'^logout/$', 'logout', name='logout_url'),
 
-    url(r'^overview/(?P<username>\w+)$', 'overview', name='overview_url'),
+    url(r'^overview/(?P<username>\w+)?$', 'overview', name='overview_url'),
 
     url(r'^user/(?P<username>\w+)$', 'user', name='user_url'),
     url(r'^user/(?P<username>\w+)/(?P<command>\w+)$', 'user', 
@@ -38,7 +43,7 @@ urlpatterns += patterns('deposit.depositapp.views',
         name='transfer_received_url'),
 
     url(r'^project/(?P<project_id>\d+)$', 'project', name='project_url'),
-)
+    )
 
 urlpatterns += patterns('deposit.sword.views',
     url(r'^api/service$', 'service', name='sword_service_url'),    
@@ -48,4 +53,4 @@ urlpatterns += patterns('deposit.sword.views',
         name='sword_entry_url'),
     url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)/package$', 
         'package', name='sword_package_url')
-)
+    )

@@ -28,6 +28,7 @@
 		   <label for="pswd">Password</label>&nbsp;{{ form.password }}<br />
 	   </fieldset>
 		<fieldset id="submit">
+                <input type="hidden" name="next" value="{{ next }}" />
 	    	<input class="submit" name="submit" type="submit" value="Login" />&nbsp;&nbsp;<a href="#">Forgot login information?</a>
 		</fieldset>
 	</form>
