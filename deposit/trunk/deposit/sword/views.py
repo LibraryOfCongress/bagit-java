@@ -11,7 +11,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from deposit.sword.basicauth import logged_in_or_basicauth 
 from deposit.sword import exceptions
 from deposit.sword.responses import UnsupportedMediaType, PreConditionFailed, \
-    Created
+    Created, NotImplemented
 from deposit.depositapp.models import User, Project
 from deposit.sword.models import SwordTransfer, TransferFile
 from deposit.settings import REALM, STORAGE
@@ -58,7 +58,7 @@ def collection(request, project_id):
             transfer.save()
             transfer_file = _save_data(request, transfer)
             transfer_file.save()
-            response = Created(transfer)
+            response = Created(transfer, host=request.get_host())
         except exceptions.PackagingInvalid, e:
             response = UnsupportedMediaType("ERROR: %s" % e)
         except exceptions.MD5Missing, e:
@@ -75,13 +75,24 @@ def collection(request, project_id):
     return response 
 
 
-@logged_in_or_basicauth()
+@logged_in_or_basicauth(REALM)
 def entry(request, project_id, transfer_id):
     user, projects = _user_projects(request)
     transfer = get_object_or_404(SwordTransfer, project__id=project_id, id=transfer_id)
     if transfer.project not in projects:
         return HttpResponseForbidden("You don't have permission to view/modify this collection")
     return render_to_response('entry.xml', {'transfer': transfer})
+
+
+@require_GET
+@logged_in_or_basicauth(REALM)
+def package(request, project_id, transfer_id):
+    user, projects = _user_projects(request)
+    transfer = get_object_or_404(SwordTransfer, project__id=project_id, 
+                                 id=transfer_id)
+    if transfer.project not in projects:
+        return HttpResponseForbidden("You don't have permission to view this collection")
+    return NotImplemented("TODO: return package data")
 
 
 def _user_projects(request):

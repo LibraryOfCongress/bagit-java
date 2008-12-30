@@ -1,4 +1,6 @@
 import md5
+import sys
+import os.path
 from StringIO import StringIO
 from xml.etree import ElementTree as ET
 
@@ -39,6 +41,9 @@ class SwordTests(TestCase):
 
     def tearDown(self):
         wsgi_intercept.remove_wsgi_intercept(HOST, PORT)
+
+    def test_storage_exists(self):
+        self.assertTrue(os.path.isdir(STORAGE))
 
     def test_service_no_login(self):
         # unauthenticated user looking at service document
@@ -110,7 +115,12 @@ class SwordTests(TestCase):
                                                 method='POST', body=content,
                                                 headers=headers)
         self.assertEqual(response['status'], '201')
-        # TODO check the content
+        entry = ET.fromstring(_munge(content))
+        self.assertEqual(entry.tag, '{%(atom)s}entry' % NS)
+        self.assertTrue(entry.findtext('{%(atom)s}title' % NS).startswith('NDIIPP'))
+        links = entry.findall('.//{%(atom)s}link' % NS)
+        self.assertEqual(links[0].attrib['rel'], 'edit')
+        self.assertEqual(links[0].attrib['href'], '/api/collection/2/1')
 
 
 class SwordModelTests(TestCase):
@@ -126,8 +136,8 @@ class SwordModelTests(TestCase):
         transfer.save()
 
         self.assertTrue(len(transfer.uuid) > 0)
-        self.assertEqual(transfer.storage_dir, '/tmp/deposit_storage/2/%s' % \
-                         transfer.uuid)
+        self.assertEqual(transfer.storage_dir, '%s/2/%s' % \
+                         (STORAGE, transfer.uuid))
 
         transfer_file = TransferFile()
         transfer_file.transfer = transfer
@@ -137,9 +147,10 @@ class SwordModelTests(TestCase):
         transfer_file.save()
 
         self.assertEqual(transfer_file.storage_filename,
-                '/tmp/deposit_storage/2/%s/README.txt' % transfer.uuid)
+                '%s/2/%s/README.txt' % (STORAGE, transfer.uuid))
 
 # for some reason the wsgi_intercept w/ httplib2 results in duplicated content
-# so this is a hack to cut it in half
+# so this is a hack to cut it in half ... this must be a bug somewhere in 
+# wsgi_intercept's interaction w/ django's wsgi
 def _munge(content):
     return content[0:len(content)/2]

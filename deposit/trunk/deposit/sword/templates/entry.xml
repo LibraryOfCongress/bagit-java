@@ -9,6 +9,7 @@
   </author>
   <updated>{{ transfer.updated_rfc3339 }}</updated>
   <published>{{ transfer.created_rfc3339 }}</published>
-  <link rel="edit" href="{% url sword_entry_url transfer.project.id transfer.id %}" /> 
   <sword:packaging>{{ transfer.packaging }}</sword:packaging>
+  <link rel="edit" href="http://{{ host }}{% url sword_entry_url transfer.project.id transfer.id %}" /> 
+  <link rel="media" href="http://{{ host }}{% url sword_package_url transfer.project.id transfer.id %}" />
 </entry>

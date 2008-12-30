@@ -45,5 +45,7 @@ urlpatterns += patterns('deposit.sword.views',
     url(r'^api/collection/(?P<project_id>\d+)$', 'collection', 
         name='sword_collection_url'),
     url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)$', 'entry',
-        name='sword_entry_url')
+        name='sword_entry_url'),
+    url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)/package$', 
+        'package', name='sword_package_url')
 )
