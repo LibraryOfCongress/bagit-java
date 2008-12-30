@@ -87,3 +87,6 @@ REALM = 'LC Deposit'
 
 STORAGE = '/tmp/deposit_storage'
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
