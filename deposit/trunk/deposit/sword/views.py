@@ -81,7 +81,8 @@ def entry(request, project_id, transfer_id):
     transfer = get_object_or_404(SwordTransfer, project__id=project_id, id=transfer_id)
     if transfer.project not in projects:
         return HttpResponseForbidden("You don't have permission to view/modify this collection")
-    return render_to_response('entry.xml', {'transfer': transfer})
+    return render_to_response('entry.xml', {'transfer': transfer},
+        mimetype='application/atom+xml')
 
 
 @require_GET
