@@ -120,7 +120,7 @@ class SwordTests(TestCase):
         self.assertTrue(entry.findtext('{%(atom)s}title' % NS).startswith('NDIIPP'))
         links = entry.findall('.//{%(atom)s}link' % NS)
         self.assertEqual(links[0].attrib['rel'], 'edit')
-        self.assertEqual(links[0].attrib['href'], '%s/api/collection/2/1' % HOME)
+        self.assertEqual(links[0].attrib['href'], url('/api/collection/2/1'))
 
 
 class SwordModelTests(TestCase):
