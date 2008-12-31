@@ -100,19 +100,32 @@ class SwordTests(TestCase):
         self.assertEqual(response['status'], '200')
 
     def test_post_collection(self):
-        # should be able to post application/zip to collection URI
+        # this test is long (I'm sorry)
+        # it basically tests that a collection is empty, that a package
+        # can be posted to it, and that the package ends up in the collection
+        # feed, and can also be retrieved via the atom entry URI and
+        # media-link entry
         self.client.add_credentials('jane', 'jane')
-        content = 'foobar'
+
+        # shouldn't be any entry's in the collection yet
+        response, content = self.client.request(url('/api/collection/2'))
+        doc = ET.fromstring(_munge(content))
+        items = doc.findall('.//{%(atom)s}entry' % NS)
+        self.assertEqual(len(items), 0)
+
+        # post a new application/zip to collection URI
+        package_content = 'foobar' # ok well this isn't really zip content
         m = md5.new()
-        m.update(content)
+        m.update(package_content)
         headers = {
                     'Content-type': 'application/zip',
                     'Content-md5': m.hexdigest(),
-                    'Content-disposition': 'attachment ; filename=foobar.txt',
+                    'Content-disposition': 'attachment ; filename=foobar.zip',
                     'X-packaging': 'http://purl.org/net/sword-types/bagit'
                   }
         response, content = self.client.request(url('/api/collection/2'), 
-                                                method='POST', body=content,
+                                                method='POST', 
+                                                body=package_content,
                                                 headers=headers)
         self.assertEqual(response['status'], '201')
         entry = ET.fromstring(_munge(content))
@@ -121,6 +134,54 @@ class SwordTests(TestCase):
         links = entry.findall('.//{%(atom)s}link' % NS)
         self.assertEqual(links[0].attrib['rel'], 'edit')
         self.assertEqual(links[0].attrib['href'], url('/api/collection/2/1'))
+
+        # make sure the data file was received ok
+        xfer = SwordTransfer.objects.get(id=1)
+        xfer_files = xfer.transfer_files.all()
+        self.assertEqual(len(xfer_files), 1)
+        xfer_file = xfer_files[0]
+        self.assertEqual(xfer_file.filename, 'foobar.zip')
+        self.assertEqual(xfer_file.mimetype, 'application/zip')
+        self.assertEqual(xfer_file.md5, '3858f62230ac3c915f300c664312c63f')
+
+        # new package ought to turn up in the collection feed now
+        response, content = self.client.request(url('/api/collection/2'))
+        doc = ET.fromstring(_munge(content))
+        items = doc.findall('.//{%(atom)s}entry' % NS)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].findtext('./{%(atom)s}title' % NS), 
+                         'NDIIPP Transfer #1')
+        links = entry.findall('.//{%(atom)s}link' % NS)
+        self.assertEqual(len(links), 2)
+        self.assertEqual(links[0].attrib['rel'], 'edit')
+        self.assertEqual(links[0].attrib['href'], 
+                         '%s/api/collection/2/1' % HOME)
+        self.assertEqual(links[1].attrib['rel'], 'edit-media')
+        self.assertEqual(links[1].attrib['href'], 
+                         '%s/api/collection/2/1/package' % HOME)
+
+        # try to fetch the package via the entry URI
+        response, content = self.client.request(url('/api/collection/2/1'))
+        entry = ET.fromstring(_munge(content))
+        self.assertEqual(entry.tag, '{%(atom)s}entry' % NS)
+        links = entry.findall('./{%(atom)s}link' % NS)
+        self.assertEqual(len(links), 2)
+        self.assertEqual(links[0].attrib['rel'], 'edit')
+        self.assertEqual(links[0].attrib['href'], 
+                         '%s/api/collection/2/1' % HOME)
+        self.assertEqual(links[1].attrib['rel'], 'edit-media')
+        self.assertEqual(links[1].attrib['href'], 
+                         '%s/api/collection/2/1/package' % HOME)
+
+        # try to fetch the package
+        response, content = self.client.request(url('/api/collection/2/1/package'))
+        self.assertEqual(response['status'], '200')
+        self.assertEqual(content, package_content)
+
+        # try to fetch the package with the wrong credentials
+        self.client.clear_credentials()
+        response, content = self.client.request(url('/api/collection/2/1/package'))
+        self.assertEqual(response['status'], '401')
 
 
 class SwordModelTests(TestCase):
@@ -152,5 +213,6 @@ class SwordModelTests(TestCase):
 # for some reason the wsgi_intercept w/ httplib2 results in duplicated content
 # so this is a hack to cut it in half ... this must be a bug somewhere in 
 # wsgi_intercept's interaction w/ django's wsgi
+# http://code.google.com/p/wsgi-intercept/issues/detail?id=13
 def _munge(content):
     return content[0:len(content)/2]

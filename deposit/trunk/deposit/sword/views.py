@@ -1,6 +1,7 @@
+import md5 
 import os
 import re
-import md5 
+import wsgiref.util
 
 from django.template import RequestContext
 from django.views.decorators.http import require_GET
@@ -31,6 +32,7 @@ def service(request):
 @logged_in_or_basicauth(REALM)
 def collection(request, project_id):
     user, projects = _user_projects(request)
+    host = request.get_host()
 
     # make sure the user has access to this project
     project = get_object_or_404(Project, id=project_id)
@@ -58,7 +60,7 @@ def collection(request, project_id):
             transfer.save()
             transfer_file = _save_data(request, transfer)
             transfer_file.save()
-            response = Created(transfer, host=request.get_host())
+            response = Created(transfer, host)
         except exceptions.PackagingInvalid, e:
             response = UnsupportedMediaType("ERROR: %s" % e)
         except exceptions.MD5Missing, e:
@@ -78,11 +80,13 @@ def collection(request, project_id):
 @logged_in_or_basicauth(REALM)
 def entry(request, project_id, transfer_id):
     user, projects = _user_projects(request)
+    host = request.get_host()
     transfer = get_object_or_404(SwordTransfer, project__id=project_id, id=transfer_id)
     if transfer.project not in projects:
         return HttpResponseForbidden("You don't have permission to view/modify this collection")
-    return render_to_response('entry.xml', {'transfer': transfer},
-        mimetype='application/atom+xml')
+    return render_to_response('entry.xml', mimetype='application/atom+xml',
+                              dictionary=locals(), 
+                              context_instance=RequestContext(request))
 
 
 @require_GET
@@ -93,7 +97,15 @@ def package(request, project_id, transfer_id):
                                  id=transfer_id)
     if transfer.project not in projects:
         return HttpResponseForbidden("You don't have permission to view this collection")
-    return NotImplemented("TODO: return package data")
+    transfer_files = list(transfer.transfer_files.all())
+    if len(transfer_files) == 0:
+        return HttpResponseNotFound()
+    elif len(transfer_files) > 1:
+        return NotImplemented("Service does not return serialized compound package objects...yet")
+    else:
+        tf = transfer_files[0]
+        f = file(tf.storage_filename)
+        return HttpResponse(wsgiref.util.FileWrapper(f), mimetype=tf.mimetype)
 
 
 def _user_projects(request):
@@ -139,7 +151,8 @@ def _save_data(request, transfer):
         os.remove(output.name)
         raise exceptions.MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
 
-    tf.mimetype = expected_md5
+    tf.mimetype = mimetype
+    tf.md5 = expected_md5
     tf.save()
     return tf
 

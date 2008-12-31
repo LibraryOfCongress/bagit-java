@@ -12,7 +12,6 @@ class SwordTransfer(Transfer):
     summary = models.CharField(max_length=500)
     packaging = models.CharField(max_length=200)
     ip_address = models.CharField(max_length=25)
-    updated = models.DateTimeField(auto_now=True)
     completed = models.DateTimeField(null=True)
     purged = models.DateTimeField(null=True)
 
@@ -54,6 +53,10 @@ class TransferFile(models.Model):
     @property
     def storage_filename(self):
         return os.path.join(self.transfer.storage_dir, self.filename)
+
+    def has_files(self):
+        return self.transfer_files.all().count() > 0
+
 
 
 class LogMessage(models.Model):

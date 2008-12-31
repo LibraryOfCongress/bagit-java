@@ -60,6 +60,7 @@ class Transfer(models.Model):
     transfer_type = models.CharField(max_length=50, editable=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     received = models.DateTimeField(null=True)
+    updated = models.DateTimeField(auto_now=True)
     received_by = models.ForeignKey(AuthUser, null=True, related_name="transfers_received")
     uuid = models.CharField(max_length=50, default=generate_uuid)
 
