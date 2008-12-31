@@ -18,9 +18,7 @@
         <published>{{ transfer.created_rfc3339 }}</published>
         <sword:packaging>{{ transfer.packaging }}</sword:packaging>
         <link rel="edit" href="http://{{ host }}{% url sword_entry_url transfer.project.id transfer.id %}" /> 
-        {% if transfer.has_files %}
         <link rel="edit-media" href="http://{{ host }}{% url sword_package_url transfer.project.id transfer.id %}" />
-        {% endif %}
     </entry>
     {% endfor %}
 </feed>
