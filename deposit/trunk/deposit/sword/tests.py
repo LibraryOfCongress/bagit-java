@@ -183,6 +183,44 @@ class SwordTests(TestCase):
         response, content = self.client.request(url('/api/collection/2/1/package'))
         self.assertEqual(response['status'], '401')
 
+    def test_post_collection_with_directory_in_filename(self):
+        # this test is long (I'm sorry)
+        # it basically tests that a collection is empty, that a package
+        # can be posted to it, and that the package ends up in the collection
+        # feed, and can also be retrieved via the atom entry URI and
+        # media-link entry
+        self.client.add_credentials('jane', 'jane')
+
+        # shouldn't be any entry's in the collection yet
+        response, content = self.client.request(url('/api/collection/2'))
+        doc = ET.fromstring(_munge(content))
+        items = doc.findall('.//{%(atom)s}entry' % NS)
+        self.assertEqual(len(items), 0)
+
+        # post a new application/zip to collection URI
+        package_content = 'foobar' # ok well this isn't really zip content
+        m = md5.new()
+        m.update(package_content)
+        headers = {
+                    'Content-type': 'application/zip',
+                    'Content-md5': m.hexdigest(),
+                    'Content-disposition': 'attachment ; filename=foo/bar.zip',
+                    'X-packaging': 'http://purl.org/net/sword-types/bagit'
+                  }
+        response, content = self.client.request(url('/api/collection/2'), 
+                                                method='POST', 
+                                                body=package_content,
+                                                headers=headers)
+        self.assertEqual(response['status'], '201')
+        xfer = SwordTransfer.objects.get(id=1)
+        xfer_filename = xfer.transfer_files.all()[0]
+        self.assertEqual(xfer_filename.storage_filename, 
+                         '%s/2/%s/foo/bar.zip' % (STORAGE, xfer.uuid))
+
+        os.path.isfile(xfer_filename.storage_filename)
+
+
+
 
 class SwordModelTests(TestCase):
 

@@ -132,9 +132,12 @@ def _save_data(request, transfer):
     tf = TransferFile(transfer=transfer, filename=output_filename, 
                     mimetype=mimetype)
 
+    # make the directory if it needs one
+    dir = os.path.dirname(tf.storage_filename)
+    if not os.path.isdir(dir):
+        os.makedirs(dir)
+
     input = request.environ['wsgi.input']
-    if not os.path.isdir(transfer.storage_dir):
-        os.makedirs(transfer.storage_dir)
     output = file(tf.storage_filename, 'w')
     found_md5 = md5.new()
     while True:
