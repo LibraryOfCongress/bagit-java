@@ -241,6 +241,25 @@ class SwordTests(TestCase):
         self.assertEqual(response['status'], '413')
 
 
+    def test_post_no_chunked_encoding(self):
+        self.client.add_credentials('jane', 'jane')
+        package_content = 'foobar' # ok well this isn't really zip content
+        m = md5.new()
+        m.update(package_content)
+        headers = {
+                    'Content-type': 'application/zip',
+                    'Content-md5': m.hexdigest(),
+                    'Transfer-coding': 'chunked',
+                    'Content-disposition': 'attachment ; filename=foobar.zip',
+                    'X-packaging': 'http://purl.org/net/sword-types/bagit'
+                  }
+        response, content = self.client.request(url('/api/collection/2'), 
+                                                method='POST', 
+                                                body=package_content,
+                                                headers=headers)
+        self.assertEqual(response['status'], '501')
+
+
 class SwordModelTests(TestCase):
 
     def test_transfer(self):

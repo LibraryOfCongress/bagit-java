@@ -25,5 +25,8 @@ class ContentLengthInvalid(Exception):
 class PackagingInvalid(Exception):
     pass
 
+class TransferCodingNotImplemented(Exception):
+    pass
+
 
 

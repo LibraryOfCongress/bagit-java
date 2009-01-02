@@ -73,6 +73,8 @@ def collection(request, project_id):
             response = r.LengthRequired("ERROR: %s" % e)
         except ex.ContentTooLarge, e:
             response = r.RequestEntityTooLarge("ERROR: %s" % e)
+        except ex.TransferCodingNotImplemented, e:
+            response = r.NotImplemented("ERROR: %s" % e)
         except Exception, e:
             import traceback
             traceback.print_exc()
@@ -129,6 +131,7 @@ def _user_projects(request):
 
 
 def _save_data(request, transfer):
+    _check_transfer_coding(request)
     expected_md5 = _get_md5(request)
     content_length = _get_content_length(request)
     output_filename = _get_filename(request)
@@ -216,3 +219,8 @@ def _get_packaging(request):
     if packaging != BAGIT:
         raise ex.PackagingInvalid("this service only accepts BAGIT X-packaging: %s" % BAGIT)
     return packaging
+
+def _check_transfer_coding(request):
+    transfer_coding = request.META.get('HTTP_TRANSFER_CODING', None)
+    if transfer_coding:
+        raise ex.TransferCodingNotImplemented("this service doesn't accept requests with Transfer-coding: %s" % transfer_coding)
