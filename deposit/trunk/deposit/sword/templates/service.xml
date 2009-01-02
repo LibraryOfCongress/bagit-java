@@ -12,6 +12,7 @@
             <atom:title>{{ project.name }}</atom:title>
             <accept>application/zip</accept>
             <sword:formatNamespace>http://purl.oclc.org/net/bagit</sword:formatNamespace>
+            <sword:maxUploadSize>{{ max_upload_size_kb }}</sword:maxUploadSize>
         </collection>
         {% endfor %}
     </workspace>

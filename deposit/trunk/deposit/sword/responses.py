@@ -14,6 +14,14 @@ class PreConditionFailed(HttpResponse):
     status_code = 412
 
 
+class RequestEntityTooLarge(HttpResponse):
+    status_code = 413
+
+
+class LengthRequired(HttpResponse):
+    status_code = 411
+
+
 class Created(HttpResponse):
     status_code = 201
     mimetype = 'application/atom+xml'

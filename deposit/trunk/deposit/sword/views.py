@@ -10,12 +10,11 @@ from django.http import HttpResponse, HttpResponseForbidden, \
 from django.shortcuts import render_to_response, get_object_or_404
 
 from deposit.sword.basicauth import logged_in_or_basicauth 
-from deposit.sword import exceptions
-from deposit.sword.responses import UnsupportedMediaType, PreConditionFailed, \
-    Created, NotImplemented
+from deposit.sword import exceptions as ex
+from deposit.sword import responses as r
 from deposit.depositapp.models import User, Project
 from deposit.sword.models import SwordTransfer, TransferFile
-from deposit.settings import REALM, STORAGE
+from deposit.settings import REALM, STORAGE, MAX_UPLOAD_SIZE_BYTES
 
 BAGIT = 'http://purl.org/net/sword-types/bagit'
 
@@ -24,6 +23,7 @@ BAGIT = 'http://purl.org/net/sword-types/bagit'
 @logged_in_or_basicauth(REALM)
 def service(request):
     user, projects = _user_projects(request)
+    max_upload_size_kb = MAX_UPLOAD_SIZE_BYTES / 1024
     return render_to_response('service.xml', dictionary=locals(),
                               mimetype="application/atomsvc+xml",
                               context_instance=RequestContext(request))
@@ -60,15 +60,19 @@ def collection(request, project_id):
             transfer.save()
             transfer_file = _save_data(request, transfer)
             transfer_file.save()
-            response = Created(transfer, host)
-        except exceptions.PackagingInvalid, e:
-            response = UnsupportedMediaType("ERROR: %s" % e)
-        except exceptions.MD5Missing, e:
-            response = PreConditionFailed("ERROR: %s" % e)
-        except exceptions.MD5Mismatch, e:
-            response = PreConditionFailed("ERROR: %s" % e)
-        except exceptions.ContentDispositionInvalid, e:
-            response = PreConditionFailed("ERROR: %s" % e)
+            response = r.Created(transfer, host)
+        except ex.PackagingInvalid, e:
+            response = r.UnsupportedMediaType("ERROR: %s" % e)
+        except ex.MD5Missing, e:
+            response = r.PreConditionFailed("ERROR: %s" % e)
+        except ex.MD5Mismatch, e:
+            response = r.PreConditionFailed("ERROR: %s" % e)
+        except ex.ContentDispositionInvalid, e:
+            response = r.PreConditionFailed("ERROR: %s" % e)
+        except ex.ContentLengthMissing, e:
+            response = r.LengthRequired("ERROR: %s" % e)
+        except ex.ContentTooLarge, e:
+            response = r.RequestEntityTooLarge("ERROR: %s" % e)
         except Exception, e:
             import traceback
             traceback.print_exc()
@@ -152,7 +156,7 @@ def _save_data(request, transfer):
 
     if expected_md5 != found_md5.hexdigest():
         os.remove(output.name)
-        raise exceptions.MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
+        raise ex.MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
 
     tf.mimetype = mimetype
     tf.md5 = expected_md5
@@ -163,18 +167,18 @@ def _save_data(request, transfer):
 def _get_filename(request):
     header = request.META.get('HTTP_CONTENT_DISPOSITION', None)
     if header == None:
-        raise exceptions.ContentDispositionInvalid("Content-disposition header missing")
+        raise ex.ContentDispositionInvalid("Content-disposition header missing")
 
     match = re.search(r'filename=(.+)', header)
     if not match:
-        raise exceptions.ContentDispositionInvalid('Content-disposition header "%s" missing filename part' % header)
+        raise ex.ContentDispositionInvalid('Content-disposition header "%s" missing filename part' % header)
 
     filename = match.group(1)
     if filename.startswith('/'):
-        raise exceptions.ContentDispositionInvalid('Content-disposition header "%s" has absolute filename' % header)
+        raise ex.ContentDispositionInvalid('Content-disposition header "%s" has absolute filename' % header)
 
     if '..' in filename:
-        raise exceptions.ContentDispositionInvalid('Content-disposition header "%s" cannot walk directories' % header)
+        raise ex.ContentDispositionInvalid('Content-disposition header "%s" cannot walk directories' % header)
 
     return filename
 
@@ -182,18 +186,21 @@ def _get_filename(request):
 def _get_md5(request):
     expected_md5 = request.META.get('HTTP_CONTENT_MD5', None)
     if not expected_md5:
-        raise exceptions.MD5Missing('please supply Content-md5 header')
+        raise ex.MD5Missing('please supply Content-md5 header')
     return expected_md5.lower()
 
 
 def _get_content_length(request):
     l = request.META.get('CONTENT_LENGTH', None)
     if not l: 
-        raise exceptions.ContentLengthMissing()
+        raise ex.ContentLengthMissing()
     try:
         l = int(l)
     except ValueError:
-        raise exceptions.ContentLengthInvalid(l)
+        raise ex.ContentLengthInvalid(l)
+    if l > MAX_UPLOAD_SIZE_BYTES:
+        raise ex.ContentTooLarge("Service cannot accept POSTS larger than %s btyes" % MAX_UPLOAD_SIZE_BYTES)
+
     return l
 
 
@@ -205,7 +212,7 @@ def _get_content_type(request):
 def _get_packaging(request):
     packaging = request.META.get('HTTP_X_PACKAGING', None)
     if packaging == None:
-        raise exceptions.PackagingInvalid("missing packaging")
+        raise ex.PackagingInvalid("missing X-packaging header")
     if packaging != BAGIT:
-        raise exceptions.PackagingInvalid("this service only accepts BAGIT X-packaging: %s" % BAGIT)
+        raise ex.PackagingInvalid("this service only accepts BAGIT X-packaging: %s" % BAGIT)
     return packaging

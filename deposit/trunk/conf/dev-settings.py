@@ -84,9 +84,7 @@ INSTALLED_APPS = (
 AUTH_PROFILE_MODULE = "depositapp.user"
 
 REALM = 'LC Deposit'
-
 STORAGE = '/tmp/deposit_storage'
-
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-
+MAX_UPLOAD_SIZE = 1024 * 1024 * 1024 / 2 # .5 Gigabytes

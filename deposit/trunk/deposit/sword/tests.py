@@ -63,6 +63,8 @@ class SwordTests(TestCase):
         self.assertEqual(c[0].attrib['href'], '/api/collection/1')
         self.assertEqual(c[1].findtext('{%(atom)s}title' % NS), 'NDIIPP')
         self.assertEqual(c[1].attrib['href'], '/api/collection/2')
+        self.assertEqual(c[1].findtext('{%(sword)s}maxUploadSize' % NS),
+                                       '524288')
 
     def test_service_with_project_login(self):
         # an authenticated user should only see the projects they are
@@ -219,7 +221,24 @@ class SwordTests(TestCase):
 
         os.path.isfile(xfer_filename.storage_filename)
 
-
+    def test_post_too_big(self):
+        self.client.add_credentials('jane', 'jane')
+        gb = str(1024 ** 3)
+        package_content = 'foobar' # ok well this isn't really zip content
+        m = md5.new()
+        m.update(package_content)
+        headers = {
+                    'Content-length': gb,
+                    'Content-type': 'application/zip',
+                    'Content-md5': m.hexdigest(),
+                    'Content-disposition': 'attachment ; filename=foobar.zip',
+                    'X-packaging': 'http://purl.org/net/sword-types/bagit'
+                  }
+        response, content = self.client.request(url('/api/collection/2'), 
+                                                method='POST', 
+                                                body=package_content,
+                                                headers=headers)
+        self.assertEqual(response['status'], '413')
 
 
 class SwordModelTests(TestCase):

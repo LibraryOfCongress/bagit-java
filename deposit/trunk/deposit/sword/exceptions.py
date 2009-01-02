@@ -14,6 +14,10 @@ class ContentLengthMissing(Exception):
     pass
 
 
+class ContentTooLarge(Exception):
+    pass
+
+
 class ContentLengthInvalid(Exception):
     pass
 
