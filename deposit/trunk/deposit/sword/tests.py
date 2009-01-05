@@ -56,7 +56,7 @@ class SwordTests(TestCase):
         self.client.add_credentials('justin', 'justin')
         response, content = self.client.request(url('/api/service'))
         self.assertEqual(response['status'], '200')
-        doc = ET.fromstring(_munge(content))
+        doc = ET.fromstring(content)
         c = doc.findall('.//{%(app)s}collection' % NS)
         self.assertEqual(len(c), 2)
         self.assertEqual(c[0].findtext('{%(atom)s}title' % NS), 'NDNP')
@@ -72,7 +72,7 @@ class SwordTests(TestCase):
         self.client.add_credentials('jane', 'jane')
         response, content = self.client.request(url('/api/service'))
         self.assertEqual(response['status'], '200')
-        doc = ET.fromstring(_munge(content))
+        doc = ET.fromstring(content)
         c = doc.findall('.//{%(app)s}collection' % NS)
         self.assertEqual(len(c), 1)
         self.assertEqual(c[0].findtext('{%(atom)s}title' % NS), 'NDIIPP')
@@ -111,7 +111,7 @@ class SwordTests(TestCase):
 
         # shouldn't be any entry's in the collection yet
         response, content = self.client.request(url('/api/collection/2'))
-        doc = ET.fromstring(_munge(content))
+        doc = ET.fromstring(content)
         items = doc.findall('.//{%(atom)s}entry' % NS)
         self.assertEqual(len(items), 0)
 
@@ -130,7 +130,7 @@ class SwordTests(TestCase):
                                                 body=package_content,
                                                 headers=headers)
         self.assertEqual(response['status'], '201')
-        entry = ET.fromstring(_munge(content))
+        entry = ET.fromstring(content)
         self.assertEqual(entry.tag, '{%(atom)s}entry' % NS)
         self.assertTrue(entry.findtext('{%(atom)s}title' % NS).startswith('NDIIPP'))
         links = entry.findall('.//{%(atom)s}link' % NS)
@@ -148,7 +148,7 @@ class SwordTests(TestCase):
 
         # new package ought to turn up in the collection feed now
         response, content = self.client.request(url('/api/collection/2'))
-        doc = ET.fromstring(_munge(content))
+        doc = ET.fromstring(content)
         items = doc.findall('.//{%(atom)s}entry' % NS)
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].findtext('./{%(atom)s}title' % NS), 
@@ -164,7 +164,7 @@ class SwordTests(TestCase):
 
         # try to fetch the package via the entry URI
         response, content = self.client.request(url('/api/collection/2/1'))
-        entry = ET.fromstring(_munge(content))
+        entry = ET.fromstring(content)
         self.assertEqual(entry.tag, '{%(atom)s}entry' % NS)
         links = entry.findall('./{%(atom)s}link' % NS)
         self.assertEqual(len(links), 2)
@@ -195,7 +195,7 @@ class SwordTests(TestCase):
 
         # shouldn't be any entry's in the collection yet
         response, content = self.client.request(url('/api/collection/2'))
-        doc = ET.fromstring(_munge(content))
+        doc = ET.fromstring(content)
         items = doc.findall('.//{%(atom)s}entry' % NS)
         self.assertEqual(len(items), 0)
 
@@ -286,9 +286,3 @@ class SwordModelTests(TestCase):
         self.assertEqual(transfer_file.storage_filename,
                 '%s/2/%s/README.txt' % (STORAGE, transfer.uuid))
 
-# for some reason the wsgi_intercept w/ httplib2 results in duplicated content
-# so this is a hack to cut it in half ... this must be a bug somewhere in 
-# wsgi_intercept's interaction w/ django's wsgi
-# http://code.google.com/p/wsgi-intercept/issues/detail?id=13
-def _munge(content):
-    return content[0:len(content)/2]

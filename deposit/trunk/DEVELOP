@@ -2,7 +2,8 @@ These are instructions for setting up the deposit application for development.
 
 00. install setuptools http://pypi.python.org/pypi/setuptools
 01. easy_install django
-02. easy_install wsgi_intercept
+02. easy_install 'wsgi_intercept>=0.4' # or 'wsgi_intercept=dev' if 0.4 not
+    available
 03. easy_install httplib2
 04. easy_install pysqlite
 06. svn co https://rdc.lctl.gov/svn/transfer/deposit/trunk deposit
