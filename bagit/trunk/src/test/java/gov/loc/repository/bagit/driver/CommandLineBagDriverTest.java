@@ -61,7 +61,7 @@ public class CommandLineBagDriverTest {
 	@Test
 	public void testWrite() throws Exception {
         System.out.println(ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath()); 
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), destFile.getAbsolutePath(), "-w", VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), "-d", destFile.getAbsolutePath(), "-w", VALUE_WRITER_ZIP}));
         assertTrue(destFile.exists());
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(Format.ZIP, bag.getFormat());
@@ -70,12 +70,12 @@ public class CommandLineBagDriverTest {
 	
 	@Test
 	public void testBadWriter() throws Exception {
-        assertEquals(RETURN_ERROR, CommandLineBagDriver.main2(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), destFile.getAbsolutePath(), "-w", "foozip"}));
+        assertEquals(RETURN_ERROR, CommandLineBagDriver.main2(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), "-d", destFile.getAbsolutePath(), "-w", "foozip"}));
 	}
 	
 	@Test
 	public void testCreate() throws Exception {
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir2").getAbsolutePath(), "-w", VALUE_WRITER_ZIP, "-t", Manifest.Algorithm.SHA1.bagItAlgorithm }));
+        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, "-d", destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir2").getAbsolutePath(), "-w", VALUE_WRITER_ZIP, "-t", Manifest.Algorithm.SHA1.bagItAlgorithm }));
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(3, bag.getPayloadFiles().size());
         assertTrue(bag.isValid().isSuccess());
@@ -91,7 +91,7 @@ public class CommandLineBagDriverTest {
 
 	@Test
 	public void testCreateExcludeBagInfoAndTagManifest() throws Exception {
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir2").getAbsolutePath(), "-w", VALUE_WRITER_ZIP, "--excludebaginfo", "--excludetagmanifest" }));
+        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, "-d", destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir2").getAbsolutePath(), "-w", VALUE_WRITER_ZIP, "--excludebaginfo", "--excludetagmanifest" }));
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(3, bag.getPayloadFiles().size());
         assertTrue(bag.isValid().isSuccess());
@@ -108,7 +108,7 @@ public class CommandLineBagDriverTest {
 	@Test
 	public void testMakeHoley() throws Exception {
 		final String BASE_URL = "http://foo.com/bag";
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), destFile.getAbsolutePath(), BASE_URL, "-w", VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), "-d", destFile.getAbsolutePath(), BASE_URL, "-w", VALUE_WRITER_ZIP}));
         assertTrue(destFile.exists());
         Bag bag = BagFactory.createBag(destFile);
         FetchTxt fetch = bag.getFetchTxt();
