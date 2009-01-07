@@ -44,7 +44,7 @@ public class BobUnserializedBagWriterTest {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest"));
 		assertTrue(bag.isValid().isSuccess());
 
-		BobUnserializedBagWriter writer = new BobUnserializedBagWriter(this.baseURL);
+		BobUnserializedBagWriter writer = new BobUnserializedBagWriter(this.baseURL, false, null, null);
 		bag.write(writer);
 		
 		while(! this.handler.resourceCompleted) {

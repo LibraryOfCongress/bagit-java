@@ -2,13 +2,18 @@ package gov.loc.repository.bagit.bagwriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.text.MessageFormat;
 
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -16,6 +21,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
+import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 
 public class SwordSerializedBagWriter implements BagWriter {
@@ -31,17 +37,43 @@ public class SwordSerializedBagWriter implements BagWriter {
 	private Integer statusCode = null;
 	private String body = null;
 	private String location = null;
+	private boolean relaxedSSL = false;
+	private String username;
+	private String password;
 	
-	public SwordSerializedBagWriter(String bagDir, String collectionURL) {
+	public SwordSerializedBagWriter(String bagDir, String collectionURL, boolean relaxedSSL, String username, String password) {
 		this.collectionURL = collectionURL;
 		this.out = new ByteArrayOutputStream();
 		this.zipBagWriter = new ZipBagWriter(bagDir, this.out);
+		this.relaxedSSL = relaxedSSL;
+		this.username = username;
+		this.password = password;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void close() {
 		this.zipBagWriter.close();
+		
+		//This allows self-signed certs
+		if (relaxedSSL) {
+			Protocol relaxedHttps = new Protocol("https", new RelaxedSSLProtocolSocketFactory(), 443);
+			Protocol.registerProtocol("https", relaxedHttps);
+		}
+				
 		HttpClient client = new HttpClient();
+		
+		if (this.username != null) {
+			client.getParams().setAuthenticationPreemptive(true);
+			Credentials creds = new UsernamePasswordCredentials(this.username, this.password);
+			try {
+				URL url = new URL(collectionURL);
+				client.getState().setCredentials(new AuthScope(url.getHost(), AuthScope.ANY_PORT, AuthScope.ANY_REALM), creds);
+			} catch(Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		}
+				
 		PostMethod post = new PostMethod(collectionURL);
 		post.addRequestHeader("X-Packaging", PACKAGING);
 		byte[] bagBytes = this.out.toByteArray();

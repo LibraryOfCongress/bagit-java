@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.bagwriter;
 
+import java.net.URL;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,13 +8,17 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
@@ -23,6 +28,7 @@ import org.dom4j.Element;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
+import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 
 public class BobUnserializedBagWriter implements BagWriter {
 
@@ -47,9 +53,15 @@ public class BobUnserializedBagWriter implements BagWriter {
 	private ThreadPoolExecutor executor;
 	private Document atomDoc;
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");	
+	private boolean relaxedSSL = false;
+	private String username;
+	private String password;
 	
-	public BobUnserializedBagWriter(String collectionURL) {
+	public BobUnserializedBagWriter(String collectionURL, boolean relaxedSSL, String username, String password) {
 		this.collectionURL = collectionURL;
+		this.relaxedSSL = relaxedSSL;
+		this.username = username;
+		this.password = password;
 	}
 	
 	public void setTitle(String title) {
@@ -91,7 +103,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 		}
 		atomDoc.getRootElement().addElement("bob:completed")
 				.addText(df.format(new Date()));
-		HttpClient client = new HttpClient(this.connectionManager);
+		HttpClient client = this.getClient();
 		PutMethod put = new PutMethod(editURL);
 		try {
 			put.setRequestEntity(new ByteArrayRequestEntity(atomDoc.asXML().getBytes("utf-8"), "application/atom+xml; charset=\"utf-8\""));
@@ -109,6 +121,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void open(Bag bag) {
 		//Set entry values
@@ -176,8 +189,14 @@ public class BobUnserializedBagWriter implements BagWriter {
 		}
 		entryElem.addElement("atom:content")
 				.addText(this.content);
+
+		//This allows self-signed certs
+		if (relaxedSSL) {
+			Protocol relaxedHttps = new Protocol("https", new RelaxedSSLProtocolSocketFactory(), 443);
+			Protocol.registerProtocol("https", relaxedHttps);
+		}		
 		
-		HttpClient client = new HttpClient(this.connectionManager);
+		HttpClient client = this.getClient();
 		PostMethod post = new PostMethod(collectionURL);
 		try {
 			post.setRequestEntity(new ByteArrayRequestEntity(atomDoc.asXML().getBytes("utf-8"), "application/atom+xml; charset=\"utf-8\""));
@@ -218,6 +237,23 @@ public class BobUnserializedBagWriter implements BagWriter {
 		this.executor.execute(new PostResourceRunnable(filepath, bagFile));
 	}
 	
+	private HttpClient getClient() {
+		HttpClient client = new HttpClient(this.connectionManager);
+		
+		if (this.username != null) {
+			client.getParams().setAuthenticationPreemptive(true);
+			Credentials creds = new UsernamePasswordCredentials(this.username, this.password);
+			try {
+				URL url = new URL(collectionURL);
+				client.getState().setCredentials(new AuthScope(url.getHost(), AuthScope.ANY_PORT, AuthScope.ANY_REALM), creds);
+			} catch(Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		}
+
+		return client;
+	}
+	
 	private class PostResourceRunnable implements Runnable {
 		
 		private String filepath;
@@ -230,7 +266,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 		
 		@Override
 		public void run() {
-			HttpClient client = new HttpClient(connectionManager);
+			HttpClient client = getClient();
 			PostMethod post = new PostMethod(editURL);
 			post.addRequestHeader("Content-Disposition", "attachment; filename=" + this.filepath);
 			post.setRequestEntity(new InputStreamRequestEntity(this.bagFile.newInputStream(), "application/octet-stream"));

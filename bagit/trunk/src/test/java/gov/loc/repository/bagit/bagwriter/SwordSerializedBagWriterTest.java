@@ -41,7 +41,7 @@ public class SwordSerializedBagWriterTest {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest"));
 		assertTrue(bag.isValid().isSuccess());
 
-		SwordSerializedBagWriter writer = new SwordSerializedBagWriter("test_bag", "http://localhost:" + this.server.getLocalPort() + "/");
+		SwordSerializedBagWriter writer = new SwordSerializedBagWriter("test_bag", "http://localhost:" + this.server.getLocalPort() + "/", false, null, null);
 		bag.write(writer);
 		
 		assertEquals(Integer.valueOf(201), writer.getStatusCode());
