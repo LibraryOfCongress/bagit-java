@@ -88,6 +88,7 @@ public class SwordSerializedBagWriter implements BagWriter {
 			Header locationHeader = post.getResponseHeader("Location");
 			if (locationHeader != null) {
 				this.location = locationHeader.getValue();
+				log.info("Location is " + this.location);				
 			}
 			if (post.getStatusCode() != HttpStatus.SC_CREATED) {
 				throw new RuntimeException(MessageFormat.format("Attempt to create resource failed.  Server returned a response code of {0} and body of {1}", post.getStatusCode(), post.getResponseBodyAsString()));

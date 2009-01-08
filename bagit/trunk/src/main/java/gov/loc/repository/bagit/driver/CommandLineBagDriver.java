@@ -199,7 +199,6 @@ public class CommandLineBagDriver {
 		}
 		
 		log.info("Performing operation: " + operation);
-		System.out.println("Performing operation: " + operation);
 		
 		int ret = RETURN_SUCCESS;
 		
@@ -275,13 +274,13 @@ public class CommandLineBagDriver {
 			
 			if (OPERATION_ISVALID.equals(operation)) {				
 				SimpleResult result = bag.isValid(config.getBoolean(OPTION_MISSING_BAGIT_TOLERANT, false));
-				System.out.println(result.toString());
+				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_ISCOMPLETE.equals(operation)) {				
 				SimpleResult result = bag.isComplete(config.getBoolean(OPTION_MISSING_BAGIT_TOLERANT, false));
-				System.out.println(result.toString());
+				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -301,8 +300,8 @@ public class CommandLineBagDriver {
 				bag.makeHoley(config.getString(OPTION_BASE_URL), config.getBoolean(OPTION_EXCLUDE_PAYLOAD_DIR, false));
 				bag.write(writer);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation)) {
-				String oxum = BagHelper.generatePayloadOxum(bag);
-				System.out.println("Payload-Oxum: " + oxum);
+				String oxum = BagHelper.generatePayloadOxum(bag);				
+				log.info("Payload-Oxum: " + oxum);
 			} else if (OPERATION_CHECK_PAYLOAD_OXUM.equals(operation)) {
 				String genOxum = BagHelper.generatePayloadOxum(bag);
 				BagInfoTxt bagInfo = bag.getBagInfoTxt();
@@ -316,9 +315,9 @@ public class CommandLineBagDriver {
 						ret = RETURN_ERROR;
 					} else {
 						if (checkOxum.equals(genOxum)) {
-							System.out.println("Payload-Oxum matches.");
+							log.info("Payload-Oxum matches.");
 						} else {
-							System.out.println("Payload-Oxum does not match.");
+							log.info("Payload-Oxum does not match.");
 							ret = RETURN_FAILURE;
 						}
 					}
@@ -328,11 +327,10 @@ public class CommandLineBagDriver {
 		}
 		catch(Exception ex) {
 			log.error("Error: " + ex.getMessage(), ex);
-			System.out.println("Error: " + ex.getMessage());
+			System.err.println("Error: " + ex.getMessage());
 			return RETURN_ERROR;
 		}
 		log.info("Operation completed.");
-		System.out.println("Operation completed.");
 		return ret;
 	}
 	
