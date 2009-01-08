@@ -86,4 +86,5 @@ REALM = 'LC Deposit'
 STORAGE = '/opt/local/storage'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-MAX_UPLOAD_SIZE = 1024 * 1024 * 1024 / 2 # .5 Gigabytes
+REQUIRE_CONTENT_MD5 = True
+MAX_UPLOAD_SIZE_BYTES = 1024 * 1024 * 1024 / 2 # .5 Gigabytes

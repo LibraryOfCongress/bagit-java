@@ -14,7 +14,8 @@ from deposit.sword import exceptions as ex
 from deposit.sword import responses as r
 from deposit.depositapp.models import User, Project
 from deposit.sword.models import SwordTransfer, TransferFile
-from deposit.settings import REALM, STORAGE, MAX_UPLOAD_SIZE_BYTES
+from deposit.settings import REALM, STORAGE, MAX_UPLOAD_SIZE_BYTES, \
+    REQUIRE_CONTENT_MD5
 
 BAGIT = 'http://purl.org/net/sword-types/bagit'
 
@@ -130,11 +131,17 @@ def _user_projects(request):
     return (user, list(user.projects.all()))
 
 
-def _save_data(request, transfer):
+def _save_data(request, transfer, require_content_disposition=False):
     _check_transfer_coding(request)
     expected_md5 = _get_md5(request)
     content_length = _get_content_length(request)
+
     output_filename = _get_filename(request)
+    if output_filename == None and require_content_disposition:
+        raise ex.ContentDispositionInvalid("Content-disposition header missing")
+    elif output_filename == None:
+        output_filename = 'data'
+
     mimetype = _get_content_type(request)
     tf = TransferFile(transfer=transfer, filename=output_filename, 
                     mimetype=mimetype)
@@ -157,7 +164,7 @@ def _save_data(request, transfer):
         content_length -= buffer_size
     output.close()
 
-    if expected_md5 != found_md5.hexdigest():
+    if REQUIRE_CONTENT_MD5 and expected_md5 != found_md5.hexdigest():
         os.remove(output.name)
         raise ex.MD5Mismatch("Content-MD5 header said md5 was %s but server received content with md5 of %s" % (expected_md5, found_md5.hexdigest()))
 
@@ -170,7 +177,7 @@ def _save_data(request, transfer):
 def _get_filename(request):
     header = request.META.get('HTTP_CONTENT_DISPOSITION', None)
     if header == None:
-        raise ex.ContentDispositionInvalid("Content-disposition header missing")
+        return None
 
     match = re.search(r'filename=(.+)', header)
     if not match:
@@ -188,7 +195,7 @@ def _get_filename(request):
 
 def _get_md5(request):
     expected_md5 = request.META.get('HTTP_CONTENT_MD5', None)
-    if not expected_md5:
+    if not expected_md5 and REQUIRE_CONTENT_MD5:
         raise ex.MD5Missing('please supply Content-md5 header')
     return expected_md5.lower()
 
