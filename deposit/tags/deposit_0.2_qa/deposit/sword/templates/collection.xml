@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:sword="http://purl.org/net/sword/"
+      xmlns:bob="http://deposit.loc.gov/bob">
+    <title>{{ project.name }}</title>
+    <updated></updated>
+    <id></id>
+
+    {% for transfer in transfers %}
+    <entry>
+        <title>{{ transfer.project.name }} Transfer #{{ transfer.id }}</title>
+        <id>uuid:{{ transfer.uuid }}</id>
+        <author>
+            <name>{{ transfer.user.first_name }} {{ transfer.user.last_name }}</name>
+            <email>{{ transfer.user.email }}</email>
+        </author>
+        <updated>{{ transfer.updated_rfc3339 }}</updated>
+        <published>{{ transfer.created_rfc3339 }}</published>
+        <sword:packaging>{{ transfer.packaging }}</sword:packaging>
+        <link rel="edit" href="http://{{ host }}{% url sword_entry_url transfer.project.id transfer.id %}" /> 
+        <link rel="edit-media" href="http://{{ host }}{% url sword_package_url transfer.project.id transfer.id %}" />
+    </entry>
+    {% endfor %}
+</feed>
