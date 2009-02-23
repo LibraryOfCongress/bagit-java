@@ -91,7 +91,7 @@
                    <version>1.7.1</version>
                    <type>jar</type>
                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                   <includes>org/apache/tools/tar/*.class</includes>
+                   <includes>org/apache/tools/tar/*.class,org/apache/tools/bzip2.*.class</includes>
                  </artifactItem>
                </artifactItems>
              </configuration>

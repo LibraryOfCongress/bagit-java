@@ -12,6 +12,7 @@ import gov.loc.repository.bagit.bagwriter.FileSystemBagWriter;
 import gov.loc.repository.bagit.bagwriter.SwordSerializedBagWriter;
 import gov.loc.repository.bagit.bagwriter.TarBagWriter;
 import gov.loc.repository.bagit.bagwriter.ZipBagWriter;
+import gov.loc.repository.bagit.bagwriter.TarBagWriter.Compression;
 import gov.loc.repository.bagit.completion.DefaultCompletionStrategy;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 
@@ -76,6 +77,8 @@ public class CommandLineBagDriver {
 	public static final String VALUE_WRITER_FILESYSTEM = "filesystem";
 	public static final String VALUE_WRITER_ZIP = "zip";
 	public static final String VALUE_WRITER_TAR = "tar";
+	public static final String VALUE_WRITER_TAR_GZ = "tar_gz";
+	public static final String VALUE_WRITER_TAR_BZ2 = "tar_bz2";
 	public static final String VALUE_WRITER_SWORD = "sword";
 	public static final String VALUE_WRITER_BOB = "bob";
 	
@@ -92,7 +95,7 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(OPTION_SOURCE, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new FlaggedOption(OPTION_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, 'd', "dest", "The location of the destination bag when writing with the filesystem, tar, or zip bag writer.");
 		Parameter missingBagItTolerantParam = new Switch(OPTION_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, "missingbagittolerant", "Tolerant of a missing bag-it.txt.");
-		Parameter writerParam = new FlaggedOption(OPTION_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_SWORD + ";" + VALUE_WRITER_BOB), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, 'w', "writer", MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3} and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_ZIP, VALUE_WRITER_SWORD, VALUE_WRITER_BOB));
+		Parameter writerParam = new FlaggedOption(OPTION_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_SWORD + ";" + VALUE_WRITER_BOB + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, 'w', "writer", MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, {4}, {5} and {6}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP, VALUE_WRITER_SWORD, VALUE_WRITER_BOB));
 		Parameter payloadParam = new UnflaggedOption(OPTION_PAYLOAD, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload.");
 		Parameter excludePayloadDirParam = new Switch(OPTION_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, "excludepayloaddir", "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(OPTION_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
@@ -249,6 +252,18 @@ public class CommandLineBagDriver {
 					return RETURN_ERROR;
 				}
 				writer = new TarBagWriter(destFile);
+			} else if (VALUE_WRITER_TAR_GZ.equals(config.getString(OPTION_WRITER))) {
+				if (destFile == null) {
+					System.err.println("Error: If writing to a tar_gz bag writer, a destination must be provided.");
+					return RETURN_ERROR;
+				}
+				writer = new TarBagWriter(destFile, Compression.GZ);
+			} else if (VALUE_WRITER_TAR_BZ2.equals(config.getString(OPTION_WRITER))) {
+				if (destFile == null) {
+					System.err.println("Error: If writing to a tar_bz2 bag writer, a destination must be provided.");
+					return RETURN_ERROR;
+				}
+				writer = new TarBagWriter(destFile, Compression.BZ2);
 			} else if (VALUE_WRITER_SWORD.equals(config.getString(OPTION_WRITER))) {				
 				if (collectionURL == null) {
 					System.err.println("Error: If writing to a SWORD serialized bag writer, a collection url must be provided.");

@@ -88,6 +88,43 @@ public class BagImplTest {
 		assertNull(bag.getPayloadFile("xdata/dir1/test3.txt"));
 		
 	}
+
+	@Test
+	public void testTarGzBag() throws Exception {
+		Bag bag = this.getBag("bags/v0_95/bag_with_one_manifest.tar.gz");
+		assertEquals(Bag.Format.TAR_GZ, bag.getFormat());
+
+		List<Manifest> payloadManifests = bag.getPayloadManifests();
+		assertEquals(1, payloadManifests.size());
+		assertEquals("manifest-md5.txt", payloadManifests.get(0).getFilepath());
+		assertEquals(4, bag.getTagFiles().size());
+		assertNotNull(bag.getTagFile("bagit.txt"));
+		assertNull(bag.getTagFile("xbagit.txt"));
+		
+		assertEquals(5, bag.getPayloadFiles().size());
+		assertNotNull(bag.getPayloadFile("data/dir1/test3.txt"));
+		assertNull(bag.getPayloadFile("xdata/dir1/test3.txt"));
+		
+	}
+
+	@Test
+	public void testTarBz2Bag() throws Exception {
+		Bag bag = this.getBag("bags/v0_95/bag_with_one_manifest.tar.bz2");
+		assertEquals(Bag.Format.TAR_BZ2, bag.getFormat());
+
+		List<Manifest> payloadManifests = bag.getPayloadManifests();
+		assertEquals(1, payloadManifests.size());
+		assertEquals("manifest-md5.txt", payloadManifests.get(0).getFilepath());
+		assertEquals(4, bag.getTagFiles().size());
+		assertNotNull(bag.getTagFile("bagit.txt"));
+		assertNull(bag.getTagFile("xbagit.txt"));
+		
+		assertEquals(5, bag.getPayloadFiles().size());
+		assertNotNull(bag.getPayloadFile("data/dir1/test3.txt"));
+		assertNull(bag.getPayloadFile("xdata/dir1/test3.txt"));
+		
+	}
+
 	
 	@Test
 	public void testCompleteBags() throws Exception {
