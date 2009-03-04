@@ -1,4 +1,6 @@
-import uuid
+# FIXME: commented out for deposit_0.2_qa
+# But maybe it's not necessary here at all?  Doesn't seem to get used.
+# import uuid
 import os.path
 
 from django.db import models

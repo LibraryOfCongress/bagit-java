@@ -1,4 +1,5 @@
-import uuid
+# FIXME: commented out for deposit_0.2_qa
+#import uuid
 from datetime import datetime
 
 from django.db import models
@@ -6,7 +7,9 @@ from django.contrib.auth.models import User as AuthUser
 from django.core.urlresolvers import reverse
 
 def generate_uuid():
-    return str(uuid.uuid4())
+    # FIXME: commented out for deposit_0.2_qa
+    #return str(uuid.uuid4())
+    return 'FIXME-NOT-REAL-UUID-FIXME'
 
 class Project(models.Model):
     NETWORK_TRANSFER_TYPES = (

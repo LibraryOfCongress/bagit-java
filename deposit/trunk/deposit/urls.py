@@ -45,12 +45,13 @@ urlpatterns += patterns('deposit.depositapp.views',
     url(r'^project/(?P<project_id>\d+)$', 'project', name='project_url'),
     )
 
-urlpatterns += patterns('deposit.sword.views',
-    url(r'^api/service$', 'service', name='sword_service_url'),    
-    url(r'^api/collection/(?P<project_id>\d+)$', 'collection', 
-        name='sword_collection_url'),
-    url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)$', 'entry',
-        name='sword_entry_url'),
-    url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)/package$', 
-        'package', name='sword_package_url')
-    )
+# FIXME: commented out for deposit_0.2_qa
+#urlpatterns += patterns('deposit.sword.views',
+#    url(r'^api/service$', 'service', name='sword_service_url'),    
+#    url(r'^api/collection/(?P<project_id>\d+)$', 'collection', 
+#        name='sword_collection_url'),
+#    url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)$', 'entry',
+#        name='sword_entry_url'),
+#    url(r'^api/collection/(?P<project_id>\d+)/(?P<transfer_id>\d+)/package$', 
+#        'package', name='sword_package_url')
+#    )
