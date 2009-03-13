@@ -279,7 +279,23 @@ public abstract class AbstractBagImpl implements Bag {
 					result.addMessage(MessageFormat.format("Payload file {0} not found in any payload manifest", filepath));														
 				}
 			}
-												
+			//Every payload file exists
+			for(Manifest manifest : this.getPayloadManifests()) {			
+				SimpleResult manifestResult = manifest.isComplete();
+				if (! manifestResult.isSuccess()) {
+					result.merge(manifestResult);
+				}
+				
+			}
+
+			//Every tag file exists
+			for(Manifest manifest : this.getTagManifests()) {
+				SimpleResult manifestResult = manifest.isComplete();
+				if (! manifestResult.isSuccess()) {
+					result.merge(manifestResult);
+				}				
+			}
+			
 			//Additional checks if an existing Bag
 			if (this.bagFileObject != null) {
 				//Only directory is a data directory
@@ -297,8 +313,7 @@ public abstract class AbstractBagImpl implements Bag {
 				FileObject dataFileObject = this.bagFileObject.getChild(this.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
 					FileObject[] fileObjects = this.bagFileObject.getChild(this.getBagConstants().getDataDirectory()).findFiles(new FileTypeSelector(FileType.FILE));
-					for(FileObject fileObject : fileObjects) {
-						
+					for(FileObject fileObject : fileObjects) {						
 						String filepath = this.bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (this.getPayloadFile(filepath) == null) {
 							result.setSuccess(false);

@@ -23,7 +23,8 @@ public class CommandLineBagDriverTest {
 
 	File destFile;
     static Integer counter = 0;
-	
+	CommandLineBagDriver driver;
+    
 	@Before
 	public void setup() throws Exception {
 		counter++;
@@ -31,37 +32,34 @@ public class CommandLineBagDriverTest {
         if (destFile.exists()) {
 			FileUtils.forceDelete(destFile);
 		}
+        driver = new CommandLineBagDriver();
 	}
 	
 	@Test
 	public void testNoArgs() throws Exception {
-		assertEquals(RETURN_ERROR, CommandLineBagDriver.main2(new String[] {}));
+		assertEquals(RETURN_ERROR, driver.execute(new String[] {}));
 	}
 
 	@Test
 	public void testMissingArgs() throws Exception {
-		assertEquals(RETURN_ERROR, CommandLineBagDriver.main2(new String[] {OPERATION_ISVALID}));
+		assertEquals(RETURN_ERROR, driver.execute(new String[] {OPERATION_ISVALID}));
 	}
 	
 	@Test
 	public void testIsValid() throws Exception {
-		assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_ISVALID, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath()}));
-		assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_ISVALID, ResourceHelper.getFile("bags/v0_95/bag_with_no_bagit").getAbsolutePath(), "--missingbagittolerant", "-v", "0.95"}));
-		assertEquals(RETURN_FAILURE, CommandLineBagDriver.main2(new String[] {OPERATION_ISVALID, ResourceHelper.getFile("bags/v0_95/invalid_bag_with_one_manifest").getAbsolutePath()}));
+		assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_ISVALID, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath()}));
 	}
 
 	@Test
 	public void testIsComplete() throws Exception {
-		assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_ISCOMPLETE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath()}));
-		assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_ISCOMPLETE, ResourceHelper.getFile("bags/v0_95/bag_with_no_bagit").getAbsolutePath(), "--missingbagittolerant", "-v", "0.95"}));
-		assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_ISCOMPLETE, ResourceHelper.getFile("bags/v0_95/invalid_bag_with_one_manifest").getAbsolutePath()}));
+		assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_ISCOMPLETE, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath()}));
 		
 	}
 	
 	@Test
 	public void testWrite() throws Exception {
-        System.out.println(ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath()); 
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), "-d", destFile.getAbsolutePath(), "-w", VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
+        System.out.println(destFile.getAbsolutePath());
         assertTrue(destFile.exists());
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(Format.ZIP, bag.getFormat());
@@ -70,12 +68,13 @@ public class CommandLineBagDriverTest {
 	
 	@Test
 	public void testBadWriter() throws Exception {
-        assertEquals(RETURN_ERROR, CommandLineBagDriver.main2(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), "-d", destFile.getAbsolutePath(), "-w", "foozip"}));
+        assertEquals(RETURN_ERROR, driver.execute(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, "foozip"}));
+        
 	}
 	
 	@Test
 	public void testCreate() throws Exception {
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir2").getAbsolutePath(), "-d", destFile.getAbsolutePath(), "-w", VALUE_WRITER_ZIP, "-t", Manifest.Algorithm.SHA1.bagItAlgorithm }));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_TAG_MANIFEST_ALGORITHM, Manifest.Algorithm.SHA1.bagItAlgorithm }));
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(3, bag.getPayloadFiles().size());
         assertTrue(bag.isValid().isSuccess());
@@ -91,7 +90,7 @@ public class CommandLineBagDriverTest {
 
 	@Test
 	public void testCreateExcludeBagInfoAndTagManifest() throws Exception {
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, "-d", destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir2").getAbsolutePath(), "-w", VALUE_WRITER_ZIP, "--excludebaginfo", "--excludetagmanifest" }));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_EXCLUDE_BAG_INFO, "--" + PARAM_EXCLUDE_TAG_MANIFEST }));
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(3, bag.getPayloadFiles().size());
         assertTrue(bag.isValid().isSuccess());
@@ -102,13 +101,13 @@ public class CommandLineBagDriverTest {
 	
 	@Test
 	public void testCreateWithMissingFile() throws Exception {
-        assertEquals(RETURN_ERROR, CommandLineBagDriver.main2(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest/data/dir1").getAbsolutePath(), new File("foo").getAbsolutePath(), "-w", VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_ERROR, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), new File("foo").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
 	}
 	
 	@Test
 	public void testMakeHoley() throws Exception {
 		final String BASE_URL = "http://foo.com/bag";
-        assertEquals(RETURN_SUCCESS, CommandLineBagDriver.main2(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest").getAbsolutePath(), BASE_URL, "-d", destFile.getAbsolutePath(), "-w", VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), BASE_URL, "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
         assertTrue(destFile.exists());
         Bag bag = BagFactory.createBag(destFile);
         FetchTxt fetch = bag.getFetchTxt();

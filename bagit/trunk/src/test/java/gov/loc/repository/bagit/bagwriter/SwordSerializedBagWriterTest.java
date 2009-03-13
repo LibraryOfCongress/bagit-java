@@ -38,7 +38,7 @@ public class SwordSerializedBagWriterTest {
 	@Test
 	public void testWriter() throws Exception {
 		this.server.setRequestHandler(new TestRequestHandler());
-		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest"));
+		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.isValid().isSuccess());
 
 		SwordSerializedBagWriter writer = new SwordSerializedBagWriter("test_bag", "http://localhost:" + this.server.getLocalPort() + "/", false, null, null);

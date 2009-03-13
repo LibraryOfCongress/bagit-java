@@ -9,15 +9,16 @@ import gov.loc.repository.bagit.ManifestReader;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.ManifestReader.FilenameFixity;
+import gov.loc.repository.bagit.impl.AbstractManifestReaderImplTest;
 
 import org.junit.Test;
 
 
-public class ManifestReaderImplTest {
+public class ManifestReaderImplTest extends AbstractManifestReaderImplTest{
 
 	
 	
-	@Test
+	//@Test
 	public void test() throws Exception {
 		BagPartFactory factory = BagFactory.getBagPartFactory(Version.V0_96);
 		String manifest = 
@@ -66,6 +67,49 @@ public class ManifestReaderImplTest {
 		ManifestReader reader = factory.createManifestReader(new ByteArrayInputStream(manifest.getBytes("utf-8")), "utf-8");
 		reader.next();
 		
+	}
+
+	@Override
+	public boolean canReadDoubleSpaceWithUnixSep() {
+		return true;
+	}
+
+	@Override
+	public boolean canReadSingleSpaceWithUnixSep() {
+		return true;
+	}
+
+	@Override
+	@Test(expected=RuntimeException.class)
+	public void testSingleSpaceWithWindowsSep() throws Exception {
+		super.testSingleSpaceWithWindowsSep();
+		
+	}
+	
+	@Override
+	public boolean canReadSpaceAstericksWithUnixSep() {
+		return true;
+	}
+
+	@Override
+	public boolean canReadTabWithUnixSep() {
+		return true;
+	}
+
+	@Override
+	public boolean canReadTabWithUnixSepWithSpaceInFilename() {
+		return true;
+	}
+
+	@Override
+	@Test(expected=RuntimeException.class)
+	public void testSpaceWithUnixSepWithBackslashInFilename() throws Exception {
+		super.testSpaceWithUnixSepWithBackslashInFilename();
+	}
+	
+	@Override
+	public Version getVersion() {
+		return Version.V0_96;
 	}
 	
 }

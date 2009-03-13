@@ -93,6 +93,28 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 	public boolean isTagManifest() {
 		return ManifestHelper.isTagManifest(this.name, this.bag.getBagConstants());
 	}
+
+	public SimpleResult isComplete() {
+		SimpleResult result = new SimpleResult(true);
+		for(String filepath : this.keySet()) {
+			BagFile bagFile = null;
+			if (this.isPayloadManifest()) {
+				bagFile = bag.getPayloadFile(filepath);
+			}
+			else {
+				bagFile = bag.getTagFile(filepath);
+			}
+			if (bagFile == null || ! bagFile.exists())
+			{
+				result.setSuccess(false);
+				String message = MessageFormat.format("File {0} in manifest {1} missing from bag", filepath, this.name);
+				log.info(message);
+				result.addMessage(message);
+			}
+		}
+		return result;
+	}
+
 	
 	public SimpleResult isValid() {
 		SimpleResult result = new SimpleResult(true);

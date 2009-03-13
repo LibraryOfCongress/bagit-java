@@ -12,7 +12,7 @@ Java 6
 
 COMMANDLINE:
 A commandline interface is provided to perform various operations on bag.
-Scipts to invoke the commandline interface can be found in the bin directory.
+Scripts to invoke the commandline interface can be found in the bin directory.
 To learn more about the supported operations, invoke the commandline interface
 with no arguments.
 
@@ -31,8 +31,12 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  
 RELEASE NOTES:
 Changes in 2.3:
-1. Implemented writer for depositing serialized bags using SWORD.
-2. Implemented writer for depositing unserialized bags using BOB.
+1. Trial implementation of writer for depositing serialized bags using SWORD.
+2. Trial implementation of writer for depositing unserialized bags using BOB.
+3. Implementation of writer for tar gz.
+4. Implementation of writer for tar bz2.
+5. Refactored commandline driver.
+6. Fixed bug in determining if bags are complete.
 
 Changes in 2.2:
 1. Fixed bug with Window filepaths.

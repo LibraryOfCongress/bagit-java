@@ -43,6 +43,8 @@ public interface Manifest extends Map<String,String>, BagFile {
 	
 	public boolean isTagManifest();
 	
+	public SimpleResult isComplete();
+	
 	public SimpleResult isValid();
 	
 	public void generate(Collection<BagFile> bagFiles);

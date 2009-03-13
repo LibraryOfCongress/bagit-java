@@ -30,7 +30,7 @@ public abstract class AbstractBagWriterTest {
 	
 	@Test
 	public void testWriter() throws Exception {
-		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag_with_one_manifest"));
+		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.isValid().isSuccess());
 		bag.write(this.getBagWriter());
 		

@@ -12,13 +12,15 @@ import java.util.List;
 public interface Bag {
 	
 	enum Format {
-		ZIP ("zip", true), TAR ("tar", true), TAR_GZ ("tgz", true), TAR_BZ2 ("tbz2", true), FILESYSTEM ("file", false), VIRTUAL (null, false);
+		ZIP ("zip", true, ".zip"), TAR ("tar", true, ".tar"), TAR_GZ ("tgz", true, ".tar.gz"), TAR_BZ2 ("tbz2", true, ".tar.bz2"), FILESYSTEM ("file", false, ""), VIRTUAL (null, false, null);
 		public String scheme;
 		public boolean isSerialized;
+		public String extension;
 		
-		Format(String scheme, boolean isSerialized) {
+		Format(String scheme, boolean isSerialized, String extension) {
 			this.scheme = scheme;
 			this.isSerialized = isSerialized;
+			this.extension = extension;
 		}
 	};
 		
