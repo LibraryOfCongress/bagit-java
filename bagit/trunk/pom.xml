@@ -71,6 +71,9 @@
           <descriptors>
             <descriptor>src/assembly/bin.xml</descriptor>
           </descriptors>
+          <descriptorRefs>
+          	<descriptorRef>src</descriptorRef>
+          </descriptorRefs>          	
         </configuration>
       </plugin>
      <plugin>
