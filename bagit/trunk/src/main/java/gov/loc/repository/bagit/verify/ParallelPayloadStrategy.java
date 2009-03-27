@@ -36,7 +36,6 @@ public class ParallelPayloadStrategy implements VerifyStrategy
     public ParallelPayloadStrategy()
     {
         this.numberOfThreads = Runtime.getRuntime().availableProcessors();
-        this.threadPool = Executors.newCachedThreadPool();
     }
     
     public int getNumberOfThreads()
@@ -61,6 +60,8 @@ public class ParallelPayloadStrategy implements VerifyStrategy
     @Override
     public SimpleResult verify(final Bag bag)
     {
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+        
         log.debug(MessageFormat.format("Verifying payload on {0} threads.", this.numberOfThreads));
         
         SimpleResult finalResult;
@@ -80,7 +81,7 @@ public class ParallelPayloadStrategy implements VerifyStrategy
                 
                 for (int i = 0; i < this.numberOfThreads; i++)
                 {            
-                    Future<SimpleResult> future = this.threadPool.submit(new Callable<SimpleResult>() {
+                    Future<SimpleResult> future = threadPool.submit(new Callable<SimpleResult>() {
                         public SimpleResult call() {
                             ThreadSafeIteratorWrapper<String> safeIterator = new ThreadSafeIteratorWrapper<String>(manifestIterator);
                             SimpleResult result = new SimpleResult(true);
@@ -139,12 +140,17 @@ public class ParallelPayloadStrategy implements VerifyStrategy
             String msg = MessageFormat.format("Execution threw an exception: {0}", e.getCause().getMessage());
             finalResult = new SimpleResult(false, msg);
         }
+        finally
+        {
+            log.debug("Shutting down thread pool.");
+            threadPool.shutdown();
+            log.debug("Thread pool shut down.");
+        }
         
         return finalResult;
     }
     
     private int numberOfThreads;
-    private ExecutorService threadPool;
     
     private static class ThreadSafeIteratorWrapper<E> implements Iterator<E>, Iterable<E>
     {
