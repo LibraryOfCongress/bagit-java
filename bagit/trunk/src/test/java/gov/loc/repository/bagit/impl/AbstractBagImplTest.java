@@ -105,6 +105,8 @@ public abstract class AbstractBagImplTest {
 
 		assertTrue(bag.isComplete().isSuccess());
 		assertTrue(bag.isValid().isSuccess());
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
 	}
 	
 	
@@ -148,8 +150,10 @@ public abstract class AbstractBagImplTest {
 		assertEquals(2, bag.getPayloadManifests().size());
 
 		assertTrue(bag.isComplete().isSuccess());
-		System.out.println(bag.isValid().toString());
-		assertTrue(bag.isValid().isSuccess());		
+		assertTrue(bag.isValid().isSuccess());
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -172,7 +176,10 @@ public abstract class AbstractBagImplTest {
 		assertEquals(2, bag.getPayloadManifests().size());
 
 		assertTrue(bag.isComplete().isSuccess());
-		assertTrue(bag.isValid().isSuccess());		
+		assertTrue(bag.isValid().isSuccess());
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -190,7 +197,11 @@ public abstract class AbstractBagImplTest {
 		assertFalse(bag.isValid().isSuccess());				
 		
 		assertTrue(bag.isComplete(true).isSuccess());
-		assertTrue(bag.isValid(true).isSuccess());		
+		assertTrue(bag.isValid(true).isSuccess());
+
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
 	}
 	
 	@Test
@@ -205,7 +216,11 @@ public abstract class AbstractBagImplTest {
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 
 		assertTrue(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertFalse(bag.verifyPayloadManifests().isSuccess());
+		
 	}
 
 	@Test
@@ -220,7 +235,11 @@ public abstract class AbstractBagImplTest {
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 
 		assertTrue(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertFalse(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
 	}
 	
 	
@@ -234,7 +253,11 @@ public abstract class AbstractBagImplTest {
 		
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 		assertFalse(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertFalse(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -247,7 +270,11 @@ public abstract class AbstractBagImplTest {
 		
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 		assertFalse(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertFalse(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -261,7 +288,11 @@ public abstract class AbstractBagImplTest {
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 
 		assertFalse(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -275,7 +306,11 @@ public abstract class AbstractBagImplTest {
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 
 		assertTrue(bag.isComplete().isSuccess());
-		assertTrue(bag.isValid().isSuccess());						
+		assertTrue(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -288,7 +323,11 @@ public abstract class AbstractBagImplTest {
 		
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 		assertFalse(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 
 	@Test
@@ -301,7 +340,11 @@ public abstract class AbstractBagImplTest {
 		
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 		assertFalse(bag.isComplete().isSuccess());
-		assertFalse(bag.isValid().isSuccess());						
+		assertFalse(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+
 	}
 	
 	@Test
@@ -319,7 +362,10 @@ public abstract class AbstractBagImplTest {
 
 		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
 		assertTrue(bag.isComplete().isSuccess());
-		assertTrue(bag.isValid().isSuccess());						
+		assertTrue(bag.isValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
 		
 	}
 	

@@ -13,11 +13,12 @@
   </dependencySets>  
   <fileSets>
   	<fileSet>
-  		<directory>src/assembly</directory>
+  		<directory>${project.basedir}</directory>
   		<filtered>true</filtered>
   		<outputDirectory>/</outputDirectory>
   		<includes>
-  			<include>readme.txt</include>
+  			<include>README.txt</include>
+  			<include>LICENSE.txt</include>
   		</includes>
   	</fileSet>
     <fileSet>

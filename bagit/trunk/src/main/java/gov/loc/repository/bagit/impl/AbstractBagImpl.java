@@ -336,6 +336,33 @@ public abstract class AbstractBagImpl implements Bag {
 		return this.isValid(false);
 	}
 	
+	@Override
+	public SimpleResult verifyTagManifests() {
+		SimpleResult result = new SimpleResult(true);
+		for(Manifest manifest : this.getTagManifests()) {
+			result = manifest.isValid();
+			if (! result.isSuccess()) {
+				log.info("Validity check: " + result.toString());
+				return result;
+			}			
+		}
+		return result;
+	}
+	
+	@Override
+	public SimpleResult verifyPayloadManifests() {
+		SimpleResult result = new SimpleResult(true);
+		for(Manifest manifest : this.getPayloadManifests()) {			
+			result = manifest.isValid();
+			if (! result.isSuccess()) {
+				log.info("Validity check: " + result.toString());
+				return result;
+			}
+			
+		}
+		return result;
+	}
+	
 	public SimpleResult isValid(boolean missingBagItTolerant) {
 		//Is complete
 		SimpleResult result = this.isComplete(missingBagItTolerant);
@@ -345,23 +372,16 @@ public abstract class AbstractBagImpl implements Bag {
 		}
 
 		//Every checksum checks
-		for(Manifest manifest : this.getPayloadManifests()) {			
-			result = manifest.isValid();
-			if (! result.isSuccess()) {
-				log.info("Validity check: " + result.toString());
-				return result;
-			}
-			
+		result = this.verifyTagManifests();
+		if (! result.isSuccess()) {
+			return result;
 		}
 
-		for(Manifest manifest : this.getTagManifests()) {
-			result = manifest.isValid();
-			if (! result.isSuccess()) {
-				log.info("Validity check: " + result.toString());
-				return result;
-			}
-			
+		result = this.verifyPayloadManifests();
+		if (! result.isSuccess()) {
+			return result;
 		}
+		
 		log.info("Validity check: " + result.toString());				
 		return result;
 	}

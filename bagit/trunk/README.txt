@@ -30,6 +30,7 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  * Jaxen - http://fisheye.codehaus.org/browse/~raw,r=1340/trunk/jaxen/jaxen/LICENSE.txt
  
 RELEASE NOTES:
+
 Changes in 2.3:
 1. Trial implementation of writer for depositing serialized bags using SWORD.
 2. Trial implementation of writer for depositing unserialized bags using BOB.
@@ -37,6 +38,8 @@ Changes in 2.3:
 4. Implementation of writer for tar bz2.
 5. Refactored commandline driver.
 6. Fixed bug in determining if bags are complete.
+7. Added license information.
+8. Add verifyPayloadManifests() and verifyTagManifests() to Bag.
 
 Changes in 2.2:
 1. Fixed bug with Window filepaths.

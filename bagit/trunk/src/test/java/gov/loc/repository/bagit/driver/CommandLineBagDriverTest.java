@@ -55,6 +55,16 @@ public class CommandLineBagDriverTest {
 		assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_ISCOMPLETE, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath()}));
 		
 	}
+
+	@Test
+	public void testverifyTagManifests() throws Exception {
+		assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_VERIFY_TAGMANIFESTS, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath()}));
+	}
+
+	@Test
+	public void testverifyPayloadManifests() throws Exception {
+		assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_VERIFY_PAYLOADMANIFESTS, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath()}));
+	}
 	
 	@Test
 	public void testWrite() throws Exception {

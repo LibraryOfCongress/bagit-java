@@ -56,28 +56,82 @@ public interface Bag {
 	
 	Format getFormat();
 	
+	/*
+	 * Determines whether the bag is valid according to the BagIt Specification.
+	 * @param	missingBagItTolerant	whether to allow a valid bag to be missing a BagIt.txt
+	 */
 	SimpleResult isValid(boolean missingBagItTolerant);
-	
+
+	/*
+	 * Determines whether the bag is valid according to the BagIt Specification.
+	 */
 	SimpleResult isValid();
-	
+
+	/*
+	 * Determines whether the bag is complete according to the BagIt Specification.
+	 * @param	missingBagItTolerant	whether to allow a complete bag to be missing a BagIt.txt
+	 */	
 	SimpleResult isComplete(boolean missingBagItTolerant);
-	
+
+	/*
+	 * Determines whether the bag is complete according to the BagIt Specification.
+	 */		
 	SimpleResult isComplete();
-	
+
+	/*
+	 * Additional checks of a bag.
+	 * These checks are not specified by the BagIt Specification.
+	 * @param	strategies	a list of strategies to invoke
+	 */
 	SimpleResult additionalVerify(List<VerifyStrategy> strategies);
-	
+
+	/*
+	 * Additional checks of a bag.
+	 * These checks are not specified by the BagIt Specification.
+	 * @param	strategies	a strategy to invoke
+	 */	
 	SimpleResult additionalVerify(VerifyStrategy strategy);
+	
+	/*
+	 * Verify that each checksum in every payload manifest can be verified against
+	 * the appropriate contents.
+	 */
+	SimpleResult verifyPayloadManifests();
+
+	/*
+	 * Verify that each checksum in every tag manifest can be verified against
+	 * the appropriate contents.
+	 */	
+	SimpleResult verifyTagManifests();
 	
 	void addPayload(File file);
 	
 	void addPayload(List<File> files);
 	
+	/*
+	 * Fill in the missing parts of a bag so that it is complete.
+	 * Uses the DefaultCompletionStrategy.
+	 */
 	void complete();
 	
+	/*
+	 * Fill in the missing parts of a bag so that it is complete.
+	 * @param	strategy	the strategy to be used to complete the bag
+	 */
 	void complete(CompletionStrategy strategy);
 	
+	/*
+	 * Write the bag.
+	 * @param	writer	the writer to write to
+	 */
 	void write(BagWriter writer);
 	
+	/*
+	 * Make the bag holey.
+	 * The involves creating a fetch.txt and removing the payload
+	 * @param	baseUrl	the url part to prepend to create the payload url
+	 * @param	whether to include the payload directory ("data") in the payload url
+	 */
 	void makeHoley(String baseUrl, boolean includePayloadDirectory);
 	
 	FetchTxt getFetchTxt();

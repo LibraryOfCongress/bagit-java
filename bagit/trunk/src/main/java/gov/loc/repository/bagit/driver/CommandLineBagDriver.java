@@ -50,6 +50,8 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_MAKE_HOLEY = "makeholey";
 	public static final String OPERATION_GENERATE_PAYLOAD_OXUM = "generatepayloadoxum";
 	public static final String OPERATION_CHECK_PAYLOAD_OXUM = "checkpayloadoxum";
+	public static final String OPERATION_VERIFY_PAYLOADMANIFESTS = "verifypayloadmanifests";
+	public static final String OPERATION_VERIFY_TAGMANIFESTS = "verifytagmanifests";
 	
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
@@ -117,8 +119,10 @@ public class CommandLineBagDriver {
 		
 		List<Parameter> params = new ArrayList<Parameter>();		
 		params.add(sourceParam);
-		params.add(missingBagItTolerantParam);
 		params.add(versionParam);
+		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS, "Verifies the checksums in all tag manifests.", params.toArray(new Parameter[] {}));
+		this.addOperation(OPERATION_VERIFY_PAYLOADMANIFESTS, "Verifies the checksums in all payload manifests.", params.toArray(new Parameter[] {}));
+		params.add(missingBagItTolerantParam);
 		this.addOperation(OPERATION_ISVALID, "Checks validity of a bag.", params.toArray(new Parameter[] {}));
 		this.addOperation(OPERATION_ISCOMPLETE, "Checks completeness of a bag.", params.toArray(new Parameter[] {}));
 		
@@ -402,6 +406,18 @@ public class CommandLineBagDriver {
 				return RETURN_SUCCESS;
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
 				SimpleResult result = bag.isComplete(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				log.info(result.toString());
+				if (! result.isSuccess()) {
+					ret = RETURN_FAILURE;
+				}
+			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
+				SimpleResult result = bag.verifyTagManifests();
+				log.info(result.toString());
+				if (! result.isSuccess()) {
+					ret = RETURN_FAILURE;
+				}
+			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
+				SimpleResult result = bag.verifyTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
