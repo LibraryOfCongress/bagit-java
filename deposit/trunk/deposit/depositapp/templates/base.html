@@ -28,7 +28,7 @@
 		{% block nav %}
 		  <div id="nav">
 			<ul id="navlist">
-			  <li id="home">|&nbsp;<a class="on" href="/">Home</a></li>
+			  <li id="home">|&nbsp;<a class="on" href="{% url home_url %}">Home</a></li>
 			  {% for project in deposit_user.projects.all %}
 				{% if project.network_transfer_type %}
 				  <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
