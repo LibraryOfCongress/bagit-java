@@ -57,8 +57,8 @@
             <td><a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></td>
             <td>{{ transfer.transfer_type }}</td>
             <td>{{ transfer.created }}</td>
-            <td>{% if transfer.received %}{{ transfer.received }}{% endif %}</td>
             <td>{{ transfer.package_ids }}</td>
+            <td>{% if transfer.received %}{{ transfer.received }}{% endif %}</td>
         </tr>
         {% endfor %}
 
