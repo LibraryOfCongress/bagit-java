@@ -15,15 +15,11 @@
 	      <ul>
 	        <li id="logo"><a href="#"></a></li>
 			{% if user.is_authenticated %}
- 	        	<li id="welcome">Hello, <a href="{% url user_url user.username %}">{{ user.username }}</a></li>
+ 	        	<li id="welcome">Hello, <a href="{% url overview_url user.username %}">{{ user.username }}</a></li>
 		        <li id="log"><img src="/media/images/login.gif" alt="" />&nbsp;<a href="{% url logout_url %}">Log out</a></li>
-			{% else %}
- 	        	<li id="welcome">You are not logged in.</li>
-			{% endif %}
-			{% if user.is_authenticated %}
 		        <li id="info"><img src="/media/images/info.gif" alt="" />&nbsp;<a href="{% url user_url user.username %}">Update User Info</a></li>
 			{% else %}
-		        <li id="info"><img src="/media/images/info.gif" alt="" />&nbsp;<a href="#">Update User Info</a></li>
+ 	        	<li id="welcome">You are not logged in.</li>
 			{% endif %}
 	        <li id="contact"><img src="/media/images/mail.gif" alt="" /><a href="#">Contact</a></li>
 	      </ul>
@@ -32,7 +28,7 @@
 		{% block nav %}
 		  <div id="nav">
 			<ul id="navlist">
-			  <li id="home">|&nbsp;<a class="on" href="{% url overview_url user.username %}">>Home</a></li>
+			  <li id="home">|&nbsp;<a class="on" href="/">Home</a></li>
 			  {% for project in deposit_user.projects.all %}
 				{% if project.network_transfer_type %}
 				  <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
