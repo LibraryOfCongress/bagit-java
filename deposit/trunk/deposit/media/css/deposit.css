@@ -59,26 +59,26 @@ a#skip {
 #header ul li#welcome {
 	position: relative;
 	top: -3.7em;
-	left: 50.5em;
+	left: 48.5em;
 }
 #header ul li#log {
 	position: relative;
 	top: -3.7em;
-	left: 51.3em;
+	left: 49.5em;
 }
 #header ul li#info {
 	position: relative;
 	top: -3.7em;
-	left: 52.5em;
+	left: 50.5em;
 }
 #header ul li#contact {
 	position: relative;
 	top: -3.7em;
-	left: 54.5em;
+	left: 51.5em;
 }
 #header a, #header a:link, #header a:visited {
 	border: 0;
-	padding: 0 0.5em 0 0.5em;
+	padding: 0 0.3em 0 0.3em;
 	margin: 2em 0 2.5em 0;
 	color: #999;
 	text-decoration: underline;
@@ -86,7 +86,7 @@ a#skip {
 
 #header a:hover, #header a:active, #header a:focus {
 	border: 0;
-	padding: 0 0.5em 0 0.5em;
+	padding: 0 0.3em 0 0.3em;
 	color: #999;
 	margin: 2em 0 2.5em 0;
 	text-decoration: underline;
