@@ -77,7 +77,7 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 					if (! FetchTxt.NO_SIZE_MARKER.equals(splitString[1])) {
 						Long.parseLong(splitString[1]);
 					}
-					this.next = new FilenameSizeUrl(splitString[0], size, splitString[2]);
+					this.next = new FilenameSizeUrl(splitString[2], size, splitString[0]);
 					return;
 				}						
 				

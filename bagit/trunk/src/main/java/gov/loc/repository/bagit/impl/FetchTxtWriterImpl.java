@@ -29,7 +29,7 @@ public class FetchTxtWriterImpl implements FetchTxtWriter {
 		}
 		try {
 			String newUrl = url.replaceAll(" ", "%20");
-			this.writer.println(filename + SEPARATOR + sizeString + SEPARATOR + newUrl);
+			this.writer.println(newUrl + SEPARATOR + sizeString + SEPARATOR + filename);
 			log.debug(MessageFormat.format("Wrote to fetch.txt:  Filename is {0}.  Size is {1}. Url is {2}.", filename, size, newUrl));
 		}
 		catch(Exception ex) {
