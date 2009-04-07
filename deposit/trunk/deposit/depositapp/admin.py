@@ -1,4 +1,7 @@
-from deposit.depositapp.models import Project, User, NetworkTransfer, ShipmentTransfer
 from django.contrib import admin
 
-admin.site.register((Project,User,NetworkTransfer,ShipmentTransfer))
+from deposit.depositapp.models import UserProfile, UserProject, \
+    Project, NetworkTransfer, ShipmentTransfer
+
+admin.site.register((UserProfile, UserProject,
+    Project, NetworkTransfer, ShipmentTransfer))

@@ -1,6 +1,7 @@
-from django.forms import ModelForm, URLField
-import deposit.depositapp.models as models
 from django.contrib.auth.models import User
+from django.forms import ModelForm, URLField
+
+import deposit.depositapp.models as models
 
 class NetworkTransferForm(ModelForm):
     class Meta:
@@ -22,14 +23,13 @@ class NdnpShipmentTransferForm(ModelForm):
         model = models.NdnpShipmentTransfer
         exclude = ('project','user','received', 'received_by')
 
-class UserForm(ModelForm):
+class AuthUserForm(ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email')
         
-class DepositUserForm(ModelForm):
+class UserProfileForm(ModelForm):
     class Meta:
-        model = models.User
-        fields = ('first_name', 'last_name', 'email','organization',
-            'address','phone')
+        model = models.UserProfile
+        fields = ('organization', 'address','phone')
     

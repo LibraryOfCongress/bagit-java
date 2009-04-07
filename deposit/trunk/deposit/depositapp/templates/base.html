@@ -9,40 +9,40 @@
     {% endblock link %}
 	</head>
     <body >
-	  <div id="container"><a id="skip" href="#skip_menu">skip navigation</a>
-		{% block header %}
+        <div id="container"><a id="skip" href="#skip_menu">skip navigation</a>
+            {% block header %}
 	    <div id="header">
 	      <ul>
 	        <li id="logo"><a href="#"></a></li>
-			{% if user.is_authenticated %}
- 	        	<li id="welcome">Hello, <a href="{% url overview_url user.username %}">{{ user.username }}</a></li>
+                    {% if user.is_authenticated %}
+                        <li id="welcome">Hello, <a href="{% url overview_url user.username %}">{{ user.username }}</a></li>
 		        <li id="log"><img src="/media/images/login.gif" alt="" />&nbsp;<a href="{% url logout_url %}">Log out</a></li>
 		        <li id="info"><img src="/media/images/info.gif" alt="" />&nbsp;<a href="{% url user_url user.username %}">Update User Info</a></li>
-			{% else %}
+                    {% else %}
  	        	<li id="welcome">You are not logged in.</li>
-			{% endif %}
+                    {% endif %}
 	        <li id="contact"><img src="/media/images/mail.gif" alt="" /><a href="#">Contact</a></li>
 	      </ul>
 	    </div>
-		{% endblock header %}
-		{% block nav %}
-		  <div id="nav">
-			<ul id="navlist">
-			  <li id="home">|&nbsp;<a class="on" href="{% url home_url %}">Home</a></li>
-			  {% for project in deposit_user.projects.all %}
-				{% if project.network_transfer_type %}
-				  <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
-				{% endif %}
-				{% if project.shipment_transfer_type %}
-				  <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
-				{% endif %}
-			  {% endfor %}
-			  {% if user.is_staff or user.is_superuser %}
-				<li id="home"><a href="{% url admin_url %}">Go to Admin Site</a></li>
-			  {% endif %}
-			</ul>
-		  </div>
-		{% endblock nav %}
+            {% endblock header %}
+            {% block nav %}
+            <div id="nav">
+                <ul id="navlist">
+                  <li id="home">|&nbsp;<a class="on" href="{% url home_url %}">Home</a></li>
+                  {% for project in deposit_user.projects.all %}
+                    {% if project.network_transfer_type %}
+                      <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
+                    {% endif %}
+                    {% if project.shipment_transfer_type %}
+                      <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
+                    {% endif %}
+                  {% endfor %}
+                  {% if user.is_staff or user.is_superuser %}
+                    <li id="home"><a href="{% url admin_url %}">Go to Admin Site</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+            {% endblock nav %}
 	    <div id="content"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
                 {% if messages %}
                     <div id="messages">
@@ -53,7 +53,10 @@
                         </ul>
                     </div>
                 {% endif %}
-                {% block content %}{% endblock content %}
+
+                {% block content %}
+                {% endblock content %}
+
 	    </div>
 		<div id="footer">
 		   <ul id="footlist">

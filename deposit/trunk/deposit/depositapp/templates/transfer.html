@@ -19,7 +19,7 @@
 	    <h3>Transfer {{ transfer.id }} details</h3>
 	    <ul>
 	      <li>Package IDs: {{ transfer.package_ids }}</li>
-	      <li>User: <a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></li>
+	      <li>User: {{ transfer.user }}</li>
 	      <li>Project: <a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></li>
 	      <li>Initiated: {{ transfer.created }}</li>
 	      <li>Received: Not yet received</li>

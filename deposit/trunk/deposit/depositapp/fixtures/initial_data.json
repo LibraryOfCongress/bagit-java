@@ -1,165 +1,792 @@
 [
-    {
-        "pk": 1, 
-        "model": "auth.group", 
-        "fields": {
-            "name": "admins", 
-            "permissions": [
-                22, 
-                25, 
-                23, 
-                26
-            ]
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "depositapp.project", 
-        "fields": {
-            "name": "NDNP", 
-            "network_transfer_type": "NdnpNetworkTransfer", 
-            "contact_email": "ramu@loc.gov", 
-            "shipment_transfer_type": "NdnpShipmentTransfer", 
-            "shipping_address": "101 Independence Ave., SE, Washington, DC", 
-            "contact_name": "Ray Murray", 
-            "contact_phone": "2027071234",
-            "received_policy":"A shipment transfer is marked when the media is received.  A network transfer is marked when the transfer has been completed.  Do not delete source data until notified that a batch has been accepted."
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "depositapp.project", 
-        "fields": {
-            "name": "NDIIPP", 
-            "network_transfer_type": "NetworkTransfer", 
-            "contact_email": "mgal@loc.gov", 
-            "shipment_transfer_type": "ShipmentTransfer", 
-            "shipping_address": "Building 22, Fort Meade, MD", 
-            "contact_name": "Michelle Gallinger", 
-            "contact_phone": "2027072345",
-            "received_policy":"A transfer is marked when the shipment has been received / all files have been transferred, the data has been verified, and the data has been placed on stable storage.  Once received, the source data may be deleted."
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "depositapp.user", 
-        "fields": {
-            "phone": "3011234567", 
-            "groups": [], 
-            "address": "12 Main St., San Diego, CA", 
-            "user_permissions": [], 
-            "organization": "California Digital Library", 
-            "projects": [
-                2
-            ]
-        }
-    }, 
-    {
-        "pk": 5, 
-        "model": "depositapp.user", 
-        "fields": {
-            "phone": "9081234567", 
-            "groups": [], 
-            "address": "17 8th St., New York, NY", 
-            "user_permissions": [], 
-            "organization": "New York Public Library", 
-            "projects": [
-                1
-            ]
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "justin", 
-            "first_name": "Justin", 
-            "last_name": "Littman", 
-            "is_active": true, 
-            "is_superuser": true, 
-            "is_staff": true, 
-            "last_login": "2008-10-06 10:28:07", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "sha1$87ac9$932af0a77ce2ca87d78be6a678d82531ce37ce96", 
-            "email": "jlit@loc.gov", 
-            "date_joined": "2008-09-25 06:00:23"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "michelleg", 
-            "first_name": "Michelle", 
-            "last_name": "Gallinger", 
-            "is_active": true, 
-            "is_superuser": false, 
-            "is_staff": true, 
-            "last_login": "2008-09-25 06:01:57", 
-            "groups": [
-                1
-            ], 
-            "user_permissions": [], 
-            "password": "sha1$f99ab$d5c76781da01af5b8e5a737efdddd6d8b08b8875", 
-            "email": "mgal@loc.gov", 
-            "date_joined": "2008-09-25 06:01:57"
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "raym", 
-            "first_name": "Ray", 
-            "last_name": "Murray", 
-            "is_active": true, 
-            "is_superuser": false, 
-            "is_staff": true, 
-            "last_login": "2008-09-25 06:04:06", 
-            "groups": [
-                1
-            ], 
-            "user_permissions": [], 
-            "password": "sha1$3bd8c$3c16507637b3a6a2a1afac8963dfc92c9bf6f609", 
-            "email": "ramu@loc.gov", 
-            "date_joined": "2008-09-25 06:04:06"
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "jane", 
-            "first_name": "Jane", 
-            "last_name": "Smith", 
-            "is_active": true, 
-            "is_superuser": false, 
-            "is_staff": false, 
-            "last_login": "2008-10-06 10:31:33", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "sha1$815c3$82c3ce218807fd367a4a95bdb56de17d3b0df07f", 
-            "email": "jane@example.com", 
-            "date_joined": "2008-10-06 10:31:33"
-        }
-    }, 
-    {
-        "pk": 5, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "jim", 
-            "first_name": "Jim", 
-            "last_name": "Brown", 
-            "is_active": true, 
-            "is_superuser": false, 
-            "is_staff": false, 
-            "last_login": "2008-10-06 10:39:57", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "sha1$fc21d$14bcc2f314777bc22f39342826b12bddf261c08e", 
-            "email": "jim@example.com", 
-            "date_joined": "2008-10-06 10:33:10"
-        }
+  {
+    "pk": 1, 
+    "model": "depositapp.project", 
+    "fields": {
+      "name": "NDNP", 
+      "network_transfer_type": "NdnpNetworkTransfer", 
+      "contact_email": "ramu@loc.gov", 
+      "shipment_transfer_type": "NdnpShipmentTransfer", 
+      "shipping_address": "101 Independence Ave., SE, Washington, DC", 
+      "contact_name": "Ray Murray", 
+      "contact_phone": "2027071234", 
+      "received_policy": "A shipment transfer is marked when the media is received.  A network transfer is marked when the transfer has been completed.  Do not delete source data until notified that a batch has been accepted."
     }
+  }, 
+  {
+    "pk": 2, 
+    "model": "depositapp.project", 
+    "fields": {
+      "name": "NDIIPP", 
+      "network_transfer_type": "NetworkTransfer", 
+      "contact_email": "mgal@loc.gov", 
+      "shipment_transfer_type": "ShipmentTransfer", 
+      "shipping_address": "Building 22, Fort Meade, MD", 
+      "contact_name": "Michelle Gallinger", 
+      "contact_phone": "2027072345", 
+      "received_policy": "A transfer is marked when the shipment has been received / all files have been transferred, the data has been verified, and the data has been placed on stable storage.  Once received, the source data may be deleted."
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "depositapp.userprofile", 
+    "fields": {
+      "organization": "California Digital Library", 
+      "user": 4, 
+      "phone": "3011234567", 
+      "address": "12 Main St., San Diego, CA"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "depositapp.userprofile", 
+    "fields": {
+      "organization": "New York Public Library", 
+      "user": 5, 
+      "phone": "9081234567", 
+      "address": "17 8th St., New York, NY"
+    }
+  }, 
+  {
+    "pk": 3, 
+    "model": "depositapp.userprofile", 
+    "fields": {
+      "organization": "", 
+      "user": 1, 
+      "phone": "", 
+      "address": ""
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "depositapp.userprofile", 
+    "fields": {
+      "organization": "", 
+      "user": 2, 
+      "phone": "", 
+      "address": ""
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "depositapp.userprofile", 
+    "fields": {
+      "organization": "", 
+      "user": 3, 
+      "phone": "", 
+      "address": ""
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "depositapp.userproject", 
+    "fields": {
+      "project": 2, 
+      "user": 4
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "depositapp.userproject", 
+    "fields": {
+      "project": 1, 
+      "user": 5
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "depositapp.user", 
+    "fields": {
+      "user_permissions": [], 
+      "organization": "California Digital Library", 
+      "groups": [], 
+      "phone": "3011234567", 
+      "address": "12 Main St., San Diego, CA"
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "depositapp.user", 
+    "fields": {
+      "user_permissions": [], 
+      "organization": "New York Public Library", 
+      "groups": [], 
+      "phone": "9081234567", 
+      "address": "17 8th St., New York, NY"
+    }
+  }, 
+  {
+    "pk": 55, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_logentry", 
+      "name": "Can add log entry", 
+      "content_type": 19
+    }
+  }, 
+  {
+    "pk": 56, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_logentry", 
+      "name": "Can change log entry", 
+      "content_type": 19
+    }
+  }, 
+  {
+    "pk": 57, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_logentry", 
+      "name": "Can delete log entry", 
+      "content_type": 19
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_group", 
+      "name": "Can add group", 
+      "content_type": 2
+    }
+  }, 
+  {
+    "pk": 10, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_message", 
+      "name": "Can add message", 
+      "content_type": 4
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_permission", 
+      "name": "Can add permission", 
+      "content_type": 1
+    }
+  }, 
+  {
+    "pk": 7, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_user", 
+      "name": "Can add user", 
+      "content_type": 3
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_group", 
+      "name": "Can change group", 
+      "content_type": 2
+    }
+  }, 
+  {
+    "pk": 11, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_message", 
+      "name": "Can change message", 
+      "content_type": 4
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_permission", 
+      "name": "Can change permission", 
+      "content_type": 1
+    }
+  }, 
+  {
+    "pk": 8, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_user", 
+      "name": "Can change user", 
+      "content_type": 3
+    }
+  }, 
+  {
+    "pk": 6, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_group", 
+      "name": "Can delete group", 
+      "content_type": 2
+    }
+  }, 
+  {
+    "pk": 12, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_message", 
+      "name": "Can delete message", 
+      "content_type": 4
+    }
+  }, 
+  {
+    "pk": 3, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_permission", 
+      "name": "Can delete permission", 
+      "content_type": 1
+    }
+  }, 
+  {
+    "pk": 9, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_user", 
+      "name": "Can delete user", 
+      "content_type": 3
+    }
+  }, 
+  {
+    "pk": 13, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_contenttype", 
+      "name": "Can add content type", 
+      "content_type": 5
+    }
+  }, 
+  {
+    "pk": 14, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_contenttype", 
+      "name": "Can change content type", 
+      "content_type": 5
+    }
+  }, 
+  {
+    "pk": 15, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_contenttype", 
+      "name": "Can delete content type", 
+      "content_type": 5
+    }
+  }, 
+  {
+    "pk": 31, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_ndnp", 
+      "name": "Can add ndnp", 
+      "content_type": 11
+    }
+  }, 
+  {
+    "pk": 37, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_ndnpnetworktransfer", 
+      "name": "Can add ndnp network transfer", 
+      "content_type": 13
+    }
+  }, 
+  {
+    "pk": 43, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_ndnpshipmenttransfer", 
+      "name": "Can add ndnp shipment transfer", 
+      "content_type": 15
+    }
+  }, 
+  {
+    "pk": 34, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_networktransfer", 
+      "name": "Can add network transfer", 
+      "content_type": 12
+    }
+  }, 
+  {
+    "pk": 22, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_project", 
+      "name": "Can add project", 
+      "content_type": 8
+    }
+  }, 
+  {
+    "pk": 40, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_shipmenttransfer", 
+      "name": "Can add shipment transfer", 
+      "content_type": 14
+    }
+  }, 
+  {
+    "pk": 28, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_transfer", 
+      "name": "Can add transfer", 
+      "content_type": 10
+    }
+  }, 
+  {
+    "pk": 25, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_user", 
+      "name": "Can add user", 
+      "content_type": 9
+    }
+  }, 
+  {
+    "pk": 58, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_userprofile", 
+      "name": "Can add user profile", 
+      "content_type": 20
+    }
+  }, 
+  {
+    "pk": 61, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_userproject", 
+      "name": "Can add user project", 
+      "content_type": 21
+    }
+  }, 
+  {
+    "pk": 32, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_ndnp", 
+      "name": "Can change ndnp", 
+      "content_type": 11
+    }
+  }, 
+  {
+    "pk": 38, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_ndnpnetworktransfer", 
+      "name": "Can change ndnp network transfer", 
+      "content_type": 13
+    }
+  }, 
+  {
+    "pk": 44, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_ndnpshipmenttransfer", 
+      "name": "Can change ndnp shipment transfer", 
+      "content_type": 15
+    }
+  }, 
+  {
+    "pk": 35, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_networktransfer", 
+      "name": "Can change network transfer", 
+      "content_type": 12
+    }
+  }, 
+  {
+    "pk": 23, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_project", 
+      "name": "Can change project", 
+      "content_type": 8
+    }
+  }, 
+  {
+    "pk": 41, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_shipmenttransfer", 
+      "name": "Can change shipment transfer", 
+      "content_type": 14
+    }
+  }, 
+  {
+    "pk": 29, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_transfer", 
+      "name": "Can change transfer", 
+      "content_type": 10
+    }
+  }, 
+  {
+    "pk": 26, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_user", 
+      "name": "Can change user", 
+      "content_type": 9
+    }
+  }, 
+  {
+    "pk": 59, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_userprofile", 
+      "name": "Can change user profile", 
+      "content_type": 20
+    }
+  }, 
+  {
+    "pk": 62, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_userproject", 
+      "name": "Can change user project", 
+      "content_type": 21
+    }
+  }, 
+  {
+    "pk": 33, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_ndnp", 
+      "name": "Can delete ndnp", 
+      "content_type": 11
+    }
+  }, 
+  {
+    "pk": 39, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_ndnpnetworktransfer", 
+      "name": "Can delete ndnp network transfer", 
+      "content_type": 13
+    }
+  }, 
+  {
+    "pk": 45, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_ndnpshipmenttransfer", 
+      "name": "Can delete ndnp shipment transfer", 
+      "content_type": 15
+    }
+  }, 
+  {
+    "pk": 36, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_networktransfer", 
+      "name": "Can delete network transfer", 
+      "content_type": 12
+    }
+  }, 
+  {
+    "pk": 24, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_project", 
+      "name": "Can delete project", 
+      "content_type": 8
+    }
+  }, 
+  {
+    "pk": 42, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_shipmenttransfer", 
+      "name": "Can delete shipment transfer", 
+      "content_type": 14
+    }
+  }, 
+  {
+    "pk": 30, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_transfer", 
+      "name": "Can delete transfer", 
+      "content_type": 10
+    }
+  }, 
+  {
+    "pk": 27, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_user", 
+      "name": "Can delete user", 
+      "content_type": 9
+    }
+  }, 
+  {
+    "pk": 60, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_userprofile", 
+      "name": "Can delete user profile", 
+      "content_type": 20
+    }
+  }, 
+  {
+    "pk": 63, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_userproject", 
+      "name": "Can delete user project", 
+      "content_type": 21
+    }
+  }, 
+  {
+    "pk": 16, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_session", 
+      "name": "Can add session", 
+      "content_type": 6
+    }
+  }, 
+  {
+    "pk": 17, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_session", 
+      "name": "Can change session", 
+      "content_type": 6
+    }
+  }, 
+  {
+    "pk": 18, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_session", 
+      "name": "Can delete session", 
+      "content_type": 6
+    }
+  }, 
+  {
+    "pk": 19, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_site", 
+      "name": "Can add site", 
+      "content_type": 7
+    }
+  }, 
+  {
+    "pk": 20, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_site", 
+      "name": "Can change site", 
+      "content_type": 7
+    }
+  }, 
+  {
+    "pk": 21, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_site", 
+      "name": "Can delete site", 
+      "content_type": 7
+    }
+  }, 
+  {
+    "pk": 52, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_logmessage", 
+      "name": "Can add log message", 
+      "content_type": 18
+    }
+  }, 
+  {
+    "pk": 46, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_swordtransfer", 
+      "name": "Can add sword transfer", 
+      "content_type": 16
+    }
+  }, 
+  {
+    "pk": 49, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "add_transferfile", 
+      "name": "Can add transfer file", 
+      "content_type": 17
+    }
+  }, 
+  {
+    "pk": 53, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_logmessage", 
+      "name": "Can change log message", 
+      "content_type": 18
+    }
+  }, 
+  {
+    "pk": 47, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_swordtransfer", 
+      "name": "Can change sword transfer", 
+      "content_type": 16
+    }
+  }, 
+  {
+    "pk": 50, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "change_transferfile", 
+      "name": "Can change transfer file", 
+      "content_type": 17
+    }
+  }, 
+  {
+    "pk": 54, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_logmessage", 
+      "name": "Can delete log message", 
+      "content_type": 18
+    }
+  }, 
+  {
+    "pk": 48, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_swordtransfer", 
+      "name": "Can delete sword transfer", 
+      "content_type": 16
+    }
+  }, 
+  {
+    "pk": 51, 
+    "model": "auth.permission", 
+    "fields": {
+      "codename": "delete_transferfile", 
+      "name": "Can delete transfer file", 
+      "content_type": 17
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "auth.group", 
+    "fields": {
+      "name": "admins", 
+      "permissions": [
+        22, 
+        25, 
+        23, 
+        26
+      ]
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "justin", 
+      "first_name": "Justin", 
+      "last_name": "Littman", 
+      "is_active": 1, 
+      "is_superuser": 1, 
+      "is_staff": 1, 
+      "last_login": "2009-04-07 01:12:27", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "sha1$671e0$04624e16ce0da5eb094d1dc438ead4a74b1ad209", 
+      "email": "jlit@loc.gov", 
+      "date_joined": "2008-09-25 06:00:23"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "michelleg", 
+      "first_name": "Michelle", 
+      "last_name": "Gallinger", 
+      "is_active": 1, 
+      "is_superuser": 0, 
+      "is_staff": 1, 
+      "last_login": "2009-04-07 00:59:20", 
+      "groups": [
+        1
+      ], 
+      "user_permissions": [], 
+      "password": "sha1$f99ab$d5c76781da01af5b8e5a737efdddd6d8b08b8875", 
+      "email": "mgal@loc.gov", 
+      "date_joined": "2008-09-25 06:01:57"
+    }
+  }, 
+  {
+    "pk": 3, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "raym", 
+      "first_name": "Ray", 
+      "last_name": "Murray", 
+      "is_active": 1, 
+      "is_superuser": 0, 
+      "is_staff": 1, 
+      "last_login": "2008-09-25 06:04:06", 
+      "groups": [
+        1
+      ], 
+      "user_permissions": [], 
+      "password": "sha1$3bd8c$3c16507637b3a6a2a1afac8963dfc92c9bf6f609", 
+      "email": "ramu@loc.gov", 
+      "date_joined": "2008-09-25 06:04:06"
+    }
+  }, 
+  {
+    "pk": 4, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "jane", 
+      "first_name": "Jane", 
+      "last_name": "Smith", 
+      "is_active": 1, 
+      "is_superuser": 0, 
+      "is_staff": 0, 
+      "last_login": "2008-10-06 10:31:33", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "sha1$815c3$82c3ce218807fd367a4a95bdb56de17d3b0df07f", 
+      "email": "jane@example.com", 
+      "date_joined": "2008-10-06 10:31:33"
+    }
+  }, 
+  {
+    "pk": 5, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "jim", 
+      "first_name": "Jim", 
+      "last_name": "Brown", 
+      "is_active": 1, 
+      "is_superuser": 0, 
+      "is_staff": 0, 
+      "last_login": "2009-04-07 00:04:35", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "sha1$fc21d$14bcc2f314777bc22f39342826b12bddf261c08e", 
+      "email": "jim@example.com", 
+      "date_joined": "2008-10-06 10:33:10"
+    }
+  }
 ]

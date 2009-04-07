@@ -15,6 +15,11 @@ from deposit.depositapp.queries import TransferQuery
 
 @login_required
 def index(request):
+    """
+    Redirect to a user's overview page.  Leaving here instead of just
+    rewriting urlconf to send / to overview in case we need to do 
+    something else here at index() sometime.
+    """
     return HttpResponseRedirect(reverse('overview_url',
             args=[request.user.username]))
 
@@ -29,78 +34,111 @@ def logout(request):
 
 @login_required
 def overview(request, username=None):
-    try:
-        deposit_user = models.User.objects.get(username=username)
-        user = deposit_user
-        user_form_class = forms.DepositUserForm
-    except models.User.DoesNotExist:
-        deposit_user = None
-        try:
-            user = User.objects.get(username=username)
-            user_form_class = forms.UserForm
-        except User.DoesNotExist:
-            raise Http404
-    if request.user.username == username:
+    """
+    Show the home page for a given user.  Defaults to the logged-in
+    user unless a different username is specified.
+    
+    Presuming that non-staff/non-supervisors should not be able
+    to see other users.
+    """
+    if username == request.user.username:
+        deposit_user = request.user
         is_user = True
-        password_form = PasswordChangeForm(request.user)
-        user_form = user_form_class(instance=user)            
-    else:
+    elif request.user.is_staff \
+        or request.user.is_superuser:
+        deposit_user = get_object_or_404(User, username=username)
         is_user = False
-        password_form = None
-        user_form = None
+    else:
+        request.user.message_set.create(message='Invalid request.')
+        return HttpResponseRedirect(reverse('overview_url',
+            args=[request.user.username]))
     q = TransferQuery()
-    q.include_received=False
-    return render_to_response('overview.html', {'deposit_user': deposit_user,
-        'user':user, 'is_user':is_user, 
-        'projects':models.Project.objects.all(),
-        'password_form':password_form, 'user_form':user_form, 
-        'query':q},
+    q.include_received = False
+    projects = models.Project.objects.all()
+    return render_to_response('overview.html', {
+        'deposit_user': deposit_user, 'is_user': is_user, 
+        'projects': projects, 'query':q},
         context_instance=RequestContext(request))
 
 @login_required
-def user(request, username, command = None):    
-    try:
-        deposit_user = models.User.objects.get(username=username)
-        user = deposit_user
-        user_form_class = forms.DepositUserForm
-    except models.User.DoesNotExist:
-        deposit_user = None
+def user(request, username=None, command=None):    
+    """
+    Allow a user to update her information, or allow staff/superuser
+    to update another user's information.
+
+    FIXME: awkward to handle the user info and the user profile info
+    with separate forms.
+    """
+    if request.user.username == username:
+        deposit_user = request.user
+    elif request.user.is_staff \
+        or request.user.is_superuser:
         try:
-            user = User.objects.get(username=username)
-            user_form_class = forms.UserForm
+            deposit_user = models.User.objects.get(username=username)
         except User.DoesNotExist:
             raise Http404
-    if request.user.is_authenticated() and request.user.username == username:
-        is_user = True
-        if command == "password" and request.method == "POST":
-            password_form = PasswordChangeForm(request.user, request.POST)
-            if password_form.is_valid():
-                password_form.save()
-                request.user.message_set.create(
-                        message="Your password was changed.")
-                return HttpResponseRedirect(reverse('user_url',
-                        args=[user.username]))
-        elif command == "update" and request.method == "POST":
-            user_form = user_form_class(request.POST, instance=user)
+    else:
+        # BZZzzzt!  go away.
+        request.user.message_set.create(message='Invalid request.')
+        return HttpResponseRedirect(reverse('overview_url', 
+            args=[request.user.username]))
+        
+    # It's possible a User gets created without a UserProfile,
+    # so fetch it just in case, even though we don't need it here.
+    # Should only ever create anything once.
+    user_profile, created = models.UserProfile.objects.get_or_create(
+        user=deposit_user)
+    
+    updated = False
+    message = ''
+    if request.method == 'POST':
+        if command == 'user':
+            user_form = forms.AuthUserForm(request.POST, 
+                instance=deposit_user)
             if user_form.is_valid():
                 user_form.save()
-                request.user.message_set.create(
-                        message="Your information has been updated.")
-                return HttpResponseRedirect(reverse('user_url',
-                        args=[user.username]))
-        else:
-            password_form = PasswordChangeForm(request.user)
-            user_form = user_form_class(instance=user)            
-    else:
-        is_user = False
-        password_form = None
-        user_form = None
-    q = TransferQuery()
-    q.include_received=False
-    return render_to_response('user.html', {'deposit_user': deposit_user,
-            'user':user, 'is_user':is_user, 'projects':models.Project.objects.all(),
-            'password_form':password_form, 'user_form':user_form, 'query':q},
-            context_instance=RequestContext(request))
+                updated = True
+                message = 'Updated user information.'
+            else:
+                message = 'Please check your changes and try again.'
+        elif command == 'profile':
+            profile_form = forms.UserProfileForm(request.POST, 
+                instance=deposit_user.get_profile())
+            if profile_form.is_valid():
+                profile_form.save()
+                updated = True
+                message = 'Updated user information.'
+            else:
+                message = 'Please check your changes and try again.'
+        elif command == 'password':
+            password_form = PasswordChangeForm(deposit_user,
+                request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                updated = True
+                message = 'Updated password.'
+            else:
+                message = 'Please re-enter and confirm your new password again.'
+
+    if message:
+        request.user.message_set.create(message=message)
+    if updated:
+        return HttpResponseRedirect(reverse('overview_url',
+            args=[request.user.username]))
+
+    user_form = forms.AuthUserForm(request.POST,
+        instance=deposit_user)
+    profile_form = forms.UserProfileForm(request.POST, 
+        instance=deposit_user.get_profile())
+    password_form = PasswordChangeForm(deposit_user)
+
+    return render_to_response('user.html', {
+        'deposit_user': deposit_user,
+        'user_form': user_form, 
+        'profile_form': profile_form,
+        'password_form': password_form, 
+        }, context_instance=RequestContext(request))
+
 
 def transfer(request, transfer_id):
     if not request.user.is_authenticated():
@@ -114,36 +152,32 @@ def transfer(request, transfer_id):
     return render_to_response(template_name, {'transfer':transfer_sub},
             context_instance=RequestContext(request))    
 
+@login_required
 def project(request, project_id):
     if request.method == 'POST':
         return HttpResponseNotAllowed()
-    try:
-        project = models.Project.objects.get(id=project_id)
-    except models.Project.DoesNotExist:
-        raise Http404
-    return render_to_response("project.html", {'project':project},
+    project = get_object_or_404(models.Project, id=project_id)
+    return render_to_response("project.html", {
+        'project': project,
+        },
         context_instance=RequestContext(request))
 
+@login_required
 def transfer_received(request, transfer_id):
     if request.method == 'GET':
         return HttpResponseNotAllowed()
-    if not request.user.is_authenticated() or not request.user.is_staff:
+    if not request.user.is_staff:
         return HttpResponseForbidden()
-    try:
-        transfer = models.Transfer.objects.get(id=transfer_id)
-    except Transfer.DoesNotExist:
-       raise Http404
+    transfer = get_object_or_404(models.Transfer, id=transfer_id)
     transfer.update_received(request.user)
     transfer.save()
     request.user.message_set.create(message="The transfer was marked as received.  A notification has been sent to %s." % 
             (transfer.user.email))
-
     return HttpResponseRedirect(reverse('transfer_url',
             args=[transfer_id]))
 
+@login_required
 def create_transfer(request, transfer_type):
-    if not request.user.is_authenticated():
-        return HttpResponseForbidden()
     form_class = getattr(forms, transfer_type + "Form")
     template_name = "transfer_form.html"
     if request.method == 'GET':
@@ -163,10 +197,11 @@ def create_transfer(request, transfer_type):
     else:
         form = form_class()
 
-    # Create the template, context, response
-    return render_to_response(template_name, {'form':form,
-            'project_id':project_id, 'transfer_type':transfer_type},
-            context_instance=RequestContext(request))
+    return render_to_response(template_name, {
+        'form': form,
+        'project_id': project_id, 
+        'transfer_type':transfer_type,
+        }, context_instance=RequestContext(request))
 
 @login_required
 def transfer_list(request):
@@ -188,7 +223,7 @@ def transfer_list(request):
 
     3. Only staff or superusers may see another user's projects.
     """
-    q = TransferQuery(request=request)
+    q = TransferQuery(request)
 
     # Verify condition 1.  This must be true, kick them up if not.
     if not q.username and not q.project_id:
@@ -205,7 +240,8 @@ def transfer_list(request):
             allow = True
         else:
             # 2a.
-            if request.user in project.users.all():
+            project_users = models.User.objects.filter(projects__project__id=q.project_id)
+            if q.username in [user.username for user in project_users]:
                 allow = True
         if not allow:
             request.user.message_set.create(message='Invalid transfer project')
@@ -221,7 +257,8 @@ def transfer_list(request):
 
     # If they've made it this far, it's a valid request.
     transfers = q.query()
-    return render_to_response('transfer_list.html', 
-        {'query': q, 'transfers': transfers}, 
-        context_instance=RequestContext(request))
+    return render_to_response('transfer_list.html', {
+        'query': q, 
+        'transfers': transfers,
+        }, context_instance=RequestContext(request))
 

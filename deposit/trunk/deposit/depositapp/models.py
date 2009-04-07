@@ -2,14 +2,15 @@
 #import uuid
 from datetime import datetime
 
-from django.db import models
 from django.contrib.auth.models import User as AuthUser
 from django.core.urlresolvers import reverse
+from django.db import models
 
 def generate_uuid():
     # FIXME: commented out for deposit_0.2_qa
     #return str(uuid.uuid4())
     return 'FIXME-NOT-REAL-UUID-FIXME'
+
 
 class Project(models.Model):
     NETWORK_TRANSFER_TYPES = (
@@ -34,16 +35,35 @@ class Project(models.Model):
             null=True, choices=SHIPMENT_TRANSFER_TYPES)
     
     def __unicode__(self):
-        return u'%s' % (self.name)
+        return self.name
 
     def get_absolute_url(self):
         return reverse('project_url', args=[self.id])
     
+
+class UserProfile(models.Model):
+    user = models.ForeignKey(AuthUser, unique=True)
+    organization = models.CharField(max_length=150, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=10, blank=True)
+
+    def __unicode__(self):
+        return self.user.username
+
+
+class UserProject(models.Model):
+    user = models.ForeignKey(AuthUser, related_name='projects')
+    project = models.ForeignKey(Project, related_name='users')
+
+    def __unicode__(self):
+        return self.project.name
+    
+
 class User(AuthUser):
     organization = models.CharField(max_length=150)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=10)
-    projects = models.ManyToManyField(Project, related_name='users')    
+    #projects = models.ManyToManyField(Project, related_name='users')    
 
     def __unicode__(self):
         return u'%s' % (self.user.username)
@@ -58,7 +78,7 @@ class Transfer(models.Model):
     # delivered packages are examined.
     package_ids = models.CharField(max_length=255, 
         help_text="List of packages included in the transfer.")
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(AuthUser)
     project = models.ForeignKey(Project, related_name="transfers")
     transfer_type = models.CharField(max_length=50, editable=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
