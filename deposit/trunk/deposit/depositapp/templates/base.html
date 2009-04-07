@@ -29,19 +29,21 @@
             <div id="nav">
                 <ul id="navlist">
                   <li id="home">|&nbsp;<a class="on" href="{% url home_url %}">Home</a></li>
-                  {% for project in deposit_user.projects.all %}
+                  {% for user_project in deposit_user.projects.all %}
+                    {% with user_project.project as project %}
                     {% if project.network_transfer_type %}
                       <li id="net_transfer">|&nbsp;<a href="{% url create_transfer_url project.network_transfer_type %}?project_id={{project.id}}">Create Network Transfer</a></li>
                     {% endif %}
                     {% if project.shipment_transfer_type %}
                       <li id="ship_transfer">|&nbsp;<a href="{% url create_transfer_url project.shipment_transfer_type %}?project_id={{project.id}}">Create Shipment Transfer</a></li>
                     {% endif %}
+                    {% endwith %}
                   {% endfor %}
                   {% if user.is_staff or user.is_superuser %}
                     <li id="home"><a href="{% url admin_url %}">Go to Admin Site</a></li>
                   {% endif %}
                 </ul>
-              </div>
+            </div>
             {% endblock nav %}
 	    <div id="content"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
                 {% if messages %}
