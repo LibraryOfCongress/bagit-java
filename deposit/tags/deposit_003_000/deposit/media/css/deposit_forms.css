@@ -1,0 +1,105 @@
+/* RDC Deposit forms CSS Document */
+#content {
+	width: 68.4em;
+	padding: 0;
+	margin: 1em 1.7em 1em 1.7em;
+	border: 0.1em solid #ccc;
+}
+#content form {
+	width: 68.4em;
+	margin: 1em 0 0 0;
+	padding: 0;
+}
+#content form fieldset {
+	width: auto;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#content form fieldset#submit {
+	width: auto;
+	margin: 0 auto 0 0;
+	padding: 0;
+	border: 0;
+}
+#content form fieldset label {
+	font: bold 1.0em/1.3em Arial, Helvetica, sans-serif;
+	margin: 1em auto 1em 1em;
+}
+#content form fieldset label span {
+	font: normal 0.9em/1.3em Arial, Helvetica, sans-serif;
+}
+#content form fieldset input {
+	width: 50em;
+	font: normal 1.0em/1.3em Arial, Helvetica, sans-serif;
+	margin: 0 auto 1em 1em;
+}
+#content form fieldset input.short {
+	width: 9.7em;
+}
+#content form fieldset select {
+	width: 10em;
+	font: normal 1.0em/1.3em Arial, Helvetica, sans-serif;
+	margin: 0 auto 1em 1em;
+}
+#content form fieldset input.submit {
+	width: auto;
+	background-color: #fff;
+	font-weight: 900;
+	font: bold 1.1em/1.1em Verdana, Arial, Helvetica, sans-serif;
+	color: #f60;
+	text-transform: uppercase;
+	margin: 0;
+	border: 1px solid #f60;
+	padding: 0.3em;
+}
+#content #bottom_nav {
+	width:auto;
+	margin: 1em 0 0 0;
+	padding: 1em 1em 1em 1em;
+	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
+}
+#content #bottom_nav form {
+	width: 60em;
+	margin: 0 0 0 0;
+	padding: 0;
+}
+#content #bottom_nav form fieldset#submit input.submit {
+	width: auto;
+	margin: 0;
+	padding: 0.3em;
+	background-color: #fff;
+	font-weight: 900;
+	font: bold 0.9em/1.1em Verdana, Arial, Helvetica, sans-serif;
+	color: #f60;
+	text-transform: uppercase;
+	border: 1px solid #f60;
+}
+#bottom_nav {
+	width:auto;
+	margin: 1em 0 0 0;
+	padding: 1em 1em 1em 1em;
+	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
+}
+#bottom_nav form {
+	width: 60em;
+	margin: 0 0 0 0;
+	padding: 0;
+}
+#bottom_nav form fieldset {
+	width: 30em;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#bottom_nav form fieldset#submit input.submit {
+	width: auto;
+	margin: 0;
+	padding: 0.3em;
+	background-color: #fff;
+	font-weight: 900;
+	font: bold 0.9em/1.1em Verdana, Arial, Helvetica, sans-serif;
+	color: #f60;
+	text-transform: uppercase;
+	border: 1px solid #f60;
+}

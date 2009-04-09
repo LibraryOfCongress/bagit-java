@@ -1,0 +1,20 @@
+{% extends "transfer.html" %}
+
+{% block title %}New Shipment Transfer - Deposit APP{% endblock title %}
+
+<div id="page_head">
+  <h3>New Shipment Transfer</h3>
+</div>
+
+<div id="content">
+{% block transfer_content %}
+    {{ block.super }}
+    <li>Ship date: {{ transfer.ship_date }}</li>
+    <li>Ship method: {{ transfer.ship_method }}</li>
+    <li>Tracking number: {{ transfer.ship_tracking_number }}</li>
+    <li>Media type: {{ transfer.get_media_type_display }}</li>
+    <li>Media identifiers: {{ transfer.media_identifiers }}</li>
+    <li>Number of media shipped: {{ transfer.number_media_shipped }}</li>
+    <li>Additional equipment: {{ transfer.addl_equipment }}</li>
+{% endblock %}
+</div>
