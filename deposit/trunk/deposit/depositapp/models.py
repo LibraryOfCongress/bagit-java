@@ -56,21 +56,8 @@ class UserProject(models.Model):
     project = models.ForeignKey(Project, related_name='users')
 
     def __unicode__(self):
-        return self.project.name
+        return '%s+%s' % (self.user.username, self.project.name)
     
-
-class User(AuthUser):
-    organization = models.CharField(max_length=150)
-    address = models.CharField(max_length=255)
-    phone = models.CharField(max_length=10)
-    #projects = models.ManyToManyField(Project, related_name='users')    
-
-    def __unicode__(self):
-        return u'%s' % (self.user.username)
-
-    def get_absolute_url(self):
-        return reverse('user_url', args=[self.user.username])
-
 
 class Transfer(models.Model):
     # Supplied list of packages included in transfer.

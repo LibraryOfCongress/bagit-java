@@ -81,7 +81,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
-AUTH_PROFILE_MODULE = "depositapp.user"
+AUTH_PROFILE_MODULE = "depositapp.UserProfile"
 
 REALM = 'LC Deposit'
 STORAGE = '/tmp/deposit_storage'

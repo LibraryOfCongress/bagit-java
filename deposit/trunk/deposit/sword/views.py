@@ -122,13 +122,14 @@ def _user_projects(request):
     # if the AuthUser is staff let them see all the projects
     user = request.user
     if user.is_staff:
-        return (user, list(Project.objects.all()))
+        return (user, list(Project.objects.filter(users__user=user)))
 
     # otherwise we need to cast the django.contrib.auth.models.User
     # as a deposit.depositapp.models.User so we an see what projects
     # they have access to
-    user = get_object_or_404(User,id=request.user.id)
-    return (user, list(user.projects.all()))
+    user = get_object_or_404(User, id=request.user.id)
+    return (user, 
+        [user_project.project for user_project in user.projects.all()])
 
 
 def _save_data(request, transfer, require_content_disposition=False):
