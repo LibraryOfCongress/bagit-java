@@ -17,8 +17,8 @@ public class BagImplTest extends AbstractBagImplTest {
 	@Override
 	public void addlTestCreateBag(Bag bag) {
 		BagInfoTxt bagInfo = bag.getBagInfoTxt();
-		assertEquals(bagInfo.getBagSize(), bagInfo.get(gov.loc.repository.bagit.v0_95.impl.BagInfoTxtImpl.PACKAGE_SIZE));
-		assertEquals(bagInfo.getBaggingDate(), bagInfo.get(gov.loc.repository.bagit.v0_95.impl.BagInfoTxtImpl.PACKING_DATE));
+		assertEquals(bagInfo.getBagSize(), bagInfo.get(gov.loc.repository.bagit.v0_95.impl.BagInfoTxtImpl.FIELD_PACKAGE_SIZE));
+		assertEquals(bagInfo.getBaggingDate(), bagInfo.get(gov.loc.repository.bagit.v0_95.impl.BagInfoTxtImpl.FIELD_PACKING_DATE));
 
 	}
 	

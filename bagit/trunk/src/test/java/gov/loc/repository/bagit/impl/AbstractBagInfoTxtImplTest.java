@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.List;
 
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
@@ -113,4 +114,25 @@ public abstract class AbstractBagInfoTxtImplTest {
 		bagInfo.getBagInGroup();
 	}
 	
+	@Test
+	public void testGetStandardFields() throws Exception {
+		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), this.getTestBagInfoTxtBagInfoTxtString()));
+		bagInfo.put("foo", "bar");
+		List<String> fields = bagInfo.getStandardFields();
+		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_EMAIL));
+		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_NAME));
+		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_PHONE));		
+		assertFalse(fields.contains("foo"));
+	}
+
+	@Test
+	public void testGetNonstandardFields() throws Exception {
+		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), this.getTestBagInfoTxtBagInfoTxtString()));
+		bagInfo.put("foo", "bar");
+		List<String> fields = bagInfo.getNonstandardFields();
+		assertFalse(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_EMAIL));
+		assertTrue(fields.contains("foo"));
+		assertEquals(1, fields.size());
+	}
+
 }

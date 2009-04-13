@@ -6,8 +6,8 @@ import gov.loc.repository.bagit.BagInfoTxt;
 
 public class BagInfoTxtImpl extends gov.loc.repository.bagit.impl.BagInfoTxtImpl implements BagInfoTxt {
 
-	public static final String PACKING_DATE = "Packing-Date";
-	public static final String PACKAGE_SIZE = "Package-Size";
+	public static final String FIELD_PACKING_DATE = "Packing-Date";
+	public static final String FIELD_PACKAGE_SIZE = "Package-Size";
 	
 	private static final long serialVersionUID = 1L;
 
@@ -22,22 +22,22 @@ public class BagInfoTxtImpl extends gov.loc.repository.bagit.impl.BagInfoTxtImpl
 	
 	@Override
 	public String getBagSize() {
-		return this.getCaseInsensitive(PACKAGE_SIZE);
+		return this.getCaseInsensitive(FIELD_PACKAGE_SIZE);
 	}
 
 	@Override
 	public void setBagSize(String bagSize) {
-		this.put(PACKAGE_SIZE, bagSize);
+		this.put(FIELD_PACKAGE_SIZE, bagSize);
 	}
 	
 	@Override
 	public String getBaggingDate() {
-		return this.getCaseInsensitive(PACKING_DATE);
+		return this.getCaseInsensitive(FIELD_PACKING_DATE);
 	}
 	
 	@Override
 	public void setBaggingDate(String baggingDate) {
-		this.put(PACKING_DATE, baggingDate);
+		this.put(FIELD_PACKING_DATE, baggingDate);
 	}
 	
 }

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>loc-repository</groupId>
   <artifactId>bagit</artifactId>
-  <version>2.3</version>
+  <version>2.4-SNAPSHOT</version>
   <name>BagIt Implementation</name>
   <properties>
 	<bagit.version>0.96</bagit.version>

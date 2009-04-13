@@ -1,10 +1,13 @@
 package gov.loc.repository.bagit.impl;
 
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag;
@@ -15,20 +18,20 @@ import gov.loc.repository.bagit.utilities.namevalue.impl.AbstractNameValueBagFil
 
 public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoTxt {
 
-	public static final String SOURCE_ORGANIZATION = "Source-Organization";
-	public static final String ORGANIZATION_ADDRESS = "Organization-Address";
-	public static final String CONTACT_NAME = "Contact-Name";
-	public static final String CONTACT_PHONE = "Contact-Phone";
-	public static final String CONTACT_EMAIL = "Contact-Email";
-	public static final String EXTERNAL_DESCRIPTION = "External-Description";
-	public static final String BAGGING_DATE = "Bagging-Date";
-	public static final String EXTERNAL_IDENTIFIER = "External-Identifier";
-	public static final String BAG_SIZE = "Bag-Size";
-	public static final String PAYLOAD_OXUM = "Payload-Oxum";
-	public static final String BAG_GROUP_IDENTIFIER = "Bag-Group-Identifier";
-	public static final String BAG_COUNT = "Bag-Count";
-	public static final String INTERNAL_SENDER_IDENTIFIER = "Internal-Sender-Identifier";
-	public static final String INTERNAL_SENDER_DESCRIPTION = "Internal-Sender-Description";
+	public static final String FIELD_SOURCE_ORGANIZATION = "Source-Organization";
+	public static final String FIELD_ORGANIZATION_ADDRESS = "Organization-Address";
+	public static final String FIELD_CONTACT_NAME = "Contact-Name";
+	public static final String FIELD_CONTACT_PHONE = "Contact-Phone";
+	public static final String FIELD_CONTACT_EMAIL = "Contact-Email";
+	public static final String FIELD_EXTERNAL_DESCRIPTION = "External-Description";
+	public static final String FIELD_BAGGING_DATE = "Bagging-Date";
+	public static final String FIELD_EXTERNAL_IDENTIFIER = "External-Identifier";
+	public static final String FIELD_BAG_SIZE = "Bag-Size";
+	public static final String FIELD_PAYLOAD_OXUM = "Payload-Oxum";
+	public static final String FIELD_BAG_GROUP_IDENTIFIER = "Bag-Group-Identifier";
+	public static final String FIELD_BAG_COUNT = "Bag-Count";
+	public static final String FIELD_INTERNAL_SENDER_IDENTIFIER = "Internal-Sender-Identifier";
+	public static final String FIELD_INTERNAL_SENDER_DESCRIPTION = "Internal-Sender-Description";
 	private static final String STREAM_COUNT_PART = "Stream Count";
 	private static final String OCTET_COUNT_PART = "Octet Count";
 	
@@ -47,7 +50,7 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 
 	@Override
 	public String getBagCount() {
-		return this.getCaseInsensitive(BAG_COUNT);
+		return this.getCaseInsensitive(FIELD_BAG_COUNT);
 	}
 
 	@Override
@@ -92,12 +95,12 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public String getBagGroupIdentifier() {
-		return this.getCaseInsensitive(BAG_GROUP_IDENTIFIER);
+		return this.getCaseInsensitive(FIELD_BAG_GROUP_IDENTIFIER);
 	}
 
 	@Override
 	public String getBagSize() {
-		return this.getCaseInsensitive(BAG_SIZE);
+		return this.getCaseInsensitive(FIELD_BAG_SIZE);
 	}
 
 	@Override
@@ -107,7 +110,7 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public String getBaggingDate() {
-		return this.getCaseInsensitive(BAGGING_DATE);
+		return this.getCaseInsensitive(FIELD_BAGGING_DATE);
 	}
 
 	@Override
@@ -121,47 +124,47 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public String getContactEmail() {
-		return this.getCaseInsensitive(CONTACT_EMAIL);
+		return this.getCaseInsensitive(FIELD_CONTACT_EMAIL);
 	}
 
 	@Override
 	public String getContactName() {
-		return this.getCaseInsensitive(CONTACT_NAME);
+		return this.getCaseInsensitive(FIELD_CONTACT_NAME);
 	}
 
 	@Override
 	public String getContactPhone() {
-		return this.getCaseInsensitive(CONTACT_PHONE);
+		return this.getCaseInsensitive(FIELD_CONTACT_PHONE);
 	}
 
 	@Override
 	public String getExternalDescription() {
-		return this.getCaseInsensitive(EXTERNAL_DESCRIPTION);
+		return this.getCaseInsensitive(FIELD_EXTERNAL_DESCRIPTION);
 	}
 
 	@Override
 	public String getExternalIdentifier() {
-		return this.getCaseInsensitive(EXTERNAL_IDENTIFIER);
+		return this.getCaseInsensitive(FIELD_EXTERNAL_IDENTIFIER);
 	}
 
 	@Override
 	public String getInternalSenderDescription() {
-		return this.getCaseInsensitive(INTERNAL_SENDER_DESCRIPTION);
+		return this.getCaseInsensitive(FIELD_INTERNAL_SENDER_DESCRIPTION);
 	}
 
 	@Override
 	public String getInternalSenderIdentifier() {
-		return this.getCaseInsensitive(INTERNAL_SENDER_IDENTIFIER);
+		return this.getCaseInsensitive(FIELD_INTERNAL_SENDER_IDENTIFIER);
 	}
 
 	@Override
 	public String getOrganizationAddress() {
-		return this.getCaseInsensitive(ORGANIZATION_ADDRESS);
+		return this.getCaseInsensitive(FIELD_ORGANIZATION_ADDRESS);
 	}
 
 	@Override
 	public String getPayloadOxum() {
-		return this.getCaseInsensitive(PAYLOAD_OXUM);
+		return this.getCaseInsensitive(FIELD_PAYLOAD_OXUM);
 	}
 
 	@Override
@@ -198,12 +201,12 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public String getSourceOrganization() {
-		return this.getCaseInsensitive(SOURCE_ORGANIZATION);
+		return this.getCaseInsensitive(FIELD_SOURCE_ORGANIZATION);
 	}
 
 	@Override
 	public void setBagCount(String bagCount) {
-		this.put(BAG_COUNT, bagCount);		
+		this.put(FIELD_BAG_COUNT, bagCount);		
 	}
 
 	@Override
@@ -218,19 +221,19 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public void setBagGroupIdentifier(String bagGroupIdentifier) {
-		this.put(BAG_GROUP_IDENTIFIER, bagGroupIdentifier);
+		this.put(FIELD_BAG_GROUP_IDENTIFIER, bagGroupIdentifier);
 		
 	}
 
 	@Override
 	public void setBagSize(String bagSize) {
-		this.put(BAG_SIZE, bagSize);
+		this.put(FIELD_BAG_SIZE, bagSize);
 		
 	}
 
 	@Override
 	public void setBaggingDate(String baggingDate) {
-		this.put(BAGGING_DATE, baggingDate);		
+		this.put(FIELD_BAGGING_DATE, baggingDate);		
 	}
 
 	@Override
@@ -254,54 +257,54 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public void setContactEmail(String contactEmail) {
-		this.put(CONTACT_EMAIL, contactEmail);
+		this.put(FIELD_CONTACT_EMAIL, contactEmail);
 		
 	}
 
 	@Override
 	public void setContactName(String contactName) {
-		this.put(CONTACT_NAME, contactName);
+		this.put(FIELD_CONTACT_NAME, contactName);
 		
 	}
 
 	@Override
 	public void setContactPhone(String contactPhone) {
-		this.put(CONTACT_PHONE, contactPhone);
+		this.put(FIELD_CONTACT_PHONE, contactPhone);
 		
 	}
 
 	@Override
 	public void setExternalDescription(String externalDescription) {
-		this.put(EXTERNAL_DESCRIPTION, externalDescription);
+		this.put(FIELD_EXTERNAL_DESCRIPTION, externalDescription);
 		
 	}
 
 	@Override
 	public void setExternalIdentifier(String externalIdentifier) {
-		this.put(EXTERNAL_IDENTIFIER, externalIdentifier);
+		this.put(FIELD_EXTERNAL_IDENTIFIER, externalIdentifier);
 		
 	}
 
 	@Override
 	public void setInternalSenderDescription(String internalSenderDescription) {
-		this.put(INTERNAL_SENDER_DESCRIPTION, internalSenderDescription);
+		this.put(FIELD_INTERNAL_SENDER_DESCRIPTION, internalSenderDescription);
 		
 	}
 
 	@Override
 	public void setInternalSenderIdentifier(String internalSenderIdentifier) {
-		this.put(INTERNAL_SENDER_IDENTIFIER, internalSenderIdentifier);
+		this.put(FIELD_INTERNAL_SENDER_IDENTIFIER, internalSenderIdentifier);
 		
 	}
 
 	@Override
 	public void setOrganizationAddress(String organizationAddress) {
-		this.put(ORGANIZATION_ADDRESS, organizationAddress);		
+		this.put(FIELD_ORGANIZATION_ADDRESS, organizationAddress);		
 	}
 
 	@Override
 	public void setPayloadOxum(String payloadOxsum) {
-		this.put(PAYLOAD_OXUM, payloadOxsum);		
+		this.put(FIELD_PAYLOAD_OXUM, payloadOxsum);		
 	}
 	
 	@Override
@@ -317,11 +320,41 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 	
 	@Override
 	public void setSourceOrganization(String sourceOrganization) {
-		this.put(SOURCE_ORGANIZATION, sourceOrganization);		
+		this.put(FIELD_SOURCE_ORGANIZATION, sourceOrganization);		
 	}
 	
 	@Override
 	public String getType() {
 		return BagInfoTxt.TYPE;
 	}
+	
+	@Override
+	public List<String> getStandardFields() {
+		List<String> standardFields = new ArrayList<String>();
+		Field[] fields = this.getClass().getFields();
+		try {
+			for(Field field : fields) {
+				if (field.getName().startsWith("FIELD_") && this.containsKey(field.get(this))) {
+					standardFields.add((String)field.get(this));
+				}
+			}			
+		}
+		catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+		return standardFields;
+	}
+	
+	@Override
+	public List<String> getNonstandardFields() {
+		List<String> standardFields = this.getStandardFields();
+		List<String> nonstandardFields = new ArrayList<String>();
+		for(String key : this.keySet()) {
+			if (! standardFields.contains(key)) {
+				nonstandardFields.add(key);
+			}
+		}		
+		return nonstandardFields;
+	}
+	
 }

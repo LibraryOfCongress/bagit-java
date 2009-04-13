@@ -14,7 +14,7 @@ public class RequiredBagInfoTxtFieldsStrategyTest {
 
 	@Test
 	public void testVerify() {
-		VerifyStrategy strategy = new RequiredBagInfoTxtFieldsStrategy(new String[] {BagInfoTxtImpl.BAG_COUNT, BagInfoTxtImpl.BAG_GROUP_IDENTIFIER});
+		VerifyStrategy strategy = new RequiredBagInfoTxtFieldsStrategy(new String[] {BagInfoTxtImpl.FIELD_BAG_COUNT, BagInfoTxtImpl.FIELD_BAG_GROUP_IDENTIFIER});
 		
 		Bag bag = new BagImpl();
 		BagInfoTxt bagInfo = bag.getBagPartFactory().createBagInfoTxt();

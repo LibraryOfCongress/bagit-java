@@ -2,6 +2,7 @@ package gov.loc.repository.bagit;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public interface BagInfoTxt extends BagFile, Map<String, String> {
@@ -89,5 +90,9 @@ public interface BagInfoTxt extends BagFile, Map<String, String> {
 	String getInternalSenderIdentifier();
 	
 	String getInternalSenderDescription();
+	
+	List<String> getStandardFields();
+	
+	List<String> getNonstandardFields();
 	
 }
