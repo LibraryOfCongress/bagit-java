@@ -1,0 +1,98 @@
+Instructions for building the deposit web application stack on stock solaris10. 
+If you only want to work with the code as a developer see DEVELOP.
+
+- install sun studio (compilers)
+  package is at /vol/sysbackup/solaris/SunStudio12ml-solaris-x86-200709-pkg.tar.bz2
+  ...or download from http://developers.sun.com/sunstudio/
+
+- configure PATH in /etc/profile
+  export PATH=/opt/SUNWspro/bin:/opt/local/python2.6/bin:/usr/ccs/bin:/opt/local/postgresql/bin:/usr/sbin:$PATH
+  pfexec reboot
+
+- mkdir /opt/local
+  chown user:group /opt/local # avoid having to install as root
+
+- get deposit source code
+  tarball is in /vol/transfer/deposit/builds
+  ...or svn export https://rdc.lctl.gov/svn/transfer/deposit/tags/{release_tag} 
+  cd /opt/local
+  ln -s {release_tag} deposit
+
+- install mysql-5.0
+  tarball is at /vol/transfer/deposit/dependency-libs
+  ...or download mysql-5.0.77 source from http://dev.mysql.com/downloads/mysql/5.0.html#source
+  tar xvfz mysql-5.0.77.tar.gz
+  cd mysql-5.0.77
+  ./configure --prefix=/opt/local/mysql5 --enable-thread-safe-client 
+  make install
+  ## pfexec groupadd mysql
+  ## pfexec useradd -s /bin/false -g mysql mysql
+  cp /ndnp/chronam/conf/my.cnf /ndnp/mysql5/my.cnf
+  /opt/local/mysql5/bin/mysql_install_db 
+  ## pfexec chown -R mysql:mysql /opt/local/mysql5/var/
+  # start it up
+  mysqld_safe 
+  /opt/local/mysql5/bin/mysqladmin -u root -p password "pick_an_admin_pass"
+  echo "CREATE DATABASE deposit{tag} CHARACTER SET utf8; GRANT ALL ON deposit{tag}.* to 'deposit{tag}'@'localhost' identified by 'pick_a_user_pass';" | mysql -u root -p
+
+- install python2.6
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or wget http://python.org/ftp/python/2.6.1/Python-2.6.1.tgz
+  ./configure --prefix=/opt/local/python2.6 --enable-shared --with-solaris
+  make install
+
+- install MySQLdb-1.2.2 (mysql for python)
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or http://sourceforge.net/project/showfiles.php?group_id=22307
+  tar xvfz MySQLdb-1.2.2.tar.gz
+  cd MySQLdb-1.2.2
+  LDFLAGS="-L/opt/local/python2.6/lib -L/opt/local/mysql5/lib/mysql" python setup.py install
+
+- install django-1.0.2
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or wget http://www.djangoproject.com/download/1.0.2/tarball/
+  gunzip Django-1.0.2.tar.gz
+  tar xvf Django-1.0.2.tar
+  cd Django-1.0.2
+  python setup.py install
+
+- set system runtime library path
+  pfexec crle -c /var/ld/ld.config -l /lib:/usr/lib:/opt/local/python2.6/lib:/opt/local/mysql5/lib
+  
+- build and configure deposit application
+  cp /opt/local/deposit/conf/depositqa-settings.py /opt/local/deposit/deposit/settings.py
+  edit /opt/local/deposit/deposit/settings.py and change:
+    DATABASE_NAME
+    DATABASE_USER
+    DATABASE_PASSWORD
+    ...appropriately.
+  cd /opt/local/deposit/deposit
+  python manage.py syncdb
+
+- install apache-2.2.11
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or download from wget http://httpd.apache.org/download.cgi
+  gunzip httpd-2.2.10.tar.gz 
+  tar xvf httpd-2.2.10.tar 
+  cd httpd-2.2.10
+  ./configure --prefix=/opt/local/apache2
+  make
+  make install
+  cp /opt/local/deposit/conf/depositqa-httpd.conf /opt/local/apache2/conf/httpd.conf
+
+- mod_wsgi
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or wget http://modwsgi.googlecode.com/files/mod_wsgi-2.3.tar.gz
+  gunzip mod_wsgi-2.3.tar.gz 
+  tar xvf mod_wsgi-2.3.tar 
+  cd mod_wsgi-2.3
+  ./configure --with-apxs=/opt/local/apache2/bin/apxs --with-python=/opt/local/python2.6/bin/python
+  make
+  make install
+  mkdir /opt/local/.python-eggs
+  pfexec chown daemon:daemon /opt/local/.python-eggs
+
+- start apache
+  pfexec su -
+  /opt/local/apache2/bin/apachectl stop
+  /opt/local/apache2/bin/apachectl start
