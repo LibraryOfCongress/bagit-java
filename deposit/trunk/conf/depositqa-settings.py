@@ -9,7 +9,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'postgresql_psycopg2'
+DATABASE_ENGINE = 'mysql'
 DATABASE_NAME = 'deposit'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'deposit'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'DATABASE_PASSWORD'         # Not used with sqlite3.

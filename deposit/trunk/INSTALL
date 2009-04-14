@@ -2,7 +2,8 @@ Instructions for building the deposit web application stack on stock solaris10.
 If you only want to work with the code as a developer see DEVELOP.
 
 - install sun studio (compilers)
-  http://developers.sun.com/sunstudio/
+  package is at /vol/sysbackup/solaris/SunStudio12ml-solaris-x86-200709-pkg.tar.bz2
+  ...or download from http://developers.sun.com/sunstudio/
 
 - configure PATH in /etc/profile
   export PATH=/opt/SUNWspro/bin:/opt/local/python2.6/bin:/usr/ccs/bin:/opt/local/postgresql/bin:/usr/sbin:$PATH
@@ -12,47 +13,65 @@ If you only want to work with the code as a developer see DEVELOP.
   chown user:group /opt/local # avoid having to install as root
 
 - get deposit source code
+  tarball is in /vol/transfer/deposit/builds
+  ...or svn export https://rdc.lctl.gov/svn/transfer/deposit/tags/{release_tag} 
   cd /opt/local
-  svn export https://rdc.lctl.gov/svn/transfer/deposit/tags/{release_tag} 
   ln -s {release_tag} deposit
 
-- install postgresql 
-  wget http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2Fsource%2Fv8.3.5%2Fpostgresql-8.3.5.tar.gz
-  tar xvfz postgresql-8.3.5.tar.gz
-  cd postgresql-8.3.5
-  ./configure --without-readline --prefix=/opt/local/postgresql-8.3.5
+- install mysql-5.0
+  tarball is at /vol/transfer/deposit/dependency-libs
+  ...or download mysql-5.0.77 source from http://dev.mysql.com/downloads/mysql/5.0.html#source
+  tar xvfz mysql-5.0.77.tar.gz
+  cd mysql-5.0.77
+  ./configure --prefix=/opt/local/mysql5 --enable-thread-safe-client 
   make install
-  
+  ## pfexec groupadd mysql
+  ## pfexec useradd -s /bin/false -g mysql mysql
+  cp /ndnp/chronam/conf/my.cnf /ndnp/mysql5/my.cnf
+  /opt/local/mysql5/bin/mysql_install_db 
+  ## pfexec chown -R mysql:mysql /opt/local/mysql5/var/
+  # start it up
+  mysqld_safe 
+  /opt/local/mysql5/bin/mysqladmin -u root -p password "pick_an_admin_pass"
+  echo "CREATE DATABASE deposit{tag} CHARACTER SET utf8; GRANT ALL ON deposit{tag}.* to 'deposit{tag}'@'localhost' identified by 'pick_a_user_pass';" | mysql -u root -p
+
 - install python2.6
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or wget http://python.org/ftp/python/2.6.1/Python-2.6.1.tgz
   ./configure --prefix=/opt/local/python2.6 --enable-shared --with-solaris
   make install
 
-- install psycopg2
-  wget http://www.initd.org/pub/software/psycopg/psycopg2-2.0.8.tar.gz
-  tar xvfz psycopg2-2.0.8.tar.gz
-  cd psycopg2-2.0.8
-  edit setup.cfg to have this line:
-    library_dirs=/opt/local/postgresql/lib:/opt/local/python2.6/lib
-  python setup.py install
+- install MySQLdb-1.2.2 (mysql for python)
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or http://sourceforge.net/project/showfiles.php?group_id=22307
+  tar xvfz MySQLdb-1.2.2.tar.gz
+  cd MySQLdb-1.2.2
+  LDFLAGS="-L/opt/local/python2.6/lib -L/opt/local/mysql5/lib/mysql" python setup.py install
 
-- django
-  wget http://www.djangoproject.com/download/1.0/tarball/
-  gunzip Django-1.0.tar.gz
-  tar xvf Django-1.0.tar
-  cd Django-1.0
+- install django-1.0.2
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or wget http://www.djangoproject.com/download/1.0.2/tarball/
+  gunzip Django-1.0.2.tar.gz
+  tar xvf Django-1.0.2.tar
+  cd Django-1.0.2
   python setup.py install
 
 - set system runtime library path
-  pfexec crle -c /var/ld/ld.config -l /lib:/usr/lib:/opt/local/python/lib:/opt/local/postgresql/lib
+  pfexec crle -c /var/ld/ld.config -l /lib:/usr/lib:/opt/local/python2.6/lib:/opt/local/mysql5/lib
   
 - build and configure deposit application
   cp /opt/local/deposit/conf/depositqa-settings.py /opt/local/deposit/deposit/settings.py
-  edit /opt/local/deposit/deposit/settings.py and change DATABASE_PASSWORD
+  edit /opt/local/deposit/deposit/settings.py and change:
+    DATABASE_NAME
+    DATABASE_USER
+    DATABASE_PASSWORD
+    ...appropriately.
   cd /opt/local/deposit/deposit
   python manage.py syncdb
 
-- apache
-  wget http://apache.mirrors.tds.net/httpd/httpd-2.2.10.tar.gz
+- install apache-2.2.11
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or download from wget http://httpd.apache.org/download.cgi
   gunzip httpd-2.2.10.tar.gz 
   tar xvf httpd-2.2.10.tar 
   cd httpd-2.2.10
@@ -62,7 +81,8 @@ If you only want to work with the code as a developer see DEVELOP.
   cp /opt/local/deposit/conf/depositqa-httpd.conf /opt/local/apache2/conf/httpd.conf
 
 - mod_wsgi
-  wget http://modwsgi.googlecode.com/files/mod_wsgi-2.3.tar.gz
+  tarball is in /vol/transfer/deposit/dependency-libs
+  ...or wget http://modwsgi.googlecode.com/files/mod_wsgi-2.3.tar.gz
   gunzip mod_wsgi-2.3.tar.gz 
   tar xvf mod_wsgi-2.3.tar 
   cd mod_wsgi-2.3
