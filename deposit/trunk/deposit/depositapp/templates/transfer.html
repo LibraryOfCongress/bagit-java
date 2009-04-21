@@ -1,36 +1,33 @@
 {% extends "base.html" %}
 
-{% block link %}
-	{{ block.super }}
-	<style type="text/css" >
-		@import url(/media/css/deposit_forms.css);
-	</style>
-{% endblock link %}
+{% block styles_extra%}
+    <style type="text/css" >
+        @import url(/media/css/deposit_forms.css);
+    </style>
+{% endblock styles_extra %}
 
-{% block nav %}
-	{{ block.super }}
-{% endblock nav %}
+{% block title %}Transfer {{ transfer.id }} ({{ transfer.project.name }}){% endblock title %}
 
 {% block content %}
 
 <div id="content">
   <div id="transfer">
     <div id="transferDetails">
-	    <h3>Transfer {{ transfer.id }} details</h3>
-	    <ul>
-	      <li>Package IDs: {{ transfer.package_ids }}</li>
-	      <li>User: {{ transfer.user }}</li>
-	      <li>Project: <a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></li>
-	      <li>Initiated: {{ transfer.created }}</li>
-	      <li>Received: Not yet received</li>
-            {% if transfer.received %}
-                <li>Received: {{ transfer.received }}</li>
-                <li>Received by: <a href="{% url user_url transfer.received_by.username %}">{{ transfer.received_by}}</a></li>
-            {% else %}
-                <li>Received: Not yet received</li>
-            {% endif %}
-	        {% block transfer_content %}{% endblock %}
-	    </ul>
+        <h3>Transfer {{ transfer.id }} details</h3>
+        <ul>
+          <li>Package IDs: {{ transfer.package_ids }}</li>
+          <li>User: {{ transfer.user }}</li>
+          <li>Project: <a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></li>
+          <li>Initiated: {{ transfer.created }}</li>
+          <li>Received: Not yet received</li>
+        {% if transfer.received %}
+            <li>Received: {{ transfer.received }}</li>
+            <li>Received by: <a href="{% url user_url transfer.received_by.username %}">{{ transfer.received_by}}</a></li>
+        {% else %}
+            <li>Received: Not yet received</li>
+        {% endif %}
+            {% block transfer_content %}{% endblock %}
+        </ul>
     </div>
     <div id="receivedPolicy">
 	    <h3 class="red">Reminder of received policy for {{ transfer.project }}:</h3>
@@ -38,13 +35,13 @@
     </div>
     {% if user.is_staff and not transfer.received %}
         <div id="markReceived">
-	      <div id="bottom_nav">
+	  <div id="bottom_nav">
             <h3>Mark received</h3>
             <form method="post" action="{% url transfer_received_url transfer.id %}">
-		      <fieldset id="submit">
-			      <input class="submit" name="submit" type="submit" value="Mark received" />
-			      &nbsp;&nbsp;<img src="images/back.gif" alt="" />&nbsp;<a href="/">Back to Reports</a>
-	          </fieldset>
+              <fieldset id="submit">
+                  <input class="submit" name="submit" type="submit" value="Mark received" />
+                  &nbsp;&nbsp;<img src="images/back.gif" alt="" />&nbsp;<a href="/">Back to Reports</a>
+              </fieldset>
             </form>
           </div>
         </div>

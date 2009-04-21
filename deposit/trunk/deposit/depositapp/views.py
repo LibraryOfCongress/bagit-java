@@ -140,9 +140,8 @@ def user(request, username=None, command=None):
         }, context_instance=RequestContext(request))
 
 
+#login_required
 def transfer(request, transfer_id):
-    if not request.user.is_authenticated():
-        return HttpResponseForbidden()
     if request.method == 'POST':
         return HttpResponseNotAllowed()
     trans = get_object_or_404(models.Transfer, id=transfer_id)
@@ -179,7 +178,6 @@ def transfer_received(request, transfer_id):
 @login_required
 def create_transfer(request, transfer_type):
     form_class = getattr(forms, transfer_type + "Form")
-    template_name = "transfer_form.html"
     if request.method == 'GET':
         project_id = request.GET['project_id']         
     if request.method == 'POST':
@@ -197,10 +195,10 @@ def create_transfer(request, transfer_type):
     else:
         form = form_class()
 
-    return render_to_response(template_name, {
+    return render_to_response('transfer_form.html', {
         'form': form,
         'project_id': project_id, 
-        'transfer_type':transfer_type,
+        'transfer_type': transfer_type,
         }, context_instance=RequestContext(request))
 
 @login_required

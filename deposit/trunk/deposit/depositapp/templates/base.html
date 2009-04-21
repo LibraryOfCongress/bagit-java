@@ -2,11 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
 	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=iso-8859-1" />
-            <title>{% block title %}Deposit APP{% endblock title %} - Repository Development Center (Library of Congress)</title>
-    {% block link %}
+            <title>Deposit - {% block title %}Repository Development Center (Library of Congress){% endblock title %}</title>
+    {% block styles %}
             <link rel="stylesheet" type="text/css" media="print" href="/media/css/deposit_print.css" />
             <link rel="stylesheet" type="text/css" href="/media/css/deposit.css" />
-    {% endblock link %}
+    {% endblock styles %}
+    {% block styles_extra %}
+    {% endblock styles_extra %}
 	</head>
     <body >
         <div id="container"><a id="skip" href="#skip_menu">skip navigation</a>

@@ -1,16 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Deposit APP{% endblock title %}
+{% block title %}Log in{% endblock title %}
 
-{% block link %}
-	{{ block.super }}
-	<style type="text/css" >
-	@import url(/media/css/deposit_login.css);
-	</style>
-{% endblock link %}
-
-{% block nav %}
-{% endblock nav %}
+{% block styles_extra %}
+    <style type="text/css" >
+    @import url(/media/css/deposit_login.css);
+    </style>
+{% endblock styles_extra %}
 
 {% block content %}
 
