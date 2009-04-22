@@ -34,7 +34,7 @@ urlpatterns += patterns('deposit.depositapp.views',
     url(r'^user/(?P<username>\w+)/(?P<command>\w+)$', 'user', 
         name='user_command_url'),
 
-    url(r'^transfer/$', 'transfer_list', name='transfers_url'),
+    url(r'^transfer/$', 'transfer_list', name='transfer_list'),
     url(r'^transfer/(?P<transfer_id>\d+)$', 'transfer', 
         name='transfer_url'),
     url(r'^transfer/create(?P<transfer_type>\w+)$', 'create_transfer', 

@@ -34,9 +34,11 @@
   </div>
   <div id="transferList">
     <table border="0">
-	    <tr>
-        	<th class="tabs on" scope="col">All Transfers</th>
-	        <th class="tabs pagenav" colspan="2" scope="col"><a href="#"><img src="images/prev.gif" alt="previous" width="9" height="9" /></a>&nbsp;PAGE: <a href="#">1</a>&nbsp;<a href="#"><img src="images/next.gif" alt="next" width="9" height="9" /></a></th>
+        <tr>
+            <th class="tabs on" scope="col">All Transfers</th>
+            <th class="tabs pagenav" colspan="2" scope="col">
+                {% include "paginator.html" %}
+            </th>
       	</tr>
       	<tr>
       	  <th scope="col">Transfer</th>
@@ -47,7 +49,7 @@
       	  <th scope="col">Package IDs</th>
       	  <th scope="col">Status</th>
       	</tr>
-        {% for transfer in transfers %}
+        {% for transfer in page.object_list %}
         <tr>
             <td><a class="bold" href="{{ transfer.get_absolute_url }}">{{ transfer.id }}</a></td>
             <td><a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></td>

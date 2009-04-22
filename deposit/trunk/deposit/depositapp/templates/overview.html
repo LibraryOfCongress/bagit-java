@@ -20,16 +20,16 @@
       <h3>My Transfers {% if deposit_user.projects.count %}<span>({{ deposit_user.projects.count }})</span>{% endif %}</h3>
 
       <ul>
-        <li><a href="{% url transfers_url %}?{% querystring query username=user.username  %}">List my transfers</a></li>
+        <li><a href="{% url transfer_list %}?{% querystring query username=user.username %}">List my transfers</a></li>
         <li><h3 class="border">Transfers by Project</h3></li>
         <ul>
           {% if deposit_user.is_staff %}
             {% for project in projects %}
-          <li><a href="{% url transfers_url %}?{% querystring query project_id=project.id %}">{{ project }}</a></li>
+          <li><a href="{% url transfer_list %}?{% querystring query project_id=project.id %}">{{ project }}</a></li>
             {% endfor %}
           {% else %}
             {% for user_project in deposit_user.projects.all %}
-          <li><a href="{% url transfers_url %}?{% querystring query project_id=user_project.project.id username=deposit_user.username  %}">{{ user_project.project }}</a></li>
+          <li><a href="{% url transfer_list %}?{% querystring query project_id=user_project.project.id username=deposit_user.username  %}">{{ user_project.project }}</a></li>
             {% endfor %}
           {% endif %}
         </ul>

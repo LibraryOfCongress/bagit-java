@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import login, logout_then_login
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
@@ -11,6 +12,38 @@ from django.views.generic.create_update import create_object
 
 from deposit.depositapp import forms, models
 from deposit.depositapp.queries import TransferQuery
+
+
+# Borrowed wholesale from WDL catalog.  Maybe this should go
+# into some util library somewhere instead of cut-n-pastin'. /me sighs
+def page_info(paginator, page_num):
+    """
+    Set up all the details needed to show pagination links happily.
+    """
+    try:
+        page_num = int(page_num)
+    except ValueError:
+        page_num = 1
+    info = {'page_num': page_num}
+    if paginator.num_pages > 10:
+        info['has_more_than_ten'] = True
+        if page_num < 10:
+            info['show_range'] = range(1, 11)
+            info['start_hellip'] = False
+            info['end_hellip'] = True
+        else:
+            if page_num+5 >= paginator.num_pages:
+                info['show_range'] = range(paginator.num_pages-10,
+                    paginator.num_pages+1)
+                info['end_hellip'] = False
+            else:
+                info['show_range'] = range(page_num-5, page_num+5)
+                info['end_hellip'] = True
+            info['start_hellip'] = True
+    else:
+        info['has_more_than_ten'] = False
+    return info
+
 
 
 @login_required
@@ -74,7 +107,7 @@ def user(request, username=None, command=None):
     elif request.user.is_staff \
         or request.user.is_superuser:
         try:
-            deposit_user = models.User.objects.get(username=username)
+            deposit_user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise Http404
     else:
@@ -186,7 +219,7 @@ def create_transfer(request, transfer_type):
         if form.is_valid():
             new_object = form.save(commit=False)                     
             new_object.project = models.Project.objects.get(id=project_id)
-            new_object.user = models.User.objects.get(
+            new_object.user = User.objects.get(
                 username=request.user.username)
             new_object.save()
             request.user.message_set.create(message="The transfer was registered.  A confirmation has been sent to %s and %s." % 
@@ -238,7 +271,7 @@ def transfer_list(request):
             allow = True
         else:
             # 2a.
-            project_users = models.User.objects.filter(projects__project__id=q.project_id)
+            project_users = User.objects.filter(projects__project__id=q.project_id)
             if q.username in [user.username for user in project_users]:
                 allow = True
         if not allow:
@@ -255,8 +288,14 @@ def transfer_list(request):
 
     # If they've made it this far, it's a valid request.
     transfers = q.query()
+    paginator = Paginator(transfers, 25)
+    page_num = request.GET.get('p', 1)
+    page = paginator.page(page_num)
     return render_to_response('transfer_list.html', {
         'query': q, 
         'transfers': transfers,
+        'paginator': paginator,
+        'page': page,
+        'page_info': page_info(paginator, page_num),
         }, context_instance=RequestContext(request))
 
