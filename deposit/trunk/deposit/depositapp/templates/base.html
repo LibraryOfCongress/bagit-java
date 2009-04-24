@@ -19,7 +19,7 @@
                     {% if user.is_authenticated %}
                         <li id="welcome">Hello, <a href="{% url overview_url user.username %}">{{ user.username }}</a></li>
 		        <li id="log"><img src="/media/images/login.gif" alt="" />&nbsp;<a href="{% url logout_url %}">Log out</a></li>
-		        <li id="info"><img src="/media/images/info.gif" alt="" />&nbsp;<a href="{% url user_url user.username %}">Update User Info</a></li>
+		        <li id="info"><img src="/media/images/info.gif" alt="" />&nbsp;<a href="{% url user user.username %}">Update User Info</a></li>
                     {% else %}
  	        	<li id="welcome">You are not logged in.</li>
                     {% endif %}
@@ -47,7 +47,7 @@
                 </ul>
             </div>
             {% endblock nav %}
-	    <div id="content"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
+	    <div id="content"><a id="skip_menu">&nbsp;</a>
                 {% if messages %}
                     <div id="messages">
                         <ul>
