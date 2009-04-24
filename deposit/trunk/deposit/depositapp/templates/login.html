@@ -19,9 +19,9 @@
 	<form method="post" action=".">
 	   <fieldset>
 	   		{{ form.username.errors }}
-		   <label for="user">Username</label>&nbsp;{{ form.username }}<br />
+		   <label for="id_username">Username</label>&nbsp;{{ form.username }}<br />
 	   		{{ form.password.errors }}
-		   <label for="pswd">Password</label>&nbsp;{{ form.password }}<br />
+		   <label for="id_password">Password</label>&nbsp;{{ form.password }}<br />
 	   </fieldset>
 		<fieldset id="submit">
                 <input type="hidden" name="next" value="{{ next }}" />
