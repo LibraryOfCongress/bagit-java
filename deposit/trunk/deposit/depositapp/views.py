@@ -76,22 +76,23 @@ def overview(request, username=None):
     """
     if username == request.user.username:
         deposit_user = request.user
-        is_user = True
     elif request.user.is_staff \
         or request.user.is_superuser:
         deposit_user = get_object_or_404(User, username=username)
-        is_user = False
     else:
         request.user.message_set.create(message='Invalid request.')
         return HttpResponseRedirect(reverse('overview_url',
             args=[request.user.username]))
     q = TransferQuery()
+    transfers = q.query()
     q.include_received = False
     projects = models.Project.objects.all()
     return render_to_response('overview.html', {
-        'deposit_user': deposit_user, 'is_user': is_user, 
-        'projects': projects, 'query':q},
-        context_instance=RequestContext(request))
+        'deposit_user': deposit_user, 
+        'projects': projects, 
+        'query': q,
+        'transfers': q.query(),
+        }, context_instance=RequestContext(request))
 
 @login_required
 def user(request, username=None, command=None):    
