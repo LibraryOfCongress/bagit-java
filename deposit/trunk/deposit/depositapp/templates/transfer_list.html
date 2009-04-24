@@ -53,7 +53,7 @@
         <tr>
             <td><a class="bold" href="{{ transfer.get_absolute_url }}">{{ transfer.id }}</a></td>
             <td><a href="{{ transfer.project.get_absolute_url }}">{{ transfer.project }}</a></td>
-            <td><a href="{{ transfer.user.get_absolute_url }}">{{ transfer.user }}</a></td>
+            <td><a href="{% url user transfer.user.username %}">{{ transfer.user.username }}</a></td>
             <td>{{ transfer.transfer_type }}</td>
             <td>{{ transfer.created }}</td>
             <td>{{ transfer.package_ids }}</td>

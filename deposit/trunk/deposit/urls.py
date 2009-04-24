@@ -30,7 +30,7 @@ urlpatterns += patterns('deposit.depositapp.views',
 
     url(r'^overview/(?P<username>\w+)?$', 'overview', name='overview_url'),
 
-    url(r'^user/(?P<username>\w+)$', 'user', name='user_url'),
+    url(r'^user/(?P<username>\w+)/?$', 'user', name='user'),
     url(r'^user/(?P<username>\w+)/(?P<command>\w+)$', 'user', 
         name='user_command_url'),
 

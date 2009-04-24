@@ -22,7 +22,7 @@
           <li>Received: Not yet received</li>
         {% if transfer.received %}
             <li>Received: {{ transfer.received }}</li>
-            <li>Received by: <a href="{% url user_url transfer.received_by.username %}">{{ transfer.received_by}}</a></li>
+            <li>Received by: <a href="{% url user transfer.received_by.username %}">{{ transfer.received_by}}</a></li>
         {% else %}
             <li>Received: Not yet received</li>
         {% endif %}
