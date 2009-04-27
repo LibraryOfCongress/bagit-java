@@ -1,0 +1,3 @@
+581ac0f64a0e0753d021ac0ea7ee088b  bagit.txt
+461f29d705fe0dfc37605f4f31c5317e  manifest-md5.txt
+2fb880ac91348b911149b1a07a71c68c  package-info.txt
