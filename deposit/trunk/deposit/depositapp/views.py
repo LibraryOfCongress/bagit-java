@@ -92,6 +92,7 @@ def overview(request, username=None):
         'projects': projects, 
         'query': q,
         'transfers': q.query(),
+        'title': 'Overview',
         }, context_instance=RequestContext(request))
 
 @login_required
@@ -125,6 +126,8 @@ def user(request, username=None, command=None):
     
     updated = False
     message = ''
+    password_message = ''
+
     if request.method == 'POST':
         if command == 'user':
             user_form = forms.AuthUserForm(request.POST, 
@@ -152,7 +155,8 @@ def user(request, username=None, command=None):
                 updated = True
                 message = 'Updated password.'
             else:
-                message = 'Please re-enter and confirm your new password again.'
+                message = 'Please check your changes and try again.'
+                password_message = 'Please re-enter and confirm your password information again.'
 
     if message:
         request.user.message_set.create(message=message)
@@ -171,10 +175,12 @@ def user(request, username=None, command=None):
         'user_form': user_form, 
         'profile_form': profile_form,
         'password_form': password_form, 
+        'password_message': password_message,
+        'title': 'User info for %s' % deposit_user,
         }, context_instance=RequestContext(request))
 
 
-#login_required
+@login_required
 def transfer(request, transfer_id):
     if request.method == 'POST':
         return HttpResponseNotAllowed()
@@ -182,16 +188,19 @@ def transfer(request, transfer_id):
     transfer_class = getattr(models, trans.transfer_type)
     transfer_sub = transfer_class.objects.get(id=transfer_id)
     template_name = "%s.html" % trans.transfer_type.lower()
-    return render_to_response(template_name, {'transfer':transfer_sub},
-            context_instance=RequestContext(request))    
+    return render_to_response(template_name, {
+        'transfer': transfer_sub,
+        'title': 'Transfer %s' % transfer_id,
+        }, context_instance=RequestContext(request))    
 
 @login_required
 def project(request, project_id):
     if request.method == 'POST':
         return HttpResponseNotAllowed()
     project = get_object_or_404(models.Project, id=project_id)
-    return render_to_response("project.html", {
+    return render_to_response('project.html', {
         'project': project,
+        'title': 'Project %s' % project.name,
         },
         context_instance=RequestContext(request))
 
@@ -216,7 +225,8 @@ def create_transfer(request, transfer_type):
         project_id = request.GET['project_id']         
     if request.method == 'POST':
         project_id = request.POST['project_id']
-        form = form_class(request.POST, request.FILES)
+        # Not doing uploads yet.
+        form = form_class(request.POST) #, request.FILES)
         if form.is_valid():
             new_object = form.save(commit=False)                     
             new_object.project = models.Project.objects.get(id=project_id)
@@ -233,6 +243,7 @@ def create_transfer(request, transfer_type):
         'form': form,
         'project_id': project_id, 
         'transfer_type': transfer_type,
+        'title': 'New %s Transfer' % form.Meta.model.TRANSFER_TYPE,
         }, context_instance=RequestContext(request))
 
 @login_required
@@ -298,5 +309,6 @@ def transfer_list(request):
         'paginator': paginator,
         'page': page,
         'page_info': page_info(paginator, page_num),
+        'title': 'Transfers',
         }, context_instance=RequestContext(request))
 

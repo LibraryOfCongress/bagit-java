@@ -60,6 +60,9 @@ class UserProject(models.Model):
     
 
 class Transfer(models.Model):
+    # Base value to be subclassed as appropriate.
+    TRANSFER_TYPE = None
+
     # Supplied list of packages included in transfer.
     # This is only a hint and may differ from what is discovered when the
     # delivered packages are examined.
@@ -72,7 +75,8 @@ class Transfer(models.Model):
     received = models.DateTimeField(null=True)
     updated = models.DateTimeField(auto_now=True)
     received_by = models.ForeignKey(AuthUser, null=True, related_name="transfers_received")
-    uuid = models.CharField(max_length=50, default=generate_uuid)
+    uuid = models.CharField(max_length=50, default=generate_uuid,
+        help_text="Unique identifiers for this transfer.")
 
     def __unicode__(self):
         return u'%s %s' % (self.transfer_type, self.id)    
@@ -92,6 +96,8 @@ class Ndnp(models.Model):
             help_text="List of LCCNs included in the transfer.")
 
 class NetworkTransfer(Transfer):
+    TRANSFER_TYPE = 'Network'
+
     location = models.URLField(verify_exists=False,
             help_text="URL from which the package is to be retrieved.")
     username = models.CharField(max_length=100, null=True, blank=True,
@@ -112,23 +118,25 @@ class NdnpNetworkTransfer(NetworkTransfer, Ndnp):
         self.transfer_type = self.__class__.__name__
 
 class ShipmentTransfer(Transfer):
+    TRANSFER_TYPE = 'Shipment'
+    
     MEDIA_TYPES = (
         ('EXTERNAL_HARDDRIVE', 'hard drive'),
         ('DVD', 'dvd'),
         ('CD','cd')
     )
     ship_date = models.DateField(
-            help_text="Date the package is shipped or will be shipped.")
+            help_text="Date the package will be shipped.")
     ship_method = models.CharField(max_length=100,
             help_text="The shipping service for the shipment, e.g., FedEx.")
     ship_tracking_number = models.CharField(max_length=150,
             help_text="The tracking number that identifies the shipment with the shipping service.")
     media_type = models.CharField(max_length=20, choices=MEDIA_TYPES,
-            help_text="The type of media that is being shipped.")
+            help_text="The type of media you are shipping.")
     media_identifiers = models.CharField(max_length=255, null=True, blank=True,
             help_text="Optional.  Identifiers for the media, e.g., a list of hard drive serial numbers.")
     number_media_shipped = models.IntegerField(
-            help_text="The number of media being shipped.")
+            help_text="The number of media you are shipping.")
     addl_equipment = models.CharField(max_length=255, null=True, blank=True,
             help_text="Optional.  Any additional equipment being shipped, e.g., cables.")
 

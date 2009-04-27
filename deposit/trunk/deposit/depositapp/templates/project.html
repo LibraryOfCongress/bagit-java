@@ -1,25 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Project - {{ project.name }}{% endblock title %}
-
-{% block styles_extra %}
-    <style type="text/css" >
-    @import url(/media/css/deposit_forms.css);
-    </style>
-{% endblock styles_extra %}
-
 {% block content %}
-
-<div id="project">
-    <div id="projectDetails">
-	    <h3>Project {{ project.name }} details</h3>
-	    <ul>
-	      <li>Contact Name: {{ project.contact_name }}</li>
-	      <li>Phone Number: {{ project.contact_phone }}</li>
-	      <li>Email: {{ project.contact_email }}</li>
-	      <li>Shipping Address: {{ project.shipping_address }}</li>
-	      <li>Received Policy: <p>{{ project.received_policy }}</p></li>
-	    </ul>
-    </div>
-</div>
+<h3>Project {{ project.name }} details</h3>
+<ul>
+  <li>Contact Name: {{ project.contact_name }}</li>
+  <li>Phone Number: {{ project.contact_phone }}</li>
+  <li>Email: {{ project.contact_email }}</li>
+  <li>Shipping Address: {{ project.shipping_address }}</li>
+  <li>Received Policy: <p>{{ project.received_policy }}</p></li>
+</ul>
 {% endblock %}

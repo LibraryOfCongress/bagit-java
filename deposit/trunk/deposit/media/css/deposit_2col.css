@@ -87,9 +87,9 @@ p {
 }
 #rightbox #shiptrans {
 	border: 0.1em solid #96c;
-	background: #FFF8FF url(/media/images/shiptransdot1.gif) top left repeat;
 	width: 15em;
-	height: 13em;
+	height: 13.1em;
+	background: #FFF8FF url(/media/images/shiptransdot1.gif) top left repeat;
 	margin: 1em 0 0 0;
 }
 #rightbox #nettrans img.title, #rightbox #shiptrans img.title {

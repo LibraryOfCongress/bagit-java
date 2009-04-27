@@ -3,7 +3,7 @@
 {% ifnotequal paginator.num_pages 1 %}
 
     {% if page.has_previous %}
-    <a rel="prev" href="{% url transfer_list %}?{% querystring query username=user.username %}&p={{ page.previous_page_number }}"><img src='/static/images/pageprev.gif' alt='previous page' /></a>
+    <a rel="prev" href="{% url transfer_list %}?{% querystring query username=user.username %}&p={{ page.previous_page_number }}"><img src='/media/images/pageprev.gif' alt='previous page' /></a>
     {% endif %}
     <span>Page:</span>
     {% if page_info.has_more_than_ten %}
@@ -32,7 +32,7 @@
         {% endfor %}
     {% endif %}
     {% if page.has_next %}
-    <a rel="next" href="{% url transfer_list %}?{% querystring query username=user.username%}&p={{ page.next_page_number }}"><img src='/static/images/pagenext.gif' alt='next page' /></a>
+    <a rel="next" href="{% url transfer_list %}?{% querystring query username=user.username%}&p={{ page.next_page_number }}"><img src='/media/images/pagenext.gif' alt='next page' /></a>
     {% endif %}
 
 {% endifnotequal %}

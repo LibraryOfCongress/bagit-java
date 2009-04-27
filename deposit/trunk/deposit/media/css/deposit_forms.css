@@ -29,10 +29,13 @@
 #content form fieldset label span {
 	font: normal 0.9em/1.3em Arial, Helvetica, sans-serif;
 }
+#content form fieldset p {
+        margin: 0 0 1em .1em;
+}
 #content form fieldset input {
 	width: 50em;
 	font: normal 1.0em/1.3em Arial, Helvetica, sans-serif;
-	margin: 0 auto 1em 1em;
+	margin: 0 auto 0 1em;
 }
 #content form fieldset input.short {
 	width: 9.7em;
@@ -40,7 +43,7 @@
 #content form fieldset select {
 	width: 10em;
 	font: normal 1.0em/1.3em Arial, Helvetica, sans-serif;
-	margin: 0 auto 1em 1em;
+	margin: 0 auto 0 1em;
 }
 #content form fieldset input.submit {
 	width: auto;
@@ -53,18 +56,18 @@
 	border: 1px solid #f60;
 	padding: 0.3em;
 }
-#content #bottom_nav {
+#content .bottom_nav {
 	width:auto;
 	margin: 1em 0 0 0;
-	padding: 1em 1em 1em 1em;
+	padding: 1em 1em 2em 1em;
 	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
 }
-#content #bottom_nav form {
+#content .bottom_nav form {
 	width: 60em;
 	margin: 0 0 0 0;
 	padding: 0;
 }
-#content #bottom_nav form fieldset#submit input.submit {
+#content .bottom_nav form fieldset#submit input.submit {
 	width: auto;
 	margin: 0;
 	padding: 0.3em;
@@ -75,24 +78,24 @@
 	text-transform: uppercase;
 	border: 1px solid #f60;
 }
-#bottom_nav {
+.bottom_nav {
 	width:auto;
 	margin: 1em 0 0 0;
 	padding: 1em 1em 1em 1em;
 	background: #fff url(/media/images/tabledot.gif) top left repeat-x;
 }
-#bottom_nav form {
+.bottom_nav form {
 	width: 60em;
 	margin: 0 0 0 0;
 	padding: 0;
 }
-#bottom_nav form fieldset {
+.bottom_nav form fieldset {
 	width: 30em;
 	margin: 0;
 	padding: 0;
 	border: 0;
 }
-#bottom_nav form fieldset#submit input.submit {
+.bottom_nav form fieldset#submit input.submit {
 	width: auto;
 	margin: 0;
 	padding: 0.3em;
@@ -102,4 +105,9 @@
 	color: #f60;
 	text-transform: uppercase;
 	border: 1px solid #f60;
+}
+
+.errorlist { 
+    color: #900; 
+    font-weight: bold;
 }

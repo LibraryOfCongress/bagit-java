@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
 	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=iso-8859-1" />
-            <title>Deposit - {% block title %}Repository Development Center (Library of Congress){% endblock title %}</title>
+            <title>Deposit - {% block title %}{{ title }}{% endblock title %}</title>
     {% block styles %}
             <link rel="stylesheet" type="text/css" media="print" href="/media/css/deposit_print.css" />
             <link rel="stylesheet" type="text/css" href="/media/css/deposit.css" />
@@ -47,28 +47,33 @@
                 </ul>
             </div>
             {% endblock nav %}
-	    <div id="content"><a id="skip_menu">&nbsp;</a>
+
+            {% block page_head %}
+            <div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
+                <h1>{{ title }}</h1>
                 {% if messages %}
-                    <div id="messages">
-                        <ul>
-                            {% for message in messages %}
-                                <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                <div id="messages">
+                    {% for message in messages %}
+                        <h3 class="errorlist">{{ message }}</h3>
+                    {% endfor %}
+                </div>
                 {% endif %}
+            </div>
+            {% endblock page_head %}
+
+	    <div id="content"><a id="skip_menu">&nbsp;</a>
 
                 {% block content %}
                 {% endblock content %}
 
 	    </div>
-		<div id="footer">
-		   <ul id="footlist">
-			<li><a href="http://www.loc.gov/">Library of Congress</a>&nbsp;|</li>
-			<li><a href="#">About This Application</a>&nbsp;|</li>
-			<li><a href="https://beryllium.rdc.lctl.gov/rdc/wiki/Main_Page">About Repository Development Center</a></li>
-		  </ul>
-		</div>
-	  </div>
+            <div id="footer">
+                <ul id="footlist">
+                    <li><a href="http://www.loc.gov/">Library of Congress</a>&nbsp;|</li>
+                    <li><a href="#">About This Application</a>&nbsp;|</li>
+                    <li><a href="https://beryllium.rdc.lctl.gov/rdc/wiki/Main_Page">About Repository Development Center</a></li>
+                </ul>
+            </div>
+	</div>
     </body>
 </html>
