@@ -31,6 +31,9 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  
 RELEASE NOTES:
 
+Changes in 2.4:
+1. Added support for getting lists of standard and non-standard fields in manifests.
+
 Changes in 2.3:
 1. Trial implementation of writer for depositing serialized bags using SWORD.
 2. Trial implementation of writer for depositing unserialized bags using BOB.
