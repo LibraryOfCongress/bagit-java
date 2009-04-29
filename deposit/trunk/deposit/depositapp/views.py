@@ -135,7 +135,7 @@ def user(request, username=None, command=None):
             if user_form.is_valid():
                 user_form.save()
                 updated = True
-                message = 'Updated user information.'
+                message = 'Your information has been updated.'
             else:
                 message = 'Please check your changes and try again.'
         elif command == 'profile':
@@ -144,7 +144,7 @@ def user(request, username=None, command=None):
             if profile_form.is_valid():
                 profile_form.save()
                 updated = True
-                message = 'Updated user information.'
+                message = 'Your information has been updated.'
             else:
                 message = 'Please check your changes and try again.'
         elif command == 'password':
@@ -153,7 +153,7 @@ def user(request, username=None, command=None):
             if password_form.is_valid():
                 password_form.save()
                 updated = True
-                message = 'Updated password.'
+                message = 'Your information has been updated.'
             else:
                 message = 'Please check your changes and try again.'
                 password_message = 'Please re-enter and confirm your password information again.'

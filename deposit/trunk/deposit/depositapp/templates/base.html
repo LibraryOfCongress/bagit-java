@@ -51,6 +51,10 @@
             {% block page_head %}
             <div id="page_head"><span style="width: 100%;"><a id="skip_menu">&nbsp;</a></span>
                 <h1>{{ title }}</h1>
+            </div>
+            {% endblock page_head %}
+
+	    <div id="content"><a id="skip_menu">&nbsp;</a>
                 {% if messages %}
                 <div id="messages">
                     {% for message in messages %}
@@ -58,10 +62,6 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-            </div>
-            {% endblock page_head %}
-
-	    <div id="content"><a id="skip_menu">&nbsp;</a>
 
                 {% block content %}
                 {% endblock content %}
