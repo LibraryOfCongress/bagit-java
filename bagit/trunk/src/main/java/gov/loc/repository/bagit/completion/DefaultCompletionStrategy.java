@@ -55,7 +55,7 @@ public class DefaultCompletionStrategy implements CompletionStrategy {
 	}
 	
 	protected void handleBagIt(Bag bag) {
-		bag.setBagItTxt(bag.getBagPartFactory().createBagItTxt());
+		bag.putBagFile(bag.getBagPartFactory().createBagItTxt());
 	}
 	
 	protected void handleBagInfo(Bag bag) {
@@ -63,7 +63,7 @@ public class DefaultCompletionStrategy implements CompletionStrategy {
 		if (bagInfo == null) {
 			if (this.generateBagInfoTxt) {
 				bagInfo = bag.getBagPartFactory().createBagInfoTxt();
-				bag.setBagInfoTxt(bagInfo);
+				bag.putBagFile(bagInfo);
 			} else {
 				return;
 			}
@@ -83,25 +83,25 @@ public class DefaultCompletionStrategy implements CompletionStrategy {
 	protected void handleTagManifests(Bag bag) {
 		//Remove existing tag manifests
 		for(Manifest manifest : bag.getTagManifests()) {
-			bag.removeTagFile(manifest.getFilepath());
+			bag.removeBagFile(manifest.getFilepath());
 		}
 		if (this.generateTagManifest) {
 			String filepath = ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, bag.getBagConstants());
 			Manifest manifest = new ManifestImpl(filepath, bag);
-			manifest.generate(bag.getTagFiles());
-			bag.putTagFile(manifest);
+			manifest.generate(bag.getTags());
+			bag.putBagFile(manifest);
 		}
 	}
 	
 	protected void handlePayloadManifests(Bag bag) {
 		//Remove existing payload manifests
 		for(Manifest manifest : bag.getPayloadManifests()) {
-			bag.removeTagFile(manifest.getFilepath());
+			bag.removeBagFile(manifest.getFilepath());
 		}
 		String filepath = ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, bag.getBagConstants());
 		Manifest manifest = new ManifestImpl(filepath, bag);
-		manifest.generate(bag.getPayloadFiles());
-		bag.putTagFile(manifest);
+		manifest.generate(bag.getPayload());
+		bag.putBagFile(manifest);
 		
 	}
 }

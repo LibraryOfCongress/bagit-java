@@ -18,16 +18,16 @@ public class RequiredBagInfoTxtFieldsStrategyTest {
 		
 		Bag bag = new BagImpl();
 		BagInfoTxt bagInfo = bag.getBagPartFactory().createBagInfoTxt();
-		assertFalse(bag.additionalVerify(strategy).isSuccess());
+		assertFalse(bag.checkAdditionalVerify(strategy).isSuccess());
 		
-		bag.setBagInfoTxt(bagInfo);
-		assertFalse(bag.additionalVerify(strategy).isSuccess());
+		bag.putBagFile(bagInfo);
+		assertFalse(bag.checkAdditionalVerify(strategy).isSuccess());
 		bagInfo.setBagCount("1 of 2");
-		assertFalse(bag.additionalVerify(strategy).isSuccess());
+		assertFalse(bag.checkAdditionalVerify(strategy).isSuccess());
 		bagInfo.setBagGroupIdentifier("foo");
-		assertTrue(bag.additionalVerify(strategy).isSuccess());
+		assertTrue(bag.checkAdditionalVerify(strategy).isSuccess());
 		bagInfo.setBagSize("45 gb");
-		assertTrue(bag.additionalVerify(strategy).isSuccess());
+		assertTrue(bag.checkAdditionalVerify(strategy).isSuccess());
 		
 	}
 

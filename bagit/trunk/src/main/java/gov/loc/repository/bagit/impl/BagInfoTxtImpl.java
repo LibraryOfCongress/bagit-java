@@ -315,7 +315,7 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 
 	@Override
 	public void generatePayloadOxum(Bag bag) {
-		this.setPayloadOxum(BagHelper.generatePayloadOctetCount(bag), bag.getPayloadFiles().size());		
+		this.setPayloadOxum(BagHelper.generatePayloadOctetCount(bag), bag.getPayload().size());		
 	}
 	
 	@Override

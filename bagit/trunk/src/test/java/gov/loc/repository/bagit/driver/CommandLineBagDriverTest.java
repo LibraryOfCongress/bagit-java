@@ -73,7 +73,7 @@ public class CommandLineBagDriverTest {
         assertTrue(destFile.exists());
         Bag bag = BagFactory.createBag(destFile);
         assertEquals(Format.ZIP, bag.getFormat());
-        assertTrue(bag.isValid().isSuccess());		
+        assertTrue(bag.checkValid().isSuccess());		
 	}
 	
 	@Test
@@ -86,8 +86,8 @@ public class CommandLineBagDriverTest {
 	public void testCreate() throws Exception {
         assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_TAG_MANIFEST_ALGORITHM, Manifest.Algorithm.SHA1.bagItAlgorithm }));
         Bag bag = BagFactory.createBag(destFile);
-        assertEquals(3, bag.getPayloadFiles().size());
-        assertTrue(bag.isValid().isSuccess());
+        assertEquals(3, bag.getPayload().size());
+        assertTrue(bag.checkValid().isSuccess());
         BagInfoTxt bagInfo = bag.getBagInfoTxt();
         assertNotNull(bagInfo);
         assertNotNull(bagInfo.getBaggingDate());
@@ -102,8 +102,8 @@ public class CommandLineBagDriverTest {
 	public void testCreateExcludeBagInfoAndTagManifest() throws Exception {
         assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_EXCLUDE_BAG_INFO, "--" + PARAM_EXCLUDE_TAG_MANIFEST }));
         Bag bag = BagFactory.createBag(destFile);
-        assertEquals(3, bag.getPayloadFiles().size());
-        assertTrue(bag.isValid().isSuccess());
+        assertEquals(3, bag.getPayload().size());
+        assertTrue(bag.checkValid().isSuccess());
         assertNull(bag.getBagInfoTxt());
         assertTrue(bag.getTagManifests().isEmpty());
 	}

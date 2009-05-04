@@ -99,10 +99,10 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		for(String filepath : this.keySet()) {
 			BagFile bagFile = null;
 			if (this.isPayloadManifest()) {
-				bagFile = bag.getPayloadFile(filepath);
+				bagFile = bag.getBagFile(filepath);
 			}
 			else {
-				bagFile = bag.getTagFile(filepath);
+				bagFile = bag.getBagFile(filepath);
 			}
 			if (bagFile == null || ! bagFile.exists())
 			{
@@ -122,10 +122,10 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		for(String filepath : this.keySet()) {
 			BagFile bagFile = null;
 			if (this.isPayloadManifest()) {
-				bagFile = bag.getPayloadFile(filepath);
+				bagFile = bag.getBagFile(filepath);
 			}
 			else {
-				bagFile = bag.getTagFile(filepath);
+				bagFile = bag.getBagFile(filepath);
 			}
 			if (bagFile != null && bagFile.exists())
 			{

@@ -28,85 +28,78 @@ public interface Bag {
 
 	List<Manifest> getTagManifests();
 		
-	Collection<BagFile> getTagFiles();
+	Collection<BagFile> getTags();
+
+	Collection<BagFile> getPayload();
 	
-	void removeTagFile(String filepath);
+	void removeBagFile(String filepath);
 	
-	Collection<BagFile> getPayloadFiles();
+	BagFile getBagFile(String filepath);
 	
-	BagFile getTagFile(String filepath);
+	void putBagFile(BagFile bagFile);
+				
+	void addFilesToPayload(File file);
 	
-	void putTagFile(BagFile bagFile);
+	void addFilesToPayload(List<File> files);
 	
-	BagFile getPayloadFile(String filepath);
-	
-	void removePayloadFile(String filepath);
-	
-	void putPayloadFile(BagFile bagFile);
+	void addFileAsTag(File file);
 	
 	BagItTxt getBagItTxt();
 	
-	void setBagItTxt(BagItTxt bagItFile);
-	
 	BagInfoTxt getBagInfoTxt();
 	
-	void setBagInfoTxt(BagInfoTxt bagInfoTxt);
-	
-	void setBagInfoTxt(File bagInfoTxtFile);
-	
+	FetchTxt getFetchTxt();
+		
 	Format getFormat();
 	
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 * @param	missingBagItTolerant	whether to allow a valid bag to be missing a BagIt.txt
 	 */
-	SimpleResult isValid(boolean missingBagItTolerant);
+	SimpleResult checkValid(boolean missingBagItTolerant);
 
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 */
-	SimpleResult isValid();
+	SimpleResult checkValid();
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 * @param	missingBagItTolerant	whether to allow a complete bag to be missing a BagIt.txt
 	 */	
-	SimpleResult isComplete(boolean missingBagItTolerant);
+	SimpleResult checkComplete(boolean missingBagItTolerant);
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */		
-	SimpleResult isComplete();
+	SimpleResult checkComplete();
 
 	/*
 	 * Additional checks of a bag.
 	 * These checks are not specified by the BagIt Specification.
 	 * @param	strategies	a list of strategies to invoke
 	 */
-	SimpleResult additionalVerify(List<VerifyStrategy> strategies);
+	SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies);
 
 	/*
 	 * Additional checks of a bag.
 	 * These checks are not specified by the BagIt Specification.
 	 * @param	strategies	a strategy to invoke
 	 */	
-	SimpleResult additionalVerify(VerifyStrategy strategy);
+	SimpleResult checkAdditionalVerify(VerifyStrategy strategy);
 	
 	/*
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
 	 */
-	SimpleResult verifyPayloadManifests();
+	SimpleResult checkPayloadManifests();
 
 	/*
 	 * Verify that each checksum in every tag manifest can be verified against
 	 * the appropriate contents.
 	 */	
-	SimpleResult verifyTagManifests();
+	SimpleResult checkTagManifests();
 	
-	void addPayload(File file);
-	
-	void addPayload(List<File> files);
 	
 	/*
 	 * Fill in the missing parts of a bag so that it is complete.
@@ -133,11 +126,7 @@ public interface Bag {
 	 * @param	whether to include the payload directory ("data") in the payload url
 	 */
 	void makeHoley(String baseUrl, boolean includePayloadDirectory);
-	
-	FetchTxt getFetchTxt();
-	
-	void putFetchTxt(FetchTxt fetchTxt);
-	
+		
 	BagConstants getBagConstants();
 	
 	BagPartFactory getBagPartFactory();

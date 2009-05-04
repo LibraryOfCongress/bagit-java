@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 
+import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.impl.BagItTxtImpl;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.FormatHelper;
@@ -53,19 +54,19 @@ public class BagHelper {
 	
 	public static long generatePayloadOctetCount(Bag bag) {
 		long count = 0;
-		for(BagFile bagFile : bag.getPayloadFiles()) {
+		for(BagFile bagFile : bag.getPayload()) {
 			count = count + bagFile.getSize();
 		}
 		return count;
 	}
 	
 	public static String generatePayloadOxum(Bag bag) {
-		return Long.toString(generatePayloadOctetCount(bag)) + "." + Long.toString(bag.getPayloadFiles().size());
+		return Long.toString(generatePayloadOctetCount(bag)) + "." + Long.toString(bag.getPayload().size());
 	}
 	
 	public static long generateTagOctetCount(Bag bag) {
 		long count = 0;
-		for(BagFile bagFile : bag.getTagFiles()) {
+		for(BagFile bagFile : bag.getTags()) {
 			count = count + bagFile.getSize();
 		}
 		return count;
@@ -75,5 +76,11 @@ public class BagHelper {
 		long count = generateTagOctetCount(bag) + generatePayloadOctetCount(bag);
 		return SizeHelper.getSize(count);
 	}
-		
+	
+	public static boolean isPayload(String filepath, BagConstants bagConstants) {
+		if (filepath.startsWith(bagConstants.getDataDirectory())) {
+			return true;
+		}
+		return false;
+	}
 }

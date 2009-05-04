@@ -31,21 +31,21 @@ public abstract class AbstractBagWriterTest {
 	@Test
 	public void testWriter() throws Exception {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.isValid().isSuccess());
+		assertTrue(bag.checkValid().isSuccess());
 		bag.write(this.getBagWriter());
 		
 		assertTrue(this.getBagFile().exists());
 		Bag newBag = BagFactory.createBag(this.getBagFile());
-		assertTrue(newBag.isValid().isSuccess());
+		assertTrue(newBag.checkValid().isSuccess());
 		
 		List<Manifest> payloadManifests = newBag.getPayloadManifests();
 		assertEquals(1, payloadManifests.size());
 		assertEquals("manifest-md5.txt", payloadManifests.get(0).getFilepath());
-		assertEquals(4, newBag.getTagFiles().size());
-		assertNotNull(newBag.getTagFile("bagit.txt"));
+		assertEquals(4, newBag.getTags().size());
+		assertNotNull(newBag.getBagFile("bagit.txt"));
 		
-		assertEquals(5, newBag.getPayloadFiles().size());
-		assertNotNull(newBag.getPayloadFile("data/dir1/test3.txt"));
+		assertEquals(5, newBag.getPayload().size());
+		assertNotNull(newBag.getBagFile("data/dir1/test3.txt"));
 		
 	}
 

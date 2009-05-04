@@ -43,7 +43,7 @@ public class ParallelPayloadStrategyTest
 	public void testVerifyCorrect() throws Exception
 	{
 	    Bag testBag = this.getBag(Version.V0_96, Format.FILESYSTEM);
-	    SimpleResult result = testBag.additionalVerify(this.unit);
+	    SimpleResult result = testBag.checkAdditionalVerify(this.unit);
 	    assertEquals(true, result.isSuccess());
 	}
 

@@ -42,7 +42,7 @@ public class BobUnserializedBagWriterTest {
 	@Test(timeout=30000)
 	public void testWriter() throws Exception {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.isValid().isSuccess());
+		assertTrue(bag.checkValid().isSuccess());
 
 		BobUnserializedBagWriter writer = new BobUnserializedBagWriter(this.baseURL, false, null, null);
 		bag.write(writer);

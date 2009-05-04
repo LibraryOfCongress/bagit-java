@@ -32,7 +32,7 @@ LICENSES FOR BUNDLED DEPENDENCIES:
 RELEASE NOTES:
 
 Changes in 2.5:
-1. Renamed Bag.complete() to Bag.makeComplete() for consistency and clarity.
+1. Numerous changes to Bag interface for clarity, consistency, and simplification.
 
 Changes in 2.4:
 1. Added support for getting lists of standard and non-standard fields in manifests.

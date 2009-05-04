@@ -398,26 +398,26 @@ public class CommandLineBagDriver {
 			int ret = RETURN_SUCCESS;
 			
 			if (OPERATION_ISVALID.equals(operation.name)) {				
-				SimpleResult result = bag.isValid(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				SimpleResult result = bag.checkValid(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 				return RETURN_SUCCESS;
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
-				SimpleResult result = bag.isComplete(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				SimpleResult result = bag.checkComplete(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
-				SimpleResult result = bag.verifyTagManifests();
+				SimpleResult result = bag.checkTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
-				SimpleResult result = bag.verifyTagManifests();
+				SimpleResult result = bag.checkTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
@@ -429,7 +429,7 @@ public class CommandLineBagDriver {
 				bag.write(writer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
-					bag.addPayload(file);
+					bag.addFilesToPayload(file);
 				}
 				bag.makeComplete(strategy);
 				bag.write(writer);				

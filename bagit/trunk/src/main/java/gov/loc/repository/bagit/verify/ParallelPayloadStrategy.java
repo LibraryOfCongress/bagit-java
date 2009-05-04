@@ -91,7 +91,7 @@ public class ParallelPayloadStrategy implements VerifyStrategy
                                 if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
                                 
-                                BagFile file = bag.getPayloadFile(filePath);
+                                BagFile file = bag.getBagFile(filePath);
                                 
                                 if (file != null && file.exists())
                                 {
