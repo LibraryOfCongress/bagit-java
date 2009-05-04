@@ -431,7 +431,7 @@ public abstract class AbstractBagImplTest {
 
 		assertEquals(5, bag.getPayloadFiles().size());
 				
-		bag.complete();
+		bag.makeComplete();
 		assertTrue(bag.isComplete().isSuccess());
 		assertTrue(bag.isValid().isSuccess());
 

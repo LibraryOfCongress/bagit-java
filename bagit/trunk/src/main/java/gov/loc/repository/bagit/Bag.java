@@ -112,13 +112,13 @@ public interface Bag {
 	 * Fill in the missing parts of a bag so that it is complete.
 	 * Uses the DefaultCompletionStrategy.
 	 */
-	void complete();
+	void makeComplete();
 	
 	/*
 	 * Fill in the missing parts of a bag so that it is complete.
 	 * @param	strategy	the strategy to be used to complete the bag
 	 */
-	void complete(CompletionStrategy strategy);
+	void makeComplete(CompletionStrategy strategy);
 	
 	/*
 	 * Write the bag.

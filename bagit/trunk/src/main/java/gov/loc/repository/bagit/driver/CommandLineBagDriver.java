@@ -45,7 +45,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_ISVALID = "isvalid";
 	public static final String OPERATION_ISCOMPLETE = "iscomplete";
 	public static final String OPERATION_WRITE = "write";
-	public static final String OPERATION_COMPLETE = "complete";
+	public static final String OPERATION_MAKE_COMPLETE = "makecomplete";
 	public static final String OPERATION_CREATE = "create";
 	public static final String OPERATION_MAKE_HOLEY = "makeholey";
 	public static final String OPERATION_GENERATE_PAYLOAD_OXUM = "generatepayloadoxum";
@@ -156,7 +156,7 @@ public class CommandLineBagDriver {
 		params.add(destParam);
 		params.addAll(writerParams);
 		params.addAll(completeParams);
-		this.addOperation(OPERATION_COMPLETE, "Completes a bag and then writes in a specified format.", params.toArray(new Parameter[] {}));
+		this.addOperation(OPERATION_MAKE_COMPLETE, "Completes a bag and then writes in a specified format.", params.toArray(new Parameter[] {}));
 
 		params.clear();
 		params.add(destParam);
@@ -424,14 +424,14 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_WRITE.equals(operation.name)) {								
 				bag.write(writer);
-			} else if (OPERATION_COMPLETE.equals(operation.name)) {
-				bag.complete(strategy);
+			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
+				bag.makeComplete(strategy);
 				bag.write(writer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
 					bag.addPayload(file);
 				}
-				bag.complete(strategy);
+				bag.makeComplete(strategy);
 				bag.write(writer);				
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {

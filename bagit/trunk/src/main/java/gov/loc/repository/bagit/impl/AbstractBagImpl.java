@@ -386,12 +386,12 @@ public abstract class AbstractBagImpl implements Bag {
 		return result;
 	}
 	
-	public void complete() {
-		this.complete(new DefaultCompletionStrategy());
+	public void makeComplete() {
+		this.makeComplete(new DefaultCompletionStrategy());
 		
 	}
 	
-	public void complete(CompletionStrategy strategy) {
+	public void makeComplete(CompletionStrategy strategy) {
 		strategy.complete(this);		
 	}
 	
