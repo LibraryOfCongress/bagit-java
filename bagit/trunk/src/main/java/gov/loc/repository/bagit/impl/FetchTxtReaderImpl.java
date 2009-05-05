@@ -70,7 +70,7 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 					this.next = null;
 					return;
 				}
-				String[] splitString = line.split("( | \\t)+");
+				String[] splitString = line.split("\\s+", 3);
 				if (splitString.length == 3)
 				{
 					Long size = null;
