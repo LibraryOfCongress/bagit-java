@@ -7,6 +7,7 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
+import gov.loc.repository.bagit.utilities.SimpleResult;
 
 import java.io.File;
 import java.util.List;
@@ -32,10 +33,9 @@ public abstract class AbstractBagWriterTest {
 	public void testWriter() throws Exception {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
-		bag.write(this.getBagWriter());
-		
+		Bag newBag = bag.write(this.getBagWriter());
+		assertNotNull(newBag);
 		assertTrue(this.getBagFile().exists());
-		Bag newBag = BagFactory.createBag(this.getBagFile());
 		assertTrue(newBag.checkValid().isSuccess());
 		
 		List<Manifest> payloadManifests = newBag.getPayloadManifests();

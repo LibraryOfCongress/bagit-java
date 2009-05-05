@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.impl;
 
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.utilities.VFSHelper;
 
 import java.io.InputStream;
 
@@ -9,17 +10,29 @@ import org.apache.commons.vfs.FileObject;
 public class VFSBagFile implements BagFile {
 	private FileObject fileObject;
 	private String filepath;
+	private String fileURI = null;
 	
 	public VFSBagFile(String name, FileObject fileObject) {
 		this.filepath = name;
 		this.fileObject = fileObject;
-		
+	}
+	
+	public VFSBagFile(String name, String fileURI) {
+		this.filepath = name;
+		this.fileURI = fileURI;
+	}
+	
+	public FileObject getFileObject() {
+		if (this.fileObject == null && this.fileURI != null) {
+			this.fileObject = VFSHelper.getFileObject(this.fileURI);
+		}
+		return fileObject;
 	}
 	
 	public InputStream newInputStream() {
 		try
 		{
-			return this.fileObject.getContent().getInputStream();
+			return this.getFileObject().getContent().getInputStream();
 		}
 		catch(Exception ex)
 		{
@@ -30,14 +43,10 @@ public class VFSBagFile implements BagFile {
 	public String getFilepath() {
 		return this.filepath;
 	}
-
-	public FileObject getFileObject() {
-		return this.fileObject;
-	}
 	
 	public boolean exists() {
 		try {
-			if (this.fileObject != null && this.fileObject.exists()) {
+			if (this.getFileObject() != null && this.getFileObject().exists()) {
 				return true;
 			}
 		}
@@ -50,7 +59,7 @@ public class VFSBagFile implements BagFile {
 	
 	public long getSize() {
 		try {
-			return this.fileObject.getContent().getSize();
+			return this.getFileObject().getContent().getSize();
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);

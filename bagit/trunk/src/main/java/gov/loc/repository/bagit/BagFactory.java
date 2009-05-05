@@ -52,9 +52,22 @@ public class BagFactory {
 	 * The version of the bag is determined by examining the bag.
 	 * If it cannot be determined, the latest version is assumed.
 	 * If the specified version is not supported, the latest version is used.
+	 * The bag is loaded.
 	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
 	 */
 	public static Bag createBag(File bagFile) {
+		return createBag(bagFile, true);
+	}
+
+	/*
+	 * Creates a Bag from an existing bag.
+	 * The version of the bag is determined by examining the bag.
+	 * If it cannot be determined, the latest version is assumed.
+	 * If the specified version is not supported, the latest version is used.
+	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
+	 * @param boolean whether to load the bag
+	 */
+	public static Bag createBag(File bagFile, boolean load) {
 		String versionString = BagHelper.getVersion(bagFile);
 		Version version = LATEST;
 		if (versionString != null) {
@@ -64,23 +77,30 @@ public class BagFactory {
 				}
 			}
 		}
-		return createBag(bagFile, version);
+		return createBag(bagFile, version, load);
 
 	}
 
+	
 	/*
 	 * Creates a Bag from an existing bag using the specified version.
 	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
 	 * @param version
+	 * @param boolean whether to load the bag
 	 */
-	public static Bag createBag(File bagFile, Version version) {		
+	public static Bag createBag(File bagFile, Version version, boolean load) {		
+		Bag bag = null;
 		if (version == Version.V0_95) {
-			return new gov.loc.repository.bagit.v0_95.impl.BagImpl(bagFile);
+			bag = new gov.loc.repository.bagit.v0_95.impl.BagImpl(bagFile);
 		} else if (version == Version.V0_96) {
-			return new gov.loc.repository.bagit.v0_96.impl.BagImpl(bagFile);
+			bag = new gov.loc.repository.bagit.v0_96.impl.BagImpl(bagFile);
+		} else {
+			throw new RuntimeException("Not yet supported");			
 		}
-		throw new RuntimeException("Not yet supported");
-
+		if (load) {
+			bag.load();
+		}
+		return bag;
 	}
 	
 	

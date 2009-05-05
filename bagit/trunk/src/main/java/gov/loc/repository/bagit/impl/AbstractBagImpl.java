@@ -21,6 +21,7 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagItTxt;
+import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.CompletionStrategy;
 import gov.loc.repository.bagit.FetchTxt;
@@ -39,8 +40,7 @@ public abstract class AbstractBagImpl implements Bag {
 	
 	private Map<String, BagFile> tagMap = new HashMap<String, BagFile>();
 	private Map<String, BagFile> payloadMap = new HashMap<String, BagFile>();
-	private File bagFile;
-	private FileObject bagFileObject = null;
+	private File fileForBag = null;
 	
 	/**
 	 * Constructor for an existing bag.
@@ -48,45 +48,8 @@ public abstract class AbstractBagImpl implements Bag {
 	 */
 	public AbstractBagImpl(File file) {
 		log.debug(MessageFormat.format("Creating bag for {0}. Version is {1}.", file.toString(), this.getBagConstants().getVersion().toString()));
-		this.bagFile = file;
-		
-		FileObject fileObject = VFSHelper.getFileObject(this.bagFile);
-		
-		try {
+		this.fileForBag = file;
 			
-			//If a serialized bag, then need to get bag directory from within		
-			if (this.getFormat().isSerialized) {
-				if (fileObject.getChildren().length != 1) {
-					throw new RuntimeException("Unable to find bag_dir in serialized bag");
-				}
-				this.bagFileObject = fileObject.getChildren()[0];
-			}
-			else {
-				this.bagFileObject = fileObject;	
-			}
-												
-			//Load tag map
-			for(FileObject tagFileObject : bagFileObject.getChildren()) {
-				if (tagFileObject.getType() == FileType.FILE) {
-					
-					String filepath = this.bagFileObject.getName().getRelativeName(tagFileObject.getName());
-					BagFile bagFile = new VFSBagFile(filepath, tagFileObject);
-					this.putBagFile(bagFile);
-				}
-			}
-			//Find manifests to load payload map
-			List<Manifest> payloadManifests = this.getPayloadManifests();
-			for(Manifest manifest : payloadManifests) {
-				for(String filepath : manifest.keySet()) {
-					BagFile bagFile = new VFSBagFile(filepath, this.bagFileObject.resolveFile(filepath));
-					this.putBagFile(bagFile);
-				}
-			}
-		}
-		catch(Exception ex) {
-			throw new RuntimeException(ex);
-		}
-		
 	}
 
 	/**
@@ -95,6 +58,64 @@ public abstract class AbstractBagImpl implements Bag {
 	 */	
 	public AbstractBagImpl() {
 		log.debug(MessageFormat.format("Creating new bag. Version is {0}.", this.getBagConstants().getVersion().toString()));
+	}
+	
+	@Override
+	public void load() {
+		
+		this.tagMap.clear();
+		this.payloadMap.clear();
+		
+		FileObject bagFileObject = this.getFileObjectForBag();
+		try {													
+			//Load tag map
+			for(FileObject tagFileObject : bagFileObject.getChildren()) {
+				if (tagFileObject.getType() == FileType.FILE) {
+					
+					String filepath = bagFileObject.getName().getRelativeName(tagFileObject.getName());
+					BagFile bagFile = new VFSBagFile(filepath, tagFileObject);
+					this.putBagFile(bagFile);
+				}
+			}
+			//Find manifests to load payload map
+			List<Manifest> payloadManifests = this.getPayloadManifests();
+			for(Manifest manifest : payloadManifests) {
+				for(String filepath : manifest.keySet()) {
+					BagFile bagFile = new VFSBagFile(filepath, bagFileObject.resolveFile(filepath));
+					this.putBagFile(bagFile);
+				}
+			}
+		}
+		catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	
+	protected FileObject getFileObjectForBag() {
+		if (this.fileForBag == null) {
+			throw new RuntimeException("No file was provided for this bag");
+		}
+		
+		if (! this.fileForBag.exists()) {
+			throw new RuntimeException(MessageFormat.format("{0} does not exist", this.fileForBag));
+		}
+		
+		FileObject fileObject = VFSHelper.getFileObject(this.fileForBag, true);		
+		try {
+			
+			//If a serialized bag, then need to get bag directory from within		
+			if (this.getFormat().isSerialized) {
+				if (fileObject.getChildren().length != 1) {
+					throw new RuntimeException("Unable to find bag_dir in serialized bag");
+				}
+				return fileObject.getChildren()[0];
+			}
+			return fileObject;													
+		}
+		catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+
 	}
 	
 	@Override
@@ -127,14 +148,6 @@ public abstract class AbstractBagImpl implements Bag {
 		return manifests;			
 	}
 	
-	/*
-	public void removeTagFile(String filepath) {
-		if (! this.tagMap.containsKey(filepath)) {
-			throw new RuntimeException(MessageFormat.format("Tag file {0} not contained in bag.", filepath));			
-		}
-		this.tagMap.remove(filepath);		
-	}
-	*/
 	
 	@Override
 	public void putBagFile(BagFile bagFile) {
@@ -209,11 +222,6 @@ public abstract class AbstractBagImpl implements Bag {
 		}
 	}
 	
-	/*
-	public void putPayloadFile(BagFile bagFile) {
-		this.payloadMap.put((bagFile.getFilepath()), bagFile);		
-	}	
-	*/
 	
 	@Override
 	public void addFilesToPayload(File file) {
@@ -227,19 +235,6 @@ public abstract class AbstractBagImpl implements Bag {
 		}
 	}
 	
-	/*
-	public SimpleResult checkValid() {
-		return null;
-	}
-	
-	public SimpleResult checkComplete() {
-		return null;
-	}
-	
-	public void save(File location, Format format) {
-		//Note that this may be in place
-	}
-	*/
 	
 	@Override
 	public Collection<BagFile> getPayload() {
@@ -266,17 +261,7 @@ public abstract class AbstractBagImpl implements Bag {
 		log.debug(MessageFormat.format("Adding {0} to payload.", filepath));
 		this.putBagFile(new FileBagFile(filepath, file));
 	}
-	
-	/*
-	public BagFile getPayloadFile(String filepath) {
-		return this.payloadMap.get(filepath);
-	}
-
-	public BagFile getBagFile(String filepath) {
-		return this.tagMap.get(filepath);
-	}
-	*/
-	
+		
 	@Override
 	public BagItTxt getBagItTxt() {
 		return (BagItTxt)this.getBagFile(this.getBagConstants().getBagItTxt());
@@ -344,12 +329,13 @@ public abstract class AbstractBagImpl implements Bag {
 			}
 			
 			//Additional checks if an existing Bag
-			if (this.bagFileObject != null) {
+			if (this.fileForBag != null) {
+				FileObject bagFileObject = this.getFileObjectForBag();
 				//Only directory is a data directory
-				for(FileObject fileObject : this.bagFileObject.getChildren())
+				for(FileObject fileObject : bagFileObject.getChildren())
 				{
 					if (fileObject.getType() == FileType.FOLDER) {
-						String folderName = this.bagFileObject.getName().getRelativeName(fileObject.getName());
+						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (! folderName.equals(this.getBagConstants().getDataDirectory())) {
 							result.setSuccess(false);
 							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir", folderName));
@@ -357,11 +343,11 @@ public abstract class AbstractBagImpl implements Bag {
 					}
 				}
 				//If there is a bagFileObject, all payload FileObjects have payload BagFiles
-				FileObject dataFileObject = this.bagFileObject.getChild(this.getBagConstants().getDataDirectory());
+				FileObject dataFileObject = bagFileObject.getChild(this.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
-					FileObject[] fileObjects = this.bagFileObject.getChild(this.getBagConstants().getDataDirectory()).findFiles(new FileTypeSelector(FileType.FILE));
+					FileObject[] fileObjects = bagFileObject.getChild(this.getBagConstants().getDataDirectory()).findFiles(new FileTypeSelector(FileType.FILE));
 					for(FileObject fileObject : fileObjects) {						
-						String filepath = this.bagFileObject.getName().getRelativeName(fileObject.getName());
+						String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (this.getBagFile(filepath) == null) {
 							result.setSuccess(false);
 							result.addMessage(MessageFormat.format("Bag has file {0} not found in manifest file.", filepath));
@@ -447,27 +433,30 @@ public abstract class AbstractBagImpl implements Bag {
 	}
 	
 	@Override
-	public void write(BagWriter writer) {
+	public void accept(BagVisitor visitor) {
+		visitor.startBag(this);
+		
+		visitor.startTags();
+		for(String filepath : this.tagMap.keySet()) {
+			visitor.visitTag(this.tagMap.get(filepath));
+		}
+		visitor.endTags();
+		
+		visitor.startPayload();
+		for(String filepath : this.payloadMap.keySet()) {
+			visitor.visitPayload(this.payloadMap.get(filepath));
+		}
+		visitor.endPayload();
+		
+		visitor.endBag();
+	}
+	
+	@Override
+	public Bag write(BagWriter writer) {
 		log.info("Writing bag");
 		
-		writer.open(this);
-		
-		for(String filepath : this.tagMap.keySet()) {
-			BagFile bagFile = this.tagMap.get(filepath);
-			if (bagFile.exists()) {
-				writer.writeTagFile(filepath, bagFile);
-			}
-		}
-
-		for(String filepath : this.payloadMap.keySet()) {
-			BagFile bagFile = this.payloadMap.get(filepath);
-			if (bagFile.exists()) {
-				writer.writePayloadFile(filepath, bagFile);
-			}
-		}
-		
-		writer.close();
-		
+		this.accept(writer);
+		return writer.getWrittenBag();		
 	}
 	
 	@Override
@@ -499,10 +488,10 @@ public abstract class AbstractBagImpl implements Bag {
 	
 	@Override
 	public Format getFormat() {
-		if (this.bagFile == null) {
+		if (this.fileForBag == null) {
 			return Format.VIRTUAL;
 		}
-		return FormatHelper.getFormat(this.bagFile);
+		return FormatHelper.getFormat(this.fileForBag);
 	}
 	
 	@Override

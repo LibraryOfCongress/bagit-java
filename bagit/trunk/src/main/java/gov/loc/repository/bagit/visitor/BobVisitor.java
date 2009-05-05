@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.visitor;
 
 import java.net.URL;
 import java.text.MessageFormat;
@@ -27,10 +27,10 @@ import org.dom4j.Element;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagWriter;
+import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 
-public class BobUnserializedBagWriter implements BagWriter {
+public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 
 	public static final String ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
 	public static final String SWORD_NAMESPACE = "http://purl.org/net/sword";
@@ -38,7 +38,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 	
 	public static final Integer DEFAULT_THREADS = 2;
 	
-	private static final Log log = LogFactory.getLog(BobUnserializedBagWriter.class);
+	private static final Log log = LogFactory.getLog(BobVisitor.class);
 
 	
 	private String collectionURL;
@@ -57,7 +57,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 	private String username;
 	private String password;
 	
-	public BobUnserializedBagWriter(String collectionURL, boolean relaxedSSL, String username, String password) {
+	public BobVisitor(String collectionURL, boolean relaxedSSL, String username, String password) {
 		this.collectionURL = collectionURL;
 		this.relaxedSSL = relaxedSSL;
 		this.username = username;
@@ -92,7 +92,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 	}
 	
 	@Override
-	public void close() {
+	public void endBag() {
 		this.executor.shutdown();
 		while(! this.executor.isTerminated()) {
 			try {
@@ -123,7 +123,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public void open(Bag bag) {
+	public void startBag(Bag bag) {
 		//Set entry values
 		if (this.title == null) {
 			this.title = "Untitled bag";
@@ -182,7 +182,7 @@ public class BobUnserializedBagWriter implements BagWriter {
 					.addText(this.authorEmail);
 		}
 		entryElem.addElement("sword:packaging")
-				.addText(SwordSerializedBagWriter.PACKAGING);
+				.addText(SwordVisitor.PACKAGING);
 		if (bag.getBagInfoTxt() != null && bag.getBagInfoTxt().getPayloadOxum() != null) {
 			entryElem.addElement("bob:oxum")
 					.addText(bag.getBagInfoTxt().getPayloadOxum());
@@ -224,17 +224,17 @@ public class BobUnserializedBagWriter implements BagWriter {
 	}
 
 	@Override
-	public void writePayloadFile(String filepath, BagFile bagFile) {
-		this.writeFile(filepath, bagFile);
-	}
-
-	@Override
-	public void writeTagFile(String filepath, BagFile bagFile) {
-		this.writeFile(filepath, bagFile);
+	public void visitPayload(BagFile bagFile) {
+		this.visitBagFile(bagFile);
 	}
 	
-	private void writeFile(String filepath, BagFile bagFile) {
-		this.executor.execute(new PostResourceRunnable(filepath, bagFile));
+	@Override
+	public void visitTag(BagFile bagFile) {
+		this.visitBagFile(bagFile);		
+	}
+		
+	private void visitBagFile(BagFile bagFile) {
+		this.executor.execute(new PostResourceRunnable(bagFile.getFilepath(), bagFile));
 	}
 	
 	private HttpClient getClient() {

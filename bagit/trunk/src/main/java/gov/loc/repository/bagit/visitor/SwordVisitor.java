@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.visitor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,17 +19,18 @@ import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagWriter;
+import gov.loc.repository.bagit.BagVisitor;
+import gov.loc.repository.bagit.bagwriter.ZipBagWriter;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 
-public class SwordSerializedBagWriter implements BagWriter {
+public class SwordVisitor extends AbstractBagVisitor implements BagVisitor {
 
 	public static final String CONTENT_TYPE = "application/zip";
 	public static final String PACKAGING = "http://purl.org/net/sword-types/bagit";
 
-	private static final Log log = LogFactory.getLog(SwordSerializedBagWriter.class);
+	private static final Log log = LogFactory.getLog(SwordVisitor.class);
 
 	private ByteArrayOutputStream out = new ByteArrayOutputStream();
 	private String collectionURL = null;
@@ -41,7 +42,7 @@ public class SwordSerializedBagWriter implements BagWriter {
 	private String username;
 	private String password;
 	
-	public SwordSerializedBagWriter(String bagDir, String collectionURL, boolean relaxedSSL, String username, String password) {
+	public SwordVisitor(String bagDir, String collectionURL, boolean relaxedSSL, String username, String password) {
 		this.collectionURL = collectionURL;
 		this.out = new ByteArrayOutputStream();
 		this.zipBagWriter = new ZipBagWriter(bagDir, this.out);
@@ -52,8 +53,8 @@ public class SwordSerializedBagWriter implements BagWriter {
 	
 	@SuppressWarnings("deprecation")
 	@Override
-	public void close() {
-		this.zipBagWriter.close();
+	public void endBag() {
+		this.zipBagWriter.endBag();
 		
 		//This allows self-signed certs
 		if (relaxedSSL) {
@@ -102,20 +103,20 @@ public class SwordSerializedBagWriter implements BagWriter {
 	}
 
 	@Override
-	public void open(Bag bag) {
-		this.zipBagWriter.open(bag);
+	public void startBag(Bag bag) {
+		this.zipBagWriter.startBag(bag);
 
 	}
 
 	@Override
-	public void writePayloadFile(String filepath, BagFile bagFile) {
-		this.zipBagWriter.writePayloadFile(filepath, bagFile);
+	public void visitPayload(BagFile bagFile) {
+		this.zipBagWriter.visitPayload(bagFile);
 
 	}
 
 	@Override
-	public void writeTagFile(String filepath, BagFile bagFile) {
-		this.zipBagWriter.writeTagFile(filepath, bagFile);
+	public void visitTag(BagFile bagFile) {
+		this.zipBagWriter.visitTag(bagFile);
 
 	}
 

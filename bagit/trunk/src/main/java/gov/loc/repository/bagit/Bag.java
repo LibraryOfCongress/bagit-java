@@ -23,7 +23,7 @@ public interface Bag {
 			this.extension = extension;
 		}
 	};
-		
+	
 	List<Manifest> getPayloadManifests();
 
 	List<Manifest> getTagManifests();
@@ -116,8 +116,13 @@ public interface Bag {
 	/*
 	 * Write the bag.
 	 * @param	writer	the writer to write to
+	 * @return		the newly-written bag
 	 */
-	void write(BagWriter writer);
+	Bag write(BagWriter writer);
+	
+	void load();
+	
+	void accept(BagVisitor visitor);
 	
 	/*
 	 * Make the bag holey.

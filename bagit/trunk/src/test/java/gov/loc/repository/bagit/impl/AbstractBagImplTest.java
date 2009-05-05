@@ -42,7 +42,7 @@ public abstract class AbstractBagImplTest {
 	}
 
 	private Bag getBag(Version version, Bag.Format format) throws Exception {
-		return BagFactory.createBag(this.getBagDir(version, format), version);  
+		return BagFactory.createBag(this.getBagDir(version, format), version, true);  
 	}	
 	
 	private File getBagDir(Version version, Bag.Format format) throws Exception {
@@ -67,15 +67,6 @@ public abstract class AbstractBagImplTest {
 		return testBagDir;
 	}
 
-	/*
-	private Bag getBag(String filepath) throws Exception {
-		return BagFactory.createBag(ResourceHelper.getFile(filepath), Version.V0_95);  
-	}
-
-	private Bag getBag(String filepath, Version version) throws Exception {
-		return BagFactory.createBag(ResourceHelper.getFile(filepath), version);  
-	}	
-	*/
 	private void testBag(Bag.Format format) throws Exception {
 		Bag bag = this.getBag(format);
 		assertEquals(format, bag.getFormat());
@@ -146,7 +137,7 @@ public abstract class AbstractBagImplTest {
 		writer.write("data/test1.txt", "b444ac06613fc8d63795be9ad0beaf55011936ac");
 		writer.write("data/test2.txt", "109f4b3c50d7b0df729d299bc6f8e9ef9066971f");
 		writer.close();
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertEquals(2, bag.getPayloadManifests().size());
 
 		assertTrue(bag.checkComplete().isSuccess());
@@ -172,7 +163,7 @@ public abstract class AbstractBagImplTest {
 		md5Writer.write("data/test2.txt", "ad0234829205b9033196ba818f7a872b");
 		md5Writer.close();
 
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertEquals(2, bag.getPayloadManifests().size());
 
 		assertTrue(bag.checkComplete().isSuccess());
@@ -190,7 +181,7 @@ public abstract class AbstractBagImplTest {
 		FileUtils.forceDelete(bagItTxtFile);
 		assertFalse(bagItTxtFile.exists());
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertNull(bag.getBagItTxt());
 
 		assertFalse(bag.checkComplete().isSuccess());
@@ -213,7 +204,7 @@ public abstract class AbstractBagImplTest {
 		writer.write("xtest1");
 		writer.close();
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 
 		assertTrue(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
@@ -232,7 +223,7 @@ public abstract class AbstractBagImplTest {
 		writer.close();
 		assertTrue(bagInfoTxtFile.exists());
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 
 		assertTrue(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
@@ -251,7 +242,7 @@ public abstract class AbstractBagImplTest {
 		FileUtils.forceDelete(test1File);
 		assertFalse(test1File.exists());
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertFalse(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
 		
@@ -268,7 +259,7 @@ public abstract class AbstractBagImplTest {
 		FileUtils.forceDelete(bagInfoTxtFile);
 		assertFalse(bagInfoTxtFile.exists());
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertFalse(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
 		
@@ -285,7 +276,7 @@ public abstract class AbstractBagImplTest {
 		writer.write("extra");
 		writer.close();
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 
 		assertFalse(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
@@ -303,7 +294,7 @@ public abstract class AbstractBagImplTest {
 		writer.write("extra");
 		writer.close();
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 
 		assertTrue(bag.checkComplete().isSuccess());
 		assertTrue(bag.checkValid().isSuccess());
@@ -321,7 +312,7 @@ public abstract class AbstractBagImplTest {
 		FileUtils.forceDelete(manifestFile);
 		assertFalse(manifestFile.exists());
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertFalse(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
 		
@@ -338,7 +329,7 @@ public abstract class AbstractBagImplTest {
 		FileUtils.forceMkdir(extraDir);
 		assertTrue(extraDir.exists());
 		
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertFalse(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());
 		
@@ -360,7 +351,7 @@ public abstract class AbstractBagImplTest {
 		manifestWriter.write("data/testü.txt", "b444ac06613fc8d63795be9ad0beaf55011936ac");
 		manifestWriter.close();
 
-		Bag bag = BagFactory.createBag(testBagDir, this.getVersion());
+		Bag bag = BagFactory.createBag(testBagDir, this.getVersion(), true);
 		assertTrue(bag.checkComplete().isSuccess());
 		assertTrue(bag.checkValid().isSuccess());
 		
@@ -382,7 +373,7 @@ public abstract class AbstractBagImplTest {
 		try {
 			File bagDir = this.getBagDir(otherVersion, Bag.Format.FILESYSTEM); 
 			
-			Bag bag = BagFactory.createBag(bagDir, this.getVersion());
+			Bag bag = BagFactory.createBag(bagDir, this.getVersion(), true);
 			assertFalse(bag.checkComplete().isSuccess());
 			assertFalse(bag.checkValid().isSuccess());
 		} catch (RuntimeException ex) {}

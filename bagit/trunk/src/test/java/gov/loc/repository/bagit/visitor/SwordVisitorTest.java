@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.visitor;
 
 import static org.junit.Assert.*;
 
@@ -7,6 +7,7 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
+import gov.loc.repository.bagit.visitor.SwordVisitor;
 
 import java.io.IOException;
 
@@ -21,7 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SwordSerializedBagWriterTest {
+public class SwordVisitorTest {
 
 	SimpleHttpServer server;
 	
@@ -36,17 +37,17 @@ public class SwordSerializedBagWriterTest {
 	}
 	
 	@Test
-	public void testWriter() throws Exception {
+	public void testVisitor() throws Exception {
 		this.server.setRequestHandler(new TestRequestHandler());
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
-		SwordSerializedBagWriter writer = new SwordSerializedBagWriter("test_bag", "http://localhost:" + this.server.getLocalPort() + "/", false, null, null);
-		bag.write(writer);
+		SwordVisitor visitor = new SwordVisitor("test_bag", "http://localhost:" + this.server.getLocalPort() + "/", false, null, null);
+		bag.accept(visitor);
 		
-		assertEquals(Integer.valueOf(201), writer.getStatusCode());
-		assertEquals("http://localhost/foo.atom", writer.getLocation());
-		assertEquals("<A Atom Media Entry Document>", writer.getBody());
+		assertEquals(Integer.valueOf(201), visitor.getStatusCode());
+		assertEquals("http://localhost/foo.atom", visitor.getLocation());
+		assertEquals("<A Atom Media Entry Document>", visitor.getBody());
 		
 	}
 	

@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -13,10 +15,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
+import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.impl.VFSBagFile;
+import gov.loc.repository.bagit.utilities.VFSHelper;
+import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
 
-public class ZipBagWriter implements BagWriter {
+public class ZipBagWriter extends AbstractBagVisitor implements BagWriter {
 
 	private static final Log log = LogFactory.getLog(ZipBagWriter.class);
 	
@@ -25,8 +32,14 @@ public class ZipBagWriter implements BagWriter {
 	private OutputStream out = null;
 	private ZipOutputStream zipOut = null;
 	private String bagDir = null;
+	private String newBagURI = null;
+	private Bag newBag = null;
+	private File newBagFile = null;
+	private List<BagFile> tagBagFiles = new ArrayList<BagFile>(); 
 	
 	public ZipBagWriter(File bagFile) {
+		this.newBagFile = bagFile;
+
 		this.bagDir = bagFile.getName().replaceFirst("\\..*$", "");
 		try {
 			File parentDir = bagFile.getParentFile();
@@ -45,11 +58,18 @@ public class ZipBagWriter implements BagWriter {
 		this.out = out;		
 	}
 	
-	public void open(Bag bag) {
+	@Override
+	public void startBag(Bag bag) {
 		this.zipOut = new ZipOutputStream(this.out);
+		if (this.newBagFile != null) {
+			this.newBag = BagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), false);
+			this.newBagURI = VFSHelper.getUri(this.newBagFile, Format.ZIP);
+
+		}
 	}
 	
-	public void close() {
+	@Override
+	public void endBag() {
 		try {
 			if (this.zipOut != null) {
 				this.zipOut.close();
@@ -58,22 +78,38 @@ public class ZipBagWriter implements BagWriter {
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
+		if (this.newBag != null) {
+			for(BagFile bagFile : this.tagBagFiles) {
+				this.newBag.putBagFile(bagFile);
+			}
+		}
 	}
 
-	public void writePayloadFile(String filepath, BagFile bagFile) {
-		log.debug(MessageFormat.format("Writing payload file {0}.", filepath));
-		this.write(filepath, bagFile);		
+	@Override
+	public void visitPayload(BagFile bagFile) {
+		log.debug(MessageFormat.format("Writing payload file {0}.", bagFile.getFilepath()));
+		this.write(bagFile);
+		if (this.newBag != null) {
+			this.newBag.putBagFile(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, this.bagDir + "/" + bagFile.getFilepath())));
+		}
+
 	}
 	
-	public void writeTagFile(String filepath, BagFile bagFile) {
-		log.debug(MessageFormat.format("Writing tag file {0}.", filepath));
-		this.write(filepath, bagFile);				
+	@Override
+	public void visitTag(BagFile bagFile) {
+		log.debug(MessageFormat.format("Writing tag file {0}.", bagFile.getFilepath()));
+		this.write(bagFile);
+		if (this.newBag != null) {
+			//Need to delay adding these until after the bag is written
+			this.tagBagFiles.add(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, this.bagDir + "/" + bagFile.getFilepath())));
+		}
+
 	}
 	
-	private void write(String filepath, BagFile bagFile) {
+	private void write(BagFile bagFile) {
 		try {
 			//Add zip entry
-			zipOut.putNextEntry(new ZipEntry(this.bagDir + "/" + filepath));
+			zipOut.putNextEntry(new ZipEntry(this.bagDir + "/" + bagFile.getFilepath()));
 			
 			InputStream in = bagFile.newInputStream();
 			byte[] dataBytes = new byte[BUFFERSIZE];
@@ -87,6 +123,11 @@ public class ZipBagWriter implements BagWriter {
 		catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
+	}
+	
+	@Override
+	public Bag getWrittenBag() {
+		return this.newBag;
 	}
 
 }

@@ -1,10 +1,12 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.visitor;
 
 import static org.junit.Assert.*;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
+import gov.loc.repository.bagit.visitor.BobVisitor;
+import gov.loc.repository.bagit.visitor.SwordVisitor;
 
 import java.io.IOException;
 
@@ -20,7 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BobUnserializedBagWriterTest {
+public class BobVisitorTest {
 
 	SimpleHttpServer server;
 	TestRequestHandler handler;
@@ -39,16 +41,19 @@ public class BobUnserializedBagWriterTest {
 		this.server.destroy();
 	}
 	
-	@Test(timeout=30000)
-	public void testWriter() throws Exception {
+	@Test
+	public void testVisitor() throws Exception {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
-		BobUnserializedBagWriter writer = new BobUnserializedBagWriter(this.baseURL, false, null, null);
-		bag.write(writer);
+		BobVisitor visitor = new BobVisitor(this.baseURL, false, null, null);
+		bag.accept(visitor);
 		
+		int count = 0;
 		while(! this.handler.resourceCompleted) {
 			Thread.sleep(250);
+			count++;
+			assertTrue(count < 120);
 		}
 		
 	}
@@ -78,7 +83,7 @@ public class BobUnserializedBagWriterTest {
 					assertNotNull(doc.selectSingleNode("//atom:id"));
 					assertNotNull(doc.selectSingleNode("//atom:updated"));
 					assertNotNull(doc.selectSingleNode("//atom:author/atom:name"));
-					assertEquals(SwordSerializedBagWriter.PACKAGING, doc.selectSingleNode("//sword:packaging").getText());
+					assertEquals(SwordVisitor.PACKAGING, doc.selectSingleNode("//sword:packaging").getText());
 					
 					SimpleResponse response = new SimpleResponse();
 					response.setStatusLine(HttpVersion.HTTP_1_1, 201, "Resource created");

@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
@@ -15,10 +17,15 @@ import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
+import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.impl.VFSBagFile;
+import gov.loc.repository.bagit.utilities.VFSHelper;
+import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
 
-public class TarBagWriter implements BagWriter {
+public class TarBagWriter extends AbstractBagVisitor implements BagWriter {
 
 	public enum Compression { NONE, GZ, BZ2 };
 	
@@ -29,6 +36,11 @@ public class TarBagWriter implements BagWriter {
 	private OutputStream out = null;
 	private TarOutputStream tarOut = null;
 	private String bagDir = null;
+	private String newBagURI = null;
+	private Bag newBag = null;
+	private File newBagFile = null;
+	private List<BagFile> tagBagFiles = new ArrayList<BagFile>(); 
+
 	
 	public TarBagWriter(File bagFile, Compression compression) {
 		this.init(bagFile, compression);
@@ -65,6 +77,15 @@ public class TarBagWriter implements BagWriter {
 	}
 	
 	private void init(File bagFile, Compression compression) {
+		this.newBagFile = bagFile;
+		Format format = Format.TAR;
+		if (Compression.GZ.equals(compression)) {
+			format = Format.TAR_GZ;
+		} else if (Compression.BZ2.equals(compression)) {
+			format = Format.TAR_BZ2;
+		}
+		this.newBagURI = VFSHelper.getUri(bagFile, format);
+		
 		String bagDir = bagFile.getName().replaceFirst("\\..*$", "");
 		try {
 			File parentDir = bagFile.getParentFile();
@@ -80,11 +101,14 @@ public class TarBagWriter implements BagWriter {
 
 	}
 	
-	public void open(Bag bag) {
+	public void startBag(Bag bag) {
 		this.tarOut = new TarOutputStream(this.out);
+		if (this.newBagFile != null) {
+			this.newBag = BagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), false);
+		}		
 	}
 	
-	public void close() {
+	public void endBag() {
 		try {
 			if (this.tarOut != null) {
 				this.tarOut.close();
@@ -93,22 +117,37 @@ public class TarBagWriter implements BagWriter {
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
+		if (this.newBag != null) {
+			for(BagFile bagFile : this.tagBagFiles) {
+				this.newBag.putBagFile(bagFile);
+			}
+		}
+
 	}
 
-	public void writePayloadFile(String filepath, BagFile bagFile) {
-		log.debug(MessageFormat.format("Writing payload file {0}.", filepath));
-		this.write(filepath, bagFile);		
+	@Override
+	public void visitPayload(BagFile bagFile) {
+		log.debug(MessageFormat.format("Writing payload file {0}.", bagFile.getFilepath()));
+		this.write(bagFile);
+		if (this.newBag != null) {
+			this.newBag.putBagFile(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, this.bagDir + "/" + bagFile.getFilepath())));
+		}
+
 	}
 	
-	public void writeTagFile(String filepath, BagFile bagFile) {
-		log.debug(MessageFormat.format("Writing tag file {0}.", filepath));
-		this.write(filepath, bagFile);				
+	@Override
+	public void visitTag(BagFile bagFile) {
+		log.debug(MessageFormat.format("Writing tag file {0}.", bagFile.getFilepath()));
+		this.write(bagFile);
+		if (this.newBag != null) {
+			this.tagBagFiles.add(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, this.bagDir + "/" + bagFile.getFilepath())));
+		}
 	}
 	
-	private void write(String filepath, BagFile bagFile) {
+	private void write(BagFile bagFile) {
 		try {
 			//Add tar entry
-			TarEntry entry = new TarEntry(this.bagDir + "/" + filepath);
+			TarEntry entry = new TarEntry(this.bagDir + "/" + bagFile.getFilepath());
 			entry.setSize(bagFile.getSize());
 			tarOut.putNextEntry(entry);
 			InputStream in = bagFile.newInputStream();
@@ -124,6 +163,12 @@ public class TarBagWriter implements BagWriter {
 		catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
+
 	}
 
+	@Override
+	public Bag getWrittenBag() {
+		return this.newBag;
+	}
+	
 }

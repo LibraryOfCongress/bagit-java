@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.visitor;
 
 public class TransferException extends RuntimeException {
 

@@ -10,60 +10,65 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagWriter;
+import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.impl.VFSBagFile;
+import gov.loc.repository.bagit.utilities.VFSHelper;
+import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
 
-public class FileSystemBagWriter implements BagWriter {
+public class FileSystemBagWriter extends AbstractBagVisitor implements BagWriter {
 
 	private static final Log log = LogFactory.getLog(FileSystemBagWriter.class);
 	
 	private static final int BUFFERSIZE = 65536;
 	
-	private File bagDir;
+	private File newBagDir;
 	private boolean skipIfPayloadFileExists = true;
+	private Bag newBag;
+	private String newBagURI;
 	
 	public FileSystemBagWriter(File bagDir, boolean skipIfPayloadFileExists) {
 		this.skipIfPayloadFileExists = skipIfPayloadFileExists;
-		this.bagDir = bagDir;		
+		this.newBagDir = bagDir;
 	}
 	
-	public void open(Bag bag) {
+	@Override
+	public void startBag(Bag bag) {
 		try {
-			if (bagDir.exists()) {
-				if (! bagDir.isDirectory()) {
-					throw new RuntimeException(MessageFormat.format("Bag directory {0} is not a directory.", bagDir.toString()));
+			if (newBagDir.exists()) {
+				if (! newBagDir.isDirectory()) {
+					throw new RuntimeException(MessageFormat.format("Bag directory {0} is not a directory.", newBagDir.toString()));
 				}
 			} else {
-				FileUtils.forceMkdir(bagDir);
+				FileUtils.forceMkdir(newBagDir);
 			}
 		} catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
-		
+		this.newBag = BagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), false);
+		this.newBagURI = VFSHelper.getUri(this.newBagDir, Format.FILESYSTEM);		
 	}
 	
-	public void close() {
-		//Do nothing
-
-	}
-
-	public void writePayloadFile(String filepath, BagFile bagFile) {
-		File file = new File(this.bagDir, filepath);
+	@Override
+	public void visitPayload(BagFile bagFile) {
+		File file = new File(this.newBagDir, bagFile.getFilepath());
 		if (! this.skipIfPayloadFileExists || ! file.exists()) {
-			log.debug(MessageFormat.format("Writing payload file {0} to {1}.", filepath, file.toString()));
+			log.debug(MessageFormat.format("Writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
 			this.write(bagFile, file);	
 		} else {
-			log.debug(MessageFormat.format("Skipping writing payload file {0} to {1}.", filepath, file.toString()));
+			log.debug(MessageFormat.format("Skipping writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
 		}
-		
-
-		
+		this.newBag.putBagFile(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, bagFile.getFilepath())));
 	}
 	
-	public void writeTagFile(String filepath, BagFile bagFile) {
-		File file = new File(this.bagDir, filepath);
-		log.debug(MessageFormat.format("Writing tag file {0} to {1}.", filepath, file.toString()));		
-		this.write(bagFile, file);				
+	@Override
+	public void visitTag(BagFile bagFile) {
+		File file = new File(this.newBagDir, bagFile.getFilepath());
+		log.debug(MessageFormat.format("Writing tag file {0} to {1}.", bagFile.getFilepath(), file.toString()));		
+		this.write(bagFile, file);
+		this.newBag.putBagFile(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, bagFile.getFilepath())));
 	}
 	
 	private void write(BagFile bagFile, File file) {
@@ -87,6 +92,12 @@ public class FileSystemBagWriter implements BagWriter {
 		catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
+		
+	}
+
+	@Override
+	public Bag getWrittenBag() {
+		return this.newBag;
 	}
 
 }

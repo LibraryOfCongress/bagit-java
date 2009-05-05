@@ -49,7 +49,7 @@ public class ParallelPayloadStrategyTest
 
     private Bag getBag(Version version, Bag.Format format) throws Exception
     {
-        return BagFactory.createBag(this.getBagDir(version, format), version);  
+        return BagFactory.createBag(this.getBagDir(version, format), version, true);  
     }   
     
     private File getBagDir(Version version, Bag.Format format) throws Exception 

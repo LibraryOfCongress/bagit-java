@@ -7,14 +7,14 @@ import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.bagwriter.BobUnserializedBagWriter;
 import gov.loc.repository.bagit.bagwriter.FileSystemBagWriter;
-import gov.loc.repository.bagit.bagwriter.SwordSerializedBagWriter;
 import gov.loc.repository.bagit.bagwriter.TarBagWriter;
 import gov.loc.repository.bagit.bagwriter.ZipBagWriter;
 import gov.loc.repository.bagit.bagwriter.TarBagWriter.Compression;
 import gov.loc.repository.bagit.completion.DefaultCompletionStrategy;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.visitor.BobVisitor;
+import gov.loc.repository.bagit.visitor.SwordVisitor;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -80,8 +80,8 @@ public class CommandLineBagDriver {
 	public static final String VALUE_WRITER_TAR = "tar";
 	public static final String VALUE_WRITER_TAR_GZ = "tar_gz";
 	public static final String VALUE_WRITER_TAR_BZ2 = "tar_bz2";
-	public static final String VALUE_WRITER_SWORD = "sword";
-	public static final String VALUE_WRITER_BOB = "bob";
+	//public static final String VALUE_WRITER_SWORD = "sword";
+	//public static final String VALUE_WRITER_BOB = "bob";
 	
 	private static final Log log = LogFactory.getLog(CommandLineBagDriver.class);
 
@@ -98,12 +98,12 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the destination bag when writing with the filesystem, tar, or zip bag writer.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
-		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_SWORD + ";" + VALUE_WRITER_BOB + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, {4}, {5} and {6}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP, VALUE_WRITER_SWORD, VALUE_WRITER_BOB));
+		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + /*";" + VALUE_WRITER_SWORD + ";" + VALUE_WRITER_BOB + ";" +*/ VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, {4}, {5} and {6}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP/*, VALUE_WRITER_SWORD, VALUE_WRITER_BOB*/));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
 		Parameter urlParam = new FlaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_URL, "The url to be used in creating a resource using SWORD/BOB.");
-		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use when posting resources with BOB.  Default is " + BobUnserializedBagWriter.DEFAULT_THREADS);
+		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use when posting resources with BOB.  Default is " + BobVisitor.DEFAULT_THREADS);
 		Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(PARAM_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_BAG_INFO, "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(PARAM_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_PAYLOAD_OXUM, "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
@@ -130,10 +130,12 @@ public class CommandLineBagDriver {
 		writerParams.add(writerParam);
 		writerParams.add(urlParam);
 		writerParams.add(bagDirParam);
+		/*
 		writerParams.add(threadsParam);
 		writerParams.add(relaxSSLParam);
 		writerParams.add(usernameParam);
 		writerParams.add(passwordParam);
+		*/
 		
 		params.clear();
 		params.add(sourceParam);
@@ -320,7 +322,7 @@ public class CommandLineBagDriver {
 				Version version = Version.valueOfString(config.getString(PARAM_VERSION));
 				if (config.contains(PARAM_SOURCE)) {
 					sourceFile = config.getFile(PARAM_SOURCE);
-					bag = BagFactory.createBag(sourceFile, version);
+					bag = BagFactory.createBag(sourceFile, version, true);
 				} else {
 					bag = BagFactory.createBag(version);
 				}
@@ -372,20 +374,21 @@ public class CommandLineBagDriver {
 					return RETURN_ERROR;
 				}
 				writer = new TarBagWriter(destFile, Compression.BZ2);
-			} else if (VALUE_WRITER_SWORD.equals(config.getString(PARAM_WRITER))) {				
+			} /*else if (VALUE_WRITER_SWORD.equals(config.getString(PARAM_WRITER))) {				
 				if (collectionURL == null) {
 					log.error("Error: If writing to a SWORD serialized bag writer, a collection url must be provided.");
 					return RETURN_ERROR;					
 				}
-				writer = new SwordSerializedBagWriter(config.getString(PARAM_BAG_DIR), collectionURL, relaxSSL, username, password);
+				writer = new SwordVisitor(config.getString(PARAM_BAG_DIR), collectionURL, relaxSSL, username, password);
 			} else if (VALUE_WRITER_BOB.equals(config.getString(PARAM_WRITER))) {				
 				if (collectionURL == null) {
 					log.error("Error: If writing to a BOB unserialized bag writer, a collection url must be provided.");
 					return RETURN_ERROR;					
 				}
-				writer = new BobUnserializedBagWriter(collectionURL, relaxSSL, username, password);
-				((BobUnserializedBagWriter)writer).setThreads(config.getInt(PARAM_THREADS, BobUnserializedBagWriter.DEFAULT_THREADS));
+				writer = new BobVisitor(collectionURL, relaxSSL, username, password);
+				((BobVisitor)writer).setThreads(config.getInt(PARAM_THREADS, BobVisitor.DEFAULT_THREADS));
 			}
+			*/
 			DefaultCompletionStrategy strategy = new DefaultCompletionStrategy();
 			strategy.setGenerateBagInfoTxt(! config.getBoolean(PARAM_EXCLUDE_BAG_INFO, false));
 			strategy.setUpdateBaggingDate(! config.getBoolean(PARAM_NO_UPDATE_BAGGING_DATE, false));
