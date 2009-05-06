@@ -31,10 +31,12 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  
 RELEASE NOTES:
 
-Changes in 2.5:
+Changes in 3.0:
 1. Numerous changes to Bag interface for clarity, consistency, and simplification.
-2. Add support for visitor pattern.  Changed writers to use visitor.
-3. Changed writer to return a Bag that references the newly written bag.
+	This includes removing methods that modify the Bag (e.g., makeHoley()).
+2. Add support for visitor pattern.  Changed Writers to use visitor.
+3. Writer (formerly BagWriter), Completeter (formerly CompletionStrategy), Hole Puncher (formerly Bag.makeHoley())
+	return a new Bag instead of modifying existing bag.
 
 Changes in 2.4:
 1. Added support for getting lists of standard and non-standard fields in manifests.

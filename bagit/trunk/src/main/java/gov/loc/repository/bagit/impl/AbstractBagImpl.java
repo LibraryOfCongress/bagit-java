@@ -22,13 +22,10 @@ import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
-import gov.loc.repository.bagit.BagWriter;
-import gov.loc.repository.bagit.CompletionStrategy;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.VerifyStrategy;
-import gov.loc.repository.bagit.completion.DefaultCompletionStrategy;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -58,6 +55,11 @@ public abstract class AbstractBagImpl implements Bag {
 	 */	
 	public AbstractBagImpl() {
 		log.debug(MessageFormat.format("Creating new bag. Version is {0}.", this.getBagConstants().getVersion().toString()));
+	}
+	
+	@Override
+	public File getFile() {
+		return this.fileForBag;
 	}
 	
 	@Override
@@ -176,6 +178,14 @@ public abstract class AbstractBagImpl implements Bag {
 
 		}
 				
+	}
+	
+	@Override
+	public void putBagFiles(Collection<BagFile> bagFiles) {
+		for(BagFile bagFile : bagFiles) {
+			this.putBagFile(bagFile);
+		}
+		
 	}
 	
 	private void addPayload(File file, File rootDir) {
@@ -420,18 +430,7 @@ public abstract class AbstractBagImpl implements Bag {
 		log.info("Validity check: " + result.toString());				
 		return result;
 	}
-	
-	@Override
-	public void makeComplete() {
-		this.makeComplete(new DefaultCompletionStrategy());
 		
-	}
-		
-	@Override
-	public void makeComplete(CompletionStrategy strategy) {
-		strategy.complete(this);		
-	}
-	
 	@Override
 	public void accept(BagVisitor visitor) {
 		visitor.startBag(this);
@@ -450,37 +449,7 @@ public abstract class AbstractBagImpl implements Bag {
 		
 		visitor.endBag();
 	}
-	
-	@Override
-	public Bag write(BagWriter writer) {
-		log.info("Writing bag");
-		
-		this.accept(writer);
-		return writer.getWrittenBag();		
-	}
-	
-	@Override
-	public void makeHoley(String baseUrl, boolean includePayloadDirectory) {
-		log.info("Making bag holey");
-		if (! baseUrl.endsWith("/")) {
-			baseUrl += "/";
-		}
-		FetchTxt fetch = this.getBagPartFactory().createFetchTxt(this);
-		String[] filepaths = this.payloadMap.keySet().toArray(new String[] {});
-		for(String filepath : filepaths) {
-			String url = baseUrl;
-			if (includePayloadDirectory) {
-				url += filepath;
-			}
-			else {
-				url += filepath.substring(this.getBagConstants().getDataDirectory().length() + 1);
-			}
-			fetch.add(new FetchTxt.FilenameSizeUrl(filepath, this.getBagFile(filepath).getSize(), url));
-			this.removeBagFile(filepath);
-		}
-		this.putBagFile(fetch);
-	}
-	
+			
 	@Override
 	public FetchTxt getFetchTxt() {
 		return (FetchTxt)this.getBagFile(this.getBagConstants().getFetchTxt());

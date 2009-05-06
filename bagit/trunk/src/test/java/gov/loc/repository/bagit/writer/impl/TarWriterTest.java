@@ -1,14 +1,14 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.writer.impl;
 
-import gov.loc.repository.bagit.BagWriter;
-import gov.loc.repository.bagit.bagwriter.TarBagWriter;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.TarBagWriter;
 
 import java.io.File;
 
 import org.junit.Before;
 
-public class TarBagWriterTest extends AbstractBagWriterTest {
+public class TarWriterTest extends AbstractWriterTest {
 
 	File bagFile;
 	
@@ -23,7 +23,7 @@ public class TarBagWriterTest extends AbstractBagWriterTest {
 	}
 
 	@Override
-	public BagWriter getBagWriter() {
+	public Writer getBagWriter() {
 		return new TarBagWriter(bagFile);
 	}
 

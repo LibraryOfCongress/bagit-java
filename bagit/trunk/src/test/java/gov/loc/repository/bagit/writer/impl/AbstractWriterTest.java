@@ -1,13 +1,12 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.writer.impl;
 
 import static org.junit.Assert.*;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.writer.Writer;
 
 import java.io.File;
 import java.util.List;
@@ -16,7 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class AbstractBagWriterTest {
+public abstract class AbstractWriterTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -25,7 +24,7 @@ public abstract class AbstractBagWriterTest {
 		}
 	}
 
-	public abstract BagWriter getBagWriter();
+	public abstract Writer getBagWriter();
 	
 	public abstract File getBagFile();
 	
@@ -33,7 +32,7 @@ public abstract class AbstractBagWriterTest {
 	public void testWriter() throws Exception {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
-		Bag newBag = bag.write(this.getBagWriter());
+		Bag newBag = this.getBagWriter().write(bag);
 		assertNotNull(newBag);
 		assertTrue(this.getBagFile().exists());
 		assertTrue(newBag.checkValid().isSuccess());

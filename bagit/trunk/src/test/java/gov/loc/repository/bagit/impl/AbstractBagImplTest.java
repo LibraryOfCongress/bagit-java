@@ -10,14 +10,12 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagInfoTxtWriter;
 import gov.loc.repository.bagit.BagItTxt;
-import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.ManifestWriter;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
-import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
@@ -25,8 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
 
 
@@ -411,63 +407,4 @@ public abstract class AbstractBagImplTest {
 	
 	public void addlTestCreateBag(Bag bag){};
 	
-
-	@Test
-	public void testComplete() throws Exception {
-		Bag bag = BagFactory.createBag(this.getVersion());
-		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir1", this.getVersion().toString().toLowerCase())));
-		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir2", this.getVersion().toString().toLowerCase())));
-		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/test1.txt", this.getVersion().toString().toLowerCase())));
-		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/test2.txt", this.getVersion().toString().toLowerCase())));
-
-		assertEquals(5, bag.getPayload().size());
-				
-		bag.makeComplete();
-		assertTrue(bag.checkComplete().isSuccess());
-		assertTrue(bag.checkValid().isSuccess());
-
-		//Make sure that has BagIt.txt, tag manifest, payload manifest
-		BagItTxt bagIt = bag.getBagItTxt();
-		assertEquals("UTF-8", bagIt.getCharacterEncoding());
-		assertEquals(this.getVersion().versionString, bagIt.getVersion());
-		
-		assertEquals(1, bag.getTagManifests().size());
-		assertEquals(1, bag.getPayloadManifests().size());
-		
-		BagInfoTxt bagInfo = bag.getBagInfoTxt();
-		assertNotNull(bagInfo);
-		assertEquals("25.5", bagInfo.getPayloadOxum());
-		assertEquals((new SimpleDateFormat("yyyy-MM-dd")).format(Calendar.getInstance().getTime()), bagInfo.getBaggingDate());
-		assertEquals("0.1 KB", bagInfo.getBagSize());
-	}
-
-	@Test
-	public void testMakeHoley() throws Exception {
-		Bag bag = this.getBag(Bag.Format.FILESYSTEM);
-		assertEquals(5, bag.getPayload().size());
-		assertNull(bag.getFetchTxt());
-		
-		bag.makeHoley("http://foo.com/bag", true);
-		FetchTxt fetch = bag.getFetchTxt();
-		assertNotNull(fetch);
-		assertEquals(5, fetch.size());
-		FilenameSizeUrl filenameSizeUrl = fetch.get(0);
-		assertEquals("data/dir2/dir3/test5.txt", filenameSizeUrl.getFilename());
-		assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-		assertEquals("http://foo.com/bag/data/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
-		
-		assertEquals(0, bag.getPayload().size());
-		
-		//Now test with a slash after the url
-		bag = this.getBag(Bag.Format.FILESYSTEM);
-
-		bag.makeHoley("http://foo.com/bag/", false);
-		fetch = bag.getFetchTxt();
-		assertNotNull(fetch);
-		filenameSizeUrl = fetch.get(0);
-		assertEquals("data/dir2/dir3/test5.txt", filenameSizeUrl.getFilename());
-		assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-		assertEquals("http://foo.com/bag/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
-		
-	}
 }

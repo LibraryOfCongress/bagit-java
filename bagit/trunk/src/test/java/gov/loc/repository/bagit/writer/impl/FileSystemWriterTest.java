@@ -1,14 +1,14 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.writer.impl;
 
-import gov.loc.repository.bagit.BagWriter;
-import gov.loc.repository.bagit.bagwriter.FileSystemBagWriter;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemBagWriter;
 
 import java.io.File;
 
 import org.junit.Before;
 
-public class FileSystemBagWriterTest extends AbstractBagWriterTest {
+public class FileSystemWriterTest extends AbstractWriterTest {
 
 	File bagDir;
 
@@ -24,7 +24,7 @@ public class FileSystemBagWriterTest extends AbstractBagWriterTest {
 	}
 
 	@Override
-	public BagWriter getBagWriter() {
+	public Writer getBagWriter() {
 		return new FileSystemBagWriter(bagDir, true);
 	}
 

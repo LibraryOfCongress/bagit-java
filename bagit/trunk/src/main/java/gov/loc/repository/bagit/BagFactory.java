@@ -102,6 +102,18 @@ public class BagFactory {
 		}
 		return bag;
 	}
+
+	/*
+	 * Creates a Bag from an existing Bag.
+	 * The version and bagFile (if present) are taken from the existing Bag.
+	 * @param Bag the Bag to base the new Bag on
+	 */
+	public static Bag createBag(Bag bag) {
+		if (bag.getFile() == null) {
+			return createBag(bag.getBagConstants().getVersion());
+		}
+		return createBag(bag.getFile(), bag.getBagConstants().getVersion(), false);
+	}
 	
 	
 	/*

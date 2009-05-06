@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.bagwriter;
+package gov.loc.repository.bagit.writer.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,13 +12,13 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
+import gov.loc.repository.bagit.writer.Writer;
 
-public class FileSystemBagWriter extends AbstractBagVisitor implements BagWriter {
+public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
 
 	private static final Log log = LogFactory.getLog(FileSystemBagWriter.class);
 	
@@ -96,8 +96,12 @@ public class FileSystemBagWriter extends AbstractBagVisitor implements BagWriter
 	}
 
 	@Override
-	public Bag getWrittenBag() {
-		return this.newBag;
-	}
+	public Bag write(Bag bag) {
+		log.info("Writing bag");
+		
+		bag.accept(this);
+		return this.newBag;		
 
+	}
+	
 }

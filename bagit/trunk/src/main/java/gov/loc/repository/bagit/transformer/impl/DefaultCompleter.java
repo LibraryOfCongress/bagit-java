@@ -1,16 +1,17 @@
-package gov.loc.repository.bagit.completion;
+package gov.loc.repository.bagit.transformer.impl;
 
 import java.util.Calendar;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.CompletionStrategy;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.impl.ManifestImpl;
+import gov.loc.repository.bagit.transformer.Completer;
 
-public class DefaultCompletionStrategy implements CompletionStrategy {
+public class DefaultCompleter implements Completer {
 	private boolean generateTagManifest = true;
 	private boolean updatePayloadOxum = true;
 	private boolean updateBaggingDate = true;
@@ -18,6 +19,7 @@ public class DefaultCompletionStrategy implements CompletionStrategy {
 	private boolean generateBagInfoTxt = true;
 	private Algorithm tagManifestAlgorithm = Algorithm.MD5;
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
+	private Bag newBag;
 	
 	public void setGenerateTagManifest(boolean generateTagManifest) {
 		this.generateTagManifest = generateTagManifest;
@@ -47,61 +49,61 @@ public class DefaultCompletionStrategy implements CompletionStrategy {
 		this.generateBagInfoTxt = generateBagInfoTxt;
 	}
 	
-	public void complete(Bag bag) {
-		this.handleBagIt(bag);
-		this.handleBagInfo(bag);
-		this.handlePayloadManifests(bag);
-		this.handleTagManifests(bag);
+	@Override
+	public Bag complete(Bag bag) {
+		this.newBag = BagFactory.createBag(bag);
+		this.newBag.putBagFiles(bag.getPayload());
+		this.newBag.putBagFiles(bag.getTags());
+		this.handleBagIt();
+		this.handleBagInfo();
+		this.handlePayloadManifests();
+		this.handleTagManifests();
+		return this.newBag;
 	}
 	
-	protected void handleBagIt(Bag bag) {
-		bag.putBagFile(bag.getBagPartFactory().createBagItTxt());
+	protected void handleBagIt() {
+		if (this.newBag.getBagItTxt() == null) {
+			this.newBag.putBagFile(this.newBag.getBagPartFactory().createBagItTxt());
+		}
 	}
 	
-	protected void handleBagInfo(Bag bag) {
-		BagInfoTxt bagInfo = bag.getBagInfoTxt();
+	protected void handleBagInfo() {
+		BagInfoTxt bagInfo = this.newBag.getBagInfoTxt();
 		if (bagInfo == null) {
-			if (this.generateBagInfoTxt) {
-				bagInfo = bag.getBagPartFactory().createBagInfoTxt();
-				bag.putBagFile(bagInfo);
+			if (this.generateBagInfoTxt) {				
+				bagInfo = this.newBag.getBagPartFactory().createBagInfoTxt();
 			} else {
 				return;
 			}
 		}
+		this.newBag.putBagFile(bagInfo);
+		
 		if (this.updatePayloadOxum) {
-			bagInfo.generatePayloadOxum(bag);
+			bagInfo.generatePayloadOxum(this.newBag);
 		}
 		if (this.updateBaggingDate) {
 			bagInfo.setBaggingDate(Calendar.getInstance().getTime());
 		}
 		if (this.updateBagSize) {
-			bagInfo.generateBagSize(bag);
+			bagInfo.generateBagSize(this.newBag);
 		}
 		
 	}
 	
-	protected void handleTagManifests(Bag bag) {
-		//Remove existing tag manifests
-		for(Manifest manifest : bag.getTagManifests()) {
-			bag.removeBagFile(manifest.getFilepath());
-		}
+	protected void handleTagManifests() {
 		if (this.generateTagManifest) {
-			String filepath = ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, bag.getBagConstants());
-			Manifest manifest = new ManifestImpl(filepath, bag);
-			manifest.generate(bag.getTags());
-			bag.putBagFile(manifest);
+			String filepath = ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants());
+			Manifest manifest = new ManifestImpl(filepath, this.newBag);
+			manifest.generate(this.newBag.getTags());
+			this.newBag.putBagFile(manifest);
 		}
 	}
 	
-	protected void handlePayloadManifests(Bag bag) {
-		//Remove existing payload manifests
-		for(Manifest manifest : bag.getPayloadManifests()) {
-			bag.removeBagFile(manifest.getFilepath());
-		}
-		String filepath = ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, bag.getBagConstants());
-		Manifest manifest = new ManifestImpl(filepath, bag);
-		manifest.generate(bag.getPayload());
-		bag.putBagFile(manifest);
+	protected void handlePayloadManifests() {
+		String filepath = ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants());
+		Manifest manifest = new ManifestImpl(filepath, this.newBag);
+		manifest.generate(this.newBag.getPayload());
+		this.newBag.putBagFile(manifest);
 		
 	}
 }

@@ -20,9 +20,9 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagVisitor;
-import gov.loc.repository.bagit.bagwriter.ZipBagWriter;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
+import gov.loc.repository.bagit.writer.impl.ZipBagWriter;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 
 public class SwordVisitor extends AbstractBagVisitor implements BagVisitor {

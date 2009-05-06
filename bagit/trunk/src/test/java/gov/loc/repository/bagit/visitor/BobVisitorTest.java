@@ -53,7 +53,7 @@ public class BobVisitorTest {
 		while(! this.handler.resourceCompleted) {
 			Thread.sleep(250);
 			count++;
-			assertTrue(count < 120);
+			assertTrue(count < 150);
 		}
 		
 	}

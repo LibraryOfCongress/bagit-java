@@ -4,17 +4,20 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.BagWriter;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.bagwriter.FileSystemBagWriter;
-import gov.loc.repository.bagit.bagwriter.TarBagWriter;
-import gov.loc.repository.bagit.bagwriter.ZipBagWriter;
-import gov.loc.repository.bagit.bagwriter.TarBagWriter.Compression;
-import gov.loc.repository.bagit.completion.DefaultCompletionStrategy;
+import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.transformer.HolePuncher;
+import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
+import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.visitor.BobVisitor;
 import gov.loc.repository.bagit.visitor.SwordVisitor;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemBagWriter;
+import gov.loc.repository.bagit.writer.impl.TarBagWriter;
+import gov.loc.repository.bagit.writer.impl.ZipBagWriter;
+import gov.loc.repository.bagit.writer.impl.TarBagWriter.Compression;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -343,7 +346,7 @@ public class CommandLineBagDriver {
 			String password = config.getString(PARAM_PASSWORD);
 			boolean relaxSSL = config.getBoolean(PARAM_RELAX_SSL, false);
 						
-			BagWriter writer = null;
+			Writer writer = null;
 			if (VALUE_WRITER_FILESYSTEM.equals(config.getString(PARAM_WRITER))) {
 				if (destFile == null) {
 					log.error("Error: If writing to a filesystem bag writer, a destination must be provided.");
@@ -389,14 +392,14 @@ public class CommandLineBagDriver {
 				((BobVisitor)writer).setThreads(config.getInt(PARAM_THREADS, BobVisitor.DEFAULT_THREADS));
 			}
 			*/
-			DefaultCompletionStrategy strategy = new DefaultCompletionStrategy();
-			strategy.setGenerateBagInfoTxt(! config.getBoolean(PARAM_EXCLUDE_BAG_INFO, false));
-			strategy.setUpdateBaggingDate(! config.getBoolean(PARAM_NO_UPDATE_BAGGING_DATE, false));
-			strategy.setUpdateBagSize(! config.getBoolean(PARAM_NO_UPDATE_BAG_SIZE, false));
-			strategy.setUpdatePayloadOxum(! config.getBoolean(PARAM_NO_UPDATE_PAYLOAD_OXUM, false));
-			strategy.setGenerateTagManifest(! config.getBoolean(PARAM_EXCLUDE_TAG_MANIFEST, false));
-			strategy.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
-			strategy.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
+			DefaultCompleter completer = new DefaultCompleter();
+			completer.setGenerateBagInfoTxt(! config.getBoolean(PARAM_EXCLUDE_BAG_INFO, false));
+			completer.setUpdateBaggingDate(! config.getBoolean(PARAM_NO_UPDATE_BAGGING_DATE, false));
+			completer.setUpdateBagSize(! config.getBoolean(PARAM_NO_UPDATE_BAG_SIZE, false));
+			completer.setUpdatePayloadOxum(! config.getBoolean(PARAM_NO_UPDATE_PAYLOAD_OXUM, false));
+			completer.setGenerateTagManifest(! config.getBoolean(PARAM_EXCLUDE_TAG_MANIFEST, false));
+			completer.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
+			completer.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 			
 			int ret = RETURN_SUCCESS;
 			
@@ -426,20 +429,21 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_WRITE.equals(operation.name)) {								
-				bag.write(writer);
+				writer.write(bag);
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
-				bag.makeComplete(strategy);
-				bag.write(writer);
+				Bag newBag = completer.complete(bag);
+				writer.write(newBag);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
 					bag.addFilesToPayload(file);
 				}
-				bag.makeComplete(strategy);
-				bag.write(writer);				
+				Bag newBag = completer.complete(bag);
+				writer.write(newBag);
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
-				bag.makeHoley(config.getString(PARAM_BASE_URL), config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false));
-				bag.write(writer);
+				HolePuncher puncher = new HolePuncherImpl();
+				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
+				writer.write(newBag);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				String oxum = BagHelper.generatePayloadOxum(bag);				
 				log.info("Payload-Oxum: " + oxum);
