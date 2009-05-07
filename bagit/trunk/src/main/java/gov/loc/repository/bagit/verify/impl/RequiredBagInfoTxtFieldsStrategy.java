@@ -1,13 +1,13 @@
-package gov.loc.repository.bagit.verify;
+package gov.loc.repository.bagit.verify.impl;
 
 import java.text.MessageFormat;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.VerifyStrategy;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.verify.AdditionalVerifier;
 
-public class RequiredBagInfoTxtFieldsStrategy implements VerifyStrategy {
+public class RequiredBagInfoTxtFieldsStrategy implements AdditionalVerifier {
 
 	private String[] requiredFields;
 	

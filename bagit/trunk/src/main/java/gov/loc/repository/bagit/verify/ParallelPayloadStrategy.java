@@ -17,19 +17,18 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.VerifyStrategy;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 
 /**
- * A {@link VerifyStrategy verification strategy} that verifies a bag's payload
+ * A {@link AdditionalVerifier verification strategy} that verifies a bag's payload
  * using multiple threads.  The number of threads is initially set to the
  * {@link Runtime#availableProcessors() number of CPUs}, but may be manually
  * set using {@link #setNumebrOfThreads(int)}.
  * 
  * @version $Id$
  */
-public class ParallelPayloadStrategy implements VerifyStrategy
+public class ParallelPayloadStrategy implements AdditionalVerifier
 {
     private static final Log log = LogFactory.getLog(ParallelPayloadStrategy.class);
     

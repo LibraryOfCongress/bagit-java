@@ -2,6 +2,7 @@ package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.verify.AdditionalVerifier;
 
 import java.io.File;
 import java.io.InputStream;
@@ -83,9 +84,9 @@ public interface Bag {
 	 * These checks are not specified by the BagIt Specification.
 	 * @param	strategies	a list of strategies to invoke
 	 */
-	SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies);
+	SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies);
 
-	SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies, CancelIndicator cancelIndicator);
+	SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies, CancelIndicator cancelIndicator);
 
 	
 	/*
@@ -93,7 +94,7 @@ public interface Bag {
 	 * These checks are not specified by the BagIt Specification.
 	 * @param	strategies	a strategy to invoke
 	 */	
-	SimpleResult checkAdditionalVerify(VerifyStrategy strategy);
+	SimpleResult checkAdditionalVerify(AdditionalVerifier strategy);
 	
 	/*
 	 * Verify that each checksum in every payload manifest can be verified against
@@ -158,6 +159,7 @@ public interface Bag {
 		FetchTxt createFetchTxt(Bag bag);
 		FetchTxt createFetchTxt(Bag bag, BagFile sourceBagFile);
 		Version getVersion();
+		
 		
 	}
 }

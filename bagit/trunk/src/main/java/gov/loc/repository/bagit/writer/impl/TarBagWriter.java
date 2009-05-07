@@ -20,6 +20,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.CancelIndicator;
+import gov.loc.repository.bagit.ProgressIndicator;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -42,6 +43,10 @@ public class TarBagWriter extends AbstractBagVisitor implements Writer {
 	private File newBagFile = null;
 	private List<BagFile> tagBagFiles = new ArrayList<BagFile>(); 
 	private CancelIndicator cancelIndicator = null;
+	private ProgressIndicator progressIndicator = null;
+	private int fileTotal = 0;
+	private int fileCount = 0;
+
 	
 	public TarBagWriter(File bagFile, Compression compression) {
 		this.init(bagFile, compression);
@@ -107,11 +112,19 @@ public class TarBagWriter extends AbstractBagVisitor implements Writer {
 		this.cancelIndicator = cancelIndicator;		
 	}
 	
+	@Override
+	public void setProgressIndicator(ProgressIndicator progressIndicator) {
+		this.progressIndicator = progressIndicator;		
+	}
+	
 	public void startBag(Bag bag) {
 		this.tarOut = new TarOutputStream(this.out);
 		if (this.newBagFile != null) {
 			this.newBag = BagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), false);
-		}		
+		}
+		this.fileCount = 0;
+		this.fileTotal = bag.getTags().size() + bag.getPayload().size();
+
 	}
 	
 	public void endBag() {
@@ -151,6 +164,8 @@ public class TarBagWriter extends AbstractBagVisitor implements Writer {
 	}
 	
 	private void write(BagFile bagFile) {
+		this.fileCount++;
+		if (this.progressIndicator != null) this.progressIndicator.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		try {
 			//Add tar entry
 			TarEntry entry = new TarEntry(this.bagDir + "/" + bagFile.getFilepath());

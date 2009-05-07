@@ -18,6 +18,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.CancelIndicator;
+import gov.loc.repository.bagit.ProgressIndicator;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -38,6 +39,10 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 	private File newBagFile = null;
 	private List<BagFile> tagBagFiles = new ArrayList<BagFile>();
 	private CancelIndicator cancelIndicator = null;
+	private ProgressIndicator progressIndicator = null;
+	private int fileTotal = 0;
+	private int fileCount = 0;
+
 	
 	public ZipBagWriter(File bagFile) {
 		this.newBagFile = bagFile;
@@ -66,6 +71,11 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 	}
 	
 	@Override
+	public void setProgressIndicator(ProgressIndicator progressIndicator) {
+		this.progressIndicator = progressIndicator;		
+	}
+	
+	@Override
 	public void startBag(Bag bag) {
 		this.zipOut = new ZipOutputStream(this.out);
 		if (this.newBagFile != null) {
@@ -73,6 +83,8 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 			this.newBagURI = VFSHelper.getUri(this.newBagFile, Format.ZIP);
 
 		}
+		this.fileCount = 0;
+		this.fileTotal = bag.getTags().size() + bag.getPayload().size();
 	}
 	
 	@Override
@@ -114,6 +126,8 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 	}
 	
 	private void write(BagFile bagFile) {
+		this.fileCount++;
+		if (this.progressIndicator != null) this.progressIndicator.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		try {
 			//Add zip entry
 			zipOut.putNextEntry(new ZipEntry(this.bagDir + "/" + bagFile.getFilepath()));

@@ -66,7 +66,7 @@ public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 		this.relaxedSSL = relaxedSSL;
 		this.username = username;
 		this.password = password;
-		this.throttle = 0;
+		this.throttle = throttle;
 	}
 	
 	public void setTitle(String title) {

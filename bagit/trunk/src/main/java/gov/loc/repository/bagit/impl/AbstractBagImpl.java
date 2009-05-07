@@ -26,11 +26,11 @@ import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.VerifyStrategy;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
+import gov.loc.repository.bagit.verify.AdditionalVerifier;
 
 public abstract class AbstractBagImpl implements Bag {
 		
@@ -526,14 +526,14 @@ public abstract class AbstractBagImpl implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies) {
+	public SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies) {
 		return this.checkAdditionalVerify(strategies, null);
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies, CancelIndicator cancelIndicator) {
+	public SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies, CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
-		for(VerifyStrategy strategy : strategies) {
+		for(AdditionalVerifier strategy : strategies) {
 			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			result.merge(strategy.verify(this));
 		}		
@@ -541,7 +541,7 @@ public abstract class AbstractBagImpl implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(VerifyStrategy strategy) {
+	public SimpleResult checkAdditionalVerify(AdditionalVerifier strategy) {
 		return strategy.verify(this);
 	}
 }
