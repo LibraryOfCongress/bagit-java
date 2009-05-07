@@ -10,6 +10,10 @@ import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.transfer.BagFetcher;
+import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
+import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.visitor.BobVisitor;
 import gov.loc.repository.bagit.visitor.SwordVisitor;
@@ -55,6 +59,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_CHECK_PAYLOAD_OXUM = "checkpayloadoxum";
 	public static final String OPERATION_VERIFY_PAYLOADMANIFESTS = "verifypayloadmanifests";
 	public static final String OPERATION_VERIFY_TAGMANIFESTS = "verifytagmanifests";
+	public static final String OPERATION_RETRIEVE = "retrieve";
 	
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
@@ -184,6 +189,11 @@ public class CommandLineBagDriver {
 		this.addOperation(OPERATION_GENERATE_PAYLOAD_OXUM, "Generates Payload-Oxum for the bag.", params.toArray(new Parameter[] {}));
 		this.addOperation(OPERATION_CHECK_PAYLOAD_OXUM, "Generates Payload-Oxum and checks against Payload-Oxum in bag-info.txt.", params.toArray(new Parameter[] {}));
 		
+		// bag retrieve [-threads n] BAG
+		params.clear();
+		params.add(sourceParam);
+		params.add(threadsParam);
+		this.addOperation(OPERATION_RETRIEVE, "Retrieves any missing pieces of a bag specified in the fetch.txt.", params.toArray(new Parameter[0]));
 	}
 
 	private void addOperation(String name, String help, Parameter[] params) throws Exception {
@@ -467,7 +477,18 @@ public class CommandLineBagDriver {
 						}
 					}
 				}
+			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
+			    BagFetcher fetcher = new BagFetcher();
+			    fetcher.setNumberOfThreads(1);
+			    fetcher.registerProtocol("http", new HttpFetchProtocol());
+			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
+			    
+			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
+			    
+			    SimpleResult result = fetcher.fetch(bag, dest);
+			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
 			}
+			
 			log.info("Operation completed.");
 			return ret;
 		}

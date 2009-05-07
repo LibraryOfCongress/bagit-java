@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.impl;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.loc.repository.bagit.Bag;
@@ -336,6 +337,7 @@ public abstract class AbstractBagImplTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testBagWithSpecialCharacters() throws Exception {
 		File testBagDir = this.createTestBag();
 		File specialCharFile = new File(testBagDir, "data/testü.txt");
