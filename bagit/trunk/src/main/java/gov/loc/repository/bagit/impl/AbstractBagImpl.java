@@ -22,6 +22,7 @@ import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
+import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
@@ -276,12 +277,14 @@ public abstract class AbstractBagImpl implements Bag {
 	public BagItTxt getBagItTxt() {
 		return (BagItTxt)this.getBagFile(this.getBagConstants().getBagItTxt());
 	}
-					
+
+	@Override
 	public SimpleResult checkComplete() {
-		return this.checkComplete(false);
+		return this.checkComplete(false, null);
 	}
 	
-	public SimpleResult checkComplete(boolean missingBagItTolerant) {
+	@Override
+	public SimpleResult checkComplete(boolean missingBagItTolerant, CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
 		try
 		{
@@ -300,17 +303,22 @@ public abstract class AbstractBagImpl implements Bag {
 				result.setSuccess(false);
 				result.addMessage("Version is not " + this.getBagConstants().getVersion());				
 			}
+
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+			
 			//All payload files are in data directory
 			for(String filepath : this.payloadMap.keySet()) {
+				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 				if (! filepath.startsWith(this.getBagConstants().getDataDirectory() + '/')) {
 					result.setSuccess(false);
 					result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory", filepath, this.getBagConstants().getDataDirectory()));									
 				}
 			}
 			//Every payload BagFile in at least one manifest
-			for(String filepath : this.payloadMap.keySet()) {
+			for(String filepath : this.payloadMap.keySet()) {				
 				boolean inManifest = false;
 				for(Manifest manifest : this.getPayloadManifests()) {
+					if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 					if (manifest.containsKey(filepath)) {
 						inManifest = true;
 						break;
@@ -323,7 +331,8 @@ public abstract class AbstractBagImpl implements Bag {
 			}
 			//Every payload file exists
 			for(Manifest manifest : this.getPayloadManifests()) {			
-				SimpleResult manifestResult = manifest.isComplete();
+				SimpleResult manifestResult = manifest.checkComplete(cancelIndicator);
+				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 				if (! manifestResult.isSuccess()) {
 					result.merge(manifestResult);
 				}
@@ -332,7 +341,8 @@ public abstract class AbstractBagImpl implements Bag {
 
 			//Every tag file exists
 			for(Manifest manifest : this.getTagManifests()) {
-				SimpleResult manifestResult = manifest.isComplete();
+				SimpleResult manifestResult = manifest.checkComplete(cancelIndicator);
+				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 				if (! manifestResult.isSuccess()) {
 					result.merge(manifestResult);
 				}				
@@ -344,6 +354,7 @@ public abstract class AbstractBagImpl implements Bag {
 				//Only directory is a data directory
 				for(FileObject fileObject : bagFileObject.getChildren())
 				{
+					if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 					if (fileObject.getType() == FileType.FOLDER) {
 						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (! folderName.equals(this.getBagConstants().getDataDirectory())) {
@@ -356,7 +367,8 @@ public abstract class AbstractBagImpl implements Bag {
 				FileObject dataFileObject = bagFileObject.getChild(this.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
 					FileObject[] fileObjects = bagFileObject.getChild(this.getBagConstants().getDataDirectory()).findFiles(new FileTypeSelector(FileType.FILE));
-					for(FileObject fileObject : fileObjects) {						
+					for(FileObject fileObject : fileObjects) {
+						if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 						String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (this.getBagFile(filepath) == null) {
 							result.setSuccess(false);
@@ -377,14 +389,21 @@ public abstract class AbstractBagImpl implements Bag {
 
 	@Override
 	public SimpleResult checkValid() {
-		return this.checkValid(false);
+		return this.checkValid(false, null);
+	}
+
+	@Override
+	public SimpleResult checkTagManifests() {
+		return this.checkTagManifests(null);
 	}
 	
 	@Override
-	public SimpleResult checkTagManifests() {
+	public SimpleResult checkTagManifests(CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
 		for(Manifest manifest : this.getTagManifests()) {
-			result = manifest.isValid();
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+			result = manifest.checkValid();
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			if (! result.isSuccess()) {
 				log.info("Validity check: " + result.toString());
 				return result;
@@ -395,9 +414,16 @@ public abstract class AbstractBagImpl implements Bag {
 	
 	@Override
 	public SimpleResult checkPayloadManifests() {
+		return this.checkPayloadManifests(null);
+	}
+	
+	@Override
+	public SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
-		for(Manifest manifest : this.getPayloadManifests()) {			
-			result = manifest.isValid();
+		for(Manifest manifest : this.getPayloadManifests()) {
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+			result = manifest.checkValid();
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			if (! result.isSuccess()) {
 				log.info("Validity check: " + result.toString());
 				return result;
@@ -408,9 +434,10 @@ public abstract class AbstractBagImpl implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkValid(boolean missingBagItTolerant) {
+	public SimpleResult checkValid(boolean missingBagItTolerant, CancelIndicator cancelIndicator) {
 		//Is complete
-		SimpleResult result = this.checkComplete(missingBagItTolerant);
+		SimpleResult result = this.checkComplete(missingBagItTolerant, cancelIndicator);
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 		if (! result.isSuccess())
 		{
 			return result;
@@ -418,11 +445,13 @@ public abstract class AbstractBagImpl implements Bag {
 
 		//Every checksum checks
 		result = this.checkTagManifests();
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 		if (! result.isSuccess()) {
 			return result;
 		}
 
 		result = this.checkPayloadManifests();
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 		if (! result.isSuccess()) {
 			return result;
 		}
@@ -430,22 +459,50 @@ public abstract class AbstractBagImpl implements Bag {
 		log.info("Validity check: " + result.toString());				
 		return result;
 	}
-		
+	
 	@Override
 	public void accept(BagVisitor visitor) {
-		visitor.startBag(this);
+		this.accept(visitor, null);		
+	}
+	
+	@Override
+	public void accept(BagVisitor visitor, CancelIndicator cancelIndicator) {
 		
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		
+		visitor.startBag(this);
+
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+
 		visitor.startTags();
+		
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		
 		for(String filepath : this.tagMap.keySet()) {
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
 			visitor.visitTag(this.tagMap.get(filepath));
 		}
+		
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+
 		visitor.endTags();
+
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
 		
 		visitor.startPayload();
+		
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		
 		for(String filepath : this.payloadMap.keySet()) {
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
 			visitor.visitPayload(this.payloadMap.get(filepath));
 		}
+		
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+
 		visitor.endPayload();
+	
+		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
 		
 		visitor.endBag();
 	}
@@ -467,13 +524,19 @@ public abstract class AbstractBagImpl implements Bag {
 	public BagInfoTxt getBagInfoTxt() {
 		return (BagInfoTxt)this.getBagFile(this.getBagConstants().getBagInfoTxt());
 	}
-		
+	
 	@Override
 	public SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies) {
+		return this.checkAdditionalVerify(strategies, null);
+	}
+	
+	@Override
+	public SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies, CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
 		for(VerifyStrategy strategy : strategies) {
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			result.merge(strategy.verify(this));
-		}
+		}		
 		return result;
 	}
 	

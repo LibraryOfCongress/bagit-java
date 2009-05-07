@@ -216,10 +216,10 @@ public class SimpleHttpServer implements Runnable {
                     LOG.error("I/O error: " + e.getMessage());
                 }
                 this.count++;
-                Thread.sleep(100);
+                //Thread.sleep(100);
             }
-        } catch (InterruptedException accept) {
-        } catch (IOException e) {
+        } /*catch (InterruptedException accept) {
+        }*/ catch (IOException e) {
             if (!stopped) {
                 LOG.error("I/O error: " + e.getMessage());
             }

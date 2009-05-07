@@ -1,17 +1,22 @@
 package gov.loc.repository.bagit.transformer.impl;
 
 import java.util.Calendar;
+import java.util.Collection;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.CancelIndicator;
+import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.impl.ManifestImpl;
 import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 
-public class DefaultCompleter implements Completer {
+public class DefaultCompleter implements Completer, Cancellable {
 	private boolean generateTagManifest = true;
 	private boolean updatePayloadOxum = true;
 	private boolean updateBaggingDate = true;
@@ -20,6 +25,7 @@ public class DefaultCompleter implements Completer {
 	private Algorithm tagManifestAlgorithm = Algorithm.MD5;
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
+	private CancelIndicator cancelIndicator;
 	
 	public void setGenerateTagManifest(boolean generateTagManifest) {
 		this.generateTagManifest = generateTagManifest;
@@ -48,6 +54,11 @@ public class DefaultCompleter implements Completer {
 	public void setGenerateBagInfoTxt(boolean generateBagInfoTxt) {
 		this.generateBagInfoTxt = generateBagInfoTxt;
 	}
+		
+	@Override
+	public void setCancelIndicator(CancelIndicator cancelIndicator) {
+		this.cancelIndicator = cancelIndicator;		
+	}	
 	
 	@Override
 	public Bag complete(Bag bag) {
@@ -58,6 +69,9 @@ public class DefaultCompleter implements Completer {
 		this.handleBagInfo();
 		this.handlePayloadManifests();
 		this.handleTagManifests();
+		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
+			return null;
+		}
 		return this.newBag;
 	}
 	
@@ -92,18 +106,24 @@ public class DefaultCompleter implements Completer {
 	
 	protected void handleTagManifests() {
 		if (this.generateTagManifest) {
-			String filepath = ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants());
-			Manifest manifest = new ManifestImpl(filepath, this.newBag);
-			manifest.generate(this.newBag.getTags());
-			this.newBag.putBagFile(manifest);
+			this.handleManifest(this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants()), this.newBag.getTags());
 		}
 	}
 	
 	protected void handlePayloadManifests() {
-		String filepath = ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants());
-		Manifest manifest = new ManifestImpl(filepath, this.newBag);
-		manifest.generate(this.newBag.getPayload());
-		this.newBag.putBagFile(manifest);
-		
+		this.handleManifest(this.payloadManifestAlgorithm, ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants()),this.newBag.getPayload());		
 	}
+
+	protected void handleManifest(Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
+		Manifest manifest = new ManifestImpl(filepath, this.newBag);
+		for(BagFile bagFile : bagFiles) {
+			if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
+				return;
+			}
+			String fixity = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
+			manifest.put(bagFile.getFilepath(), fixity);
+		}
+		this.newBag.putBagFile(manifest);
+	}
+
 }

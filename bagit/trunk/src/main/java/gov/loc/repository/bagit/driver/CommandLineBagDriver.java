@@ -404,14 +404,14 @@ public class CommandLineBagDriver {
 			int ret = RETURN_SUCCESS;
 			
 			if (OPERATION_ISVALID.equals(operation.name)) {				
-				SimpleResult result = bag.checkValid(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				SimpleResult result = bag.checkValid(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false), null);
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 				return RETURN_SUCCESS;
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
-				SimpleResult result = bag.checkComplete(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				SimpleResult result = bag.checkComplete(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false), null);
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;

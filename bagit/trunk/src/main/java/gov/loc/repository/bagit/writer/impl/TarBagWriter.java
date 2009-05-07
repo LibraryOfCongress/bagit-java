@@ -19,6 +19,7 @@ import org.apache.tools.tar.TarOutputStream;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -40,7 +41,7 @@ public class TarBagWriter extends AbstractBagVisitor implements Writer {
 	private Bag newBag = null;
 	private File newBagFile = null;
 	private List<BagFile> tagBagFiles = new ArrayList<BagFile>(); 
-
+	private CancelIndicator cancelIndicator = null;
 	
 	public TarBagWriter(File bagFile, Compression compression) {
 		this.init(bagFile, compression);
@@ -99,6 +100,11 @@ public class TarBagWriter extends AbstractBagVisitor implements Writer {
 			throw new RuntimeException(ex);
 		}
 
+	}
+	
+	@Override
+	public void setCancelIndicator(CancelIndicator cancelIndicator) {
+		this.cancelIndicator = cancelIndicator;		
 	}
 	
 	public void startBag(Bag bag) {
@@ -170,7 +176,12 @@ public class TarBagWriter extends AbstractBagVisitor implements Writer {
 	public Bag write(Bag bag) {
 		log.info("Writing bag");
 		
-		bag.accept(this);
+		bag.accept(this, this.cancelIndicator);
+		
+		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
+			return null;
+		}
+		
 		return this.newBag;		
 
 	}

@@ -15,8 +15,10 @@ import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.ManifestWriter;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
+import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.bag.DummyCancelIndicator;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
 import java.io.File;
@@ -95,7 +97,6 @@ public abstract class AbstractBagImplTest {
 		assertTrue(bag.checkTagManifests().isSuccess());
 		assertTrue(bag.checkPayloadManifests().isSuccess());
 	}
-	
 	
 	@Test
 	public void testFileSystemBag() throws Exception {
@@ -183,8 +184,8 @@ public abstract class AbstractBagImplTest {
 		assertFalse(bag.checkComplete().isSuccess());
 		assertFalse(bag.checkValid().isSuccess());				
 		
-		assertTrue(bag.checkComplete(true).isSuccess());
-		assertTrue(bag.checkValid(true).isSuccess());
+		assertTrue(bag.checkComplete(true, null).isSuccess());
+		assertTrue(bag.checkValid(true, null).isSuccess());
 
 		assertTrue(bag.checkTagManifests().isSuccess());
 		assertTrue(bag.checkPayloadManifests().isSuccess());
@@ -406,5 +407,14 @@ public abstract class AbstractBagImplTest {
 	}
 	
 	public void addlTestCreateBag(Bag bag){};
-	
+
+	@Test
+	public void testCancel() throws Exception {
+		Bag bag = this.getBag(Format.FILESYSTEM);
+		assertNull(bag.checkComplete(false, new DummyCancelIndicator(5)));
+		assertNull(bag.checkValid(false, new DummyCancelIndicator(10)));
+		assertNull(bag.checkTagManifests(new DummyCancelIndicator(3)));
+		assertNull(bag.checkPayloadManifests(new DummyCancelIndicator(5)));
+	}
+
 }

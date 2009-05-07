@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.logging.Log;
@@ -12,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestReader;
@@ -94,9 +94,14 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		return ManifestHelper.isTagManifest(this.name, this.bag.getBagConstants());
 	}
 
-	public SimpleResult isComplete() {
+	public SimpleResult checkComplete() {
+		return this.checkComplete(null);
+	}
+	
+	public SimpleResult checkComplete(CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
 		for(String filepath : this.keySet()) {
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			BagFile bagFile = null;
 			if (this.isPayloadManifest()) {
 				bagFile = bag.getBagFile(filepath);
@@ -115,11 +120,15 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		return result;
 	}
 
-	
-	public SimpleResult isValid() {
+	public SimpleResult checkValid() {
+		return this.checkValid(null);
+	}
+		
+	public SimpleResult checkValid(CancelIndicator cancelIndicator) {
 		SimpleResult result = new SimpleResult(true);
 		Algorithm algorithm = this.getAlgorithm();
 		for(String filepath : this.keySet()) {
+			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			BagFile bagFile = null;
 			if (this.isPayloadManifest()) {
 				bagFile = bag.getBagFile(filepath);
@@ -143,13 +152,6 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 			}
 		}
 		return result;
-	}
-
-	public void generate(Collection<BagFile> bagFiles) {
-		for(BagFile bagFile : bagFiles) {
-			String fixity = MessageDigestHelper.generateFixity(bagFile.newInputStream(), this.getAlgorithm());
-			this.put(bagFile.getFilepath(), fixity);
-		}	
 	}
 	
 	public boolean exists() {

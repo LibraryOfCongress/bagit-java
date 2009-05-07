@@ -46,7 +46,7 @@ public class BobVisitorTest {
 		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
-		BobVisitor visitor = new BobVisitor(this.baseURL, false, null, null);
+		BobVisitor visitor = new BobVisitor(this.baseURL, false, null, null, 250);
 		bag.accept(visitor);
 		
 		int count = 0;

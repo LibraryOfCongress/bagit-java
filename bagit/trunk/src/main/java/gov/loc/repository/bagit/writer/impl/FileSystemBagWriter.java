@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -28,10 +29,16 @@ public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
 	private boolean skipIfPayloadFileExists = true;
 	private Bag newBag;
 	private String newBagURI;
+	private CancelIndicator cancelIndicator = null;
 	
 	public FileSystemBagWriter(File bagDir, boolean skipIfPayloadFileExists) {
 		this.skipIfPayloadFileExists = skipIfPayloadFileExists;
 		this.newBagDir = bagDir;
+	}
+	
+	@Override
+	public void setCancelIndicator(CancelIndicator cancelIndicator) {
+		this.cancelIndicator = cancelIndicator;		
 	}
 	
 	@Override
@@ -99,7 +106,10 @@ public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
 	public Bag write(Bag bag) {
 		log.info("Writing bag");
 		
-		bag.accept(this);
+		bag.accept(this, this.cancelIndicator);
+		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
+			return null;
+		}
 		return this.newBag;		
 
 	}

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.bag.DummyCancelIndicator;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
 
@@ -45,6 +46,19 @@ public abstract class AbstractWriterTest {
 		
 		assertEquals(5, newBag.getPayload().size());
 		assertNotNull(newBag.getBagFile("data/dir1/test3.txt"));
+		
+	}
+
+	@Test
+	public void testCancel() throws Exception {
+		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		assertTrue(bag.checkValid().isSuccess());
+		
+		Writer writer = this.getBagWriter();
+		writer.setCancelIndicator(new DummyCancelIndicator(3));		
+		
+		Bag newBag = writer.write(bag);
+		assertNull(newBag);
 		
 	}
 

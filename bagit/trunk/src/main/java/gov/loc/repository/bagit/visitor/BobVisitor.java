@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.visitor;
 
+import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -10,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -56,12 +59,14 @@ public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 	private boolean relaxedSSL = false;
 	private String username;
 	private String password;
+	private int throttle = 0;
 	
-	public BobVisitor(String collectionURL, boolean relaxedSSL, String username, String password) {
+	public BobVisitor(String collectionURL, boolean relaxedSSL, String username, String password, int throttle) {
 		this.collectionURL = collectionURL;
 		this.relaxedSSL = relaxedSSL;
 		this.username = username;
 		this.password = password;
+		this.throttle = 0;
 	}
 	
 	public void setTitle(String title) {
@@ -95,20 +100,15 @@ public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 	public void endBag() {
 		this.executor.shutdown();
 		while(! this.executor.isTerminated()) {
-			try {
-				Thread.sleep(250);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+			this.wait(250);
 		}
 		atomDoc.getRootElement().addElement("bob:completed")
 				.addText(df.format(new Date()));
-		HttpClient client = this.getClient();
 		PutMethod put = new PutMethod(editURL);
 		try {
 			put.setRequestEntity(new ByteArrayRequestEntity(atomDoc.asXML().getBytes("utf-8"), "application/atom+xml; charset=\"utf-8\""));
 			log.debug(MessageFormat.format("Putting to {0}.  Message body is: {1}", collectionURL, atomDoc.asXML()));
-			client.executeMethod(put);
+			this.executeMethod(put);
 			log.debug(MessageFormat.format("Response to put was response code {0} and response body of {1}", put.getStatusCode(), put.getResponseBodyAsString()));
 			if (put.getStatusCode() != HttpStatus.SC_OK) {
 				throw new RuntimeException(MessageFormat.format("Attempt to update resource failed.  Server returned a response code of {0} and body of {1}", put.getStatusCode(), put.getResponseBodyAsString()));
@@ -121,6 +121,21 @@ public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 
 	}
 
+	private void executeMethod(HttpMethod method) throws HttpException, IOException {
+		HttpClient client = this.getClient();
+		client.executeMethod(method);
+		this.wait(this.throttle);
+	}
+	
+	private void wait(int length) {
+		try {
+			Thread.sleep(length);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public void startBag(Bag bag) {
@@ -196,12 +211,11 @@ public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 			Protocol.registerProtocol("https", relaxedHttps);
 		}		
 		
-		HttpClient client = this.getClient();
 		PostMethod post = new PostMethod(collectionURL);
 		try {
 			post.setRequestEntity(new ByteArrayRequestEntity(atomDoc.asXML().getBytes("utf-8"), "application/atom+xml; charset=\"utf-8\""));
 			log.debug(MessageFormat.format("Posting to {0}.  Message body is: {1}", collectionURL, atomDoc.asXML()));
-			client.executeMethod(post);
+			this.executeMethod(post);
 			log.debug(MessageFormat.format("Response to post was response code {0} and response body of {1}", post.getStatusCode(), post.getResponseBodyAsString()));
 			if (post.getStatusCode() != HttpStatus.SC_CREATED) {
 				throw new RuntimeException(MessageFormat.format("Attempt to create resource failed.  Server returned a response code of {0} and body of {1}", post.getStatusCode(), post.getResponseBodyAsString()));
@@ -266,13 +280,12 @@ public class BobVisitor extends AbstractBagVisitor implements BagVisitor {
 		
 		@Override
 		public void run() {
-			HttpClient client = getClient();
 			PostMethod post = new PostMethod(editURL);
 			post.addRequestHeader("Content-Disposition", "attachment; filename=" + this.filepath);
 			post.setRequestEntity(new InputStreamRequestEntity(this.bagFile.newInputStream(), "application/octet-stream"));
 			try {
 				log.debug(MessageFormat.format("Posting {0} to {1}", this.filepath, editURL));
-				client.executeMethod(post);
+				executeMethod(post);
 				log.debug(MessageFormat.format("Response to post was response code {0} and response body of {1}", post.getStatusCode(), post.getResponseBodyAsString()));
 				if (post.getStatusCode() != HttpStatus.SC_CREATED && post.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
 					throw new RuntimeException(MessageFormat.format("Attempt to create resource failed.  Server returned a response code of {0} and body of {1}", post.getStatusCode(), post.getResponseBodyAsString()));

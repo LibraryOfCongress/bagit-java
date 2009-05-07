@@ -60,7 +60,7 @@ public interface Bag {
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 * @param	missingBagItTolerant	whether to allow a valid bag to be missing a BagIt.txt
 	 */
-	SimpleResult checkValid(boolean missingBagItTolerant);
+	SimpleResult checkValid(boolean missingBagItTolerant, CancelIndicator cancelIndicator);
 
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
@@ -71,7 +71,7 @@ public interface Bag {
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 * @param	missingBagItTolerant	whether to allow a complete bag to be missing a BagIt.txt
 	 */	
-	SimpleResult checkComplete(boolean missingBagItTolerant);
+	SimpleResult checkComplete(boolean missingBagItTolerant, CancelIndicator cancelIndicator);
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
@@ -85,6 +85,9 @@ public interface Bag {
 	 */
 	SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies);
 
+	SimpleResult checkAdditionalVerify(List<VerifyStrategy> strategies, CancelIndicator cancelIndicator);
+
+	
 	/*
 	 * Additional checks of a bag.
 	 * These checks are not specified by the BagIt Specification.
@@ -98,15 +101,22 @@ public interface Bag {
 	 */
 	SimpleResult checkPayloadManifests();
 
+	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator);
+
+	
 	/*
 	 * Verify that each checksum in every tag manifest can be verified against
 	 * the appropriate contents.
 	 */	
 	SimpleResult checkTagManifests();
-			
+
+	SimpleResult checkTagManifests(CancelIndicator cancelIndicator);
+
 	void load();
 	
 	void accept(BagVisitor visitor);
+	
+	void accept(BagVisitor visitor, CancelIndicator cancelIndicator);
 			
 	BagConstants getBagConstants();
 	
