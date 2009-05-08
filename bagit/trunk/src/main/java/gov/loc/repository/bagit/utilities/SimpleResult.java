@@ -48,6 +48,9 @@ public class SimpleResult {
 	}
 	
 	public void merge(SimpleResult result) {
+		if (result == null) {
+			return;
+		}
 		if (! (this.isSuccess() && result.isSuccess)) {
 			this.isSuccess = false;
 		}

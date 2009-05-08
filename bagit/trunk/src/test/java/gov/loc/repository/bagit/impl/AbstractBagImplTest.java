@@ -20,6 +20,7 @@ import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.bag.DummyCancelIndicator;
+import gov.loc.repository.bagit.bag.PrintingProgressIndicator;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 
@@ -422,11 +423,10 @@ public abstract class AbstractBagImplTest {
 	@Test
 	public void testCancel() throws Exception {
 		Bag bag = this.getBag(Format.FILESYSTEM);
-		assertNull(bag.checkComplete(new DummyCancelIndicator(5), null));
-		assertNull(bag.checkValid(new DummyCancelIndicator(10), null));
-		//TODO:  To be uncommented when ParallelManifestChecksumVerifier implements Cancellable
-		//assertNull(bag.checkTagManifests(new DummyCancelIndicator(3), null));
-		//assertNull(bag.checkPayloadManifests(new DummyCancelIndicator(5), null));
+		assertNull(bag.checkComplete(new DummyCancelIndicator(5), new PrintingProgressIndicator()));
+		assertNull(bag.checkValid(new DummyCancelIndicator(10), new PrintingProgressIndicator()));		
+		assertNull(bag.checkTagManifests(new DummyCancelIndicator(3), new PrintingProgressIndicator()));
+		assertNull(bag.checkPayloadManifests(new DummyCancelIndicator(5), new PrintingProgressIndicator()));
 	}
 
 }

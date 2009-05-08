@@ -403,7 +403,8 @@ public class ConfigurableBag implements Bag {
 			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 			this.setIndicators(verifier, cancelIndicator, progressIndicator);
 			result.merge(verifier.verify(this));
-		}		
+		}
+    	if (cancelIndicator != null && cancelIndicator.performCancel()) return null;        
 		return result;
 		
 		
