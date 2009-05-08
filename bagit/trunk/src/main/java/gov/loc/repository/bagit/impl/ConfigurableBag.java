@@ -439,4 +439,33 @@ public class ConfigurableBag implements Bag {
 		writer.setProgressIndicator(progressIndicator);
 		return writer.write(this, file);
 	}
+	
+	@Override
+	public void removePayloadDirectory(String filepath) {
+		if (! filepath.endsWith("/")) {
+			filepath += "/";
+		}
+		if (! filepath.startsWith(bagConstants.getDataDirectory())) {
+			filepath = bagConstants.getDataDirectory() + "/" + filepath;
+		}
+		
+		if ((bagConstants.getDataDirectory() + "/").equals(filepath)) {
+			return;
+		}
+
+		log.debug("Removing payload directory " + filepath);
+		
+		List<String> deleteFilepaths = new ArrayList<String>();
+		
+		for(BagFile bagFile : this.getPayload()) {
+			if (bagFile.getFilepath().startsWith(filepath)) {
+				deleteFilepaths.add(bagFile.getFilepath());
+			}
+		}
+		
+		for(String deleteFilepath : deleteFilepaths) {
+			log.debug("Removing " + deleteFilepath);
+			this.removeBagFile(deleteFilepath);			
+		}
+	}
 }

@@ -47,6 +47,8 @@ public interface Bag {
 	
 	void removeBagFile(String filepath);
 	
+	void removePayloadDirectory(String filepath);
+	
 	BagFile getBagFile(String filepath);
 	
 	void putBagFile(BagFile bagFile);

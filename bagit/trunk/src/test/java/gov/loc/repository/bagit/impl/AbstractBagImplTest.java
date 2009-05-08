@@ -430,5 +430,26 @@ public abstract class AbstractBagImplTest {
 		assertNull(bag.checkTagManifests(new DummyCancelIndicator(3), new PrintingProgressIndicator()));
 		assertNull(bag.checkPayloadManifests(new DummyCancelIndicator(5), new PrintingProgressIndicator()));
 	}
+	
+	@Test
+	public void testRemoveDirectory() throws Exception {
+		Bag bag = this.getBag(Format.FILESYSTEM);
+		
+		assertNotNull(bag.getBagFile("data/test1.txt"));
+		assertNotNull(bag.getBagFile("data/dir2/test4.txt"));
+		assertNotNull(bag.getBagFile("data/dir2/dir3/test5.txt"));
+		
+		bag.removePayloadDirectory("data/dir2");
+		assertNotNull(bag.getBagFile("data/test1.txt"));
+		assertNull(bag.getBagFile("data/dir2/test4.txt"));
+		assertNull(bag.getBagFile("data/dir2/dir3/test5.txt"));
+
+		bag.removePayloadDirectory("data/test1.txt");
+		assertNotNull(bag.getBagFile("data/test1.txt"));
+
+		bag.removePayloadDirectory("data");
+		assertNotNull(bag.getBagFile("data/test1.txt"));
+
+	}
 
 }
