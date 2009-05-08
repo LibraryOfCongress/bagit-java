@@ -18,13 +18,14 @@ import java.util.Calendar;
 
 public class DefaultCompleterTest {
 
-
-	DefaultCompleter completer = new DefaultCompleter();
+	BagFactory bagFactory = new BagFactory();
+	DefaultCompleter completer;	
 	Bag bag;
 	
 	@Before
 	public void setup() throws Exception {
-		bag = BagFactory.createBag();
+		completer = new DefaultCompleter(this.bagFactory);
+		bag = bagFactory.createBag();
 		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir1", BagFactory.LATEST.toString().toLowerCase())));
 		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir2", BagFactory.LATEST.toString().toLowerCase())));
 		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/test1.txt", BagFactory.LATEST.toString().toLowerCase())));

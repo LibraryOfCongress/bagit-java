@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.writer;
 
+import java.io.File;
+
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.ProgressMonitorable;
@@ -10,5 +12,5 @@ public interface Writer extends Cancellable, ProgressMonitorable {
 	 * @param	Bag	the bag to be written
 	 * @return		the newly-written bag
 	 */
-	Bag write(Bag bag);
+	Bag write(Bag bag, File file);
 }

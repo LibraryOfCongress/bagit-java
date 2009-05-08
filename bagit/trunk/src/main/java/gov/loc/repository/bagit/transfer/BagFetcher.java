@@ -43,6 +43,12 @@ public class BagFetcher
     private FetchedFileDestinationFactory destinationFactory;
     private Map<String, FetchProtocol> protocolFactories = Collections.synchronizedMap(new HashMap<String, FetchProtocol>());
     private List<BagFile> newBagFiles;
+    private BagFactory bagFactory;
+    
+    public BagFetcher(BagFactory bagFactory) {
+    	this.bagFactory = bagFactory;
+    	this.numberOfThreads = Runtime.getRuntime().availableProcessors();
+    }
     
     public int getNumberOfThreads()
     {
@@ -56,12 +62,7 @@ public class BagFetcher
         
         this.numberOfThreads = numberOfThreads;
     }
-    
-    public BagFetcher()
-    {
-        this.numberOfThreads = Runtime.getRuntime().availableProcessors();
-    }
-    
+        
     public void registerProtocol(String scheme, FetchProtocol protocol)
     {
         String normalizedScheme = scheme.toLowerCase();
@@ -131,7 +132,7 @@ public class BagFetcher
         }
         
         // Clone the existing bag, and set it to be returned.
-        Bag resultBag = BagFactory.createBag(bag);
+        Bag resultBag = this.bagFactory.createBag(bag);
         finalResult.setResultingBag(resultBag);
 
         // Add in the new bag files.
@@ -142,7 +143,7 @@ public class BagFetcher
         {
             if (resultBag.getFetchTxt() == null)
             {
-                resultBag.getBagPartFactory().createFetchTxt(resultBag);
+                resultBag.getBagPartFactory().createFetchTxt();
             }
 
             resultBag.getFetchTxt().clear();

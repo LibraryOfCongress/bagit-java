@@ -12,7 +12,6 @@ import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.impl.ManifestImpl;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 
@@ -26,6 +25,11 @@ public class DefaultCompleter implements Completer, Cancellable {
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
 	private CancelIndicator cancelIndicator;
+	private BagFactory bagFactory;
+	
+	public DefaultCompleter(BagFactory bagFactory) {
+		this.bagFactory = bagFactory;
+	}
 	
 	public void setGenerateTagManifest(boolean generateTagManifest) {
 		this.generateTagManifest = generateTagManifest;
@@ -61,8 +65,8 @@ public class DefaultCompleter implements Completer, Cancellable {
 	}	
 	
 	@Override
-	public Bag complete(Bag bag) {
-		this.newBag = BagFactory.createBag(bag);
+	public Bag complete(Bag bag) {		
+		this.newBag = this.bagFactory.createBag(bag);
 		this.newBag.putBagFiles(bag.getPayload());
 		this.newBag.putBagFiles(bag.getTags());
 		this.handleBagIt();
@@ -115,7 +119,7 @@ public class DefaultCompleter implements Completer, Cancellable {
 	}
 
 	protected void handleManifest(Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
-		Manifest manifest = new ManifestImpl(filepath, this.newBag);
+		Manifest manifest = this.newBag.getBagPartFactory().createManifest(filepath);
 		for(BagFile bagFile : bagFiles) {
 			if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 				return;

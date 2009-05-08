@@ -2,7 +2,7 @@ package gov.loc.repository.bagit.writer.impl;
 
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.ZipBagWriter;
+import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.File;
 
@@ -24,7 +24,8 @@ public class ZipBagWriterTest extends AbstractWriterTest {
 
 	@Override
 	public Writer getBagWriter() {
-		return new ZipBagWriter(bagFile);
+		return new ZipWriter(bagFactory);
+
 	}
 
 }

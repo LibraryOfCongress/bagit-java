@@ -16,11 +16,11 @@ import org.junit.Test;
 
 public class ManifestReaderImplTest extends AbstractManifestReaderImplTest{
 
+	BagFactory bagFactory = new BagFactory();
 	
-	
-	//@Test
+	@Test
 	public void test() throws Exception {
-		BagPartFactory factory = BagFactory.getBagPartFactory(Version.V0_96);
+		BagPartFactory factory = this.bagFactory.getBagPartFactory(Version.V0_96);
 		String manifest = 
 			"8ad8757baa8564dc136c1e07507f4a98 data/test1.txt\n" +
 			"8ad8757baa8564dc136c1e07507f4a98	data/test3.txt\n" +
@@ -60,7 +60,7 @@ public class ManifestReaderImplTest extends AbstractManifestReaderImplTest{
 	
 	@Test(expected=RuntimeException.class)
 	public void testFilenameWithBackslash() throws Exception {
-		BagPartFactory factory = BagFactory.getBagPartFactory(Version.V0_96);
+		BagPartFactory factory = this.bagFactory.getBagPartFactory(Version.V0_96);
 		String manifest = 
 			"8ad8757baa8564dc136c1e07507f4a98 data/test2\\.txt\n";
 		

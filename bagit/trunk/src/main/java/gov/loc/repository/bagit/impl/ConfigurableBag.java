@@ -11,9 +11,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.FileTypeSelector;
 
 
 import gov.loc.repository.bagit.Bag;
@@ -23,38 +21,37 @@ import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.CancelIndicator;
+import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.ProgressIndicator;
+import gov.loc.repository.bagit.ProgressMonitorable;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
-import gov.loc.repository.bagit.verify.AdditionalVerifier;
+import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.writer.Writer;
 
-public abstract class AbstractBagImpl implements Bag {
+public class ConfigurableBag implements Bag {
 		
-	private static final Log log = LogFactory.getLog(AbstractBagImpl.class);
+	private static final Log log = LogFactory.getLog(ConfigurableBag.class);
 	
 	private Map<String, BagFile> tagMap = new HashMap<String, BagFile>();
 	private Map<String, BagFile> payloadMap = new HashMap<String, BagFile>();
 	private File fileForBag = null;
+	private BagPartFactory bagPartFactory = null;
+	private BagConstants bagConstants = null;
 	
-	/**
-	 * Constructor for an existing bag.
-	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
-	 */
-	public AbstractBagImpl(File file) {
-		log.debug(MessageFormat.format("Creating bag for {0}. Version is {1}.", file.toString(), this.getBagConstants().getVersion().toString()));
-		this.fileForBag = file;
-			
-	}
-
 	/**
 	 * Constructor for a new bag.
 	 * Payload should be added to the bag by calling addPayload().
 	 */	
-	public AbstractBagImpl() {
+	public ConfigurableBag(BagPartFactory bagPartFactory, BagConstants bagConstants) {
+		this.bagPartFactory = bagPartFactory;
+		this.bagConstants = bagConstants;
 		log.debug(MessageFormat.format("Creating new bag. Version is {0}.", this.getBagConstants().getVersion().toString()));
 	}
 	
@@ -64,12 +61,17 @@ public abstract class AbstractBagImpl implements Bag {
 	}
 	
 	@Override
-	public void load() {
+	public void setFile(File file) {
+		this.fileForBag = file;
 		
+	}
+	
+	@Override
+	public void load() {
 		this.tagMap.clear();
 		this.payloadMap.clear();
 		
-		FileObject bagFileObject = this.getFileObjectForBag();
+		FileObject bagFileObject = VFSHelper.getFileObjectForBag(this.fileForBag);
 		try {													
 			//Load tag map
 			for(FileObject tagFileObject : bagFileObject.getChildren()) {
@@ -94,32 +96,6 @@ public abstract class AbstractBagImpl implements Bag {
 		}
 	}
 	
-	protected FileObject getFileObjectForBag() {
-		if (this.fileForBag == null) {
-			throw new RuntimeException("No file was provided for this bag");
-		}
-		
-		if (! this.fileForBag.exists()) {
-			throw new RuntimeException(MessageFormat.format("{0} does not exist", this.fileForBag));
-		}
-		
-		FileObject fileObject = VFSHelper.getFileObject(this.fileForBag, true);		
-		try {
-			
-			//If a serialized bag, then need to get bag directory from within		
-			if (this.getFormat().isSerialized) {
-				if (fileObject.getChildren().length != 1) {
-					throw new RuntimeException("Unable to find bag_dir in serialized bag");
-				}
-				return fileObject.getChildren()[0];
-			}
-			return fileObject;													
-		}
-		catch(Exception ex) {
-			throw new RuntimeException(ex);
-		}
-
-	}
 	
 	@Override
 	public List<Manifest> getPayloadManifests() {
@@ -159,7 +135,7 @@ public abstract class AbstractBagImpl implements Bag {
 		} else {
 			//Is a payload
 			if ((! (bagFile instanceof Manifest)) && ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants())) {
-				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createManifest(bagFile.getFilepath(), this, bagFile));
+				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createManifest(bagFile.getFilepath(), bagFile));
 			}
 			//Is a BagItTxt
 			else if ((! (bagFile instanceof BagItTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagItTxt())) {
@@ -171,7 +147,7 @@ public abstract class AbstractBagImpl implements Bag {
 			}
 			//Is a FetchTxt
 			else if ((! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchTxt())) {
-				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchTxt(this, bagFile));
+				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchTxt(bagFile));
 			}
 			else {
 				tagMap.put(bagFile.getFilepath(), bagFile);	
@@ -280,184 +256,49 @@ public abstract class AbstractBagImpl implements Bag {
 
 	@Override
 	public SimpleResult checkComplete() {
-		return this.checkComplete(false, null);
+		return this.checkComplete(null, null);
 	}
 	
 	@Override
-	public SimpleResult checkComplete(boolean missingBagItTolerant, CancelIndicator cancelIndicator) {
-		SimpleResult result = new SimpleResult(true);
-		try
-		{
-			//Is at least one payload manifest		
-			if (this.getPayloadManifests().isEmpty()) {
-				result.setSuccess(false);
-				result.addMessage("Bag does not have any payload manifests");
-			}
-			//Has bagit file
-			if (! missingBagItTolerant && this.getBagItTxt() == null) {
-				result.setSuccess(false);
-				result.addMessage("Bag does not have " + this.getBagConstants().getBagItTxt());				
-			}
-			//Bagit is right version
-			if (! missingBagItTolerant && this.getBagItTxt() != null && ! this.getBagConstants().getVersion().versionString.equals(this.getBagItTxt().getVersion())) {
-				result.setSuccess(false);
-				result.addMessage("Version is not " + this.getBagConstants().getVersion());				
-			}
-
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-			
-			//All payload files are in data directory
-			for(String filepath : this.payloadMap.keySet()) {
-				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-				if (! filepath.startsWith(this.getBagConstants().getDataDirectory() + '/')) {
-					result.setSuccess(false);
-					result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory", filepath, this.getBagConstants().getDataDirectory()));									
-				}
-			}
-			//Every payload BagFile in at least one manifest
-			for(String filepath : this.payloadMap.keySet()) {				
-				boolean inManifest = false;
-				for(Manifest manifest : this.getPayloadManifests()) {
-					if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-					if (manifest.containsKey(filepath)) {
-						inManifest = true;
-						break;
-					}
-				}
-				if (! inManifest) {
-					result.setSuccess(false);
-					result.addMessage(MessageFormat.format("Payload file {0} not found in any payload manifest", filepath));														
-				}
-			}
-			//Every payload file exists
-			for(Manifest manifest : this.getPayloadManifests()) {			
-				SimpleResult manifestResult = manifest.checkComplete(cancelIndicator);
-				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-				if (! manifestResult.isSuccess()) {
-					result.merge(manifestResult);
-				}
-				
-			}
-
-			//Every tag file exists
-			for(Manifest manifest : this.getTagManifests()) {
-				SimpleResult manifestResult = manifest.checkComplete(cancelIndicator);
-				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-				if (! manifestResult.isSuccess()) {
-					result.merge(manifestResult);
-				}				
-			}
-			
-			//Additional checks if an existing Bag
-			if (this.fileForBag != null) {
-				FileObject bagFileObject = this.getFileObjectForBag();
-				//Only directory is a data directory
-				for(FileObject fileObject : bagFileObject.getChildren())
-				{
-					if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-					if (fileObject.getType() == FileType.FOLDER) {
-						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
-						if (! folderName.equals(this.getBagConstants().getDataDirectory())) {
-							result.setSuccess(false);
-							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir", folderName));
-						}
-					}
-				}
-				//If there is a bagFileObject, all payload FileObjects have payload BagFiles
-				FileObject dataFileObject = bagFileObject.getChild(this.getBagConstants().getDataDirectory());
-				if (dataFileObject != null) {
-					FileObject[] fileObjects = bagFileObject.getChild(this.getBagConstants().getDataDirectory()).findFiles(new FileTypeSelector(FileType.FILE));
-					for(FileObject fileObject : fileObjects) {
-						if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-						String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
-						if (this.getBagFile(filepath) == null) {
-							result.setSuccess(false);
-							result.addMessage(MessageFormat.format("Bag has file {0} not found in manifest file.", filepath));
-						}							
-					}
-				}
-				
-			}
-		}
-		catch(FileSystemException ex) {
-			throw new RuntimeException(ex);
-		}
-		log.info("Completion check: " + result.toString());
-		return result;
-
+	public SimpleResult checkComplete(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		
+		return this.checkAdditionalVerify(this.bagPartFactory.createCompleteVerifier(), cancelIndicator, progressIndicator);
+		
 	}
 
 	@Override
 	public SimpleResult checkValid() {
-		return this.checkValid(false, null);
+		return this.checkValid(null, null);
 	}
 
 	@Override
 	public SimpleResult checkTagManifests() {
-		return this.checkTagManifests(null);
+		return this.checkTagManifests(null, null);
 	}
 	
+	
 	@Override
-	public SimpleResult checkTagManifests(CancelIndicator cancelIndicator) {
-		SimpleResult result = new SimpleResult(true);
-		for(Manifest manifest : this.getTagManifests()) {
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-			result = manifest.checkValid();
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-			if (! result.isSuccess()) {
-				log.info("Validity check: " + result.toString());
-				return result;
-			}			
-		}
-		return result;
+	public SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		ManifestChecksumVerifier verifier = this.bagPartFactory.createManifestVerifier();
+		this.setIndicators(verifier, cancelIndicator, progressIndicator);
+		return verifier.verify(this.getTagManifests(), this);
 	}
 	
 	@Override
 	public SimpleResult checkPayloadManifests() {
-		return this.checkPayloadManifests(null);
+		return this.checkPayloadManifests(null, null);
 	}
 	
 	@Override
-	public SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator) {
-		SimpleResult result = new SimpleResult(true);
-		for(Manifest manifest : this.getPayloadManifests()) {
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-			result = manifest.checkValid();
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-			if (! result.isSuccess()) {
-				log.info("Validity check: " + result.toString());
-				return result;
-			}
-			
-		}
-		return result;
+	public SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		ManifestChecksumVerifier verifier = this.bagPartFactory.createManifestVerifier();
+		this.setIndicators(verifier, cancelIndicator, progressIndicator);
+		return verifier.verify(this.getPayloadManifests(), this);
 	}
 	
 	@Override
-	public SimpleResult checkValid(boolean missingBagItTolerant, CancelIndicator cancelIndicator) {
-		//Is complete
-		SimpleResult result = this.checkComplete(missingBagItTolerant, cancelIndicator);
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-		if (! result.isSuccess())
-		{
-			return result;
-		}
-
-		//Every checksum checks
-		result = this.checkTagManifests();
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-		if (! result.isSuccess()) {
-			return result;
-		}
-
-		result = this.checkPayloadManifests();
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-		if (! result.isSuccess()) {
-			return result;
-		}
-		
-		log.info("Validity check: " + result.toString());				
-		return result;
+	public SimpleResult checkValid(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		return this.invokeVerifier(this.bagPartFactory.createValidVerifier(), cancelIndicator, progressIndicator);
 	}
 	
 	@Override
@@ -526,22 +367,75 @@ public abstract class AbstractBagImpl implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies) {
-		return this.checkAdditionalVerify(strategies, null);
+	public SimpleResult checkAdditionalVerify(List<Verifier> verifiers) {
+		return this.invokeVerifiers(verifiers, null, null);
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies, CancelIndicator cancelIndicator) {
+	public SimpleResult checkAdditionalVerify(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		return this.invokeVerifiers(verifiers, cancelIndicator, progressIndicator);
+	}
+	
+	@Override
+	public SimpleResult checkAdditionalVerify(Verifier verifier) {
+		return this.invokeVerifier(verifier, null, null);
+	}
+	
+	@Override
+	public SimpleResult checkAdditionalVerify(Verifier verifier,
+			CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		return this.invokeVerifier(verifier, cancelIndicator, progressIndicator);
+	}
+	
+	protected void setIndicators(Object obj, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		if (cancelIndicator != null && obj instanceof Cancellable) {
+			((Cancellable)obj).setCancelIndicator(cancelIndicator);
+		}
+		if (progressIndicator != null && obj instanceof ProgressMonitorable) {
+			((ProgressMonitorable)obj).setProgressIndicator(progressIndicator);
+		}
+		
+	}
+	
+	protected SimpleResult invokeVerifiers(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
 		SimpleResult result = new SimpleResult(true);
-		for(AdditionalVerifier strategy : strategies) {
+		for(Verifier verifier : verifiers) {
 			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-			result.merge(strategy.verify(this));
+			this.setIndicators(verifier, cancelIndicator, progressIndicator);
+			result.merge(verifier.verify(this));
 		}		
 		return result;
+		
+		
+	}
+	
+	protected SimpleResult invokeVerifier(Verifier verifier, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+		List<Verifier> verifiers = new ArrayList<Verifier>();
+		verifiers.add(verifier);
+		return this.invokeVerifiers(verifiers, cancelIndicator, progressIndicator);
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(AdditionalVerifier strategy) {
-		return strategy.verify(this);
+	public BagConstants getBagConstants() {
+		return this.bagConstants;
+	}
+	
+	@Override
+	public BagPartFactory getBagPartFactory() {
+		return this.bagPartFactory;
+	}
+	
+	@Override
+	public Bag write(File file, Format format) {
+		return this.write(file, format, null, null);
+	}
+	
+	@Override
+	public Bag write(File file, Format format, CancelIndicator cancelIndicator,
+			ProgressIndicator progressIndicator) {
+		Writer writer = this.bagPartFactory.createWriter(format);
+		writer.setCancelIndicator(cancelIndicator);
+		writer.setProgressIndicator(progressIndicator);
+		return writer.write(this, file);
 	}
 }

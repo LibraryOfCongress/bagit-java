@@ -7,7 +7,8 @@ import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
-import gov.loc.repository.bagit.writer.impl.FileSystemBagWriter;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -44,6 +45,7 @@ public class HttpFetchProtocolTest
     private static Server webServer;
     private Mockery context = new JUnit4Mockery();
     private File testDataRoot = new File("target/unittestdata/HttpFetchProtocolTest");
+    private BagFactory bagFactory = new BagFactory();
     
     @BeforeClass
     public static void startJetty() throws Exception
@@ -121,28 +123,27 @@ public class HttpFetchProtocolTest
         File testDestination = new File(this.testDataRoot, "testWorksWithBagFetcher");
         System.out.println("Writing to: " + testDestination);
         
-        Bag bag = BagFactory.createBag(new File("src/test/resources/bags/v0_96/holey-bag"));
-        bag.accept(new HoleyWriter(testDestination));
+        Bag bag = this.bagFactory.createBag(new File("src/test/resources/bags/v0_96/holey-bag"));
+        Writer writer = new HoleyWriter(this.bagFactory);
+        writer.write(bag, testDestination);
         
-        BagFetcher fetcher = new BagFetcher();
+        BagFetcher fetcher = new BagFetcher(this.bagFactory);
         fetcher.setNumberOfThreads(1);
         fetcher.registerProtocol("http", new HttpFetchProtocol());
         
         fetcher.fetch(bag, new FileSystemFileDestination(testDestination));
 
-        Bag newBag = BagFactory.createBag(testDestination);
+        Bag newBag = this.bagFactory.createBag(testDestination);
         assertTrue(newBag.checkValid().isSuccess());
     }
     
-    private static class HoleyWriter extends FileSystemBagWriter
-    {
+    private static class HoleyWriter extends FileSystemWriter
+    {    	
+        public HoleyWriter(BagFactory bagFactory) {
+			super(bagFactory);
+		}
 
-        public HoleyWriter(File bagDir)
-        {
-            super(bagDir, true);
-        }
-        
-        @Override
+		@Override
         public void visitPayload(BagFile bagFile)
         {
             // Do nothing.

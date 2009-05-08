@@ -19,6 +19,8 @@ import org.junit.Test;
 
 public abstract class AbstractWriterTest {
 
+	BagFactory bagFactory = new BagFactory();
+	
 	@Before
 	public void setUp() throws Exception {
 		if (this.getBagFile().exists()) {
@@ -32,12 +34,12 @@ public abstract class AbstractWriterTest {
 	
 	@Test
 	public void testWriter() throws Exception {
-		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 		Writer writer = this.getBagWriter();
 		writer.setProgressIndicator(new PrintingProgressIndicator());
 		
-		Bag newBag = writer.write(bag);
+		Bag newBag = writer.write(bag, this.getBagFile());
 		assertNotNull(newBag);
 		assertTrue(this.getBagFile().exists());
 		assertTrue(newBag.checkValid().isSuccess());
@@ -55,13 +57,13 @@ public abstract class AbstractWriterTest {
 
 	@Test
 	public void testCancel() throws Exception {
-		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 		
 		Writer writer = this.getBagWriter();
 		writer.setCancelIndicator(new DummyCancelIndicator(3));		
 		
-		Bag newBag = writer.write(bag);
+		Bag newBag = writer.write(bag, this.getBagFile());
 		assertNull(newBag);
 		
 	}

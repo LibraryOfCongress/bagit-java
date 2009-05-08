@@ -10,14 +10,22 @@ import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.ManifestReader.FilenameFixity;
 
+import org.junit.Before;
 import org.junit.Test;
 
 
 public abstract class AbstractManifestReaderImplTest {
 
-	BagPartFactory factory = BagFactory.getBagPartFactory(this.getVersion());
-	
 	public abstract Version getVersion();
+	
+	BagFactory bagFactory = new BagFactory();
+	BagPartFactory factory;
+	
+	@Before
+	public void setup() {
+		this.factory = bagFactory.getBagPartFactory(this.getVersion());
+	}
+
 	
 	public boolean canReadLine(String line) throws Exception {
 		return this.canReadLine(line, "8ad8757baa8564dc136c1e07507f4a98", "data/test1.txt");

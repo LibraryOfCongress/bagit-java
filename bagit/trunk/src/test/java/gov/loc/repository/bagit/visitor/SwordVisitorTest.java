@@ -8,6 +8,7 @@ import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.visitor.SwordVisitor;
+import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.IOException;
 
@@ -25,6 +26,7 @@ import org.junit.Test;
 public class SwordVisitorTest {
 
 	SimpleHttpServer server;
+	BagFactory bagFactory = new BagFactory();
 	
 	@Before
 	public void setUp() throws Exception {
@@ -39,11 +41,12 @@ public class SwordVisitorTest {
 	@Test
 	public void testVisitor() throws Exception {
 		this.server.setRequestHandler(new TestRequestHandler());
-		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
-		SwordVisitor visitor = new SwordVisitor("test_bag", "http://localhost:" + this.server.getLocalPort() + "/", false, null, null);
-		bag.accept(visitor);
+		SwordVisitor visitor = new SwordVisitor(new ZipWriter(this.bagFactory));
+		visitor.setBagDir("test_bag");
+		visitor.send(bag, "http://localhost:" + this.server.getLocalPort() + "/");
 		
 		assertEquals(Integer.valueOf(201), visitor.getStatusCode());
 		assertEquals("http://localhost/foo.atom", visitor.getLocation());

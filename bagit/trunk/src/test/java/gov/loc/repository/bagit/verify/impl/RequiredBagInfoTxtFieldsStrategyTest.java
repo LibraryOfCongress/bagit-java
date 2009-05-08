@@ -3,21 +3,23 @@ package gov.loc.repository.bagit.verify.impl;
 import static org.junit.Assert.*;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.impl.BagInfoTxtImpl;
-import gov.loc.repository.bagit.v0_96.impl.BagImpl;
-import gov.loc.repository.bagit.verify.AdditionalVerifier;
-import gov.loc.repository.bagit.verify.impl.RequiredBagInfoTxtFieldsStrategy;
+import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.verify.impl.RequiredBagInfoTxtFieldsVerifier;
 
 import org.junit.Test;
 
 public class RequiredBagInfoTxtFieldsStrategyTest {
 
+	BagFactory bagFactory = new BagFactory();
+	
 	@Test
 	public void testVerify() {
-		AdditionalVerifier strategy = new RequiredBagInfoTxtFieldsStrategy(new String[] {BagInfoTxtImpl.FIELD_BAG_COUNT, BagInfoTxtImpl.FIELD_BAG_GROUP_IDENTIFIER});
+		Verifier strategy = new RequiredBagInfoTxtFieldsVerifier(new String[] {BagInfoTxtImpl.FIELD_BAG_COUNT, BagInfoTxtImpl.FIELD_BAG_GROUP_IDENTIFIER});
 		
-		Bag bag = new BagImpl();
+		Bag bag = bagFactory.createBag();
 		BagInfoTxt bagInfo = bag.getBagPartFactory().createBagInfoTxt();
 		assertFalse(bag.checkAdditionalVerify(strategy).isSuccess());
 		

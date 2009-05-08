@@ -12,17 +12,13 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.ProgressIndicator;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
-import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
-import gov.loc.repository.bagit.writer.Writer;
 
-public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
+public class FileSystemWriter extends AbstractWriter {
 
-	private static final Log log = LogFactory.getLog(FileSystemBagWriter.class);
+	private static final Log log = LogFactory.getLog(FileSystemWriter.class);
 	
 	private static final int BUFFERSIZE = 65536;
 	
@@ -30,26 +26,17 @@ public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
 	private boolean skipIfPayloadFileExists = true;
 	private Bag newBag;
 	private String newBagURI;
-	private CancelIndicator cancelIndicator = null;
-	private ProgressIndicator progressIndicator = null;
 	private int fileTotal = 0;
 	private int fileCount = 0;
 	
-	public FileSystemBagWriter(File bagDir, boolean skipIfPayloadFileExists) {
-		this.skipIfPayloadFileExists = skipIfPayloadFileExists;
-		this.newBagDir = bagDir;
+	public FileSystemWriter(BagFactory bagFactory) {
+		super(bagFactory);
 	}
 	
-	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;		
+	public void setSkipIfPayloadFileExists(boolean skip) {
+		this.skipIfPayloadFileExists = skip;
 	}
-	
-	@Override
-	public void setProgressIndicator(ProgressIndicator progressIndicator) {
-		this.progressIndicator = progressIndicator;
-	}
-	
+		
 	@Override
 	public void startBag(Bag bag) {
 		try {
@@ -63,7 +50,7 @@ public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
 		} catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
-		this.newBag = BagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), false);
+		this.newBag = this.bagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), false);
 		this.newBagURI = VFSHelper.getUri(this.newBagDir, Format.FILESYSTEM);
 		this.fileCount = 0;
 		this.fileTotal = bag.getTags().size() + bag.getPayload().size();
@@ -118,9 +105,9 @@ public class FileSystemBagWriter extends AbstractBagVisitor implements Writer {
 	}
 
 	@Override
-	public Bag write(Bag bag) {
+	public Bag write(Bag bag, File file) {
 		log.info("Writing bag");
-		
+		this.newBagDir = file;
 		bag.accept(this, this.cancelIndicator);
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;

@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.utilities;
 
 import java.io.File;
+import java.text.MessageFormat;
 
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemManager;
@@ -63,6 +64,34 @@ public class VFSHelper {
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
+	}
+	
+	public static FileObject getFileObjectForBag(File fileForBag) {
+		if (fileForBag == null) {
+			throw new RuntimeException("No file was provided for this bag");
+		}
+		
+		if (! fileForBag.exists()) {
+			throw new RuntimeException(MessageFormat.format("{0} does not exist", fileForBag));
+		}
+		
+		FileObject fileObject = getFileObject(fileForBag, true);		
+		try {
+			
+			//If a serialized bag, then need to get bag directory from within
+			Format format = FormatHelper.getFormat(fileForBag);
+			if (format.isSerialized) {
+				if (fileObject.getChildren().length != 1) {
+					throw new RuntimeException("Unable to find bag_dir in serialized bag");
+				}
+				return fileObject.getChildren()[0];
+			}
+			return fileObject;													
+		}
+		catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+
 	}
 
 }

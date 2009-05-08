@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.FetchTxtReader;
 import gov.loc.repository.bagit.FetchTxtWriter;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.Bag.BagConstants;
+import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 
@@ -24,20 +25,21 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 	private static final long serialVersionUID = 1L;
 	
 	private String name;
-	private Bag bag;
+	private BagConstants bagConstants;
+	private BagPartFactory bagPartFactory;
 	private BagFile sourceBagFile = null;
 	private String originalFixity = null;
 	
-	public FetchTxtImpl(Bag bag) {
+	public FetchTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory) {
 		log.info("Creating new fetch.txt.");
-		this.init(bag.getBagConstants().getFetchTxt(), bag);
+		this.init(bagConstants, bagPartFactory);
 	}
 	
-	public FetchTxtImpl(Bag bag, BagFile sourceBagFile) {
+	public FetchTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory, BagFile sourceBagFile) {
 		log.info("Creating fetch.txt.");
-		this.init(bag.getBagConstants().getFetchTxt(), bag);
+		this.init(bagConstants, bagPartFactory);
 		this.sourceBagFile = sourceBagFile;
-		FetchTxtReader reader = bag.getBagPartFactory().createFetchTxtReader(sourceBagFile.newInputStream(), bag.getBagConstants().getBagEncoding());
+		FetchTxtReader reader = bagPartFactory.createFetchTxtReader(sourceBagFile.newInputStream(), this.bagConstants.getBagEncoding());
 		
 		while(reader.hasNext()) {
 			this.add(reader.next());
@@ -47,9 +49,10 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 		this.originalFixity = MessageDigestHelper.generateFixity(this.generatedInputStream(), Manifest.Algorithm.MD5);
 	}
 	
-	private void init(String name, Bag bag) {
-		this.name = name;
-		this.bag = bag;
+	private void init(BagConstants bagConstants, BagPartFactory bagPartFactory) {
+		this.name = bagConstants.getFetchTxt();
+		this.bagConstants = bagConstants;
+		this.bagPartFactory = bagPartFactory;
 	}
 	
 	public InputStream newInputStream() {
@@ -64,7 +67,7 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 
 	private InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		FetchTxtWriter writer = this.bag.getBagPartFactory().createFetchTxtWriter(out);
+		FetchTxtWriter writer = this.bagPartFactory.createFetchTxtWriter(out);
 		for(FilenameSizeUrl filenameSizeUrl : this) {
 			writer.write(filenameSizeUrl.getFilename(), filenameSizeUrl.getSize(), filenameSizeUrl.getUrl());
 		}

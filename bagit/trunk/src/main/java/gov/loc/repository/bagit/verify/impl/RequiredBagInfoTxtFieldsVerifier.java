@@ -5,13 +5,13 @@ import java.text.MessageFormat;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.verify.AdditionalVerifier;
+import gov.loc.repository.bagit.verify.Verifier;
 
-public class RequiredBagInfoTxtFieldsStrategy implements AdditionalVerifier {
+public class RequiredBagInfoTxtFieldsVerifier implements Verifier {
 
 	private String[] requiredFields;
 	
-	public RequiredBagInfoTxtFieldsStrategy(String[] requiredFields) {
+	public RequiredBagInfoTxtFieldsVerifier(String[] requiredFields) {
 		this.requiredFields = requiredFields;
 	}
 	

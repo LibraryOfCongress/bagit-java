@@ -2,6 +2,7 @@ package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
+import gov.loc.repository.bagit.impl.ConfigurableBag;
 
 import java.io.File;
 
@@ -28,23 +29,22 @@ public class BagFactory {
 	
 	public static final Version LATEST = Version.V0_96;
 	
+	public BagFactory() {
+		
+	}
+		
 	/*
 	 * Creates a new Bag of the latest version.
 	 */
-	public static Bag createBag() {
+	public Bag createBag() {
 		return createBag(LATEST);
 	}
 	
 	/*
 	 * Creates a new Bag of the specified version.
 	 */
-	public static Bag createBag(Version version) {
-		if(version == Version.V0_95) {
-			return new gov.loc.repository.bagit.v0_95.impl.BagImpl();
-		} else if (version == Version.V0_96) {
-			return new gov.loc.repository.bagit.v0_96.impl.BagImpl();
-		}
-		throw new RuntimeException("Not yet supported");
+	public Bag createBag(Version version) {
+		return new ConfigurableBag(this.getBagPartFactory(version), this.getBagConstants(version));
 	}
 	
 	/*
@@ -55,7 +55,7 @@ public class BagFactory {
 	 * The bag is loaded.
 	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
 	 */
-	public static Bag createBag(File bagFile) {
+	public Bag createBag(File bagFile) {
 		return createBag(bagFile, true);
 	}
 
@@ -67,7 +67,7 @@ public class BagFactory {
 	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
 	 * @param boolean whether to load the bag
 	 */
-	public static Bag createBag(File bagFile, boolean load) {
+	public Bag createBag(File bagFile, boolean load) {
 		String versionString = BagHelper.getVersion(bagFile);
 		Version version = LATEST;
 		if (versionString != null) {
@@ -88,15 +88,9 @@ public class BagFactory {
 	 * @param version
 	 * @param boolean whether to load the bag
 	 */
-	public static Bag createBag(File bagFile, Version version, boolean load) {		
-		Bag bag = null;
-		if (version == Version.V0_95) {
-			bag = new gov.loc.repository.bagit.v0_95.impl.BagImpl(bagFile);
-		} else if (version == Version.V0_96) {
-			bag = new gov.loc.repository.bagit.v0_96.impl.BagImpl(bagFile);
-		} else {
-			throw new RuntimeException("Not yet supported");			
-		}
+	public Bag createBag(File bagFile, Version version, boolean load) {		
+		Bag bag = this.createBag(version);
+		bag.setFile(bagFile);
 		if (load) {
 			bag.load();
 		}
@@ -108,7 +102,7 @@ public class BagFactory {
 	 * The version and bagFile (if present) are taken from the existing Bag.
 	 * @param Bag the Bag to base the new Bag on
 	 */
-	public static Bag createBag(Bag bag) {
+	public Bag createBag(Bag bag) {
 		if (bag.getFile() == null) {
 			return createBag(bag.getBagConstants().getVersion());
 		}
@@ -119,18 +113,19 @@ public class BagFactory {
 	/*
 	 * Gets a BagPartFactory of the latest version.
 	 */
-	public static BagPartFactory getBagPartFactory() {
+	public BagPartFactory getBagPartFactory() {
 		return getBagPartFactory(LATEST);
 	}
 	
 	/*
 	 * Gets a BagPartFactory of the specified version.
 	 */
-	public static BagPartFactory getBagPartFactory(Version version) {
-		if(version == Version.V0_95) {
-			return new gov.loc.repository.bagit.v0_95.impl.BagPartFactoryImpl();
-		} else if (version == Version.V0_96) {
-			return new gov.loc.repository.bagit.v0_96.impl.BagPartFactoryImpl();
+	public BagPartFactory getBagPartFactory(Version version) {
+		if (Version.V0_95.equals(version)) {
+			return new gov.loc.repository.bagit.v0_95.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
+		}
+		if (Version.V0_96.equals(version)) {
+			return new gov.loc.repository.bagit.v0_96.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
 		}
 		throw new RuntimeException("Not yet supported");
 	}
@@ -138,17 +133,18 @@ public class BagFactory {
 	/*
 	 * Gets BagConstants of the latest version.
 	 */
-	public static BagConstants getBagConstants() {
+	public BagConstants getBagConstants() {
 		return getBagConstants(LATEST);
 	}
 	
 	/*
 	 * Gets BagConstants of the specified version.
 	 */
-	public static BagConstants getBagConstants(Version version) {
-		if(version == Version.V0_95) {
+	public BagConstants getBagConstants(Version version) {
+		if (Version.V0_95.equals(version)) {
 			return new gov.loc.repository.bagit.v0_95.impl.BagConstantsImpl();
-		} else if (version == Version.V0_96) {
+		}
+		if (Version.V0_96.equals(version)) {
 			return new gov.loc.repository.bagit.v0_96.impl.BagConstantsImpl();
 		}
 		throw new RuntimeException("Not yet supported");

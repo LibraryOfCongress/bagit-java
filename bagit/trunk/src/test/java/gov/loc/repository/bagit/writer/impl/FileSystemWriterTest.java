@@ -2,7 +2,7 @@ package gov.loc.repository.bagit.writer.impl;
 
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.FileSystemBagWriter;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 import java.io.File;
 
@@ -25,7 +25,7 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 
 	@Override
 	public Writer getBagWriter() {
-		return new FileSystemBagWriter(bagDir, true);
+		return new FileSystemWriter(bagFactory);
 	}
 
 }

@@ -13,15 +13,24 @@ import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.impl.StringBagFile;
 
+import org.junit.Before;
 import org.junit.Test;
 
 
 public abstract class AbstractBagInfoTxtImplTest {
 
-	public BagPartFactory factory = BagFactory.getBagPartFactory(this.getVersion());
-	public BagConstants constants = BagFactory.getBagConstants(this.getVersion());
-
+	
 	public abstract Version getVersion();	
+	
+	protected BagFactory bagFactory = new BagFactory();
+	protected BagPartFactory factory;
+	protected BagConstants constants;
+	
+	@Before
+	public void setup() {
+		this.factory = bagFactory.getBagPartFactory(this.getVersion());
+		this.constants = bagFactory.getBagConstants(this.getVersion());		
+	}
 	
 	@Test
 	public void testBagInfoTxt() {

@@ -18,14 +18,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
-import gov.loc.repository.bagit.writer.impl.ZipBagWriter;
+import gov.loc.repository.bagit.writer.impl.ZipWriter;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 
-public class SwordVisitor extends AbstractBagVisitor implements BagVisitor {
+public class SwordVisitor {
 
 	public static final String CONTENT_TYPE = "application/zip";
 	public static final String PACKAGING = "http://purl.org/net/sword-types/bagit";
@@ -33,8 +31,7 @@ public class SwordVisitor extends AbstractBagVisitor implements BagVisitor {
 	private static final Log log = LogFactory.getLog(SwordVisitor.class);
 
 	private ByteArrayOutputStream out = new ByteArrayOutputStream();
-	private String collectionURL = null;
-	private ZipBagWriter zipBagWriter = null;
+	private ZipWriter zipWriter = null;
 	private Integer statusCode = null;
 	private String body = null;
 	private String location = null;
@@ -42,19 +39,30 @@ public class SwordVisitor extends AbstractBagVisitor implements BagVisitor {
 	private String username;
 	private String password;
 	
-	public SwordVisitor(String bagDir, String collectionURL, boolean relaxedSSL, String username, String password) {
-		this.collectionURL = collectionURL;
-		this.out = new ByteArrayOutputStream();
-		this.zipBagWriter = new ZipBagWriter(bagDir, this.out);
-		this.relaxedSSL = relaxedSSL;
-		this.username = username;
-		this.password = password;
+	public SwordVisitor(ZipWriter zipWriter) {		
+		this.zipWriter = zipWriter;
 	}
 	
+	public void setBagDir(String bagDir) {
+		this.zipWriter.setBagDir(bagDir);
+	}
+	
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public void setRelaxedSSL(boolean relaxedSSL) {
+		this.relaxedSSL = relaxedSSL;
+	}
+
 	@SuppressWarnings("deprecation")
-	@Override
-	public void endBag() {
-		this.zipBagWriter.endBag();
+	public void send(Bag bag, String collectionURL) {
+		this.out = new ByteArrayOutputStream();
+		this.zipWriter.write(bag, this.out);
 		
 		//This allows self-signed certs
 		if (relaxedSSL) {
@@ -101,25 +109,7 @@ public class SwordVisitor extends AbstractBagVisitor implements BagVisitor {
 		}
 
 	}
-
-	@Override
-	public void startBag(Bag bag) {
-		this.zipBagWriter.startBag(bag);
-
-	}
-
-	@Override
-	public void visitPayload(BagFile bagFile) {
-		this.zipBagWriter.visitPayload(bagFile);
-
-	}
-
-	@Override
-	public void visitTag(BagFile bagFile) {
-		this.zipBagWriter.visitTag(bagFile);
-
-	}
-
+	
 	public String getLocation() {
 		return location;
 	}

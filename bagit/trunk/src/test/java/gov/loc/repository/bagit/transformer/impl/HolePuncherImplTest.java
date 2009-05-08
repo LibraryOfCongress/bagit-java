@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.transformer.impl;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import gov.loc.repository.bagit.Bag;
@@ -18,14 +19,20 @@ import java.text.MessageFormat;
 
 public class HolePuncherImplTest {
 	
-	HolePuncher puncher = new HolePuncherImpl();
+	BagFactory bagFactory = new BagFactory();
+	HolePuncher puncher;
 
+	@Before
+	public void setup() {
+		puncher = new HolePuncherImpl(bagFactory);
+	}
+	
 	private Bag getBag(Bag.Format format) throws Exception {
 		return this.getBag(BagFactory.LATEST, format);  
 	}
 
 	private Bag getBag(Version version, Bag.Format format) throws Exception {
-		return BagFactory.createBag(this.getBagDir(version, format), version, true);  
+		return this.bagFactory.createBag(this.getBagDir(version, format), version, true);  
 	}	
 	
 	private File getBagDir(Version version, Bag.Format format) throws Exception {

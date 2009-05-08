@@ -7,91 +7,84 @@ import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tools.bzip2.CBZip2OutputStream;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarOutputStream;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.ProgressIndicator;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
-import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
-import gov.loc.repository.bagit.writer.Writer;
 
-public class ZipBagWriter extends AbstractBagVisitor implements Writer {
+public class TarWriter extends AbstractWriter {
 
-	private static final Log log = LogFactory.getLog(ZipBagWriter.class);
+	public enum Compression { NONE, GZ, BZ2 };
+	
+	private static final Log log = LogFactory.getLog(TarWriter.class);
 	
 	private static final int BUFFERSIZE = 65536;
 	
 	private OutputStream out = null;
-	private ZipOutputStream zipOut = null;
+	private TarOutputStream tarOut = null;
 	private String bagDir = null;
 	private String newBagURI = null;
 	private Bag newBag = null;
 	private File newBagFile = null;
-	private List<BagFile> tagBagFiles = new ArrayList<BagFile>();
-	private CancelIndicator cancelIndicator = null;
-	private ProgressIndicator progressIndicator = null;
+	private List<BagFile> tagBagFiles = new ArrayList<BagFile>(); 
 	private int fileTotal = 0;
 	private int fileCount = 0;
+	private Compression compression = Compression.NONE;
 
+	public TarWriter(BagFactory bagFactory) {
+		super(bagFactory);
+	}
 	
-	public ZipBagWriter(File bagFile) {
-		this.newBagFile = bagFile;
-
-		this.bagDir = bagFile.getName().replaceFirst("\\..*$", "");
+	public void setCompression(Compression compression) {
+		this.compression = compression;
+	}
+	
+	public void setBagDir(String bagDir) {
+		this.bagDir = bagDir;
+	}
+	
+	private void init(OutputStream out) {
 		try {
-			File parentDir = bagFile.getParentFile();
-			if (parentDir != null && ! parentDir.exists()) {
-				FileUtils.forceMkdir(parentDir);
+			if (Compression.GZ.equals(compression)) {
+				this.out = new GZIPOutputStream(out);
+			} else if (Compression.BZ2.equals(compression)) {
+				out.write('B');
+                out.write('Z');
+                this.out = new CBZip2OutputStream(out);
+
+			} else {
+				this.out = out;
 			}
-			this.out = new FileOutputStream(bagFile);
-		}
-		catch(Exception ex) {
+		} catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
-	
-	public ZipBagWriter(String bagDir, OutputStream out) {
-		this.bagDir = bagDir;
-		this.out = out;		
-	}
-	
-	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;
-	}
-	
-	@Override
-	public void setProgressIndicator(ProgressIndicator progressIndicator) {
-		this.progressIndicator = progressIndicator;		
-	}
-	
-	@Override
+		
 	public void startBag(Bag bag) {
-		this.zipOut = new ZipOutputStream(this.out);
+		this.tarOut = new TarOutputStream(this.out);
 		if (this.newBagFile != null) {
-			this.newBag = BagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), false);
-			this.newBagURI = VFSHelper.getUri(this.newBagFile, Format.ZIP);
-
+			this.newBag = this.bagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), false);
 		}
 		this.fileCount = 0;
 		this.fileTotal = bag.getTags().size() + bag.getPayload().size();
+
 	}
 	
-	@Override
 	public void endBag() {
 		try {
-			if (this.zipOut != null) {
-				this.zipOut.close();
+			if (this.tarOut != null) {
+				this.tarOut.close();
 			}
 		}
 		catch(Exception ex) {
@@ -102,6 +95,7 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 				this.newBag.putBagFile(bagFile);
 			}
 		}
+
 	}
 
 	@Override
@@ -119,36 +113,64 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 		log.debug(MessageFormat.format("Writing tag file {0}.", bagFile.getFilepath()));
 		this.write(bagFile);
 		if (this.newBag != null) {
-			//Need to delay adding these until after the bag is written
 			this.tagBagFiles.add(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, this.bagDir + "/" + bagFile.getFilepath())));
 		}
-
 	}
 	
 	private void write(BagFile bagFile) {
 		this.fileCount++;
 		if (this.progressIndicator != null) this.progressIndicator.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		try {
-			//Add zip entry
-			zipOut.putNextEntry(new ZipEntry(this.bagDir + "/" + bagFile.getFilepath()));
-			
+			//Add tar entry
+			TarEntry entry = new TarEntry(this.bagDir + "/" + bagFile.getFilepath());
+			entry.setSize(bagFile.getSize());
+			tarOut.putNextEntry(entry);
 			InputStream in = bagFile.newInputStream();
 			byte[] dataBytes = new byte[BUFFERSIZE];
 			int nread = in.read(dataBytes);
 			while (nread > 0) {
-				this.zipOut.write(dataBytes, 0, nread);
+				this.tarOut.write(dataBytes, 0, nread);
 			    nread = in.read(dataBytes);
 			}
+			tarOut.closeEntry();
 			in.close();
 		}
 		catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
+
 	}
-	
+
 	@Override
-	public Bag write(Bag bag) {
+	public Bag write(Bag bag, File file) {
 		log.info("Writing bag");
+		
+		this.newBagFile = file;
+	
+		Format format = Format.TAR;
+		if (Compression.GZ.equals(compression)) {
+			format = Format.TAR_GZ;
+		} else if (Compression.BZ2.equals(compression)) {
+			format = Format.TAR_BZ2;
+		}
+		this.newBagURI = VFSHelper.getUri(file, format);
+		
+		if (this.bagDir == null) {
+			this.bagDir = file.getName().replaceFirst("\\..*$", "");
+		}
+		
+		try {
+			File parentDir = file.getParentFile();
+			if (parentDir != null && ! parentDir.exists()) {
+				FileUtils.forceMkdir(parentDir);
+			}
+			OutputStream out = new FileOutputStream(file);
+			this.init(out);
+		}
+		catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+
 		
 		bag.accept(this, this.cancelIndicator);
 		
@@ -157,6 +179,21 @@ public class ZipBagWriter extends AbstractBagVisitor implements Writer {
 		}
 		
 		return this.newBag;		
-	}
 
+	}
+	
+	public Bag write(Bag bag, OutputStream out) {
+		
+		this.init(out);
+		
+		bag.accept(this, this.cancelIndicator);
+		
+		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
+			return null;
+		}
+		
+		return this.newBag;		
+
+	}
+	
 }

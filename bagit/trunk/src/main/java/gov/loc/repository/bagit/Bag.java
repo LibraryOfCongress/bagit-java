@@ -1,8 +1,14 @@
 package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.verify.AdditionalVerifier;
+import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.ValidVerifier;
+import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.writer.Writer;
 
 import java.io.File;
 import java.io.InputStream;
@@ -26,6 +32,8 @@ public interface Bag {
 	};
 	
 	File getFile();
+
+	void setFile(File file);
 	
 	List<Manifest> getPayloadManifests();
 
@@ -59,9 +67,8 @@ public interface Bag {
 	
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
-	 * @param	missingBagItTolerant	whether to allow a valid bag to be missing a BagIt.txt
 	 */
-	SimpleResult checkValid(boolean missingBagItTolerant, CancelIndicator cancelIndicator);
+	SimpleResult checkValid(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
 
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
@@ -70,9 +77,8 @@ public interface Bag {
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
-	 * @param	missingBagItTolerant	whether to allow a complete bag to be missing a BagIt.txt
 	 */	
-	SimpleResult checkComplete(boolean missingBagItTolerant, CancelIndicator cancelIndicator);
+	SimpleResult checkComplete(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
@@ -82,19 +88,22 @@ public interface Bag {
 	/*
 	 * Additional checks of a bag.
 	 * These checks are not specified by the BagIt Specification.
-	 * @param	strategies	a list of strategies to invoke
+	 * @param	verifiers	a list of Verifiers to invoke
 	 */
-	SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies);
+	SimpleResult checkAdditionalVerify(List<Verifier> verifiers);
 
-	SimpleResult checkAdditionalVerify(List<AdditionalVerifier> strategies, CancelIndicator cancelIndicator);
+	SimpleResult checkAdditionalVerify(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
 
 	
 	/*
 	 * Additional checks of a bag.
 	 * These checks are not specified by the BagIt Specification.
-	 * @param	strategies	a strategy to invoke
+	 * @param	strategies	a Verifier to invoke
 	 */	
-	SimpleResult checkAdditionalVerify(AdditionalVerifier strategy);
+	SimpleResult checkAdditionalVerify(Verifier verifier);
+
+	SimpleResult checkAdditionalVerify(Verifier verifier, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
+
 	
 	/*
 	 * Verify that each checksum in every payload manifest can be verified against
@@ -102,7 +111,7 @@ public interface Bag {
 	 */
 	SimpleResult checkPayloadManifests();
 
-	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator);
+	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
 
 	
 	/*
@@ -111,13 +120,17 @@ public interface Bag {
 	 */	
 	SimpleResult checkTagManifests();
 
-	SimpleResult checkTagManifests(CancelIndicator cancelIndicator);
+	SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
 
 	void load();
 	
 	void accept(BagVisitor visitor);
 	
 	void accept(BagVisitor visitor, CancelIndicator cancelIndicator);
+	
+	Bag write(File file, Format format);
+	
+	Bag write(File file, Format format, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
 			
 	BagConstants getBagConstants();
 	
@@ -142,8 +155,8 @@ public interface Bag {
 		ManifestReader createManifestReader(InputStream in, String encoding);
 		ManifestReader createManifestReader(InputStream in, String encoding, boolean treatBackSlashAsPathSeparator);
 		ManifestWriter createManifestWriter(OutputStream out);
-		Manifest createManifest(String name, Bag bag);
-		Manifest createManifest(String name, Bag bag, BagFile sourceBagFile);
+		Manifest createManifest(String name);
+		Manifest createManifest(String name, BagFile sourceBagFile);
 		BagItTxtReader createBagItTxtReader(String encoding, InputStream in);
 		BagItTxtWriter createBagItTxtWriter(OutputStream out, String encoding, int lineLength, int indentSpaces);
 		BagItTxtWriter createBagItTxtWriter(OutputStream out, String encoding);
@@ -156,10 +169,15 @@ public interface Bag {
 		BagInfoTxt createBagInfoTxt();
 		FetchTxtReader createFetchTxtReader(InputStream in, String encoding);
 		FetchTxtWriter createFetchTxtWriter(OutputStream out);
-		FetchTxt createFetchTxt(Bag bag);
-		FetchTxt createFetchTxt(Bag bag, BagFile sourceBagFile);
-		Version getVersion();
-		
-		
+		FetchTxt createFetchTxt();
+		FetchTxt createFetchTxt(BagFile sourceBagFile);
+		Completer createCompleter();
+		HolePuncher createHolePuncher();
+		Writer createWriter(Format format);
+		CompleteVerifier createCompleteVerifier();
+		ValidVerifier createValidVerifier();
+		ValidVerifier createValidVerifier(CompleteVerifier completeVerifier, ManifestChecksumVerifier manifestChecksumVerifier);
+		ManifestChecksumVerifier createManifestVerifier();
+		Version getVersion();				
 	}
 }

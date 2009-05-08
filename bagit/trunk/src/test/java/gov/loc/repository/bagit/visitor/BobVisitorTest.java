@@ -27,6 +27,7 @@ public class BobVisitorTest {
 	SimpleHttpServer server;
 	TestRequestHandler handler;
 	String baseURL;
+	BagFactory bagFactory = new BagFactory();
 	
 	@Before
 	public void setUp() throws Exception {
@@ -43,7 +44,7 @@ public class BobVisitorTest {
 	
 	@Test
 	public void testVisitor() throws Exception {
-		Bag bag = BagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
 		BobVisitor visitor = new BobVisitor(this.baseURL, false, null, null, 250);

@@ -1,9 +1,10 @@
-package gov.loc.repository.bagit.verify;
+package gov.loc.repository.bagit.verify.impl;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -19,22 +20,26 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.Verifier;
 
 /**
- * A {@link AdditionalVerifier verification strategy} that verifies a bag's payload
+ * A {@link Verifier verification strategy} that verifies a bag's payload
  * using multiple threads.  The number of threads is initially set to the
  * {@link Runtime#availableProcessors() number of CPUs}, but may be manually
  * set using {@link #setNumebrOfThreads(int)}.
  * 
  * @version $Id$
  */
-public class ParallelPayloadStrategy implements AdditionalVerifier
+public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifier
 {
-    private static final Log log = LogFactory.getLog(ParallelPayloadStrategy.class);
+    private static final Log log = LogFactory.getLog(ParallelManifestChecksumVerifier.class);
     
-    public ParallelPayloadStrategy()
+    public ParallelManifestChecksumVerifier()
     {
-        this.numberOfThreads = Runtime.getRuntime().availableProcessors();
+        //this.numberOfThreads = Runtime.getRuntime().availableProcessors();
+    	this.numberOfThreads = 1;
+    	//TODO:  Temporarily setting this to 1 because > 1 causes problems for serialized bags
     }
     
     public int getNumberOfThreads()
@@ -48,7 +53,7 @@ public class ParallelPayloadStrategy implements AdditionalVerifier
      * @param num The number of threads.  Cannot be less than 1.
      * @throws IllegalArgumentException Thrown if <tt>num</tt> is less than 1.
      */
-    public void setNumebrOfThreads(int num)
+    public void setNumberOfThreads(int num)
     {
         if (num < 1)
             throw new IllegalArgumentException("Number of threads must be at least 1.");
@@ -57,11 +62,17 @@ public class ParallelPayloadStrategy implements AdditionalVerifier
     }
     
     @Override
-    public SimpleResult verify(final Bag bag)
-    {
-        ExecutorService threadPool = Executors.newCachedThreadPool();
+    public SimpleResult verify(final Manifest manifest, final Bag bag) {
+    	List<Manifest> manifests = new ArrayList<Manifest>();
+    	return this.verify(manifests, bag);
+    }
+    
+    @Override
+    public SimpleResult verify(final List<Manifest> manifests, final Bag bag) {
+
+    	ExecutorService threadPool = Executors.newCachedThreadPool();
         
-        log.debug(MessageFormat.format("Verifying payload on {0} threads.", this.numberOfThreads));
+        log.debug(MessageFormat.format("Verifying manifests on {0} threads.", this.numberOfThreads));
         
         SimpleResult finalResult;
         
@@ -72,7 +83,7 @@ public class ParallelPayloadStrategy implements AdditionalVerifier
             // blocks.
             finalResult = new SimpleResult(true);
             
-            for (final Manifest manifest : bag.getPayloadManifests())
+            for (final Manifest manifest : manifests)
             {
                 final Manifest.Algorithm alg = manifest.getAlgorithm();
                 final Iterator<String> manifestIterator = manifest.keySet().iterator();
@@ -89,7 +100,6 @@ public class ParallelPayloadStrategy implements AdditionalVerifier
                             {
                                 if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
-                                
                                 BagFile file = bag.getBagFile(filePath);
                                 
                                 if (file != null && file.exists())
@@ -125,7 +135,8 @@ public class ParallelPayloadStrategy implements AdditionalVerifier
                 {
                     SimpleResult futureResult = future.get();
                     finalResult.merge(futureResult);
-                }
+                }               
+                
             }
         }
         catch (InterruptedException e)

@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.verify;
+package gov.loc.repository.bagit.verify.impl;
 
 import static org.junit.Assert.*;
 
@@ -11,18 +11,21 @@ import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class ParallelPayloadStrategyTest 
+public class ParallelManifestChecksumVerifierTest 
 {
-    private ParallelPayloadStrategy unit = new ParallelPayloadStrategy();
+    private ParallelManifestChecksumVerifier unit = new ParallelManifestChecksumVerifier();
+    
+    BagFactory bagFactory = new BagFactory();
     
     @Before
     public void setUp()
     {
-        this.unit.setNumebrOfThreads(3);
+        this.unit.setNumberOfThreads(3);
     }
     
     @Test
@@ -30,7 +33,7 @@ public class ParallelPayloadStrategyTest
     {
         try
         {
-            this.unit.setNumebrOfThreads(0);
+            this.unit.setNumberOfThreads(0);
             fail("Expected IllegalArgumentException was not thrown.");
         }
         catch (IllegalArgumentException e)
@@ -43,13 +46,13 @@ public class ParallelPayloadStrategyTest
 	public void testVerifyCorrect() throws Exception
 	{
 	    Bag testBag = this.getBag(Version.V0_96, Format.FILESYSTEM);
-	    SimpleResult result = testBag.checkAdditionalVerify(this.unit);
+	    SimpleResult result = this.unit.verify(testBag.getPayloadManifests(), testBag);
 	    assertEquals(true, result.isSuccess());
 	}
 
     private Bag getBag(Version version, Bag.Format format) throws Exception
     {
-        return BagFactory.createBag(this.getBagDir(version, format), version, true);  
+        return this.bagFactory.createBag(this.getBagDir(version, format), version, true);  
     }   
     
     private File getBagDir(Version version, Bag.Format format) throws Exception 

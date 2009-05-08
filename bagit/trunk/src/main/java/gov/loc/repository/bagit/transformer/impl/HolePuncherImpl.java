@@ -17,6 +17,11 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	private FetchTxt fetch;
 	private boolean includePayloadDirectory = false;
 	private boolean includeTags = false;
+	private BagFactory bagFactory;
+	
+	public HolePuncherImpl(BagFactory bagFactory) {
+		this.bagFactory = bagFactory;
+	}
 	
 	@Override
 	public Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl,
@@ -37,8 +42,8 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 
 	@Override
 	public void startBag(Bag bag) {
-		this.newBag = BagFactory.createBag(bag.getBagConstants().getVersion());
-		this.fetch = this.newBag.getBagPartFactory().createFetchTxt(this.newBag);
+		this.newBag = this.bagFactory.createBag(bag.getBagConstants().getVersion());
+		this.fetch = this.newBag.getBagPartFactory().createFetchTxt();
 		this.newBag.putBagFile(this.fetch);
 
 	}

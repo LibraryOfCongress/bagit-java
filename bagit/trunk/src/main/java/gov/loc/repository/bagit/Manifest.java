@@ -1,7 +1,5 @@
 package gov.loc.repository.bagit;
 
-import gov.loc.repository.bagit.utilities.SimpleResult;
-
 import java.util.Map;
 
 public interface Manifest extends Map<String,String>, BagFile {
@@ -41,15 +39,7 @@ public interface Manifest extends Map<String,String>, BagFile {
 	public boolean isPayloadManifest();
 	
 	public boolean isTagManifest();
-	
-	public SimpleResult checkComplete();
-	
-	public SimpleResult checkValid();
-
-	public SimpleResult checkComplete(CancelIndicator cancelIndicator);
-	
-	public SimpleResult checkValid(CancelIndicator cancelIndicator);
-	
+		
 	public Algorithm getAlgorithm();
 	
 }

@@ -3,8 +3,10 @@ package gov.loc.repository.bagit.v0_96.impl;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.ManifestReader;
 import gov.loc.repository.bagit.ManifestWriter;
+import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.impl.AbstractBagPartFactory;
 import gov.loc.repository.bagit.impl.ManifestReaderImpl;
@@ -15,6 +17,10 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	private static final String SPLIT_REGEX = "( \\*)|(\\s+)";
 	private static final String SEPARATOR = " ";
 	
+	public BagPartFactoryImpl(BagFactory bagFactory, BagConstants bagConstants) {
+		super(bagFactory, bagConstants);
+	}
+		
 	public ManifestReader createManifestReader(InputStream in, String encoding) {
 		return new ManifestReaderImpl(in, encoding, SPLIT_REGEX, false);
 	}
