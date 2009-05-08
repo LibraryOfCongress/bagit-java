@@ -488,7 +488,7 @@ public class CommandLineBagDriver {
 					}
 				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
-			    BagFetcher fetcher = new BagFetcher();
+			    BagFetcher fetcher = new BagFetcher(bagFactory);
 			    fetcher.setNumberOfThreads(1);
 			    fetcher.registerProtocol("http", new HttpFetchProtocol());
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
