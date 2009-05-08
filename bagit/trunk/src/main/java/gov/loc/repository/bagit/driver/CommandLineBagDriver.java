@@ -18,6 +18,8 @@ import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
+import gov.loc.repository.bagit.verify.VerifyOption;
+import gov.loc.repository.bagit.verify.VerifyOptions;
 import gov.loc.repository.bagit.visitor.BobVisitor;
 import gov.loc.repository.bagit.visitor.SwordVisitor;
 import gov.loc.repository.bagit.writer.Writer;
@@ -29,6 +31,7 @@ import gov.loc.repository.bagit.writer.impl.TarWriter.Compression;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -420,7 +423,7 @@ public class CommandLineBagDriver {
 			
 			if (OPERATION_ISVALID.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = bag.getBagPartFactory().createCompleteVerifier();
-				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				completeVerifier.setOptions(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false)? EnumSet.of(VerifyOption.TOLERATE_MISSING_DECLARATION) : VerifyOptions.STRICT);
 				ValidVerifier verifier = bag.getBagPartFactory().createValidVerifier(completeVerifier, bag.getBagPartFactory().createManifestVerifier());
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
@@ -430,7 +433,7 @@ public class CommandLineBagDriver {
 				return RETURN_SUCCESS;
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
 				CompleteVerifier verifier = bag.getBagPartFactory().createCompleteVerifier();
-				verifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				verifier.setOptions(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false)? EnumSet.of(VerifyOption.TOLERATE_MISSING_DECLARATION) : VerifyOptions.STRICT);
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
 				if (! result.isSuccess()) {

@@ -7,7 +7,7 @@ import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
 
-public class RequiredBagInfoTxtFieldsVerifier implements Verifier {
+public class RequiredBagInfoTxtFieldsVerifier extends VerifierBase implements Verifier {
 
 	private String[] requiredFields;
 	

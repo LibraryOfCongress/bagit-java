@@ -19,23 +19,18 @@ import gov.loc.repository.bagit.ProgressMonitorable;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.VerifyOption;
 
-public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, ProgressMonitorable {
+public class CompleteVerifierImpl extends VerifierBase implements CompleteVerifier, Cancellable, ProgressMonitorable {
 
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
-	private boolean missingBagItTolerant = false;
 	private CancelIndicator cancelIndicator = null;
 	private ProgressIndicator progressIndicator = null;
-	
-	public void setMissingBagItTolerant(boolean missingBagItTolerant) {
-		this.missingBagItTolerant = missingBagItTolerant;
-	}
 	
 	@Override
 	public void setCancelIndicator(CancelIndicator cancelIndicator) {
 		this.cancelIndicator = cancelIndicator;
-		
 	}
 	
 	@Override
@@ -54,12 +49,12 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 				result.addMessage("Bag does not have any payload manifests.");
 			}
 			//Has bagit file
-			if (! missingBagItTolerant && bag.getBagItTxt() == null) {
+			if (! isSet(VerifyOption.TOLERATE_MISSING_DECLARATION) && bag.getBagItTxt() == null) {
 				result.setSuccess(false);
 				result.addMessage(MessageFormat.format("Bag does not have {0}.", bag.getBagConstants().getBagItTxt()));				
 			}
 			//Bagit is right version
-			if (! missingBagItTolerant && bag.getBagItTxt() != null && ! bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion())) {
+			if (! isSet(VerifyOption.TOLERATE_MISSING_DECLARATION) && bag.getBagItTxt() != null && ! bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion())) {
 				result.setSuccess(false);
 				result.addMessage(MessageFormat.format("Version is not {0}.", bag.getBagConstants().getVersion()));				
 			}

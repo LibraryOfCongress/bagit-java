@@ -23,11 +23,13 @@ import gov.loc.repository.bagit.bag.DummyCancelIndicator;
 import gov.loc.repository.bagit.bag.PrintingProgressIndicator;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.VerifyOption;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.text.MessageFormat;
+import java.util.EnumSet;
 import java.util.List;
 
 
@@ -195,7 +197,7 @@ public abstract class AbstractBagImplTest {
 		assertFalse(bag.checkValid().isSuccess());				
 		
 		CompleteVerifier completeVerifier = bag.getBagPartFactory().createCompleteVerifier();
-		completeVerifier.setMissingBagItTolerant(true);
+		completeVerifier.setOptions(EnumSet.of(VerifyOption.TOLERATE_MISSING_DECLARATION));
 	
 		assertTrue(completeVerifier.verify(bag).isSuccess());
 
