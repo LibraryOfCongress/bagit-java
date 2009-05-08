@@ -3,7 +3,7 @@ package gov.loc.repository.bagit.writer.impl;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.ProgressIndicator;
-import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
+import gov.loc.repository.bagit.impl.AbstractBagVisitor;
 import gov.loc.repository.bagit.writer.Writer;
 
 public abstract class AbstractWriter extends AbstractBagVisitor implements Writer {

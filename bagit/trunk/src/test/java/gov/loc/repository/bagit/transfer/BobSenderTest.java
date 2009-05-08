@@ -1,12 +1,12 @@
-package gov.loc.repository.bagit.visitor;
+package gov.loc.repository.bagit.transfer;
 
 import static org.junit.Assert.*;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.transfer.BobSender;
+import gov.loc.repository.bagit.transfer.SwordSender;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-import gov.loc.repository.bagit.visitor.BobVisitor;
-import gov.loc.repository.bagit.visitor.SwordVisitor;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BobVisitorTest {
+public class BobSenderTest {
 
 	SimpleHttpServer server;
 	TestRequestHandler handler;
@@ -47,8 +47,9 @@ public class BobVisitorTest {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
-		BobVisitor visitor = new BobVisitor(this.baseURL, false, null, null, 250);
-		bag.accept(visitor);
+		BobSender sender = new BobSender();
+		sender.setThrottle(250);
+		sender.send(bag, this.baseURL);
 		
 		int count = 0;
 		while(! this.handler.resourceCompleted) {
@@ -84,7 +85,7 @@ public class BobVisitorTest {
 					assertNotNull(doc.selectSingleNode("//atom:id"));
 					assertNotNull(doc.selectSingleNode("//atom:updated"));
 					assertNotNull(doc.selectSingleNode("//atom:author/atom:name"));
-					assertEquals(SwordVisitor.PACKAGING, doc.selectSingleNode("//sword:packaging").getText());
+					assertEquals(SwordSender.PACKAGING, doc.selectSingleNode("//sword:packaging").getText());
 					
 					SimpleResponse response = new SimpleResponse();
 					response.setStatusLine(HttpVersion.HTTP_1_1, 201, "Resource created");

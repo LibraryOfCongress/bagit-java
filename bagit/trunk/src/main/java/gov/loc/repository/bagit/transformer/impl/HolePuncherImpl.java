@@ -7,8 +7,8 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.FetchTxt;
+import gov.loc.repository.bagit.impl.AbstractBagVisitor;
 import gov.loc.repository.bagit.transformer.HolePuncher;
-import gov.loc.repository.bagit.visitor.AbstractBagVisitor;
 
 public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	private static final Log log = LogFactory.getLog(HolePuncherImpl.class);

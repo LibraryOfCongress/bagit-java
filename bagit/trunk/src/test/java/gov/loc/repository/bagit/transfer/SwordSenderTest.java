@@ -1,13 +1,13 @@
-package gov.loc.repository.bagit.visitor;
+package gov.loc.repository.bagit.transfer;
 
 import static org.junit.Assert.*;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.transfer.SwordSender;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-import gov.loc.repository.bagit.visitor.SwordVisitor;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SwordVisitorTest {
+public class SwordSenderTest {
 
 	SimpleHttpServer server;
 	BagFactory bagFactory = new BagFactory();
@@ -44,7 +44,7 @@ public class SwordVisitorTest {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.checkValid().isSuccess());
 
-		SwordVisitor visitor = new SwordVisitor(new ZipWriter(this.bagFactory));
+		SwordSender visitor = new SwordSender(new ZipWriter(this.bagFactory));
 		visitor.setBagDir("test_bag");
 		visitor.send(bag, "http://localhost:" + this.server.getLocalPort() + "/");
 		

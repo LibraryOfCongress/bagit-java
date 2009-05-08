@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.visitor;
+package gov.loc.repository.bagit.transfer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,12 +23,12 @@ import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 
-public class SwordVisitor {
+public class SwordSender {
 
 	public static final String CONTENT_TYPE = "application/zip";
 	public static final String PACKAGING = "http://purl.org/net/sword-types/bagit";
 
-	private static final Log log = LogFactory.getLog(SwordVisitor.class);
+	private static final Log log = LogFactory.getLog(SwordSender.class);
 
 	private ByteArrayOutputStream out = new ByteArrayOutputStream();
 	private ZipWriter zipWriter = null;
@@ -39,7 +39,7 @@ public class SwordVisitor {
 	private String username;
 	private String password;
 	
-	public SwordVisitor(ZipWriter zipWriter) {		
+	public SwordSender(ZipWriter zipWriter) {		
 		this.zipWriter = zipWriter;
 	}
 	

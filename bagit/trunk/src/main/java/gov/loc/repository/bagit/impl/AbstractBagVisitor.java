@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.visitor;
+package gov.loc.repository.bagit.impl;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;

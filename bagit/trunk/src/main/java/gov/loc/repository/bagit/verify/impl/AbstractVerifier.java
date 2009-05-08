@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.VerifyOption;
 
-public abstract class VerifierBase implements Verifier {
-	private EnumSet<VerifyOption> options;
+public abstract class AbstractVerifier implements Verifier {
+	private EnumSet<VerifyOption> options = null;
 	
 	@Override
 	public EnumSet<VerifyOption> getOptions() {
@@ -19,6 +19,9 @@ public abstract class VerifierBase implements Verifier {
 	}
 	
 	protected boolean isSet(VerifyOption option) {
+		if (this.options == null) {
+			return false;
+		}
 		return this.options.contains(option);
 	}
 }

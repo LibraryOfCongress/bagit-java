@@ -29,6 +29,8 @@ public interface Bag {
 			this.isSerialized = isSerialized;
 			this.extension = extension;
 		}
+		
+		
 	};
 	
 	File getFile();

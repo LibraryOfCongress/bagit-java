@@ -4,14 +4,14 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.Bag.BagPartFactory;
+import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
-import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.transfer.BagFetcher;
+import gov.loc.repository.bagit.transfer.BobSender;
+import gov.loc.repository.bagit.transfer.SwordSender;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
@@ -20,13 +20,7 @@ import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 import gov.loc.repository.bagit.verify.VerifyOption;
 import gov.loc.repository.bagit.verify.VerifyOptions;
-import gov.loc.repository.bagit.visitor.BobVisitor;
-import gov.loc.repository.bagit.visitor.SwordVisitor;
-import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-import gov.loc.repository.bagit.writer.impl.TarWriter;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
-import gov.loc.repository.bagit.writer.impl.TarWriter.Compression;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -66,6 +60,8 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_VERIFY_PAYLOADMANIFESTS = "verifypayloadmanifests";
 	public static final String OPERATION_VERIFY_TAGMANIFESTS = "verifytagmanifests";
 	public static final String OPERATION_RETRIEVE = "retrieve";
+	public static final String OPERATION_SEND_BOB = "bob";
+	public static final String OPERATION_SEND_SWORD = "sword";
 	
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
@@ -88,14 +84,13 @@ public class CommandLineBagDriver {
 	public static final String PARAM_RELAX_SSL = "relaxssl";
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_PASSWORD = "password";
+	public static final String PARAM_THROTTLE = "throttle";
 	
-	public static final String VALUE_WRITER_FILESYSTEM = "filesystem";
-	public static final String VALUE_WRITER_ZIP = "zip";
-	public static final String VALUE_WRITER_TAR = "tar";
-	public static final String VALUE_WRITER_TAR_GZ = "tar_gz";
-	public static final String VALUE_WRITER_TAR_BZ2 = "tar_bz2";
-	//public static final String VALUE_WRITER_SWORD = "sword";
-	//public static final String VALUE_WRITER_BOB = "bob";
+	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
+	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
+	public static final String VALUE_WRITER_TAR = Format.TAR.name().toLowerCase();
+	public static final String VALUE_WRITER_TAR_GZ = Format.TAR_GZ.name().toLowerCase();
+	public static final String VALUE_WRITER_TAR_BZ2 = Format.TAR_BZ2.name().toLowerCase();
 	
 	private static final Log log = LogFactory.getLog(CommandLineBagDriver.class);
 
@@ -104,7 +99,7 @@ public class CommandLineBagDriver {
 	public static void main(String[] args) throws Exception {
 		CommandLineBagDriver driver = new CommandLineBagDriver();		
 		int ret = driver.execute(args);
-		System.exit(ret);		
+		System.exit(ret);
 	}
 	
 	public CommandLineBagDriver() throws Exception {
@@ -112,12 +107,12 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the destination bag when writing with the filesystem, tar, or zip bag writer.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
-		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + /*";" + VALUE_WRITER_SWORD + ";" + VALUE_WRITER_BOB + ";" +*/ VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, {4}, {5} and {6}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP/*, VALUE_WRITER_SWORD, VALUE_WRITER_BOB*/));
+		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
-		Parameter urlParam = new FlaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_URL, "The url to be used in creating a resource using SWORD/BOB.");
-		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use when posting resources with BOB.  Default is " + BobVisitor.DEFAULT_THREADS);
+		Parameter urlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
+		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use when posting resources with BOB.  Default is equal to the number of processors.");
 		Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(PARAM_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_BAG_INFO, "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(PARAM_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_PAYLOAD_OXUM, "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
@@ -130,6 +125,7 @@ public class CommandLineBagDriver {
 		Parameter relaxSSLParam = new Switch(PARAM_RELAX_SSL, JSAP.NO_SHORTFLAG, "relaxssl", "Tolerant of self-signed SSL certificates.");
 		Parameter usernameParam = new FlaggedOption(PARAM_USERNAME, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_USERNAME, "The username for basic authentication.");
 		Parameter passwordParam = new FlaggedOption(PARAM_PASSWORD, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PASSWORD, "The password for basic authentication.");
+		Parameter throttleParam = new FlaggedOption(PARAM_THROTTLE, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THROTTLE, "A pause between HTTP posts in milliseconds for BOB.");
 		
 		List<Parameter> params = new ArrayList<Parameter>();		
 		params.add(sourceParam);
@@ -142,21 +138,14 @@ public class CommandLineBagDriver {
 		
 		List<Parameter> writerParams = new ArrayList<Parameter>();
 		writerParams.add(writerParam);
-		writerParams.add(urlParam);
 		writerParams.add(bagDirParam);
-		/*
-		writerParams.add(threadsParam);
-		writerParams.add(relaxSSLParam);
-		writerParams.add(usernameParam);
-		writerParams.add(passwordParam);
-		*/
 		
 		params.clear();
 		params.add(sourceParam);
 		params.add(destParam);
 		params.addAll(writerParams);
-		this.addOperation(OPERATION_WRITE, "Writes a bag in a specified format.", params.toArray(new Parameter[] {}));
-
+		this.addOperation(OPERATION_WRITE, "Writes a bag in a specified format.", params.toArray(new Parameter[] {}));		
+		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
 		completeParams.add(noUpdateBaggingDateParam);
@@ -200,6 +189,20 @@ public class CommandLineBagDriver {
 		params.add(sourceParam);
 		params.add(threadsParam);
 		this.addOperation(OPERATION_RETRIEVE, "Retrieves any missing pieces of a bag specified in the fetch.txt.", params.toArray(new Parameter[0]));
+		
+		List<Parameter> senderParams = new ArrayList<Parameter>();
+		senderParams.add(sourceParam);
+		senderParams.add(urlParam);
+		senderParams.add(relaxSSLParam);
+		senderParams.add(usernameParam);
+		senderParams.add(passwordParam);
+
+		this.addOperation(OPERATION_SEND_SWORD, "Sends a bag using SWORD.", senderParams.toArray(new Parameter[0]));
+
+		senderParams.add(throttleParam);
+		senderParams.add(threadsParam);
+		this.addOperation(OPERATION_SEND_BOB, "Sends a bag using BOB.", senderParams.toArray(new Parameter[0]));
+
 	}
 
 	private void addOperation(String name, String help, Parameter[] params) throws Exception {
@@ -357,59 +360,16 @@ public class CommandLineBagDriver {
 			if (config.contains(PARAM_DESTINATION)) {				
 				destFile = new File(config.getString(PARAM_DESTINATION));
 			}
-			String collectionURL = config.getString(PARAM_URL);
-			String username = config.getString(PARAM_USERNAME);
-			String password = config.getString(PARAM_PASSWORD);
-			boolean relaxSSL = config.getBoolean(PARAM_RELAX_SSL, false);
-						
-			Writer writer = null;
-			if (VALUE_WRITER_FILESYSTEM.equals(config.getString(PARAM_WRITER))) {
+
+			Format writerFormat = null;
+			if (config.getString(PARAM_WRITER) != null) {
+				writerFormat = Format.valueOf(config.getString(PARAM_WRITER).toUpperCase());
 				if (destFile == null) {
 					log.error("Error: If writing to a filesystem bag writer, a destination must be provided.");
 					return RETURN_ERROR;
 				}
-				writer = new FileSystemWriter(bagFactory);
-			} else if (VALUE_WRITER_ZIP.equals(config.getString(PARAM_WRITER))) {
-				if (destFile == null) {
-					log.error("Error: If writing to a zip bag writer, a destination must be provided.");
-					return RETURN_ERROR;
-				}
-				writer = new ZipWriter(bagFactory);
-			} else if (VALUE_WRITER_TAR.equals(config.getString(PARAM_WRITER))) {
-				if (destFile == null) {
-					log.error("Error: If writing to a tar bag writer, a destination must be provided.");
-					return RETURN_ERROR;
-				}
-				writer = new TarWriter(bagFactory);
-			} else if (VALUE_WRITER_TAR_GZ.equals(config.getString(PARAM_WRITER))) {
-				if (destFile == null) {
-					log.error("Error: If writing to a tar_gz bag writer, a destination must be provided.");
-					return RETURN_ERROR;
-				}
-				writer = new TarWriter(bagFactory);
-				((TarWriter)writer).setCompression(Compression.GZ);
-			} else if (VALUE_WRITER_TAR_BZ2.equals(config.getString(PARAM_WRITER))) {
-				if (destFile == null) {
-					log.error("Error: If writing to a tar_bz2 bag writer, a destination must be provided.");
-					return RETURN_ERROR;
-				}
-				writer = new TarWriter(bagFactory);
-				((TarWriter)writer).setCompression(Compression.BZ2);
-			} /*else if (VALUE_WRITER_SWORD.equals(config.getString(PARAM_WRITER))) {				
-				if (collectionURL == null) {
-					log.error("Error: If writing to a SWORD serialized bag writer, a collection url must be provided.");
-					return RETURN_ERROR;					
-				}
-				writer = new SwordVisitor(config.getString(PARAM_BAG_DIR), collectionURL, relaxSSL, username, password);
-			} else if (VALUE_WRITER_BOB.equals(config.getString(PARAM_WRITER))) {				
-				if (collectionURL == null) {
-					log.error("Error: If writing to a BOB unserialized bag writer, a collection url must be provided.");
-					return RETURN_ERROR;					
-				}
-				writer = new BobVisitor(collectionURL, relaxSSL, username, password);
-				((BobVisitor)writer).setThreads(config.getInt(PARAM_THREADS, BobVisitor.DEFAULT_THREADS));
 			}
-			*/
+						
 			DefaultCompleter completer = (DefaultCompleter)bag.getBagPartFactory().createCompleter();
 			completer.setGenerateBagInfoTxt(! config.getBoolean(PARAM_EXCLUDE_BAG_INFO, false));
 			completer.setUpdateBaggingDate(! config.getBoolean(PARAM_NO_UPDATE_BAGGING_DATE, false));
@@ -452,21 +412,21 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_WRITE.equals(operation.name)) {								
-				writer.write(bag, destFile);
+				bag.write(destFile, writerFormat);
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
 				Bag newBag = completer.complete(bag);
-				writer.write(newBag, destFile);
+				newBag.write(destFile, writerFormat);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
 					bag.addFilesToPayload(file);
 				}
 				Bag newBag = completer.complete(bag);
-				writer.write(newBag, destFile);
+				newBag.write(destFile, writerFormat);
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncher puncher = bag.getBagPartFactory().createHolePuncher();
 				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
-				writer.write(newBag, destFile);
+				newBag.write(destFile, writerFormat);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				String oxum = BagHelper.generatePayloadOxum(bag);				
 				log.info("Payload-Oxum: " + oxum);
@@ -492,16 +452,53 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
 			    BagFetcher fetcher = new BagFetcher(bagFactory);
-			    fetcher.setNumberOfThreads(1);
 			    fetcher.registerProtocol("http", new HttpFetchProtocol());
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
+			    
+				int threads = config.getInt(PARAM_THREADS, 0);
+				if (threads != 0) {
+					fetcher.setNumberOfThreads(threads);
+				}
 			    
 			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
 			    
 			    SimpleResult result = fetcher.fetch(bag, dest);
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
+			} else if (OPERATION_SEND_BOB.equals(operation.name)) {
+				BobSender sender = new BobSender();
+				String username = config.getString(PARAM_USERNAME);
+				if (username != null) {
+					sender.setUsername(username);
+				}
+				String password = config.getString(PARAM_PASSWORD);
+				if (password != null) {
+					sender.setPassword(password);
+				}
+				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
+				int throttle = config.getInt(PARAM_THROTTLE, 0);
+				if (throttle != 0) {
+					sender.setThrottle(throttle);
+				}
+				int threads = config.getInt(PARAM_THREADS, 0);
+				if (threads != 0) {
+					sender.setThreads(threads);
+				}
+				sender.send(bag, config.getString(PARAM_URL));
+			} else if (OPERATION_SEND_SWORD.equals(operation.name)) {
+				SwordSender sender = new SwordSender(new ZipWriter(bagFactory));
+				String username = config.getString(PARAM_USERNAME);
+				if (username != null) {
+					sender.setUsername(username);
+				}
+				String password = config.getString(PARAM_PASSWORD);
+				if (password != null) {
+					sender.setPassword(password);
+				}
+				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
+				sender.send(bag, config.getString(PARAM_URL));
+				
 			}
-			
+				
 			log.info("Operation completed.");
 			return ret;
 		}

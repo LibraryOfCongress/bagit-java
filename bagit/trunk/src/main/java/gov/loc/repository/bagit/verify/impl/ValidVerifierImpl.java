@@ -13,7 +13,7 @@ import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 
-public class ValidVerifierImpl extends VerifierBase implements ValidVerifier, Cancellable, ProgressMonitorable {
+public class ValidVerifierImpl extends AbstractVerifier implements ValidVerifier, Cancellable, ProgressMonitorable {
 
 	private static final Log log = LogFactory.getLog(ValidVerifierImpl.class);
 	

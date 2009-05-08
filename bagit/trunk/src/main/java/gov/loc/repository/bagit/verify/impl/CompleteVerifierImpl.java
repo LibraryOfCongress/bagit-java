@@ -21,7 +21,7 @@ import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.VerifyOption;
 
-public class CompleteVerifierImpl extends VerifierBase implements CompleteVerifier, Cancellable, ProgressMonitorable {
+public class CompleteVerifierImpl extends AbstractVerifier implements CompleteVerifier, Cancellable, ProgressMonitorable {
 
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	

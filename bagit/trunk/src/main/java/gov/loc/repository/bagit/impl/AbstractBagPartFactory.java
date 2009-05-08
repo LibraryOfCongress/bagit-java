@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
 import gov.loc.repository.bagit.writer.Writer;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 import gov.loc.repository.bagit.writer.impl.TarWriter;
+import gov.loc.repository.bagit.writer.impl.ZipWriter;
 import gov.loc.repository.bagit.writer.impl.TarWriter.Compression;
 
 public abstract class AbstractBagPartFactory implements BagPartFactory {
@@ -143,6 +144,9 @@ public abstract class AbstractBagPartFactory implements BagPartFactory {
 		if (Format.FILESYSTEM.equals(format)) {
 			return new FileSystemWriter(this.bagFactory);
 		}
+		if (Format.ZIP.equals(format)) {
+			return new ZipWriter(this.bagFactory);
+		}
 		if (Format.TAR.equals(format)) {
 			return new TarWriter(this.bagFactory);
 		}
@@ -156,7 +160,7 @@ public abstract class AbstractBagPartFactory implements BagPartFactory {
 			writer.setCompression(Compression.GZ);
 			return writer;
 		}
-		throw new RuntimeException("Writing not supported");
+		throw new RuntimeException("Writing not supported for " + format);
 	}
 	
 	@Override
