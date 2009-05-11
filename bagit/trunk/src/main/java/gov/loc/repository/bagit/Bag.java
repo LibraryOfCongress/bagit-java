@@ -21,7 +21,7 @@ import java.util.Map;
 public interface Bag {
 	
 	enum Format {
-		ZIP ("zip", true, ".zip"), TAR ("tar", true, ".tar"), TAR_GZ ("tgz", true, ".tar.gz"), TAR_BZ2 ("tbz2", true, ".tar.bz2"), FILESYSTEM ("file", false, ""), VIRTUAL (null, false, null);
+		ZIP ("zip", true, ".zip"), TAR ("tar", true, ".tar"), TAR_GZ ("tgz", true, ".tar.gz"), TAR_BZ2 ("tbz2", true, ".tar.bz2"), FILESYSTEM ("file", false, "");
 		public String scheme;
 		public boolean isSerialized;
 		public String extension;
@@ -80,41 +80,36 @@ public interface Bag {
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 */
-	SimpleResult checkValid(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
+	SimpleResult verifyValid(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
 
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 */
-	SimpleResult checkValid();
+	SimpleResult verifyValid();
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */	
-	SimpleResult checkComplete(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
+	SimpleResult verifyComplete(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */		
-	SimpleResult checkComplete();
+	SimpleResult verifyComplete();
 
 	/*
-	 * Additional checks of a bag.
-	 * These checks are not specified by the BagIt Specification.
 	 * @param	verifiers	a list of Verifiers to invoke
 	 */
-	SimpleResult checkAdditionalVerify(List<Verifier> verifiers);
-
-	SimpleResult checkAdditionalVerify(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
-
+	SimpleResult verify(List<Verifier> verifiers);
 	
 	/*
 	 * Additional checks of a bag.
 	 * These checks are not specified by the BagIt Specification.
 	 * @param	strategies	a Verifier to invoke
 	 */	
-	SimpleResult checkAdditionalVerify(Verifier verifier);
+	SimpleResult verify(Verifier verifier);
 
-	SimpleResult checkAdditionalVerify(Verifier verifier, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
+	SimpleResult verify(Verifier verifier, CancelIndicator cancelIndicator, ProgressListener progressIndicator);
 
 	
 	/*
@@ -123,7 +118,7 @@ public interface Bag {
 	 */
 	SimpleResult checkPayloadManifests();
 
-	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
+	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
 
 	
 	/*
@@ -132,18 +127,32 @@ public interface Bag {
 	 */	
 	SimpleResult checkTagManifests();
 
-	SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
+	SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
 
 	void load();
 	
 	void accept(BagVisitor visitor);
 	
-	void accept(BagVisitor visitor, CancelIndicator cancelIndicator);
+	void accept(BagVisitor visitor, CancelIndicator cancelIndicator, ProgressListener progressIndicator);
 	
 	Bag write(File file, Format format);
 	
-	Bag write(File file, Format format, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator);
-			
+	Bag write(File file, Format format, CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+
+	Bag write(Writer writer, File file);
+	
+	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
+	
+	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, ProgressListener progressIndicator, CancelIndicator cancelIndicator);
+	
+	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
+	
+	Bag makeComplete();
+	
+	Bag makeComplete(ProgressListener progressIndicator, CancelIndicator cancelIndicator);
+	
+	Bag makeComplete(Completer completer);
+	
 	BagConstants getBagConstants();
 	
 	BagPartFactory getBagPartFactory();

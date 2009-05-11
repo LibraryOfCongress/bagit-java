@@ -18,14 +18,11 @@ import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
-import gov.loc.repository.bagit.verify.VerifyOption;
-import gov.loc.repository.bagit.verify.VerifyOptions;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +62,7 @@ public class CommandLineBagDriver {
 	
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
-	public static final String PARAM_BAG_DIR = "bagdir";
+	//public static final String PARAM_BAG_DIR = "bagdir";
 	public static final String PARAM_MISSING_BAGIT_TOLERANT = "missingbagittolerant";
 	public static final String PARAM_WRITER = "writer";
 	public static final String PARAM_PAYLOAD = "payload";
@@ -105,7 +102,7 @@ public class CommandLineBagDriver {
 	public CommandLineBagDriver() throws Exception {
 		//Initialize
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
-		Parameter destParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the destination bag when writing with the filesystem, tar, or zip bag writer.");
+		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
 		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload.");
@@ -113,7 +110,7 @@ public class CommandLineBagDriver {
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
 		Parameter urlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
 		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use when posting resources with BOB.  Default is equal to the number of processors.");
-		Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
+		//Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(PARAM_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_BAG_INFO, "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(PARAM_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_PAYLOAD_OXUM, "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
 		Parameter noUpdateBaggingDateParam = new Switch(PARAM_NO_UPDATE_BAGGING_DATE, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_BAGGING_DATE, "Does not update Bagging-Date in bag-info.txt when completing a bag.");
@@ -138,7 +135,7 @@ public class CommandLineBagDriver {
 		
 		List<Parameter> writerParams = new ArrayList<Parameter>();
 		writerParams.add(writerParam);
-		writerParams.add(bagDirParam);
+		//writerParams.add(bagDirParam);
 		
 		params.clear();
 		params.add(sourceParam);
@@ -362,12 +359,8 @@ public class CommandLineBagDriver {
 			}
 
 			Format writerFormat = null;
-			if (config.getString(PARAM_WRITER) != null) {
+			if (config.contains(PARAM_WRITER)) {
 				writerFormat = Format.valueOf(config.getString(PARAM_WRITER).toUpperCase());
-				if (destFile == null) {
-					log.error("Error: If writing to a filesystem bag writer, a destination must be provided.");
-					return RETURN_ERROR;
-				}
 			}
 						
 			DefaultCompleter completer = (DefaultCompleter)bag.getBagPartFactory().createCompleter();
@@ -383,7 +376,7 @@ public class CommandLineBagDriver {
 			
 			if (OPERATION_ISVALID.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = bag.getBagPartFactory().createCompleteVerifier();
-				completeVerifier.setOptions(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false)? EnumSet.of(VerifyOption.TOLERATE_MISSING_DECLARATION) : VerifyOptions.STRICT);
+				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
 				ValidVerifier verifier = bag.getBagPartFactory().createValidVerifier(completeVerifier, bag.getBagPartFactory().createManifestVerifier());
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
@@ -393,7 +386,7 @@ public class CommandLineBagDriver {
 				return RETURN_SUCCESS;
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
 				CompleteVerifier verifier = bag.getBagPartFactory().createCompleteVerifier();
-				verifier.setOptions(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false)? EnumSet.of(VerifyOption.TOLERATE_MISSING_DECLARATION) : VerifyOptions.STRICT);
+				verifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
 				if (! result.isSuccess()) {

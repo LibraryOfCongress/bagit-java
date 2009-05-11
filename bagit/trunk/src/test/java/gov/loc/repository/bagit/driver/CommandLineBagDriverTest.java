@@ -69,12 +69,12 @@ public class CommandLineBagDriverTest {
 	
 	@Test
 	public void testWrite() throws Exception {
-        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_WRITE, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
         System.out.println(destFile.getAbsolutePath());
         assertTrue(destFile.exists());
         Bag bag = this.bagFactory.createBag(destFile);
         assertEquals(Format.ZIP, bag.getFormat());
-        assertTrue(bag.checkValid().isSuccess());		
+        assertTrue(bag.verifyValid().isSuccess());		
 	}
 	
 	@Test
@@ -85,10 +85,10 @@ public class CommandLineBagDriverTest {
 	
 	@Test
 	public void testCreate() throws Exception {
-        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_TAG_MANIFEST_ALGORITHM, Manifest.Algorithm.SHA1.bagItAlgorithm }));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_TAG_MANIFEST_ALGORITHM, Manifest.Algorithm.SHA1.bagItAlgorithm }));
         Bag bag = this.bagFactory.createBag(destFile);
         assertEquals(3, bag.getPayload().size());
-        assertTrue(bag.checkValid().isSuccess());
+        assertTrue(bag.verifyValid().isSuccess());
         BagInfoTxt bagInfo = bag.getBagInfoTxt();
         assertNotNull(bagInfo);
         assertNotNull(bagInfo.getBaggingDate());
@@ -101,10 +101,10 @@ public class CommandLineBagDriverTest {
 
 	@Test
 	public void testCreateExcludeBagInfoAndTagManifest() throws Exception {
-        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_EXCLUDE_BAG_INFO, "--" + PARAM_EXCLUDE_TAG_MANIFEST }));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_EXCLUDE_BAG_INFO, "--" + PARAM_EXCLUDE_TAG_MANIFEST }));
         Bag bag = this.bagFactory.createBag(destFile);
         assertEquals(3, bag.getPayload().size());
-        assertTrue(bag.checkValid().isSuccess());
+        assertTrue(bag.verifyValid().isSuccess());
         assertNull(bag.getBagInfoTxt());
         assertTrue(bag.getTagManifests().isEmpty());
 	}
@@ -118,7 +118,7 @@ public class CommandLineBagDriverTest {
 	@Test
 	public void testMakeHoley() throws Exception {
 		final String BASE_URL = "http://foo.com/bag";
-        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), BASE_URL, "--" + PARAM_DESTINATION, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_95/bag").getAbsolutePath(), BASE_URL, destFile.getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP}));
         assertTrue(destFile.exists());
         Bag bag = this.bagFactory.createBag(destFile);
         FetchTxt fetch = bag.getFetchTxt();

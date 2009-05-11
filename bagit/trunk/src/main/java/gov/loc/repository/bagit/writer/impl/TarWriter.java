@@ -172,7 +172,7 @@ public class TarWriter extends AbstractWriter {
 		}
 
 		
-		bag.accept(this, this.cancelIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressIndicator);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
@@ -186,7 +186,7 @@ public class TarWriter extends AbstractWriter {
 		
 		this.init(out);
 		
-		bag.accept(this, this.cancelIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressIndicator);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;

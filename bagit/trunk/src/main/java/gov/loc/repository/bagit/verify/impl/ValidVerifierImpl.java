@@ -6,14 +6,14 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
-import gov.loc.repository.bagit.ProgressIndicator;
-import gov.loc.repository.bagit.ProgressMonitorable;
+import gov.loc.repository.bagit.ProgressListener;
+import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 
-public class ValidVerifierImpl extends AbstractVerifier implements ValidVerifier, Cancellable, ProgressMonitorable {
+public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressListenable {
 
 	private static final Log log = LogFactory.getLog(ValidVerifierImpl.class);
 	
@@ -33,12 +33,12 @@ public class ValidVerifierImpl extends AbstractVerifier implements ValidVerifier
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressIndicator progressIndicator) {
-		if (completeVerifier instanceof ProgressMonitorable) {
-			((ProgressMonitorable)completeVerifier).setProgressIndicator(progressIndicator);
+	public void setProgressIndicator(ProgressListener progressIndicator) {
+		if (completeVerifier instanceof ProgressListenable) {
+			((ProgressListenable)completeVerifier).setProgressIndicator(progressIndicator);
 		}
-		if (manifestVerifier instanceof ProgressMonitorable) {
-			((ProgressMonitorable)manifestVerifier).setProgressIndicator(progressIndicator);
+		if (manifestVerifier instanceof ProgressListenable) {
+			((ProgressListenable)manifestVerifier).setProgressIndicator(progressIndicator);
 		}
 	}
 	

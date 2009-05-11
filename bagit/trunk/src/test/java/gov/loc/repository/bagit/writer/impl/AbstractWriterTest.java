@@ -35,14 +35,14 @@ public abstract class AbstractWriterTest {
 	@Test
 	public void testWriter() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.checkValid().isSuccess());
+		assertTrue(bag.verifyValid().isSuccess());
 		Writer writer = this.getBagWriter();
 		writer.setProgressIndicator(new PrintingProgressIndicator());
 		
 		Bag newBag = writer.write(bag, this.getBagFile());
 		assertNotNull(newBag);
 		assertTrue(this.getBagFile().exists());
-		assertTrue(newBag.checkValid().isSuccess());
+		assertTrue(newBag.verifyValid().isSuccess());
 		
 		List<Manifest> payloadManifests = newBag.getPayloadManifests();
 		assertEquals(1, payloadManifests.size());
@@ -58,7 +58,7 @@ public abstract class AbstractWriterTest {
 	@Test
 	public void testCancel() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.checkValid().isSuccess());
+		assertTrue(bag.verifyValid().isSuccess());
 		
 		Writer writer = this.getBagWriter();
 		writer.setCancelIndicator(new DummyCancelIndicator(3));		

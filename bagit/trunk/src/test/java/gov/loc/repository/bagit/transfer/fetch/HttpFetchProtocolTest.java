@@ -134,7 +134,7 @@ public class HttpFetchProtocolTest
         fetcher.fetch(bag, new FileSystemFileDestination(testDestination));
 
         Bag newBag = this.bagFactory.createBag(testDestination);
-        assertTrue(newBag.checkValid().isSuccess());
+        assertTrue(newBag.verifyValid().isSuccess());
     }
     
     private static class HoleyWriter extends FileSystemWriter

@@ -46,8 +46,8 @@ public class DefaultCompleterTest {
 	@Test
 	public void testComplete() throws Exception {
 		Bag newBag = completer.complete(bag);
-		assertTrue(newBag.checkComplete().isSuccess());
-		assertTrue(newBag.checkValid().isSuccess());
+		assertTrue(newBag.verifyComplete().isSuccess());
+		assertTrue(newBag.verifyValid().isSuccess());
 		assertNotNull(newBag.getPayloadManifest(Algorithm.SHA1));
 		assertNull(newBag.getTagManifest(Algorithm.SHA1));
 		assertNotNull(newBag.getFixities("data/test1.txt").get(Algorithm.SHA1));
@@ -72,8 +72,8 @@ public class DefaultCompleterTest {
 	public void testCompleteWithClear() throws Exception {
 		completer.setClearExistingPayloadManifests(true);
 		Bag newBag = completer.complete(bag);
-		assertTrue(newBag.checkComplete().isSuccess());
-		assertTrue(newBag.checkValid().isSuccess());
+		assertTrue(newBag.verifyComplete().isSuccess());
+		assertTrue(newBag.verifyValid().isSuccess());
 		assertNull(newBag.getPayloadManifest(Algorithm.SHA1));
 		assertNull(newBag.getTagManifest(Algorithm.SHA1));
 		assertNull(newBag.getFixities("data/test1.txt").get(Algorithm.SHA1));

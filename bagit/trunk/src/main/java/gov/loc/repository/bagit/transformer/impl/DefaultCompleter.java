@@ -13,13 +13,13 @@ import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
-import gov.loc.repository.bagit.ProgressIndicator;
-import gov.loc.repository.bagit.ProgressMonitorable;
+import gov.loc.repository.bagit.ProgressListener;
+import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 
-public class DefaultCompleter implements Completer, Cancellable, ProgressMonitorable {
+public class DefaultCompleter implements Completer, Cancellable, ProgressListenable {
 	private boolean generateTagManifest = true;
 	private boolean updatePayloadOxum = true;
 	private boolean updateBaggingDate = true;
@@ -31,7 +31,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressMonitor
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
 	private CancelIndicator cancelIndicator;
-	private ProgressIndicator progressIndicator;
+	private ProgressListener progressIndicator;
 	private BagFactory bagFactory;
 	
 	public DefaultCompleter(BagFactory bagFactory) {
@@ -80,7 +80,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressMonitor
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressIndicator progressIndicator) {
+	public void setProgressIndicator(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;
 	}
 	

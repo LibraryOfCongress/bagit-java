@@ -18,7 +18,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.ProgressIndicator;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -53,7 +53,7 @@ public class ZipWriter extends AbstractWriter {
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressIndicator progressIndicator) {
+	public void setProgressIndicator(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;		
 	}
 	
@@ -149,7 +149,7 @@ public class ZipWriter extends AbstractWriter {
 			throw new RuntimeException(ex);
 		}
 		
-		bag.accept(this, this.cancelIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressIndicator);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
@@ -161,7 +161,7 @@ public class ZipWriter extends AbstractWriter {
 	public Bag write(Bag bag, OutputStream out) {
 		this.out = out;
 		
-		bag.accept(this, this.cancelIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressIndicator);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;

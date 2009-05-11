@@ -25,9 +25,11 @@ import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressIndicator;
-import gov.loc.repository.bagit.ProgressMonitorable;
+import gov.loc.repository.bagit.ProgressListener;
+import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -256,20 +258,20 @@ public class ConfigurableBag implements Bag {
 	}
 
 	@Override
-	public SimpleResult checkComplete() {
-		return this.checkComplete(null, null);
+	public SimpleResult verifyComplete() {
+		return this.verifyComplete(null, null);
 	}
 	
 	@Override
-	public SimpleResult checkComplete(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	public SimpleResult verifyComplete(CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		
-		return this.checkAdditionalVerify(this.bagPartFactory.createCompleteVerifier(), cancelIndicator, progressIndicator);
+		return this.verify(this.bagPartFactory.createCompleteVerifier(), cancelIndicator, progressIndicator);
 		
 	}
 
 	@Override
-	public SimpleResult checkValid() {
-		return this.checkValid(null, null);
+	public SimpleResult verifyValid() {
+		return this.verifyValid(null, null);
 	}
 
 	@Override
@@ -279,7 +281,7 @@ public class ConfigurableBag implements Bag {
 	
 	
 	@Override
-	public SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	public SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		ManifestChecksumVerifier verifier = this.bagPartFactory.createManifestVerifier();
 		this.setIndicators(verifier, cancelIndicator, progressIndicator);
 		return verifier.verify(this.getTagManifests(), this);
@@ -291,25 +293,25 @@ public class ConfigurableBag implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	public SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		ManifestChecksumVerifier verifier = this.bagPartFactory.createManifestVerifier();
 		this.setIndicators(verifier, cancelIndicator, progressIndicator);
 		return verifier.verify(this.getPayloadManifests(), this);
 	}
 	
 	@Override
-	public SimpleResult checkValid(CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	public SimpleResult verifyValid(CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		return this.invokeVerifier(this.bagPartFactory.createValidVerifier(), cancelIndicator, progressIndicator);
 	}
 	
 	@Override
 	public void accept(BagVisitor visitor) {
-		this.accept(visitor, null);		
+		this.accept(visitor, null, null);		
 	}
 	
 	@Override
-	public void accept(BagVisitor visitor, CancelIndicator cancelIndicator) {
-		
+	public void accept(BagVisitor visitor, CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
+		this.setIndicators(visitor, cancelIndicator, progressIndicator);
 		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
 		
 		visitor.startBag(this);
@@ -357,7 +359,7 @@ public class ConfigurableBag implements Bag {
 	@Override
 	public Format getFormat() {
 		if (this.fileForBag == null) {
-			return Format.VIRTUAL;
+			return null;
 		}
 		return FormatHelper.getFormat(this.fileForBag);
 	}
@@ -368,37 +370,32 @@ public class ConfigurableBag implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(List<Verifier> verifiers) {
+	public SimpleResult verify(List<Verifier> verifiers) {
 		return this.invokeVerifiers(verifiers, null, null);
 	}
-	
+		
 	@Override
-	public SimpleResult checkAdditionalVerify(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
-		return this.invokeVerifiers(verifiers, cancelIndicator, progressIndicator);
-	}
-	
-	@Override
-	public SimpleResult checkAdditionalVerify(Verifier verifier) {
+	public SimpleResult verify(Verifier verifier) {
 		return this.invokeVerifier(verifier, null, null);
 	}
 	
 	@Override
-	public SimpleResult checkAdditionalVerify(Verifier verifier,
-			CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	public SimpleResult verify(Verifier verifier,
+			CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		return this.invokeVerifier(verifier, cancelIndicator, progressIndicator);
 	}
 	
-	protected void setIndicators(Object obj, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	protected void setIndicators(Object obj, CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		if (cancelIndicator != null && obj instanceof Cancellable) {
 			((Cancellable)obj).setCancelIndicator(cancelIndicator);
 		}
-		if (progressIndicator != null && obj instanceof ProgressMonitorable) {
-			((ProgressMonitorable)obj).setProgressIndicator(progressIndicator);
+		if (progressIndicator != null && obj instanceof ProgressListenable) {
+			((ProgressListenable)obj).setProgressIndicator(progressIndicator);
 		}
 		
 	}
 	
-	protected SimpleResult invokeVerifiers(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	protected SimpleResult invokeVerifiers(List<Verifier> verifiers, CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		SimpleResult result = new SimpleResult(true);
 		for(Verifier verifier : verifiers) {
 			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
@@ -411,7 +408,7 @@ public class ConfigurableBag implements Bag {
 		
 	}
 	
-	protected SimpleResult invokeVerifier(Verifier verifier, CancelIndicator cancelIndicator, ProgressIndicator progressIndicator) {
+	protected SimpleResult invokeVerifier(Verifier verifier, CancelIndicator cancelIndicator, ProgressListener progressIndicator) {
 		List<Verifier> verifiers = new ArrayList<Verifier>();
 		verifiers.add(verifier);
 		return this.invokeVerifiers(verifiers, cancelIndicator, progressIndicator);
@@ -433,8 +430,13 @@ public class ConfigurableBag implements Bag {
 	}
 	
 	@Override
+	public Bag write(Writer writer, File file) {
+		return writer.write(this, file);
+	}
+	
+	@Override
 	public Bag write(File file, Format format, CancelIndicator cancelIndicator,
-			ProgressIndicator progressIndicator) {
+			ProgressListener progressIndicator) {
 		Writer writer = this.bagPartFactory.createWriter(format);
 		writer.setCancelIndicator(cancelIndicator);
 		writer.setProgressIndicator(progressIndicator);
@@ -498,5 +500,41 @@ public class ConfigurableBag implements Bag {
 	@Override
 	public Manifest getTagManifest(Algorithm algorithm) {
 		return (Manifest)this.getBagFile(ManifestHelper.getTagManifestFilename(algorithm, this.bagConstants));
+	}
+	
+	@Override
+	public Bag makeComplete() {
+		return this.makeComplete(null, null);
+	}
+	
+	@Override
+	public Bag makeComplete(Completer completer) {
+		return completer.complete(this);
+	}
+	
+	@Override
+	public Bag makeComplete(ProgressListener progressIndicator,
+			CancelIndicator cancelIndicator) {
+		Completer completer = this.getBagPartFactory().createCompleter();
+		this.setIndicators(completer, cancelIndicator, progressIndicator);
+		return completer.complete(this);
+	}
+	
+	@Override
+	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags) {
+		return this.makeHoley(baseUrl, includePayloadDirectoryInUrl, includeTags, null, null);
+	}
+	
+	@Override
+	public Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags) {
+		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags);
+	}
+	
+	@Override
+	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, ProgressListener progressIndicator,
+			CancelIndicator cancelIndicator) {
+		HolePuncher holePuncher = this.getBagPartFactory().createHolePuncher();
+		this.setIndicators(holePuncher, cancelIndicator, progressIndicator);
+		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags);
 	}
 }

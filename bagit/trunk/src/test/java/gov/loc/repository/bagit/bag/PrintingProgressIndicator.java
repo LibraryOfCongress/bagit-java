@@ -2,9 +2,9 @@ package gov.loc.repository.bagit.bag;
 
 import java.text.MessageFormat;
 
-import gov.loc.repository.bagit.ProgressIndicator;
+import gov.loc.repository.bagit.ProgressListener;
 
-public class PrintingProgressIndicator implements ProgressIndicator {
+public class PrintingProgressIndicator implements ProgressListener {
 
 	@Override
 	public void reportProgress(String activity, String item, int count,

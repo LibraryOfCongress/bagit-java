@@ -45,7 +45,7 @@ public class BobSenderTest {
 	@Test
 	public void testVisitor() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.checkValid().isSuccess());
+		assertTrue(bag.verifyValid().isSuccess());
 
 		BobSender sender = new BobSender();
 		sender.setThrottle(250);

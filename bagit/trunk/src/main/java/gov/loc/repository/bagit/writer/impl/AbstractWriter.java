@@ -2,14 +2,14 @@ package gov.loc.repository.bagit.writer.impl;
 
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.ProgressIndicator;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.impl.AbstractBagVisitor;
 import gov.loc.repository.bagit.writer.Writer;
 
 public abstract class AbstractWriter extends AbstractBagVisitor implements Writer {
 
 	protected CancelIndicator cancelIndicator = null;
-	protected ProgressIndicator progressIndicator = null;
+	protected ProgressListener progressIndicator = null;
 	protected BagFactory bagFactory;
 	
 	public AbstractWriter(BagFactory bagFactory) {
@@ -22,7 +22,7 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressIndicator progressIndicator) {
+	public void setProgressIndicator(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;
 	}
 

@@ -42,7 +42,7 @@ public class SwordSenderTest {
 	public void testVisitor() throws Exception {
 		this.server.setRequestHandler(new TestRequestHandler());
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.checkValid().isSuccess());
+		assertTrue(bag.verifyValid().isSuccess());
 
 		SwordSender visitor = new SwordSender(new ZipWriter(this.bagFactory));
 		visitor.setBagDir("test_bag");

@@ -20,8 +20,8 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressIndicator;
-import gov.loc.repository.bagit.ProgressMonitorable;
+import gov.loc.repository.bagit.ProgressListener;
+import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
@@ -35,12 +35,12 @@ import gov.loc.repository.bagit.verify.Verifier;
  * 
  * @version $Id$
  */
-public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifier, Cancellable, ProgressMonitorable
+public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifier, Cancellable, ProgressListenable
 {
     private static final Log log = LogFactory.getLog(ParallelManifestChecksumVerifier.class);
     
     private CancelIndicator cancelIndicator;
-    private ProgressIndicator progressIndicator;
+    private ProgressListener progressIndicator;
     
     public ParallelManifestChecksumVerifier()
     {
@@ -56,7 +56,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
     }
     
     @Override
-    public void setProgressIndicator(ProgressIndicator progressIndicator) {
+    public void setProgressIndicator(ProgressListener progressIndicator) {
     	this.progressIndicator = progressIndicator;    	
     }
     
