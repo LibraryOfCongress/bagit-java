@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface Bag {
 	
@@ -38,8 +40,12 @@ public interface Bag {
 	void setFile(File file);
 	
 	List<Manifest> getPayloadManifests();
+	
+	Manifest getPayloadManifest(Algorithm algorithm);
 
 	List<Manifest> getTagManifests();
+	
+	Manifest getTagManifest(Algorithm algorithm);
 		
 	Collection<BagFile> getTags();
 
@@ -60,6 +66,8 @@ public interface Bag {
 	void addFilesToPayload(List<File> files);
 	
 	void addFileAsTag(File file);
+
+	Map<Algorithm, String> getFixities(String filepath);
 	
 	BagItTxt getBagItTxt();
 	

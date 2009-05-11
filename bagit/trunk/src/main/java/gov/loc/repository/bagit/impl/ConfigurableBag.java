@@ -27,6 +27,7 @@ import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ProgressIndicator;
 import gov.loc.repository.bagit.ProgressMonitorable;
+import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -467,5 +468,35 @@ public class ConfigurableBag implements Bag {
 			log.debug("Removing " + deleteFilepath);
 			this.removeBagFile(deleteFilepath);			
 		}
+	}
+	
+	@Override
+	public Map<Algorithm, String> getFixities(String filepath) {
+		Map<Algorithm, String> fixityMap = new HashMap<Algorithm, String>();
+		if (BagHelper.isPayload(filepath, this.bagConstants)) {
+			for(Manifest manifest : this.getPayloadManifests()) {
+				if (manifest.containsKey(filepath)) {
+					fixityMap.put(manifest.getAlgorithm(), manifest.get(filepath));
+				}
+			}
+		} else {
+			for(Manifest manifest : this.getTagManifests()) {
+				if (manifest.containsKey(filepath)) {
+					fixityMap.put(manifest.getAlgorithm(), manifest.get(filepath));
+				}
+			}
+			
+		}		
+		return fixityMap;
+	}
+	
+	@Override
+	public Manifest getPayloadManifest(Algorithm algorithm) {
+		return (Manifest)this.getBagFile(ManifestHelper.getPayloadManifestFilename(algorithm, this.bagConstants));
+	}
+	
+	@Override
+	public Manifest getTagManifest(Algorithm algorithm) {
+		return (Manifest)this.getBagFile(ManifestHelper.getTagManifestFilename(algorithm, this.bagConstants));
 	}
 }
