@@ -38,6 +38,7 @@ Changes in 3.0:
 3. Writer (formerly BagWriter), Completeter (formerly CompletionStrategy), Hole Puncher (formerly Bag.makeHoley())
 	return a new Bag instead of modifying existing bag.
 4. Added support for cancelling long-running operations (CancelIndicator).
+5. Changed DefaultCompleter to re-use existing fixities rather than always re-generating.
 
 Changes in 2.4:
 1. Added support for getting lists of standard and non-standard fields in manifests.
