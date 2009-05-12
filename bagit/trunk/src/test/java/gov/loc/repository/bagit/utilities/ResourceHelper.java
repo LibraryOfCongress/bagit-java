@@ -1,9 +1,32 @@
 package gov.loc.repository.bagit.utilities;
 
 import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
 
 public class ResourceHelper {
+	/**
+	 * The root of the project.  Some limited experiments show that the
+	 * <c>user.dir</c> property is set to the project root by both
+	 * Eclipse and Maven test harnesses.
+	 */
+	public static final File PROJECT_DIR = new File(System.getProperty("user.dir"));
+	
+	/**
+	 * The <c>target</c> directory, under the project.
+	 */
+	public static final File TARGET_DIR = new File(PROJECT_DIR, "target");
+	
+	/**
+	 * The unit test bag data directory.
+	 */
+	public static final File TEST_DATA_DIR = new File(TARGET_DIR, "unit-test-data");
+	
+	private static boolean initialCopyCompleted = false;
 
+	/* Removed, as these don't seem to be used.
 	public static File getFile(Class<?> clazz, String filename) throws Exception
 	{
 		String resourceName = clazz.getPackage().getName().replace('.', '/');
@@ -18,9 +41,27 @@ public class ResourceHelper {
 	{
 		return getFile(obj.getClass(), filename);
 	}
+	*/
 	
 	public static File getFile(String filePath) throws Exception {
-		return new File(ResourceHelper.class.getClassLoader().getResource(filePath).toURI());
+		copyUnitTestData();
+		return new File(TEST_DATA_DIR, filePath);
 	}
-			
+	
+	private static void copyUnitTestData() throws IOException 
+	{
+		synchronized (TEST_DATA_DIR)
+		{
+			if (!initialCopyCompleted)
+			{
+				if (TEST_DATA_DIR.exists())
+					FileUtils.forceDelete(TEST_DATA_DIR);
+				
+				FileUtils.forceMkdir(TEST_DATA_DIR);
+				FileUtils.copyDirectory(new File(PROJECT_DIR, "src/test/resources/bags"), new File(TEST_DATA_DIR, "bags"), HiddenFileFilter.VISIBLE, true);
+				
+				initialCopyCompleted = true;
+			}
+		}
+	}
 }
