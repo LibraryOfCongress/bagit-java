@@ -9,7 +9,7 @@ import gov.loc.repository.bagit.writer.Writer;
 public abstract class AbstractWriter extends AbstractBagVisitor implements Writer {
 
 	protected CancelIndicator cancelIndicator = null;
-	protected ProgressListener progressIndicator = null;
+	protected ProgressListener progressListener = null;
 	protected BagFactory bagFactory;
 	
 	public AbstractWriter(BagFactory bagFactory) {
@@ -22,8 +22,8 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 	}
 	
 	@Override
-	public void setProgressListener(ProgressListener progressIndicator) {
-		this.progressIndicator = progressIndicator;
+	public void setProgressListener(ProgressListener progressListener) {
+		this.progressListener = progressListener;
 	}
 
 }

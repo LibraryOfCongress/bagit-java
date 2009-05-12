@@ -67,7 +67,7 @@ public interface Bag {
 	
 	void addFileAsTag(File file);
 
-	Map<Algorithm, String> getFixities(String filepath);
+	Map<Algorithm, String> getChecksums(String filepath);
 	
 	BagItTxt getBagItTxt();
 	
@@ -80,7 +80,7 @@ public interface Bag {
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 */
-	SimpleResult verifyValid(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	SimpleResult verifyValid(CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	/*
 	 * Determines whether the bag is valid according to the BagIt Specification.
@@ -90,7 +90,7 @@ public interface Bag {
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */	
-	SimpleResult verifyComplete(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	SimpleResult verifyComplete(CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
@@ -109,7 +109,7 @@ public interface Bag {
 	 */	
 	SimpleResult verify(Verifier verifier);
 
-	SimpleResult verify(Verifier verifier, CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	SimpleResult verify(Verifier verifier, CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	
 	/*
@@ -118,7 +118,7 @@ public interface Bag {
 	 */
 	SimpleResult checkPayloadManifests();
 
-	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	
 	/*
@@ -127,29 +127,29 @@ public interface Bag {
 	 */	
 	SimpleResult checkTagManifests();
 
-	SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	void load();
 	
 	void accept(BagVisitor visitor);
 	
-	void accept(BagVisitor visitor, CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	void accept(BagVisitor visitor, CancelIndicator cancelIndicator, ProgressListener progressListener);
 	
 	Bag write(File file, Format format);
 	
-	Bag write(File file, Format format, CancelIndicator cancelIndicator, ProgressListener progressIndicator);
+	Bag write(File file, Format format, CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	Bag write(Writer writer, File file);
 	
 	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
-	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, ProgressListener progressIndicator, CancelIndicator cancelIndicator);
+	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, ProgressListener progressListener, CancelIndicator cancelIndicator);
 	
 	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
 	Bag makeComplete();
 	
-	Bag makeComplete(ProgressListener progressIndicator, CancelIndicator cancelIndicator);
+	Bag makeComplete(ProgressListener progressListener, CancelIndicator cancelIndicator);
 	
 	Bag makeComplete(Completer completer);
 	

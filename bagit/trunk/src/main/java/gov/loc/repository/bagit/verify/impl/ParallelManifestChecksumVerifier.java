@@ -41,7 +41,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
     private static final Log log = LogFactory.getLog(ParallelManifestChecksumVerifier.class);
     
     private CancelIndicator cancelIndicator;
-    private ProgressListener progressIndicator;
+    private ProgressListener progressListener;
     
     public ParallelManifestChecksumVerifier()
     {
@@ -57,8 +57,8 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
     }
     
     @Override
-    public void setProgressListener(ProgressListener progressIndicator) {
-    	this.progressIndicator = progressIndicator;    	
+    public void setProgressListener(ProgressListener progressListener) {
+    	this.progressListener = progressListener;    	
     }
     
     public int getNumberOfThreads()
@@ -108,7 +108,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
             {
             	if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return null;
             	manifestCount++;
-            	if (this.progressIndicator != null) this.progressIndicator.reportProgress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
+            	if (this.progressListener != null) this.progressListener.reportProgress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
             	final Manifest.Algorithm alg = manifest.getAlgorithm();
                 final Iterator<String> manifestIterator = manifest.keySet().iterator();
                 ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
@@ -125,7 +125,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
                             for (String filePath : safeIterator)
                             {
                             	if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-                            	if (progressIndicator != null) progressIndicator.reportProgress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
+                            	if (progressListener != null) progressListener.reportProgress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
                             	if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
                                 BagFile file = bag.getBagFile(filePath);

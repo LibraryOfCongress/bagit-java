@@ -53,8 +53,8 @@ public class ZipWriter extends AbstractWriter {
 	}
 	
 	@Override
-	public void setProgressListener(ProgressListener progressIndicator) {
-		this.progressIndicator = progressIndicator;		
+	public void setProgressListener(ProgressListener progressListener) {
+		this.progressListener = progressListener;		
 	}
 	
 	@Override
@@ -109,7 +109,7 @@ public class ZipWriter extends AbstractWriter {
 	
 	private void write(BagFile bagFile) {
 		this.fileCount++;
-		if (this.progressIndicator != null) this.progressIndicator.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
+		if (this.progressListener != null) this.progressListener.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		try {
 			//Add zip entry
 			zipOut.putNextEntry(new ZipEntry(this.bagDir + "/" + bagFile.getFilepath()));
@@ -149,7 +149,7 @@ public class ZipWriter extends AbstractWriter {
 			throw new RuntimeException(ex);
 		}
 		
-		bag.accept(this, this.cancelIndicator, this.progressIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressListener);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
@@ -161,7 +161,7 @@ public class ZipWriter extends AbstractWriter {
 	public Bag write(Bag bag, OutputStream out) {
 		this.out = out;
 		
-		bag.accept(this, this.cancelIndicator, this.progressIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressListener);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;

@@ -42,7 +42,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
 	private CancelIndicator cancelIndicator;
-	private ProgressListener progressIndicator;
+	private ProgressListener progressListener;
 	private BagFactory bagFactory;
 	private int numberOfThreads = 1;
 	
@@ -100,8 +100,8 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	}
 	
 	@Override
-	public void setProgressListener(ProgressListener progressIndicator) {
-		this.progressIndicator = progressIndicator;
+	public void setProgressListener(ProgressListener progressListener) {
+		this.progressListener = progressListener;
 	}
 	
 	@Override
@@ -177,7 +177,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		int manifestCount = 0;
 		for(Manifest manifest : manifests) {			
 			manifestCount++;
-			if (this.progressIndicator != null) progressIndicator.reportProgress("cleaning manifest", manifest.getFilepath(), manifestCount, manifestTotal);
+			if (this.progressListener != null) progressListener.reportProgress("cleaning manifest", manifest.getFilepath(), manifestCount, manifestTotal);
 			List<String> deleteFilepaths = new ArrayList<String>();
 			for(String filepath : manifest.keySet()) {
 				if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return;
@@ -211,8 +211,8 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	
 		        		for(final BagFile bagFile : safeIterator) {
 		        			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
-		        			if (progressIndicator != null) progressIndicator.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
-		        			if (newBag.getFixities(bagFile.getFilepath()).isEmpty()) {
+		        			if (progressListener != null) progressListener.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
+		        			if (newBag.getChecksums(bagFile.getFilepath()).isEmpty()) {
 		        				String fixity = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
 		        				manifest.put(bagFile.getFilepath(), fixity);
 		        			}

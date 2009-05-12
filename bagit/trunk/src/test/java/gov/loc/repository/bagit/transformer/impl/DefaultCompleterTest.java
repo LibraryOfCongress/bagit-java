@@ -42,7 +42,7 @@ public class DefaultCompleterTest {
 		assertEquals(5, bag.getPayload().size());
 		assertNotNull(bag.getPayloadManifest(Algorithm.SHA1));
 		assertNotNull(bag.getTagManifest(Algorithm.SHA1));
-		assertNotNull(bag.getFixities("data/test1.txt").get(Algorithm.SHA1));
+		assertNotNull(bag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
 	}
 
 	@Test
@@ -52,8 +52,8 @@ public class DefaultCompleterTest {
 		assertTrue(newBag.verifyValid().isSuccess());
 		assertNotNull(newBag.getPayloadManifest(Algorithm.SHA1));
 		assertNull(newBag.getTagManifest(Algorithm.SHA1));
-		assertNotNull(newBag.getFixities("data/test1.txt").get(Algorithm.SHA1));
-		assertNull(newBag.getFixities("data/test1.txt").get(Algorithm.MD5));
+		assertNotNull(newBag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
+		assertNull(newBag.getChecksums("data/test1.txt").get(Algorithm.MD5));
 		
 		//Make sure that has BagIt.txt, tag manifest, payload manifest
 		BagItTxt bagIt = newBag.getBagItTxt();
@@ -78,8 +78,8 @@ public class DefaultCompleterTest {
 		assertTrue(newBag.verifyValid().isSuccess());
 		assertNull(newBag.getPayloadManifest(Algorithm.SHA1));
 		assertNull(newBag.getTagManifest(Algorithm.SHA1));
-		assertNull(newBag.getFixities("data/test1.txt").get(Algorithm.SHA1));
-		assertNotNull(newBag.getFixities("data/test1.txt").get(Algorithm.MD5));
+		assertNull(newBag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
+		assertNotNull(newBag.getChecksums("data/test1.txt").get(Algorithm.MD5));
 		
 		//Make sure that has BagIt.txt, tag manifest, payload manifest
 		BagItTxt bagIt = newBag.getBagItTxt();

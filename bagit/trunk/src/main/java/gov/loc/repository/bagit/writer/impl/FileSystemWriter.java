@@ -59,7 +59,7 @@ public class FileSystemWriter extends AbstractWriter {
 	@Override
 	public void visitPayload(BagFile bagFile) {
 		this.fileCount++;
-		if (this.progressIndicator != null) this.progressIndicator.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
+		if (this.progressListener != null) this.progressListener.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		File file = new File(this.newBagDir, bagFile.getFilepath());
 		if (! this.skipIfPayloadFileExists || ! file.exists()) {
 			log.debug(MessageFormat.format("Writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
@@ -73,7 +73,7 @@ public class FileSystemWriter extends AbstractWriter {
 	@Override
 	public void visitTag(BagFile bagFile) {
 		this.fileCount++;
-		if (this.progressIndicator != null) this.progressIndicator.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
+		if (this.progressListener != null) this.progressListener.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		File file = new File(this.newBagDir, bagFile.getFilepath());
 		log.debug(MessageFormat.format("Writing tag file {0} to {1}.", bagFile.getFilepath(), file.toString()));		
 		this.write(bagFile, file);
@@ -108,7 +108,7 @@ public class FileSystemWriter extends AbstractWriter {
 	public Bag write(Bag bag, File file) {
 		log.info("Writing bag");
 		this.newBagDir = file;
-		bag.accept(this, this.cancelIndicator, this.progressIndicator);
+		bag.accept(this, this.cancelIndicator, this.progressListener);
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
 		}

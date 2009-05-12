@@ -84,14 +84,14 @@ public abstract class AbstractBagImplTest {
 		assertEquals("manifest-md5.txt", payloadManifests.get(0).getFilepath());
 		assertEquals("manifest-md5.txt", bag.getPayloadManifest(Algorithm.MD5).getFilepath());
 		assertNull(bag.getPayloadManifest(Algorithm.SHA1));
-		assertEquals("ad0234829205b9033196ba818f7a872b", bag.getFixities("data/test2.txt").get(Algorithm.MD5));
+		assertEquals("ad0234829205b9033196ba818f7a872b", bag.getChecksums("data/test2.txt").get(Algorithm.MD5));
 		
 		List<Manifest> tagManifests = bag.getTagManifests();
 		assertEquals(1, tagManifests.size());
 		assertEquals("tagmanifest-md5.txt", tagManifests.get(0).getFilepath());
 		assertEquals("tagmanifest-md5.txt", bag.getTagManifest(Algorithm.MD5).getFilepath());
 		assertNull(bag.getTagManifest(Algorithm.SHA1));
-		assertNotNull(bag.getFixities("bagit.txt").get(Algorithm.MD5));
+		assertNotNull(bag.getChecksums("bagit.txt").get(Algorithm.MD5));
 		
 		assertEquals(4, bag.getTags().size());
 		assertNotNull(bag.getBagFile("bagit.txt"));
