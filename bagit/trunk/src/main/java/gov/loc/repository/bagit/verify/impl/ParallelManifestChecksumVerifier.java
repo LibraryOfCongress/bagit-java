@@ -180,11 +180,6 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
         {
             log.debug("Shutting down thread pool.");
             threadPool.shutdown();
-        	while((! threadPool.isTerminated()) && (! (this.cancelIndicator != null && this.cancelIndicator.performCancel()))) {
-        		try {
-        			Thread.sleep(250L);
-        		} catch (InterruptedException ex) {}
-        	}            
             log.debug("Thread pool shut down.");
         }
     	if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return null;
