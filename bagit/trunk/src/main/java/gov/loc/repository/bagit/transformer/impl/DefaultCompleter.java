@@ -3,7 +3,14 @@ package gov.loc.repository.bagit.transformer.impl;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
@@ -18,8 +25,12 @@ import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
+import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
 
 public class DefaultCompleter implements Completer, Cancellable, ProgressListenable {
+	
+    private static final Log log = LogFactory.getLog(DefaultCompleter.class);
+	
 	private boolean generateTagManifest = true;
 	private boolean updatePayloadOxum = true;
 	private boolean updateBaggingDate = true;
@@ -33,10 +44,19 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	private CancelIndicator cancelIndicator;
 	private ProgressListener progressIndicator;
 	private BagFactory bagFactory;
+	private int numberOfThreads = 1;
 	
 	public DefaultCompleter(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
+		this.numberOfThreads = Runtime.getRuntime().availableProcessors();
 	}
+	
+    public void setNumberOfThreads(int num) {
+        if (num < 1)
+            throw new IllegalArgumentException("Number of threads must be at least 1.");
+        
+        this.numberOfThreads = num;
+    }
 	
 	public void setGenerateTagManifest(boolean generateTagManifest) {
 		this.generateTagManifest = generateTagManifest;
@@ -80,7 +100,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressListener progressIndicator) {
+	public void setProgressListener(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;
 	}
 	
@@ -172,23 +192,45 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		}
 	}
 	
-	protected void handleManifest(Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
-		Manifest manifest = (Manifest)this.newBag.getBagFile(filepath);
-		if (manifest == null) {
-			manifest = this.newBag.getBagPartFactory().createManifest(filepath);
+	protected void handleManifest(final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
+		Manifest updateManifest = (Manifest)this.newBag.getBagFile(filepath);
+		if (updateManifest == null) {
+			updateManifest = this.newBag.getBagPartFactory().createManifest(filepath);
 		}
-		int count = 0;
-		int total = bagFiles.size();
-		for(BagFile bagFile : bagFiles) {
-			if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return;
-			count++;
-			if (this.progressIndicator != null) progressIndicator.reportProgress("creating manifest entry", bagFile.getFilepath(), count, total);
-			if (this.newBag.getFixities(bagFile.getFilepath()).isEmpty()) {
-				String fixity = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
-				manifest.put(bagFile.getFilepath(), fixity);
-			}
-		}
+		final Manifest manifest = updateManifest;
+		
+		final int total = bagFiles.size();
+    	final AtomicInteger count = new AtomicInteger();
+		ExecutorService threadPool = Executors.newCachedThreadPool();
+    	try {
+	    	final Iterator<BagFile> bagFileIter = bagFiles.iterator();
+		    for (int i = 0; i < this.numberOfThreads; i++) {
+		    	threadPool.submit(new Runnable() {
+		            public void run() {
+		                ThreadSafeIteratorWrapper<BagFile> safeIterator = new ThreadSafeIteratorWrapper<BagFile>(bagFileIter);
+	
+		        		for(final BagFile bagFile : safeIterator) {
+		        			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		        			if (progressIndicator != null) progressIndicator.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
+		        			if (newBag.getFixities(bagFile.getFilepath()).isEmpty()) {
+		        				String fixity = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
+		        				manifest.put(bagFile.getFilepath(), fixity);
+		        			}
+		        		}
+		            }
+	            });
+		    }
+    	} finally {
+        	log.debug("Shutting down thread pool.");
+        	threadPool.shutdown();
+        	while((! threadPool.isTerminated()) && (! (this.cancelIndicator != null && this.cancelIndicator.performCancel()))) {
+        		try {
+        			Thread.sleep(250L);
+        		} catch (InterruptedException ex) {}
+        	}
+        	log.debug("Thread pool shut down.");
+        }
 		this.newBag.putBagFile(manifest);
-	}
 
+	}
 }

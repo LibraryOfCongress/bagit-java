@@ -6,7 +6,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.bag.DummyCancelIndicator;
-import gov.loc.repository.bagit.bag.PrintingProgressIndicator;
+import gov.loc.repository.bagit.bag.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
 
@@ -37,7 +37,7 @@ public abstract class AbstractWriterTest {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.verifyValid().isSuccess());
 		Writer writer = this.getBagWriter();
-		writer.setProgressIndicator(new PrintingProgressIndicator());
+		writer.setProgressListener(new PrintingProgressListener());
 		
 		Bag newBag = writer.write(bag, this.getBagFile());
 		assertNotNull(newBag);

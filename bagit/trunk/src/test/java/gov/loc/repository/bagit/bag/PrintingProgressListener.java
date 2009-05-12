@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 
 import gov.loc.repository.bagit.ProgressListener;
 
-public class PrintingProgressIndicator implements ProgressListener {
+public class PrintingProgressListener implements ProgressListener {
 
 	@Override
 	public void reportProgress(String activity, String item, int count,

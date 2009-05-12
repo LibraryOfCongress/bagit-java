@@ -39,7 +39,7 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressListener progressIndicator) {
+	public void setProgressListener(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;
 	}
 	
@@ -76,7 +76,7 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 				if (this.progressIndicator != null) this.progressIndicator.reportProgress("verifying payload file in data directory", filepath, count, total);
 				if (! filepath.startsWith(bag.getBagConstants().getDataDirectory() + '/')) {
 					result.setSuccess(false);
-					result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory", filepath, bag.getBagConstants().getDataDirectory()));									
+					result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory.", filepath, bag.getBagConstants().getDataDirectory()));									
 				}
 			}
 			//Every payload BagFile in at least one manifest
@@ -96,7 +96,7 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 				}
 				if (! inManifest) {
 					result.setSuccess(false);
-					result.addMessage(MessageFormat.format("Payload file {0} not found in any payload manifest", filepath));														
+					result.addMessage(MessageFormat.format("Payload file {0} not found in any payload manifest.", filepath));														
 				}
 			}
 			
@@ -131,7 +131,7 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (! folderName.equals(bag.getBagConstants().getDataDirectory())) {
 							result.setSuccess(false);
-							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir", folderName));
+							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir.", folderName));
 						}
 					}
 				}

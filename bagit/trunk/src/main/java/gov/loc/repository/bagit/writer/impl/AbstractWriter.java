@@ -22,7 +22,7 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressListener progressIndicator) {
+	public void setProgressListener(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;
 	}
 

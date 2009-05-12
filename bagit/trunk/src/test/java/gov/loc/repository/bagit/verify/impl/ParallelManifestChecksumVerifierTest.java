@@ -9,7 +9,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.Version;
-import gov.loc.repository.bagit.bag.PrintingProgressIndicator;
+import gov.loc.repository.bagit.bag.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
@@ -47,7 +47,7 @@ public class ParallelManifestChecksumVerifierTest
 	public void testVerifyCorrect() throws Exception
 	{
 	    Bag testBag = this.getBag(Version.V0_96, Format.FILESYSTEM);
-	    this.unit.setProgressIndicator(new PrintingProgressIndicator());
+	    this.unit.setProgressListener(new PrintingProgressListener());
 	    SimpleResult result = this.unit.verify(testBag.getPayloadManifests(), testBag);
 	    assertEquals(true, result.isSuccess());
 	}

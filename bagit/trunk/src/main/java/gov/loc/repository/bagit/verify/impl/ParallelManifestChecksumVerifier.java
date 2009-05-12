@@ -5,12 +5,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +24,7 @@ import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
 
@@ -56,7 +57,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
     }
     
     @Override
-    public void setProgressIndicator(ProgressListener progressIndicator) {
+    public void setProgressListener(ProgressListener progressIndicator) {
     	this.progressIndicator = progressIndicator;    	
     }
     
@@ -113,6 +114,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
                 ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
 
                 final int fileTotal = manifest.size();
+                final AtomicInteger fileCount = new AtomicInteger();
                 for (int i = 0; i < this.numberOfThreads; i++)
                 {            
                     Future<SimpleResult> future = threadPool.submit(new Callable<SimpleResult>() {
@@ -123,7 +125,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
                             for (String filePath : safeIterator)
                             {
                             	if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-                            	if (progressIndicator != null) progressIndicator.reportProgress("verifying file checksum", filePath, safeIterator.count(), fileTotal);
+                            	if (progressIndicator != null) progressIndicator.reportProgress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
                             	if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
                                 BagFile file = bag.getBagFile(filePath);
@@ -172,81 +174,23 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
         }
         catch (ExecutionException e)
         {
-            log.error("Execution threw an exception.", e);
-            String msg = MessageFormat.format("Execution threw an exception: {0}", e.getCause().getMessage());
-            finalResult = new SimpleResult(false, msg);
+            throw new RuntimeException(e);
         }
         finally
         {
             log.debug("Shutting down thread pool.");
             threadPool.shutdown();
+        	while((! threadPool.isTerminated()) && (! (this.cancelIndicator != null && this.cancelIndicator.performCancel()))) {
+        		try {
+        			Thread.sleep(250L);
+        		} catch (InterruptedException ex) {}
+        	}            
             log.debug("Thread pool shut down.");
         }
-    	if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return null;        
+    	if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return null;
     	return finalResult;
     }
     
     private int numberOfThreads;
     
-    private static class ThreadSafeIteratorWrapper<E> implements Iterator<E>, Iterable<E>
-    {
-        private volatile int count = 0;
-        
-    	public ThreadSafeIteratorWrapper(Iterator<E> iterator)
-        {
-            this.iterator = iterator;
-        }
-        
-        @Override
-        public Iterator<E> iterator()
-        {
-            return this;
-        }
-        
-        @Override
-        public boolean hasNext()
-        {
-            synchronized (this)
-            {
-                synchronized (this.iterator)
-                {
-                    boolean hasNext = this.iterator.hasNext();
-                    
-                    if (hasNext)
-                        this.nextItem = this.iterator.next();
-                    else
-                        this.nextItem = null;
-                    
-                    return hasNext;
-                }
-            }
-        }
-
-        @Override
-        public E next()
-        {
-            synchronized (this)
-            {
-                if (this.nextItem == null)
-                    throw new NoSuchElementException();
-                count++;
-                E tmp = this.nextItem;
-                this.nextItem = null;
-                return tmp;
-            }
-        }
-        
-        public int count() {
-        	return this.count;
-        }
-
-        @Override
-        public void remove()
-        {
-            throw new UnsupportedOperationException();
-        }
-        
-        private E nextItem;
-        private Iterator<E> iterator;
-    }
 }

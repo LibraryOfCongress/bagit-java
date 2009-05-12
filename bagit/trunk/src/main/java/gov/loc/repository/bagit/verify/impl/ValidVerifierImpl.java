@@ -33,12 +33,12 @@ public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressLi
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressListener progressIndicator) {
+	public void setProgressListener(ProgressListener progressIndicator) {
 		if (completeVerifier instanceof ProgressListenable) {
-			((ProgressListenable)completeVerifier).setProgressIndicator(progressIndicator);
+			((ProgressListenable)completeVerifier).setProgressListener(progressIndicator);
 		}
 		if (manifestVerifier instanceof ProgressListenable) {
-			((ProgressListenable)manifestVerifier).setProgressIndicator(progressIndicator);
+			((ProgressListenable)manifestVerifier).setProgressListener(progressIndicator);
 		}
 	}
 	

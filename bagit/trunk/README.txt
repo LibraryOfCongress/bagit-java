@@ -39,6 +39,7 @@ Changes in 3.0:
 	return a new Bag instead of modifying existing bag.
 4. Added support for cancelling long-running operations (CancelIndicator).
 5. Changed DefaultCompleter to re-use existing fixities rather than always re-generating.
+6. Added multithreading of manifest generation and checking.
 
 Changes in 2.4:
 1. Added support for getting lists of standard and non-standard fields in manifests.

@@ -53,7 +53,7 @@ public class ZipWriter extends AbstractWriter {
 	}
 	
 	@Override
-	public void setProgressIndicator(ProgressListener progressIndicator) {
+	public void setProgressListener(ProgressListener progressIndicator) {
 		this.progressIndicator = progressIndicator;		
 	}
 	

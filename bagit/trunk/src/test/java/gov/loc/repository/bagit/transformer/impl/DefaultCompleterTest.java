@@ -13,6 +13,7 @@ import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.bag.DummyCancelIndicator;
+import gov.loc.repository.bagit.bag.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
 import java.text.MessageFormat;
@@ -28,6 +29,7 @@ public class DefaultCompleterTest {
 	@Before
 	public void setup() throws Exception {
 		completer = new DefaultCompleter(this.bagFactory);
+		completer.setProgressListener(new PrintingProgressListener());
 		bag = bagFactory.createBag();
 		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir1", BagFactory.LATEST.toString().toLowerCase())));
 		bag.addFilesToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir2", BagFactory.LATEST.toString().toLowerCase())));

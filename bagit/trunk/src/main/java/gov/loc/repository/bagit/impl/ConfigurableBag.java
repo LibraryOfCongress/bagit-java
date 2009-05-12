@@ -136,8 +136,8 @@ public class ConfigurableBag implements Bag {
 		if (BagHelper.isPayload(bagFile.getFilepath(), this.getBagConstants())) {
 			this.payloadMap.put(bagFile.getFilepath(), bagFile);
 		} else {
-			//Is a payload
-			if ((! (bagFile instanceof Manifest)) && ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants())) {
+			//Is a Manifest
+			if ((! (bagFile instanceof Manifest)) && (ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants()))) {
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createManifest(bagFile.getFilepath(), bagFile));
 			}
 			//Is a BagItTxt
@@ -390,7 +390,7 @@ public class ConfigurableBag implements Bag {
 			((Cancellable)obj).setCancelIndicator(cancelIndicator);
 		}
 		if (progressIndicator != null && obj instanceof ProgressListenable) {
-			((ProgressListenable)obj).setProgressIndicator(progressIndicator);
+			((ProgressListenable)obj).setProgressListener(progressIndicator);
 		}
 		
 	}
@@ -439,7 +439,7 @@ public class ConfigurableBag implements Bag {
 			ProgressListener progressIndicator) {
 		Writer writer = this.bagPartFactory.createWriter(format);
 		writer.setCancelIndicator(cancelIndicator);
-		writer.setProgressIndicator(progressIndicator);
+		writer.setProgressListener(progressIndicator);
 		return writer.write(this, file);
 	}
 	
