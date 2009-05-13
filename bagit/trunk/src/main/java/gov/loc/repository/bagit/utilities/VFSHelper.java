@@ -3,14 +3,44 @@ package gov.loc.repository.bagit.utilities;
 import java.io.File;
 import java.text.MessageFormat;
 
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
+import org.apache.commons.vfs.impl.StandardFileSystemManager;
 
 import gov.loc.repository.bagit.Bag.Format;
 
 public class VFSHelper {
 	
+	private static final Log log = gov.loc.repository.bagit.utilities.LogFactory.getLog(VFSHelper.class);
+	
+	/**
+	 * Thread local variable to store a {@link FileSystemManager}.  This solves the problem
+	 * of VFS not being thread-safe.
+	 * 
+	 * @see https://beryllium.rdc.lctl.gov/trac/transfer/ticket/352
+	 */
+	private static final ThreadLocal<FileSystemManager> fileSystemManager = new ThreadLocal<FileSystemManager>() {
+		@Override
+		protected FileSystemManager initialValue() {
+			StandardFileSystemManager mgr = new StandardFileSystemManager();
+			mgr.setLogger(LogFactory.getLog(VFS.class));
+			
+			try
+			{
+				mgr.init();
+			}
+			catch (FileSystemException e)
+			{
+				log.fatal("Could not initialize thread-local FileSystemManager.", e);
+			}
+			
+			return mgr;
+		}
+	};
+
 	public static String getUri(File file) {
 		return getUri(file, FormatHelper.getFormat(file));
 	}
@@ -30,7 +60,7 @@ public class VFSHelper {
 	public static FileObject getFileObject(String fileURI, boolean flushCache) {		
 		try {
 			//Open the fileObject
-			FileSystemManager fsManager = VFS.getManager();
+			FileSystemManager fsManager = fileSystemManager.get();
 			if (flushCache) {
 				fsManager.getFilesCache().clear(fsManager.resolveFile(fileURI).getFileSystem());
 			}
@@ -55,7 +85,7 @@ public class VFSHelper {
 		
 		try {
 			//Open the fileObject
-			FileSystemManager fsManager = VFS.getManager();
+			FileSystemManager fsManager = fileSystemManager.get();
 			if (flushCache) {
 				fsManager.getFilesCache().clear(fsManager.resolveFile(fileURI).getFileSystem());
 			}
@@ -65,7 +95,7 @@ public class VFSHelper {
 			throw new RuntimeException(ex);
 		}
 	}
-	
+		
 	public static FileObject getFileObjectForBag(File fileForBag) {
 		if (fileForBag == null) {
 			throw new RuntimeException("No file was provided for this bag");
@@ -93,5 +123,4 @@ public class VFSHelper {
 		}
 
 	}
-
 }

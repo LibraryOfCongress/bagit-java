@@ -45,9 +45,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
     
     public ParallelManifestChecksumVerifier()
     {
-        //this.numberOfThreads = Runtime.getRuntime().availableProcessors();
-    	this.numberOfThreads = 1;
-    	//TODO:  Temporarily setting this to 1 because > 1 causes problems for serialized bags
+        this.numberOfThreads = Runtime.getRuntime().availableProcessors();
     }
     
     @Override
@@ -165,20 +163,27 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
             
                 for (Future<SimpleResult> future : futures)
                 {
-                    SimpleResult futureResult = future.get();
+                	SimpleResult futureResult;
+                	
+                	try
+                	{
+                		futureResult = future.get();
+                	}
+                	catch (ExecutionException e)
+                	{
+                		futureResult = new SimpleResult(false, e.getCause().getMessage());
+                		log.error("An error occurred while processing the manifest.", e.getCause());
+                	}
+                    catch (InterruptedException e)
+                    {
+                        futureResult = new SimpleResult(false, "Execution was interrupted before completion.");
+                        log.error("Execution was interrupted before completion.", e);
+                    }
+
                     finalResult.merge(futureResult);
                 }               
                 
             }
-        }
-        catch (InterruptedException e)
-        {
-            log.error("Execution was interrupted before completion.", e);
-            finalResult = new SimpleResult(false, "Execution was interrupted before completion.");
-        }
-        catch (ExecutionException e)
-        {
-            throw new RuntimeException(e);
         }
         finally
         {

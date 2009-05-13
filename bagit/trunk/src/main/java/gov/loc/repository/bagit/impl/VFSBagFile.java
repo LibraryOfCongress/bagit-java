@@ -8,13 +8,12 @@ import java.io.InputStream;
 import org.apache.commons.vfs.FileObject;
 
 public class VFSBagFile implements BagFile {
-	private FileObject fileObject;
 	private String filepath;
 	private String fileURI = null;
 	
 	public VFSBagFile(String name, FileObject fileObject) {
 		this.filepath = name;
-		this.fileObject = fileObject;
+		this.fileURI = fileObject.getName().getURI();
 	}
 	
 	public VFSBagFile(String name, String fileURI) {
@@ -23,10 +22,7 @@ public class VFSBagFile implements BagFile {
 	}
 	
 	public FileObject getFileObject() {
-		if (this.fileObject == null && this.fileURI != null) {
-			this.fileObject = VFSHelper.getFileObject(this.fileURI);
-		}
-		return fileObject;
+		return VFSHelper.getFileObject(this.fileURI);
 	}
 	
 	public InputStream newInputStream() {
