@@ -7,6 +7,7 @@ import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
@@ -51,7 +52,7 @@ public class HttpFetchProtocolTest
     public static void startJetty() throws Exception
     {
         webServer = new Server(8989);
-        WebAppContext context = new WebAppContext("src/test/resources", "/");
+        WebAppContext context = new WebAppContext(ResourceHelper.TEST_DATA_DIR.getAbsolutePath(), "/");
         webServer.addHandler(context);
         webServer.start();
     }
@@ -123,7 +124,7 @@ public class HttpFetchProtocolTest
         File testDestination = new File(this.testDataRoot, "testWorksWithBagFetcher");
         System.out.println("Writing to: " + testDestination);
         
-        Bag bag = this.bagFactory.createBag(new File("src/test/resources/bags/v0_96/holey-bag"));
+        Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/holey-bag"));
         Writer writer = new HoleyWriter(this.bagFactory);
         writer.write(bag, testDestination);
         
