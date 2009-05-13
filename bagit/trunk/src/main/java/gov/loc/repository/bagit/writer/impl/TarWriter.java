@@ -45,11 +45,12 @@ public class TarWriter extends AbstractWriter {
 	public TarWriter(BagFactory bagFactory) {
 		super(bagFactory);
 	}
-	
-	public void setCompression(Compression compression) {
+
+	public TarWriter(BagFactory bagFactory, Compression compression) {
+		super(bagFactory);
 		this.compression = compression;
 	}
-	
+		
 	public void setBagDir(String bagDir) {
 		this.bagDir = bagDir;
 	}
@@ -172,7 +173,7 @@ public class TarWriter extends AbstractWriter {
 		}
 
 		
-		bag.accept(this, this.cancelIndicator, this.progressListener);
+		bag.accept(this);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
@@ -186,7 +187,7 @@ public class TarWriter extends AbstractWriter {
 		
 		this.init(out);
 		
-		bag.accept(this, this.cancelIndicator, this.progressListener);
+		bag.accept(this);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;

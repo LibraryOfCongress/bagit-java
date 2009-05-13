@@ -52,9 +52,13 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
     
     @Override
     public void setCancelIndicator(CancelIndicator cancelIndicator) {
-    	this.cancelIndicator = cancelIndicator;
-    	
+    	this.cancelIndicator = cancelIndicator;    	
     }
+    
+	@Override
+	public CancelIndicator getCancelIndicator() {
+		return this.cancelIndicator;
+	}
     
     @Override
     public void setProgressListener(ProgressListener progressListener) {

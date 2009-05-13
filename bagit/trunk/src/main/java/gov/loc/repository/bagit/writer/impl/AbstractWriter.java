@@ -22,6 +22,11 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 	}
 	
 	@Override
+	public CancelIndicator getCancelIndicator() {
+		return this.cancelIndicator;
+	}
+	
+	@Override
 	public void setProgressListener(ProgressListener progressListener) {
 		this.progressListener = progressListener;
 	}

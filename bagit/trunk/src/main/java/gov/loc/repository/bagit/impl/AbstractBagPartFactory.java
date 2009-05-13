@@ -17,22 +17,6 @@ import gov.loc.repository.bagit.FetchTxtWriter;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
-import gov.loc.repository.bagit.Bag.Format;
-import gov.loc.repository.bagit.transformer.Completer;
-import gov.loc.repository.bagit.transformer.HolePuncher;
-import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
-import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
-import gov.loc.repository.bagit.verify.CompleteVerifier;
-import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
-import gov.loc.repository.bagit.verify.ValidVerifier;
-import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
-import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
-import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
-import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-import gov.loc.repository.bagit.writer.impl.TarWriter;
-import gov.loc.repository.bagit.writer.impl.ZipWriter;
-import gov.loc.repository.bagit.writer.impl.TarWriter.Compression;
 
 public abstract class AbstractBagPartFactory implements BagPartFactory {
 
@@ -128,60 +112,5 @@ public abstract class AbstractBagPartFactory implements BagPartFactory {
 	public FetchTxtWriter createFetchTxtWriter(OutputStream out) {
 		return new FetchTxtWriterImpl(out);
 	}
-		
-	@Override
-	public Completer createCompleter() {
-		return new DefaultCompleter(this.bagFactory);
-	}
-	
-	@Override
-	public HolePuncher createHolePuncher() {
-		return new HolePuncherImpl(this.bagFactory);
-	}
-
-	@Override
-	public Writer createWriter(Format format) {
-		if (Format.FILESYSTEM.equals(format)) {
-			return new FileSystemWriter(this.bagFactory);
-		}
-		if (Format.ZIP.equals(format)) {
-			return new ZipWriter(this.bagFactory);
-		}
-		if (Format.TAR.equals(format)) {
-			return new TarWriter(this.bagFactory);
-		}
-		if (Format.TAR_BZ2.equals(format)) {
-			TarWriter writer = new TarWriter(this.bagFactory);
-			writer.setCompression(Compression.BZ2);
-			return writer;
-		}
-		if (Format.TAR_GZ.equals(format)) {
-			TarWriter writer = new TarWriter(this.bagFactory);
-			writer.setCompression(Compression.GZ);
-			return writer;
-		}
-		throw new RuntimeException("Writing not supported for " + format);
-	}
-	
-	@Override
-	public CompleteVerifier createCompleteVerifier() {
-		return new CompleteVerifierImpl();
-	}
-	
-	@Override
-	public ManifestChecksumVerifier createManifestVerifier() {
-		return new ParallelManifestChecksumVerifier();
-	}
-	
-	@Override
-	public ValidVerifier createValidVerifier() {
-		return this.createValidVerifier(this.createCompleteVerifier(), this.createManifestVerifier());
-	}
-	
-	@Override
-	public ValidVerifier createValidVerifier(CompleteVerifier completeVerifier,
-			ManifestChecksumVerifier manifestChecksumVerifier) {
-		return new ValidVerifierImpl(completeVerifier, manifestChecksumVerifier);
-	}
-	
+			
 }

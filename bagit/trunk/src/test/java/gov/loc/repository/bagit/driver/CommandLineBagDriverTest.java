@@ -96,7 +96,6 @@ public class CommandLineBagDriverTest {
         assertNotNull(bagInfo.getPayloadOxum());
         assertEquals(1, bag.getTagManifests().size());
         assertEquals(Manifest.Algorithm.SHA1, bag.getTagManifests().get(0).getAlgorithm());
-        
 	}
 
 	@Test

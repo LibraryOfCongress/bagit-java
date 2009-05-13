@@ -2,8 +2,6 @@ package gov.loc.repository.bagit.writer.impl;
 
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.TarWriter;
-import gov.loc.repository.bagit.writer.impl.TarWriter.Compression;
 
 import java.io.File;
 
@@ -25,9 +23,7 @@ public class TarBz2WriterTest extends AbstractWriterTest {
 
 	@Override
 	public Writer getBagWriter() {
-		TarWriter tarWriter = new TarWriter(bagFactory);
-		tarWriter.setCompression(Compression.GZ);
-		return tarWriter;
+		return new TarBz2Writer(bagFactory);
 	}
 
 }

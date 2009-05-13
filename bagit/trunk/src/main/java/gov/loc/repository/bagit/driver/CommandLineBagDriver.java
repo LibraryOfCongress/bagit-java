@@ -9,6 +9,7 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
+import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.BobSender;
 import gov.loc.repository.bagit.transfer.SwordSender;
@@ -18,6 +19,14 @@ import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
+import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
+import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
+import gov.loc.repository.bagit.writer.impl.TarBz2Writer;
+import gov.loc.repository.bagit.writer.impl.TarGzWriter;
+import gov.loc.repository.bagit.writer.impl.TarWriter;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.File;
@@ -358,12 +367,23 @@ public class CommandLineBagDriver {
 				destFile = new File(config.getString(PARAM_DESTINATION));
 			}
 
-			Format writerFormat = null;
+			Writer writer = null;
 			if (config.contains(PARAM_WRITER)) {
-				writerFormat = Format.valueOf(config.getString(PARAM_WRITER).toUpperCase());
+				Format format = Format.valueOf(config.getString(PARAM_WRITER).toUpperCase());
+				if (Format.FILESYSTEM.equals(format)) {
+					writer = new FileSystemWriter(bagFactory);
+				} else if (Format.TAR.equals(format)) {
+					writer = new TarWriter(bagFactory);
+				} else if (Format.TAR_BZ2.equals(format)) {
+					writer = new TarBz2Writer(bagFactory);
+				} else if (Format.TAR_GZ.equals(format)) {
+					writer = new TarGzWriter(bagFactory);
+				} else if (Format.ZIP.equals(format)) {
+					writer = new ZipWriter(bagFactory);
+				}
 			}
 						
-			DefaultCompleter completer = (DefaultCompleter)bag.getBagPartFactory().createCompleter();
+			DefaultCompleter completer = new DefaultCompleter(bagFactory);
 			completer.setGenerateBagInfoTxt(! config.getBoolean(PARAM_EXCLUDE_BAG_INFO, false));
 			completer.setUpdateBaggingDate(! config.getBoolean(PARAM_NO_UPDATE_BAGGING_DATE, false));
 			completer.setUpdateBagSize(! config.getBoolean(PARAM_NO_UPDATE_BAG_SIZE, false));
@@ -375,9 +395,9 @@ public class CommandLineBagDriver {
 			int ret = RETURN_SUCCESS;
 			
 			if (OPERATION_ISVALID.equals(operation.name)) {				
-				CompleteVerifier completeVerifier = bag.getBagPartFactory().createCompleteVerifier();
-				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
-				ValidVerifier verifier = bag.getBagPartFactory().createValidVerifier(completeVerifier, bag.getBagPartFactory().createManifestVerifier());
+				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
+				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
+				ValidVerifier verifier = new ValidVerifierImpl(completeVerifier, new ParallelManifestChecksumVerifier());
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
 				if (! result.isSuccess()) {
@@ -385,9 +405,9 @@ public class CommandLineBagDriver {
 				}
 				return RETURN_SUCCESS;
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
-				CompleteVerifier verifier = bag.getBagPartFactory().createCompleteVerifier();
-				verifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
-				SimpleResult result = verifier.verify(bag);
+				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
+				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
+				SimpleResult result = completeVerifier.verify(bag);
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
@@ -405,21 +425,21 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_WRITE.equals(operation.name)) {								
-				bag.write(destFile, writerFormat);
+				bag.write(writer, destFile);
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
 				Bag newBag = completer.complete(bag);
-				newBag.write(destFile, writerFormat);
+				newBag.write(writer, destFile);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
 					bag.addFilesToPayload(file);
 				}
 				Bag newBag = completer.complete(bag);
-				newBag.write(destFile, writerFormat);
+				newBag.write(writer, destFile);
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
-				HolePuncher puncher = bag.getBagPartFactory().createHolePuncher();
+				HolePuncher puncher = new HolePuncherImpl(bagFactory);
 				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
-				newBag.write(destFile, writerFormat);
+				newBag.write(writer, destFile);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				String oxum = BagHelper.generatePayloadOxum(bag);				
 				log.info("Payload-Oxum: " + oxum);

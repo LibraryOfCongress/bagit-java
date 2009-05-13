@@ -5,9 +5,6 @@ import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.verify.CompleteVerifier;
-import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
-import gov.loc.repository.bagit.verify.ValidVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.Writer;
 
@@ -77,49 +74,23 @@ public interface Bag {
 		
 	Format getFormat();
 	
-	/*
-	 * Determines whether the bag is valid according to the BagIt Specification.
-	 */
-	SimpleResult verifyValid(CancelIndicator cancelIndicator, ProgressListener progressListener);
-
-	/*
-	 * Determines whether the bag is valid according to the BagIt Specification.
-	 */
 	SimpleResult verifyValid();
-
-	/*
-	 * Determines whether the bag is complete according to the BagIt Specification.
-	 */	
-	SimpleResult verifyComplete(CancelIndicator cancelIndicator, ProgressListener progressListener);
 
 	/*
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */		
 	SimpleResult verifyComplete();
-
-	/*
-	 * @param	verifiers	a list of Verifiers to invoke
-	 */
-	SimpleResult verify(List<Verifier> verifiers);
 	
 	/*
-	 * Additional checks of a bag.
-	 * These checks are not specified by the BagIt Specification.
 	 * @param	strategies	a Verifier to invoke
 	 */	
 	SimpleResult verify(Verifier verifier);
-
-	SimpleResult verify(Verifier verifier, CancelIndicator cancelIndicator, ProgressListener progressListener);
-
 	
 	/*
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
 	 */
 	SimpleResult checkPayloadManifests();
-
-	SimpleResult checkPayloadManifests(CancelIndicator cancelIndicator, ProgressListener progressListener);
-
 	
 	/*
 	 * Verify that each checksum in every tag manifest can be verified against
@@ -127,29 +98,17 @@ public interface Bag {
 	 */	
 	SimpleResult checkTagManifests();
 
-	SimpleResult checkTagManifests(CancelIndicator cancelIndicator, ProgressListener progressListener);
-
 	void load();
 	
 	void accept(BagVisitor visitor);
 	
-	void accept(BagVisitor visitor, CancelIndicator cancelIndicator, ProgressListener progressListener);
-	
-	Bag write(File file, Format format);
-	
-	Bag write(File file, Format format, CancelIndicator cancelIndicator, ProgressListener progressListener);
-
 	Bag write(Writer writer, File file);
 	
 	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
-	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, ProgressListener progressListener, CancelIndicator cancelIndicator);
-	
 	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
 	Bag makeComplete();
-	
-	Bag makeComplete(ProgressListener progressListener, CancelIndicator cancelIndicator);
 	
 	Bag makeComplete(Completer completer);
 	
@@ -192,13 +151,6 @@ public interface Bag {
 		FetchTxtWriter createFetchTxtWriter(OutputStream out);
 		FetchTxt createFetchTxt();
 		FetchTxt createFetchTxt(BagFile sourceBagFile);
-		Completer createCompleter();
-		HolePuncher createHolePuncher();
-		Writer createWriter(Format format);
-		CompleteVerifier createCompleteVerifier();
-		ValidVerifier createValidVerifier();
-		ValidVerifier createValidVerifier(CompleteVerifier completeVerifier, ManifestChecksumVerifier manifestChecksumVerifier);
-		ManifestChecksumVerifier createManifestVerifier();
 		Version getVersion();				
 	}
 }

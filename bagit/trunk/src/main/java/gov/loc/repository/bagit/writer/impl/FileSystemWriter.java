@@ -108,7 +108,7 @@ public class FileSystemWriter extends AbstractWriter {
 	public Bag write(Bag bag, File file) {
 		log.info("Writing bag");
 		this.newBagDir = file;
-		bag.accept(this, this.cancelIndicator, this.progressListener);
+		bag.accept(this);
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
 		}

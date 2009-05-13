@@ -24,6 +24,9 @@ import gov.loc.repository.bagit.bag.DummyCancelIndicator;
 import gov.loc.repository.bagit.bag.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
+import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -201,7 +204,7 @@ public abstract class AbstractBagImplTest {
 		assertFalse(bag.verifyComplete().isSuccess());
 		assertFalse(bag.verifyValid().isSuccess());				
 		
-		CompleteVerifier completeVerifier = bag.getBagPartFactory().createCompleteVerifier();
+		CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 		completeVerifier.setMissingBagItTolerant(true);
 	
 		assertTrue(completeVerifier.verify(bag).isSuccess());
@@ -431,10 +434,23 @@ public abstract class AbstractBagImplTest {
 	@Test
 	public void testCancel() throws Exception {
 		Bag bag = this.getBag(Format.FILESYSTEM);
-		assertNull(bag.verifyComplete(new DummyCancelIndicator(5), new PrintingProgressListener()));
-		assertNull(bag.verifyValid(new DummyCancelIndicator(10), new PrintingProgressListener()));		
-		assertNull(bag.checkTagManifests(new DummyCancelIndicator(3), new PrintingProgressListener()));
-		assertNull(bag.checkPayloadManifests(new DummyCancelIndicator(5), new PrintingProgressListener()));
+		
+		CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
+		completeVerifier.setCancelIndicator(new DummyCancelIndicator(5));
+		completeVerifier.setProgressListener(new PrintingProgressListener());
+		assertNull(bag.verify(completeVerifier));
+		
+		ParallelManifestChecksumVerifier manifestVerifier = new ParallelManifestChecksumVerifier();
+		manifestVerifier.setCancelIndicator(new DummyCancelIndicator(5));
+		manifestVerifier.setProgressListener(new PrintingProgressListener());
+
+		assertNull(manifestVerifier.verify(bag.getPayloadManifests(), bag));
+		
+		ValidVerifierImpl validVerifier = new ValidVerifierImpl(completeVerifier, manifestVerifier);
+		validVerifier.setCancelIndicator(new DummyCancelIndicator(10));
+		validVerifier.setProgressListener(new PrintingProgressListener());
+		assertNull(bag.verify(validVerifier));
+				
 	}
 	
 	@Test

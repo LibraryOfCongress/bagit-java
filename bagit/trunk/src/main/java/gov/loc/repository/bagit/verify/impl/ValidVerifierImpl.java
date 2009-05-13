@@ -31,6 +31,11 @@ public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressLi
 			((Cancellable)manifestVerifier).setCancelIndicator(cancelIndicator);
 		}		
 	}
+
+	@Override
+	public CancelIndicator getCancelIndicator() {
+		return this.cancelIndicator;
+	}
 	
 	@Override
 	public void setProgressListener(ProgressListener progressListener) {

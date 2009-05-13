@@ -39,6 +39,11 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 	}
 	
 	@Override
+	public CancelIndicator getCancelIndicator() {
+		return this.cancelIndicator;
+	}
+	
+	@Override
 	public void setProgressListener(ProgressListener progressListener) {
 		this.progressListener = progressListener;
 	}

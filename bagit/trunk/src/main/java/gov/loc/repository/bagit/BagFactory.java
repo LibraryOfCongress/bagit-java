@@ -2,7 +2,6 @@ package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
-import gov.loc.repository.bagit.impl.ConfigurableBag;
 
 import java.io.File;
 
@@ -44,7 +43,13 @@ public class BagFactory {
 	 * Creates a new Bag of the specified version.
 	 */
 	public Bag createBag(Version version) {
-		return new ConfigurableBag(this.getBagPartFactory(version), this.getBagConstants(version));
+		if (Version.V0_95.equals(version)) {
+			return new gov.loc.repository.bagit.v0_95.impl.BagImpl(this);
+		}
+		if (Version.V0_96.equals(version)) {
+			return new gov.loc.repository.bagit.v0_96.impl.BagImpl(this);
+		}
+		throw new RuntimeException("Not yet supported");
 	}
 	
 	/*

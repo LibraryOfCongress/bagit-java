@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.transformer.impl;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -205,6 +206,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
     	try {
 	    	final Iterator<BagFile> bagFileIter = bagFiles.iterator();
 		    for (int i = 0; i < this.numberOfThreads; i++) {
+		    	log.debug(MessageFormat.format("Starting thread {0} of {1}.", i, this.numberOfThreads));
 		    	threadPool.submit(new Runnable() {
 		            public void run() {
 		                ThreadSafeIteratorWrapper<BagFile> safeIterator = new ThreadSafeIteratorWrapper<BagFile>(bagFileIter);
@@ -213,8 +215,11 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		        			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
 		        			if (progressListener != null) progressListener.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
 		        			if (newBag.getChecksums(bagFile.getFilepath()).isEmpty()) {
-		        				String fixity = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
-		        				manifest.put(bagFile.getFilepath(), fixity);
+		        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
+		        				log.debug(MessageFormat.format("Generated fixity {0} for {1}.", checksum, bagFile.getFilepath()));
+		        				manifest.put(bagFile.getFilepath(), checksum);
+		        			} else {
+		        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));
 		        			}
 		        		}
 		            }
@@ -231,6 +236,10 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
         	log.debug("Thread pool shut down.");
         }
 		this.newBag.putBagFile(manifest);
+	}
 
+	@Override
+	public CancelIndicator getCancelIndicator() {
+		return this.cancelIndicator;
 	}
 }

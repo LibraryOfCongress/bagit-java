@@ -149,7 +149,7 @@ public class ZipWriter extends AbstractWriter {
 			throw new RuntimeException(ex);
 		}
 		
-		bag.accept(this, this.cancelIndicator, this.progressListener);
+		bag.accept(this);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
@@ -161,7 +161,7 @@ public class ZipWriter extends AbstractWriter {
 	public Bag write(Bag bag, OutputStream out) {
 		this.out = out;
 		
-		bag.accept(this, this.cancelIndicator, this.progressListener);
+		bag.accept(this);
 		
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
