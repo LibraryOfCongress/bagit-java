@@ -5,9 +5,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
@@ -194,45 +199,56 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	}
 	
 	protected void handleManifest(final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
-		Manifest updateManifest = (Manifest)this.newBag.getBagFile(filepath);
-		if (updateManifest == null) {
-			updateManifest = this.newBag.getBagPartFactory().createManifest(filepath);
+		Manifest manifest = (Manifest)this.newBag.getBagFile(filepath);
+		if (manifest == null) {
+			manifest = this.newBag.getBagPartFactory().createManifest(filepath);
 		}
-		final Manifest manifest = updateManifest;
 		
 		final int total = bagFiles.size();
     	final AtomicInteger count = new AtomicInteger();
 		ExecutorService threadPool = Executors.newCachedThreadPool();
+		ArrayList<Future<Map<String,String>>> futures = new ArrayList<Future<Map<String,String>>>(this.numberOfThreads);
+		//Since a Manifest is not synchronized, creating separate manifestEntry maps and merging
     	try {
 	    	final Iterator<BagFile> bagFileIter = bagFiles.iterator();
 		    for (int i = 0; i < this.numberOfThreads; i++) {
 		    	log.debug(MessageFormat.format("Starting thread {0} of {1}.", i, this.numberOfThreads));
-		    	threadPool.submit(new Runnable() {
-		            public void run() {
+		    	Future<Map<String, String>> future = threadPool.submit(new Callable<Map<String,String>>() {
+		            public Map<String,String> call() {
 		                ThreadSafeIteratorWrapper<BagFile> safeIterator = new ThreadSafeIteratorWrapper<BagFile>(bagFileIter);
-	
+		                Map<String,String> manifestEntries = new LinkedHashMap<String, String>();
+		                
 		        		for(final BagFile bagFile : safeIterator) {
-		        			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		        			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
 		        			if (progressListener != null) progressListener.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
 		        			if (newBag.getChecksums(bagFile.getFilepath()).isEmpty()) {
 		        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
-		        				log.debug(MessageFormat.format("Generated fixity {0} for {1}.", checksum, bagFile.getFilepath()));
-		        				manifest.put(bagFile.getFilepath(), checksum);
+		        				//log.debug(MessageFormat.format("Generated fixity for {1}.", bagFile.getFilepath()));
+		        				manifestEntries.put(bagFile.getFilepath(), checksum);
 		        			} else {
 		        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));
 		        			}
 		        		}
+		        		return manifestEntries;
 		            }
 	            });
+		    	futures.add(future);
 		    }
-    	} finally {
+            for (Future<Map<String,String>> future : futures) {
+                Map<String,String> futureResult = future.get();
+                if (futureResult != null) {
+                	manifest.putAll(futureResult);
+                }
+            }               
+
+    	} catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }    	
+    	finally {
         	log.debug("Shutting down thread pool.");
         	threadPool.shutdown();
-        	while((! threadPool.isTerminated()) && (! (this.cancelIndicator != null && this.cancelIndicator.performCancel()))) {
-        		try {
-        			Thread.sleep(250L);
-        		} catch (InterruptedException ex) {}
-        	}
         	log.debug("Thread pool shut down.");
         }
 		this.newBag.putBagFile(manifest);
