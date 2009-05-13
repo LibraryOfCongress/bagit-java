@@ -3,7 +3,9 @@ package gov.loc.repository.bagit.impl;
 import gov.loc.repository.bagit.ManifestWriter;
 
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 
 import org.apache.commons.logging.Log;
@@ -17,8 +19,14 @@ public class ManifestWriterImpl implements ManifestWriter {
 	private String separator = null;
 	
 	public ManifestWriterImpl(OutputStream out, String separator) {
-		this.writer = new PrintWriter(out);
-		this.separator = separator;
+		try {
+			// UTF-8 is the only supported BagIt encoding at present.
+			// Fixes #356.
+			this.writer = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+			this.separator = separator;
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 			
 	public void write(String file, String fixityValue) {
