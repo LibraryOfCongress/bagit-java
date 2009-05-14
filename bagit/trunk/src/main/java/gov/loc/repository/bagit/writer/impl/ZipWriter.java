@@ -20,6 +20,7 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
 
@@ -61,7 +62,7 @@ public class ZipWriter extends AbstractWriter {
 	public void startBag(Bag bag) {
 		this.zipOut = new ZipOutputStream(this.out);
 		if (this.newBagFile != null) {
-			this.newBag = this.bagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), false);
+			this.newBag = this.bagFactory.createBag(this.newBagFile, bag.getBagConstants().getVersion(), LoadOption.NO_LOAD);
 			this.newBagURI = VFSHelper.getUri(this.newBagFile, Format.ZIP);
 
 		}

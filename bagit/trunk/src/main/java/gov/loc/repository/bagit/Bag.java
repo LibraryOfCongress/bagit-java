@@ -98,7 +98,16 @@ public interface Bag {
 	 */	
 	SimpleResult checkTagManifests();
 
-	void load();
+	
+	/*
+	 * Loads a bag based on the tag files found on disk and the payload files listed in the payload manifests.
+	 */
+	void loadFromPayloadManifests();
+
+	/*
+	 * Loads a bag based on the tag files and payload files found on disk.
+	 */
+	void loadFromPayloadFiles();
 	
 	void accept(BagVisitor visitor);
 	

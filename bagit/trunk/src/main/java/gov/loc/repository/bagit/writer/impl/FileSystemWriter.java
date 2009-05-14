@@ -13,6 +13,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.impl.VFSBagFile;
 import gov.loc.repository.bagit.utilities.VFSHelper;
 
@@ -50,7 +51,7 @@ public class FileSystemWriter extends AbstractWriter {
 		} catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
-		this.newBag = this.bagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), false);
+		this.newBag = this.bagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), LoadOption.NO_LOAD);
 		this.newBagURI = VFSHelper.getUri(this.newBagDir, Format.FILESYSTEM);
 		this.fileCount = 0;
 		this.fileTotal = bag.getTags().size() + bag.getPayload().size();

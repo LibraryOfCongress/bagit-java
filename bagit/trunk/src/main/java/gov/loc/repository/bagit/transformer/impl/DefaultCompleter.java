@@ -223,7 +223,7 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		        			if (progressListener != null) progressListener.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
 		        			if (newBag.getChecksums(bagFile.getFilepath()).isEmpty()) {
 		        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
-		        				//log.debug(MessageFormat.format("Generated fixity for {1}.", bagFile.getFilepath()));
+		        				log.debug(MessageFormat.format("Generated fixity for {0}.", bagFile.getFilepath()));
 		        				manifestEntries.put(bagFile.getFilepath(), checksum);
 		        			} else {
 		        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));

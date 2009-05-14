@@ -7,6 +7,8 @@ import java.io.File;
 
 public class BagFactory {	
 	
+	public enum LoadOption { NO_LOAD, BY_PAYLOAD_MANIFESTS, BY_PAYLOAD_FILES }
+	
 	public enum Version { V0_95 ("0.95"), V0_96 ("0.96");
 	
 	public String versionString;
@@ -57,11 +59,10 @@ public class BagFactory {
 	 * The version of the bag is determined by examining the bag.
 	 * If it cannot be determined, the latest version is assumed.
 	 * If the specified version is not supported, the latest version is used.
-	 * The bag is loaded.
-	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
+	 * The bag is loaded from the payload manifests.
 	 */
 	public Bag createBag(File bagFile) {
-		return createBag(bagFile, true);
+		return createBag(bagFile, LoadOption.BY_PAYLOAD_MANIFESTS);
 	}
 
 	/*
@@ -69,10 +70,8 @@ public class BagFactory {
 	 * The version of the bag is determined by examining the bag.
 	 * If it cannot be determined, the latest version is assumed.
 	 * If the specified version is not supported, the latest version is used.
-	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
-	 * @param boolean whether to load the bag
 	 */
-	public Bag createBag(File bagFile, boolean load) {
+	public Bag createBag(File bagFile, LoadOption loadOption) {
 		String versionString = BagHelper.getVersion(bagFile);
 		Version version = LATEST;
 		if (versionString != null) {
@@ -82,22 +81,21 @@ public class BagFactory {
 				}
 			}
 		}
-		return createBag(bagFile, version, load);
+		return createBag(bagFile, version, loadOption);
 
 	}
 
 	
 	/*
 	 * Creates a Bag from an existing bag using the specified version.
-	 * @param file either the bag_dir of a bag on the file system or a serialized bag (zip, tar)
-	 * @param version
-	 * @param boolean whether to load the bag
 	 */
-	public Bag createBag(File bagFile, Version version, boolean load) {		
+	public Bag createBag(File bagFile, Version version, LoadOption loadOption) {		
 		Bag bag = this.createBag(version);
 		bag.setFile(bagFile);
-		if (load) {
-			bag.load();
+		if (LoadOption.BY_PAYLOAD_MANIFESTS.equals(loadOption)) {
+			bag.loadFromPayloadManifests();
+		} else if (LoadOption.BY_PAYLOAD_FILES.equals(loadOption)) {
+			bag.loadFromPayloadFiles();
 		}
 		return bag;
 	}
@@ -105,13 +103,13 @@ public class BagFactory {
 	/*
 	 * Creates a Bag from an existing Bag.
 	 * The version and bagFile (if present) are taken from the existing Bag.
-	 * @param Bag the Bag to base the new Bag on
+	 * The bag is not loaded.
 	 */
 	public Bag createBag(Bag bag) {
 		if (bag.getFile() == null) {
 			return createBag(bag.getBagConstants().getVersion());
 		}
-		return createBag(bag.getFile(), bag.getBagConstants().getVersion(), false);
+		return createBag(bag.getFile(), bag.getBagConstants().getVersion(), LoadOption.NO_LOAD);
 	}
 	
 	

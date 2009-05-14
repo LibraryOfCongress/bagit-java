@@ -8,6 +8,7 @@ import org.junit.Test;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.FetchTxt;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.transformer.HolePuncher;
@@ -32,7 +33,7 @@ public class HolePuncherImplTest {
 	}
 
 	private Bag getBag(Version version, Bag.Format format) throws Exception {
-		return this.bagFactory.createBag(this.getBagDir(version, format), version, true);  
+		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_MANIFESTS);  
 	}	
 	
 	private File getBagDir(Version version, Bag.Format format) throws Exception {

@@ -5,6 +5,7 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.HolePuncher;
@@ -101,6 +102,7 @@ public class CommandLineBagDriver {
 	private static final Log log = LogFactory.getLog(CommandLineBagDriver.class);
 
 	private Map<String, Operation> operationMap = new HashMap<String, Operation>();
+	private BagFactory bagFactory = new BagFactory();
 	
 	public static void main(String[] args) throws Exception {
 		CommandLineBagDriver driver = new CommandLineBagDriver();		
@@ -340,28 +342,35 @@ public class CommandLineBagDriver {
 		return string;
 	}
 
+	private Bag getBag(File sourceFile, Version version, LoadOption loadOption) {
+		if (version != null) {
+			if (sourceFile != null) {
+				return bagFactory.createBag(sourceFile, version, loadOption);
+			} else {
+				return bagFactory.createBag(version);
+			}
+		} else {
+			if (sourceFile != null) {
+				return bagFactory.createBag(sourceFile, loadOption);
+			} else {
+				return bagFactory.createBag();
+			}
+		}
+	}
+	
 	private int performOperation(Operation operation, JSAPResult config) {
 		log.info("Performing operation: " + operation.name);
-		BagFactory bagFactory = new BagFactory();
+		
 		try {
 			File sourceFile = null;
-			Bag bag = null;
-			if (config.contains(PARAM_VERSION)) {
-				Version version = Version.valueOfString(config.getString(PARAM_VERSION));
-				if (config.contains(PARAM_SOURCE)) {
-					sourceFile = config.getFile(PARAM_SOURCE);
-					bag = bagFactory.createBag(sourceFile, version, true);
-				} else {
-					bag = bagFactory.createBag(version);
-				}
-			} else {
-				if (config.contains(PARAM_SOURCE)) {
-					sourceFile = config.getFile(PARAM_SOURCE);
-					bag = bagFactory.createBag(sourceFile);
-				} else {
-					bag = bagFactory.createBag();
-				}
+			if (config.contains(PARAM_SOURCE)) {
+				sourceFile = config.getFile(PARAM_SOURCE);					
 			}
+			Version version = null;			
+			if (config.contains(PARAM_VERSION)) {
+				version = Version.valueOfString(config.getString(PARAM_VERSION));
+			}
+					
 			File destFile = null;
 			if (config.contains(PARAM_DESTINATION)) {				
 				destFile = new File(config.getString(PARAM_DESTINATION));
@@ -398,6 +407,7 @@ public class CommandLineBagDriver {
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
 				ValidVerifier verifier = new ValidVerifierImpl(completeVerifier, new ParallelManifestChecksumVerifier());
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
 				if (! result.isSuccess()) {
@@ -407,29 +417,35 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = completeVerifier.verify(bag);
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = bag.checkTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = bag.checkTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_WRITE.equals(operation.name)) {								
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				bag.write(writer, destFile);
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
+				Bag bag = this.getBag(sourceFile, version, null);
 				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
 					bag.addFilesToPayload(file);
 				}
@@ -438,12 +454,15 @@ public class CommandLineBagDriver {
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncher puncher = new HolePuncherImpl(bagFactory);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
 				newBag.write(writer, destFile);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				String oxum = BagHelper.generatePayloadOxum(bag);				
 				log.info("Payload-Oxum: " + oxum);
 			} else if (OPERATION_CHECK_PAYLOAD_OXUM.equals(operation.name)) {
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				String genOxum = BagHelper.generatePayloadOxum(bag);
 				BagInfoTxt bagInfo = bag.getBagInfoTxt();
 				if (bagInfo == null) {
@@ -474,7 +493,7 @@ public class CommandLineBagDriver {
 				}
 			    
 			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
-			    
+				Bag bag = this.getBag(sourceFile, version, null);			    
 			    SimpleResult result = fetcher.fetch(bag, dest);
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
 			} else if (OPERATION_SEND_BOB.equals(operation.name)) {
@@ -496,6 +515,7 @@ public class CommandLineBagDriver {
 				if (threads != 0) {
 					sender.setThreads(threads);
 				}
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				sender.send(bag, config.getString(PARAM_URL));
 			} else if (OPERATION_SEND_SWORD.equals(operation.name)) {
 				SwordSender sender = new SwordSender(new ZipWriter(bagFactory));
@@ -508,8 +528,8 @@ public class CommandLineBagDriver {
 					sender.setPassword(password);
 				}
 				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
-				sender.send(bag, config.getString(PARAM_URL));
-				
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				sender.send(bag, config.getString(PARAM_URL));				
 			}
 				
 			log.info("Operation completed.");

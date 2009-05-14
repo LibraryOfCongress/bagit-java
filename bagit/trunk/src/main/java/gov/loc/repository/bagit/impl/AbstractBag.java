@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.vfs.AllFileSelector;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 
@@ -77,7 +78,7 @@ public abstract class AbstractBag implements Bag {
 	}
 	
 	@Override
-	public void load() {
+	public void loadFromPayloadManifests() {
 		this.tagMap.clear();
 		this.payloadMap.clear();
 		
@@ -105,7 +106,30 @@ public abstract class AbstractBag implements Bag {
 			throw new RuntimeException(ex);
 		}
 	}
-	
+
+	@Override
+	public void loadFromPayloadFiles() {
+		this.tagMap.clear();
+		this.payloadMap.clear();
+		
+		FileObject bagFileObject = VFSHelper.getFileObjectForBag(this.fileForBag);
+		try {													
+			//Load tag map
+			for(FileObject fileObject : bagFileObject.findFiles(new AllFileSelector())) {
+				if (fileObject.getType() == FileType.FILE) {
+					
+					String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
+					log.debug("Reading " + filepath);
+					BagFile bagFile = new VFSBagFile(filepath, fileObject);
+					this.putBagFile(bagFile);
+				}
+			}
+		}
+		catch(Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
 	
 	@Override
 	public List<Manifest> getPayloadManifests() {
