@@ -56,8 +56,8 @@ public class CommandLineBagDriver {
 	public static final int RETURN_FAILURE = 1;
 	public static final int RETURN_ERROR = 2;	
 	
-	public static final String OPERATION_ISVALID = "isvalid";
-	public static final String OPERATION_ISCOMPLETE = "iscomplete";
+	public static final String OPERATION_VERIFYVALID = "verifyvalid";
+	public static final String OPERATION_VERIFYCOMPLETE = "verifycomplete";
 	public static final String OPERATION_WRITE = "write";
 	public static final String OPERATION_MAKE_COMPLETE = "makecomplete";
 	public static final String OPERATION_CREATE = "create";
@@ -116,7 +116,7 @@ public class CommandLineBagDriver {
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
 		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
-		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload.");
+		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload. To add the children of a directory, but not the directory itself append with " + File.separator + "*.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
 		Parameter urlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
@@ -141,8 +141,8 @@ public class CommandLineBagDriver {
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS, "Verifies the checksums in all tag manifests.", params.toArray(new Parameter[] {}));
 		this.addOperation(OPERATION_VERIFY_PAYLOADMANIFESTS, "Verifies the checksums in all payload manifests.", params.toArray(new Parameter[] {}));
 		params.add(missingBagItTolerantParam);
-		this.addOperation(OPERATION_ISVALID, "Checks validity of a bag.", params.toArray(new Parameter[] {}));
-		this.addOperation(OPERATION_ISCOMPLETE, "Checks completeness of a bag.", params.toArray(new Parameter[] {}));
+		this.addOperation(OPERATION_VERIFYVALID, "Checks validity of a bag.", params.toArray(new Parameter[] {}));
+		this.addOperation(OPERATION_VERIFYCOMPLETE, "Checks completeness of a bag.", params.toArray(new Parameter[] {}));
 		
 		List<Parameter> writerParams = new ArrayList<Parameter>();
 		writerParams.add(writerParam);
@@ -403,7 +403,7 @@ public class CommandLineBagDriver {
 			
 			int ret = RETURN_SUCCESS;
 			
-			if (OPERATION_ISVALID.equals(operation.name)) {				
+			if (OPERATION_VERIFYVALID.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
 				ValidVerifier verifier = new ValidVerifierImpl(completeVerifier, new ParallelManifestChecksumVerifier());
@@ -414,7 +414,7 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 				return RETURN_SUCCESS;
-			} else if (OPERATION_ISCOMPLETE.equals(operation.name)) {				
+			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
@@ -446,8 +446,21 @@ public class CommandLineBagDriver {
 				newBag.write(writer, destFile);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, null);
-				for(File file : config.getFileArray(PARAM_PAYLOAD)) {
-					bag.addFilesToPayload(file);
+				for(String filepath : config.getStringArray(PARAM_PAYLOAD)) {
+					if (filepath.endsWith(File.separator + "*")) {
+						File parentDir = new File(filepath.substring(0, filepath.length()-2));
+						if (! parentDir.exists()) {
+							throw new RuntimeException(MessageFormat.format("{0} does not exist.", parentDir));
+						}
+						if (! parentDir.isDirectory()) {
+							throw new RuntimeException(MessageFormat.format("{0} is not a directory.", parentDir));
+						}
+						for(File childFile : parentDir.listFiles()) {
+							bag.addFilesToPayload(childFile);
+						}
+					} else {						
+						bag.addFilesToPayload(new File(filepath));
+					}
 				}
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);

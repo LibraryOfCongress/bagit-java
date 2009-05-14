@@ -32,6 +32,8 @@ public interface Bag {
 		
 	};
 	
+	Version getVersion();
+	
 	File getFile();
 
 	void setFile(File file);
@@ -64,6 +66,9 @@ public interface Bag {
 	
 	void addFileAsTag(File file);
 
+	/*
+	 * Finds checksums in all manifests for a file.
+	 */
 	Map<Algorithm, String> getChecksums(String filepath);
 	
 	BagItTxt getBagItTxt();
@@ -73,7 +78,10 @@ public interface Bag {
 	FetchTxt getFetchTxt();
 		
 	Format getFormat();
-	
+
+	/*
+	 * Determines whether the bag is valid according to the BagIt Specification.
+	 */		
 	SimpleResult verifyValid();
 
 	/*
@@ -82,7 +90,7 @@ public interface Bag {
 	SimpleResult verifyComplete();
 	
 	/*
-	 * @param	strategies	a Verifier to invoke
+	 * Invokes a Verifier to verify a bag.
 	 */	
 	SimpleResult verify(Verifier verifier);
 	
@@ -98,7 +106,6 @@ public interface Bag {
 	 */	
 	SimpleResult checkTagManifests();
 
-	
 	/*
 	 * Loads a bag based on the tag files found on disk and the payload files listed in the payload manifests.
 	 */
@@ -108,17 +115,32 @@ public interface Bag {
 	 * Loads a bag based on the tag files and payload files found on disk.
 	 */
 	void loadFromPayloadFiles();
-	
+
+	/*
+	 * Invokes a BagVisitor.
+	 */
 	void accept(BagVisitor visitor);
 	
 	Bag write(Writer writer, File file);
-	
+
+	/*
+	 * Makes a bag holey by creating a fetch.txt and removing payload files.
+	 */
 	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
+	/*
+	 * Invokes a HolePuncher to make a bag holey.
+	 */	
 	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
+	/*
+	 * Makes a bag complete by filling in any pieces necessary to satisfy the BagIt Specification.
+	 */
 	Bag makeComplete();
-	
+
+	/*
+	 * Invokes a Completer to make a bag complete;
+	 */
 	Bag makeComplete(Completer completer);
 	
 	BagConstants getBagConstants();
@@ -137,7 +159,6 @@ public interface Bag {
 		String getBagInfoTxt();
 		String getFetchTxt();
 		Version getVersion();
-
 	}
 	
 	public interface BagPartFactory {

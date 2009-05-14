@@ -48,7 +48,7 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 	}
 	
 	private void init(String name, BagConstants bagConstants, BagPartFactory bagPartFactory) {
-		log.info("Creating manifest for " + name);
+		log.debug("Creating manifest for " + name);
 		this.name = name;
 		this.bagConstants = bagConstants;
 		this.bagPartFactory = bagPartFactory;

@@ -36,7 +36,6 @@ public class SizeHelper {
 			format += "#";
 			sizeString = (new DecimalFormat(format)).format(size);
 		}
-		System.out.println(size + ":" + sizeString);
 		return sizeString + " " + unit;
 	}
 	

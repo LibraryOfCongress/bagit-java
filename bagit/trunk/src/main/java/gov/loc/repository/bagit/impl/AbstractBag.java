@@ -27,6 +27,7 @@ import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
@@ -75,6 +76,11 @@ public abstract class AbstractBag implements Bag {
 	public void setFile(File file) {
 		this.fileForBag = file;
 		
+	}
+	
+	@Override
+	public Version getVersion() {
+		return this.getBagConstants().getVersion();
 	}
 	
 	@Override
@@ -227,7 +233,7 @@ public abstract class AbstractBag implements Bag {
 		}
 
 	}
-
+	
 	@Override
 	public void removeBagFile(String filepath) {
 		if (BagHelper.isPayload(filepath, this.getBagConstants())) {
@@ -246,6 +252,9 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void addFilesToPayload(File file) {
+		if (! file.exists()) {
+			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
+		}
 		this.addPayload(file, file.getParentFile());
 	}
 	
@@ -278,6 +287,10 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void addFileAsTag(File file) {
+		if (! file.exists()) {
+			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
+		}
+		
 		String filepath = file.getName();
 		log.debug(MessageFormat.format("Adding {0} to payload.", filepath));
 		this.putBagFile(new FileBagFile(filepath, file));
