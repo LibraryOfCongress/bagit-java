@@ -66,7 +66,7 @@ public interface Bag {
 	
 	void addFileAsTag(File file);
 
-	/*
+	/**
 	 * Finds checksums in all manifests for a file.
 	 */
 	Map<Algorithm, String> getChecksums(String filepath);
@@ -79,66 +79,66 @@ public interface Bag {
 		
 	Format getFormat();
 
-	/*
+	/**
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 */		
 	SimpleResult verifyValid();
 
-	/*
+	/**
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */		
 	SimpleResult verifyComplete();
 	
-	/*
+	/**
 	 * Invokes a Verifier to verify a bag.
 	 */	
 	SimpleResult verify(Verifier verifier);
 	
-	/*
+	/**
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
 	 */
 	SimpleResult checkPayloadManifests();
 	
-	/*
+	/**
 	 * Verify that each checksum in every tag manifest can be verified against
 	 * the appropriate contents.
 	 */	
 	SimpleResult checkTagManifests();
 
-	/*
+	/**
 	 * Loads a bag based on the tag files found on disk and the payload files listed in the payload manifests.
 	 */
 	void loadFromPayloadManifests();
 
-	/*
+	/**
 	 * Loads a bag based on the tag files and payload files found on disk.
 	 */
 	void loadFromPayloadFiles();
 
-	/*
+	/**
 	 * Invokes a BagVisitor.
 	 */
 	void accept(BagVisitor visitor);
 	
 	Bag write(Writer writer, File file);
 
-	/*
+	/**
 	 * Makes a bag holey by creating a fetch.txt and removing payload files.
 	 */
 	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
-	/*
+	/**
 	 * Invokes a HolePuncher to make a bag holey.
 	 */	
 	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
-	/*
+	/**
 	 * Makes a bag complete by filling in any pieces necessary to satisfy the BagIt Specification.
 	 */
 	Bag makeComplete();
 
-	/*
+	/**
 	 * Invokes a Completer to make a bag complete;
 	 */
 	Bag makeComplete(Completer completer);

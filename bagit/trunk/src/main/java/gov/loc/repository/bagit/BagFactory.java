@@ -34,14 +34,14 @@ public class BagFactory {
 		
 	}
 		
-	/*
+	/**
 	 * Creates a new Bag of the latest version.
 	 */
 	public Bag createBag() {
 		return createBag(LATEST);
 	}
 	
-	/*
+	/**
 	 * Creates a new Bag of the specified version.
 	 */
 	public Bag createBag(Version version) {
@@ -54,7 +54,7 @@ public class BagFactory {
 		throw new RuntimeException("Not yet supported");
 	}
 	
-	/*
+	/**
 	 * Creates a Bag from an existing bag.
 	 * The version of the bag is determined by examining the bag.
 	 * If it cannot be determined, the latest version is assumed.
@@ -65,7 +65,7 @@ public class BagFactory {
 		return createBag(bagFile, LoadOption.BY_PAYLOAD_MANIFESTS);
 	}
 
-	/*
+	/**
 	 * Creates a Bag from an existing bag.
 	 * The version of the bag is determined by examining the bag.
 	 * If it cannot be determined, the latest version is assumed.
@@ -86,7 +86,7 @@ public class BagFactory {
 	}
 
 	
-	/*
+	/**
 	 * Creates a Bag from an existing bag using the specified version.
 	 */
 	public Bag createBag(File bagFile, Version version, LoadOption loadOption) {		
@@ -100,7 +100,7 @@ public class BagFactory {
 		return bag;
 	}
 
-	/*
+	/**
 	 * Creates a Bag from an existing Bag.
 	 * The version and bagFile (if present) are taken from the existing Bag.
 	 * The bag is not loaded.
@@ -113,14 +113,14 @@ public class BagFactory {
 	}
 	
 	
-	/*
+	/**
 	 * Gets a BagPartFactory of the latest version.
 	 */
 	public BagPartFactory getBagPartFactory() {
 		return getBagPartFactory(LATEST);
 	}
 	
-	/*
+	/**
 	 * Gets a BagPartFactory of the specified version.
 	 */
 	public BagPartFactory getBagPartFactory(Version version) {
@@ -133,14 +133,14 @@ public class BagFactory {
 		throw new RuntimeException("Not yet supported");
 	}
 	
-	/*
+	/**
 	 * Gets BagConstants of the latest version.
 	 */
 	public BagConstants getBagConstants() {
 		return getBagConstants(LATEST);
 	}
 	
-	/*
+	/**
 	 * Gets BagConstants of the specified version.
 	 */
 	public BagConstants getBagConstants(Version version) {
