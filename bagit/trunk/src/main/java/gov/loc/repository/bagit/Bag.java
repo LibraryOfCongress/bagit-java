@@ -60,7 +60,7 @@ public interface Bag {
 
 	void putBagFiles(Collection<BagFile> bagFiles);
 	
-	void addFilesToPayload(File file);
+	void addFileToPayload(File file);
 	
 	void addFilesToPayload(List<File> files);
 	
@@ -98,13 +98,13 @@ public interface Bag {
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
 	 */
-	SimpleResult checkPayloadManifests();
+	SimpleResult verifyPayloadManifests();
 	
 	/**
 	 * Verify that each checksum in every tag manifest can be verified against
 	 * the appropriate contents.
 	 */	
-	SimpleResult checkTagManifests();
+	SimpleResult verifyTagManifests();
 
 	/**
 	 * Loads a bag based on the tag files found on disk and the payload files listed in the payload manifests.

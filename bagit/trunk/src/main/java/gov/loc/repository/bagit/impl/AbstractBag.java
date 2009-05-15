@@ -251,7 +251,7 @@ public abstract class AbstractBag implements Bag {
 	
 	
 	@Override
-	public void addFilesToPayload(File file) {
+	public void addFileToPayload(File file) {
 		if (! file.exists()) {
 			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
 		}
@@ -261,7 +261,7 @@ public abstract class AbstractBag implements Bag {
 	@Override
 	public void addFilesToPayload(List<File> files) {
 		for(File file : files) {
-			this.addFilesToPayload(file);
+			this.addFileToPayload(file);
 		}
 	}
 	
@@ -307,13 +307,13 @@ public abstract class AbstractBag implements Bag {
 	}
 	
 	@Override
-	public SimpleResult checkTagManifests() {		
+	public SimpleResult verifyTagManifests() {		
 		ManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 		return verifier.verify(this.getTagManifests(), this);
 	}
 	
 	@Override
-	public SimpleResult checkPayloadManifests() {
+	public SimpleResult verifyPayloadManifests() {
 		ManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 		return verifier.verify(this.getPayloadManifests(), this);
 	}

@@ -425,14 +425,14 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = bag.checkTagManifests();
+				SimpleResult result = bag.verifyTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = bag.checkTagManifests();
+				SimpleResult result = bag.verifyTagManifests();
 				log.info(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
@@ -456,10 +456,10 @@ public class CommandLineBagDriver {
 							throw new RuntimeException(MessageFormat.format("{0} is not a directory.", parentDir));
 						}
 						for(File childFile : parentDir.listFiles()) {
-							bag.addFilesToPayload(childFile);
+							bag.addFileToPayload(childFile);
 						}
 					} else {						
-						bag.addFilesToPayload(new File(filepath));
+						bag.addFileToPayload(new File(filepath));
 					}
 				}
 				Bag newBag = completer.complete(bag);
