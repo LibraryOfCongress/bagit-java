@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.writer.impl.TarWriter;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.File;
+import java.net.Authenticator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -192,10 +193,12 @@ public class CommandLineBagDriver {
 		this.addOperation(OPERATION_GENERATE_PAYLOAD_OXUM, "Generates Payload-Oxum for the bag.", params.toArray(new Parameter[] {}));
 		this.addOperation(OPERATION_CHECK_PAYLOAD_OXUM, "Generates Payload-Oxum and checks against Payload-Oxum in bag-info.txt.", params.toArray(new Parameter[] {}));
 		
-		// bag retrieve [-threads n] BAG
+		// bag retrieve [--threads n] [--username user] [--password pass] BAG
 		params.clear();
 		params.add(sourceParam);
 		params.add(threadsParam);
+		params.add(usernameParam);
+		params.add(passwordParam);
 		this.addOperation(OPERATION_RETRIEVE, "Retrieves any missing pieces of a bag specified in the fetch.txt.", params.toArray(new Parameter[0]));
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
@@ -210,7 +213,6 @@ public class CommandLineBagDriver {
 		senderParams.add(throttleParam);
 		senderParams.add(threadsParam);
 		this.addOperation(OPERATION_SEND_BOB, "Sends a bag using BOB.", senderParams.toArray(new Parameter[0]));
-
 	}
 
 	private void addOperation(String name, String help, Parameter[] params) throws Exception {
@@ -497,8 +499,22 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
 			    BagFetcher fetcher = new BagFetcher(bagFactory);
+
+			    // TODO Make this dynamically register somehow.
 			    fetcher.registerProtocol("http", new HttpFetchProtocol());
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
+			    
+			    String username = config.getString(PARAM_USERNAME);
+			    String password = config.getString(PARAM_PASSWORD);
+			    
+			    if (username != null && password != null)
+			    {
+			    	Authenticator.setDefault(new ConstantCredentialsAuthenticator(username, password));
+			    }
+			    else
+			    {
+				    Authenticator.setDefault(new ConsoleAuthenticator(username));
+			    }
 			    
 				int threads = config.getInt(PARAM_THREADS, 0);
 				if (threads != 0) {

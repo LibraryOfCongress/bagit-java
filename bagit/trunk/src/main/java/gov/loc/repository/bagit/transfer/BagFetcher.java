@@ -5,6 +5,7 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 
 import static java.text.MessageFormat.format;
 
@@ -73,6 +74,8 @@ public class BagFetcher
     {
         this.bagToFetch = bag;
         this.destinationFactory = destinationFactory;
+        
+        this.checkBagSanity();
         
         this.buildFetchTargets();
         this.nextFetchTargetIndex = new AtomicInteger(0);
@@ -153,6 +156,16 @@ public class BagFetcher
         return finalResult;
     }
     
+    private void checkBagSanity() throws BagTransferException
+    {
+    	SimpleResult verifyResult = this.bagToFetch.verify(new ValidHoleyBagVerifier());
+    	
+    	if (!verifyResult.isSuccess())
+    	{
+    		throw new BagTransferException(format("Bag is not valid: {0}", verifyResult.messagesToString()));
+    	}
+    }
+    
     private void buildFetchTargets()
     {
         // Retrieve the fetch items into a seperate list, and then sort the
@@ -206,51 +219,88 @@ public class BagFetcher
     
     private class Fetcher implements Callable<SimpleResult>
     {
+    	private SimpleResult result = new SimpleResult(true);
+    	private Map<String, FileFetcher> fetchers = new HashMap<String, FileFetcher>();
+
         public SimpleResult call()
         {
-            FetchTxt.FilenameSizeUrl target = getNextFetchItem();
-            
-            while (target != null)
-            {
-                try
-                {
-                    BagFile fetchedFile = fetchTarget(target);
-                    newBagFiles.add(fetchedFile); // synchronized
-                }
-                catch (BagTransferException e)
-                {
-                    failedFetchTargets.add(target);
-                    
-                    String msg = format("Unable to fetch target: {0}", target);
-                    result.addMessage(msg);
-                    result.setSuccess(false);
-                    log.error(msg, e);
-                }
-                
-                target = getNextFetchItem();
-            }
+        	try
+        	{
+	            FetchTxt.FilenameSizeUrl target = getNextFetchItem();
+	            
+	            while (target != null)
+	            {
+	                try
+	                {
+	                	// The fetch.txt line parts.
+		                URI uri = parseUri(target.getUrl());
+		                Long size = target.getSize();
+		                String destinationPath = target.getFilename();
+		                
+		                // Create the destination for the file.
+		                log.trace(format("Creating destination: {0}", destinationPath));
+		                FetchedFileDestination destination = destinationFactory.createDestination(destinationPath, size);
+
+		                // Create the object to do the fetching.
+		                FileFetcher fetcher = this.getFetcher(uri, size);
+		                
+		                // Now do the fetch.
+		                log.trace(format("Fetching: {0} {1} {2}", uri, size == null ? "-" : size, destinationPath));
+		                fetcher.fetchFile(uri, size, destination);
+
+		                // Finally, commit the file.
+		                log.trace("Committing destination.");
+		                BagFile committedFile = destination.commit();
+
+	                    newBagFiles.add(committedFile); // synchronized
+
+		                log.trace(format("Fetched: {0} -> {1}", uri, destinationPath));
+	                }
+	                catch (BagTransferException e)
+	                {
+	                    failedFetchTargets.add(target);
+	                    
+	                    String msg = format("Unable to fetch target: {0}", target);
+	                    result.addMessage(msg);
+	                    result.setSuccess(false);
+	                    log.error(msg, e);
+	                }
+	                
+	                target = getNextFetchItem();
+	            }
+        	}
+        	finally
+        	{
+        		this.closeFetchers();
+        	}
             
             return result;
         }
         
-        private SimpleResult result = new SimpleResult(true);
-        
-        private BagFile fetchTarget(FetchTxt.FilenameSizeUrl target) throws BagTransferException
+        private FileFetcher getFetcher(URI uri, Long size) throws BagTransferException
         {
-            URI uri = parseUri(target.getUrl());
-            Long size = target.getSize();
-            String destinationPath = target.getFilename();
-            
-            FileFetcher fetcher = newFileFetcher(uri, size);
-            FetchedFileDestination destination = destinationFactory.createDestination(destinationPath, size);
-            
-            fetcher.fetchFile(uri, size, destination);
-            
-            log.trace("Committing destination.");
-            BagFile committedFile = destination.commit();
-            log.trace("Commit successful.");
-            
-            return committedFile;
+        	FileFetcher fetcher = this.fetchers.get(uri.getScheme());
+        	
+        	if (fetcher == null)
+        	{
+        		log.trace(format("Creating new FileFetcher for scheme: {0}", uri.getScheme()));
+        		fetcher = newFileFetcher(uri, size);
+        		
+        		log.trace("Initializing new FileFetcher.");
+        		fetcher.initialize();
+        		
+        		this.fetchers.put(uri.getScheme(), fetcher);
+        	}
+        	
+        	return fetcher;
+        }
+        
+        private void closeFetchers()
+        {
+        	for (FileFetcher fetcher : this.fetchers.values())
+        	{
+        		fetcher.close();
+        	}
         }
     }
 }

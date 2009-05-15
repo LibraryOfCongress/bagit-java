@@ -57,6 +57,14 @@ public class HttpFetchProtocol implements FetchProtocol
     
     private class HttpFetcher implements FileFetcher
     {
+    	public void initialize() throws BagTransferException
+    	{
+    	}
+    	
+    	public void close()
+    	{
+    	}
+    	
         @Override
         public void fetchFile(URI uri, Long size, FetchedFileDestination destination) throws BagTransferException
         {

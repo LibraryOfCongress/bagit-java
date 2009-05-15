@@ -5,10 +5,15 @@ import static java.text.MessageFormat.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ProtocolCommandEvent;
 import org.apache.commons.net.ProtocolCommandListener;
 import org.apache.commons.net.ftp.FTP;
@@ -19,15 +24,10 @@ import gov.loc.repository.bagit.transfer.BagTransferException;
 import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
-import gov.loc.repository.bagit.utilities.Log;
-import gov.loc.repository.bagit.utilities.LogFactory;
 
 public class FtpFetchProtocol implements FetchProtocol
 {
     private static final Log log = LogFactory.getLog(FtpFetchProtocol.class);
-    
-    private String username;
-    private String password;
     
     @Override
     public FileFetcher createFetcher(URI uri, Long size) throws BagTransferException
@@ -44,6 +44,29 @@ public class FtpFetchProtocol implements FetchProtocol
         }
         
         @Override
+        public void initialize() throws BagTransferException
+        {
+        }
+        
+        @Override
+        public void close()
+        {
+        	try 
+        	{
+        		// Set to null first, since it's quite unlikely
+        		// to throw an exception.
+        		FTPClient currentClient = this.client;
+				this.client = null;
+				
+				currentClient.disconnect();
+			}
+        	catch (IOException e) 
+        	{
+        		log.warn("An error occurred while disconnecting.  The error will be ignored.", e);
+			}
+        }
+        
+        @Override
         public void fetchFile(URI uri, Long size, FetchedFileDestination destination) throws BagTransferException
         {
             if (this.client == null)
@@ -51,7 +74,7 @@ public class FtpFetchProtocol implements FetchProtocol
                 this.connect(uri);
             }
 
-            log.trace("Fetching {0} to destination {1}", uri, destination.getFilepath());
+            log.trace(format("Fetching {0} to destination {1}", uri, destination.getFilepath()));
             
             InputStream in = null;
             OutputStream out = null;
@@ -67,9 +90,12 @@ public class FtpFetchProtocol implements FetchProtocol
                 log.trace("Copying from network to destination.");
                 long bytesCopied = IOUtils.copyLarge(in, out);
                 log.trace(format("Successfully copied {0} bytes.", bytesCopied));
+                
+                this.client.completePendingCommand();
             }
             catch (IOException e)
             {
+            	this.close();
                 throw new BagTransferException(e);
             }
             finally
@@ -89,11 +115,11 @@ public class FtpFetchProtocol implements FetchProtocol
                 this.client = new FTPClient();
                 this.client.addProtocolCommandListener(new LogCommandListener());
                 
-                log.trace("Connecting to server: {0}:{1}", server, port);
+                log.trace(format("Connecting to server: {0}:{1}", server, port));
                 this.client.connect(server, port);
                 
                 int reply = this.client.getReplyCode();
-                log.trace("Connected.  Server replied with: {0}", reply);
+                log.trace(format("Connected.  Server replied with: {0}", reply));
                 
                 if (!FTPReply.isPositiveCompletion(reply))
                 {
@@ -102,14 +128,9 @@ public class FtpFetchProtocol implements FetchProtocol
                     throw new BagTransferException(msg);
                 }
                 
-                log.trace("Logging in with credentials: {0}/xxxxx", username);
-                if (!this.client.login(username, password))
-                {
-                    this.client.disconnect();
-                    throw new BagTransferException("Could not log in.");
-                }
+                this.login();
                 
-                log.trace("Connected to: {0}", this.client.getSystemName());
+                log.trace(format("Connected to: {0}", this.client.getSystemName()));
                 
                 log.trace("Setting PASV mode and setting binary file type.");
                 this.client.enterLocalPassiveMode();
@@ -121,6 +142,46 @@ public class FtpFetchProtocol implements FetchProtocol
                 throw new BagTransferException(e);
             }
         }
+        
+        private void login() throws IOException, BagTransferException
+        {
+        	log.trace("Obtaining credentials.");
+            PasswordAuthentication credentials = Authenticator.requestPasswordAuthentication(this.client.getRemoteAddress(), this.client.getRemotePort(), "FTP", "Login", "Password");
+            
+            try
+            {
+            	String username;
+            	String password;
+            	
+                if (credentials == null)
+                {
+                    log.trace("No credentials available.  Login will be anonymous.");
+                    username = "anonymous";
+                    password = "bagitlibrary@loc.gov";
+                }
+                else
+                {
+                	username = credentials.getUserName();
+                	
+                	// It's unfortunate, but the FTP Library requires a string,
+                	// which means we cannot clear the credentials from memory when
+                	// we're done.  Oh well.
+                	password = new String(credentials.getPassword());
+                }
+                    
+                log.trace(format("Logging in with credentials: {0}/***hidden***", username));
+                
+                if (!this.client.login(username, password))
+                {
+                    this.client.disconnect();
+                    throw new BagTransferException("Could not log in.");
+                }
+            }
+            finally
+            {
+            	Arrays.fill(credentials.getPassword(), 'x');
+            }
+        }
     }
     
     private class LogCommandListener implements ProtocolCommandListener
@@ -128,13 +189,22 @@ public class FtpFetchProtocol implements FetchProtocol
         @Override
         public void protocolCommandSent(ProtocolCommandEvent event)
         {
-            log.trace(">> {0}", event);
+        	if (log.isTraceEnabled())
+        	{
+        		String msg = event.getMessage().trim();
+        		
+        		if (msg.startsWith("PASS"))
+        			msg = "PASS ***hidden***";
+
+        		log.trace(">> " + msg);
+        	}
         }
 
         @Override
         public void protocolReplyReceived(ProtocolCommandEvent event)
         {
-            log.trace("<< {0}", event);
+        	if (log.isTraceEnabled())
+        		log.trace("<< " + event.getMessage().trim());
         }
     }
 }
