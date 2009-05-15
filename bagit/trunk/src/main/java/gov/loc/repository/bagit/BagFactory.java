@@ -92,7 +92,7 @@ public class BagFactory {
 	public Bag createBag(File bagFile, Version version, LoadOption loadOption) {		
 		Bag bag = this.createBag(version);
 		bag.setFile(bagFile);
-		if (LoadOption.BY_PAYLOAD_MANIFESTS.equals(loadOption)) {
+		if (loadOption == null || LoadOption.BY_PAYLOAD_MANIFESTS.equals(loadOption)) {
 			bag.loadFromPayloadManifests();
 		} else if (LoadOption.BY_PAYLOAD_FILES.equals(loadOption)) {
 			bag.loadFromPayloadFiles();
