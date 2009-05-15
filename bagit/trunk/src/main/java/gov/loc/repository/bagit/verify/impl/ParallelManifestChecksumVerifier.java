@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -137,12 +138,19 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
                                     String fixity = manifest.get(filePath);
                                     InputStream stream =  file.newInputStream();
                                     
-                                    if (!MessageDigestHelper.fixityMatches(stream, alg, fixity))
+                                    try
                                     {
-                                        String msg = MessageFormat.format("Fixity failure in manifest {0}: {1}", manifest.getFilepath(), filePath);
-                                        log.debug(msg);
-                                        result.addMessage(msg);
-                                        result.setSuccess(false); 
+	                                    if (!MessageDigestHelper.fixityMatches(stream, alg, fixity))
+	                                    {
+	                                        String msg = MessageFormat.format("Fixity failure in manifest {0}: {1}", manifest.getFilepath(), filePath);
+	                                        log.debug(msg);
+	                                        result.addMessage(msg);
+	                                        result.setSuccess(false); 
+	                                    }
+                                    }
+                                    finally
+                                    {
+                                    	IOUtils.closeQuietly(stream);
                                     }
                                 }
                                 else
