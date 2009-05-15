@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.impl;
 
+import static java.text.MessageFormat.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,17 +72,29 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 					this.next = null;
 					return;
 				}
-				String[] splitString = line.split("\\s+", 3);
-				if (splitString.length == 3)
+				else
 				{
-					Long size = null;
-					if (! FetchTxt.NO_SIZE_MARKER.equals(splitString[1])) {
-						Long.parseLong(splitString[1]);
-					}
-					this.next = new FilenameSizeUrl(splitString[2], size, splitString[0]);
-					return;
-				}						
+					line = line.trim();
+				}
 				
+				if (line.length() > 0)
+				{
+					String[] splitString = line.split("\\s+", 3);
+					
+					if (splitString.length == 3)
+					{
+						Long size = null;
+						if (! FetchTxt.NO_SIZE_MARKER.equals(splitString[1])) {
+							Long.parseLong(splitString[1]);
+						}
+						this.next = new FilenameSizeUrl(splitString[2], size, splitString[0]);
+						return;
+					}
+					else
+					{
+						log.warn(format("Invalid fetch line: {0}", line));
+					}
+				}
 			}
 		}
 		catch(IOException ex)
