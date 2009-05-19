@@ -8,22 +8,23 @@ import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.ProgressListenable;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 
-public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressListenable {
+public class ValidVerifierImpl extends LongRunningOperationBase implements ValidVerifier {
 
 	private static final Log log = LogFactory.getLog(ValidVerifierImpl.class);
 	
 	private CompleteVerifier completeVerifier;
 	private ManifestChecksumVerifier manifestVerifier;
-	private CancelIndicator cancelIndicator;
 	
 	@Override
 	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;
+		super.setCancelIndicator(cancelIndicator);
+		
 		if (completeVerifier instanceof Cancellable) {
 			((Cancellable)completeVerifier).setCancelIndicator(cancelIndicator);
 		}
@@ -33,12 +34,9 @@ public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressLi
 	}
 
 	@Override
-	public CancelIndicator getCancelIndicator() {
-		return this.cancelIndicator;
-	}
-	
-	@Override
 	public void setProgressListener(ProgressListener progressListener) {
+		super.setProgressListener(progressListener);
+		
 		if (completeVerifier instanceof ProgressListenable) {
 			((ProgressListenable)completeVerifier).setProgressListener(progressListener);
 		}
@@ -56,7 +54,7 @@ public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressLi
 	public SimpleResult verify(Bag bag) {
 		//Is complete
 		SimpleResult result = this.completeVerifier.verify(bag);
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+		if (this.isCancelled()) return null;
 		if (! result.isSuccess())
 		{
 			return result;
@@ -64,13 +62,13 @@ public class ValidVerifierImpl implements ValidVerifier, Cancellable, ProgressLi
 
 		//Every checksum checks
 		result = this.manifestVerifier.verify(bag.getTagManifests(), bag);
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+		if (this.isCancelled()) return null;
 		if (! result.isSuccess()) {
 			return result;
 		}
 
 		result = this.manifestVerifier.verify(bag.getPayloadManifests(), bag);
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+		if (this.isCancelled()) return null;
 		if (! result.isSuccess()) {
 			return result;
 		}

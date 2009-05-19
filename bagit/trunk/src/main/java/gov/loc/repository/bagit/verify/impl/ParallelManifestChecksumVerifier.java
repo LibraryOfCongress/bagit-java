@@ -18,11 +18,8 @@ import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressListener;
-import gov.loc.repository.bagit.ProgressListenable;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
@@ -37,31 +34,13 @@ import gov.loc.repository.bagit.verify.Verifier;
  * 
  * @version $Id$
  */
-public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifier, Cancellable, ProgressListenable
+public class ParallelManifestChecksumVerifier extends LongRunningOperationBase implements ManifestChecksumVerifier
 {
     private static final Log log = LogFactory.getLog(ParallelManifestChecksumVerifier.class);
-    
-    private CancelIndicator cancelIndicator;
-    private ProgressListener progressListener;
     
     public ParallelManifestChecksumVerifier()
     {
         this.numberOfThreads = Runtime.getRuntime().availableProcessors();
-    }
-    
-    @Override
-    public void setCancelIndicator(CancelIndicator cancelIndicator) {
-    	this.cancelIndicator = cancelIndicator;    	
-    }
-    
-	@Override
-	public CancelIndicator getCancelIndicator() {
-		return this.cancelIndicator;
-	}
-    
-    @Override
-    public void setProgressListener(ProgressListener progressListener) {
-    	this.progressListener = progressListener;    	
     }
     
     public int getNumberOfThreads()
@@ -109,9 +88,9 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
             int manifestTotal = manifests.size();
             for (final Manifest manifest : manifests)
             {
-            	if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return null;
+            	if (this.isCancelled()) return null;
             	manifestCount++;
-            	if (this.progressListener != null) this.progressListener.reportProgress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
+            	this.progress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
             	final Manifest.Algorithm alg = manifest.getAlgorithm();
                 final Iterator<String> manifestIterator = manifest.keySet().iterator();
                 ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
@@ -127,8 +106,8 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
                             
                             for (String filePath : safeIterator)
                             {
-                            	if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-                            	if (progressListener != null) progressListener.reportProgress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
+                            	if (isCancelled()) return null;
+                            	progress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
                             	if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
                                 BagFile file = bag.getBagFile(filePath);
@@ -199,7 +178,7 @@ public class ParallelManifestChecksumVerifier implements ManifestChecksumVerifie
             threadPool.shutdown();
             log.debug("Thread pool shut down.");
         }
-    	if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return null;
+    	if (this.isCancelled()) return null;
     	return finalResult;
     }
     

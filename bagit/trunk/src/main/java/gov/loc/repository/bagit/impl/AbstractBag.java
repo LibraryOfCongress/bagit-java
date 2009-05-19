@@ -22,8 +22,6 @@ import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
@@ -33,6 +31,7 @@ import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -326,46 +325,41 @@ public abstract class AbstractBag implements Bag {
 		
 	@Override
 	public void accept(BagVisitor visitor) {
-		CancelIndicator cancelIndicator = null;
-		if (visitor instanceof Cancellable) {
-			cancelIndicator = ((Cancellable)visitor).getCancelIndicator();
-		}
-		
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 		
 		visitor.startBag(this);
 
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 
 		visitor.startTags();
 		
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 		
 		for(String filepath : this.tagMap.keySet()) {
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+			if (CancelUtil.isCancelled(visitor)) return;
 			visitor.visitTag(this.tagMap.get(filepath));
 		}
 		
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 
 		visitor.endTags();
 
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 		
 		visitor.startPayload();
 		
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 		
 		for(String filepath : this.payloadMap.keySet()) {
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+			if (CancelUtil.isCancelled(visitor)) return;
 			visitor.visitPayload(this.payloadMap.get(filepath));
 		}
 		
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 
 		visitor.endPayload();
 	
-		if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+		if (CancelUtil.isCancelled(visitor)) return;
 		
 		visitor.endBag();
 	}

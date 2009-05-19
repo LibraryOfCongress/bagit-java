@@ -11,41 +11,21 @@ import org.apache.commons.vfs.FileTypeSelector;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressListener;
-import gov.loc.repository.bagit.ProgressListenable;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 
-public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, ProgressListenable {
+public class CompleteVerifierImpl extends LongRunningOperationBase implements CompleteVerifier {
 
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
-	private CancelIndicator cancelIndicator = null;
-	private ProgressListener progressListener = null;
 	private boolean missingBagItTolerant = false;
 	
 	@Override
 	public void setMissingBagItTolerant(boolean missingBagItTolerant) {
 		this.missingBagItTolerant = missingBagItTolerant;
-	}
-	
-	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;
-	}
-	
-	@Override
-	public CancelIndicator getCancelIndicator() {
-		return this.cancelIndicator;
-	}
-	
-	@Override
-	public void setProgressListener(ProgressListener progressListener) {
-		this.progressListener = progressListener;
 	}
 	
 	@Override
@@ -69,16 +49,16 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 				result.addMessage(MessageFormat.format("Version is not {0}.", bag.getBagConstants().getVersion()));				
 			}
 
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+			if (this.isCancelled()) return null;
 			
 			//All payload files are in data directory
 			int total = bag.getPayload().size();
 			int count = 0;
 			for(BagFile bagFile : bag.getPayload()) {
-				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+				if (this.isCancelled()) return null;
 				String filepath = bagFile.getFilepath();
 				count++;
-				if (this.progressListener != null) this.progressListener.reportProgress("verifying payload file in data directory", filepath, count, total);
+				this.progress("verifying payload file in data directory", filepath, count, total);
 				if (! filepath.startsWith(bag.getBagConstants().getDataDirectory() + '/')) {
 					result.setSuccess(false);
 					result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory.", filepath, bag.getBagConstants().getDataDirectory()));									
@@ -90,10 +70,10 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 			for(BagFile bagFile : bag.getPayload()) {
 				String filepath = bagFile.getFilepath();
 				count++;
-				if (this.progressListener != null) this.progressListener.reportProgress("verifying payload file in at least one manifest", filepath, count, total);
+				this.progress("verifying payload file in at least one manifest", filepath, count, total);
 				boolean inManifest = false;
 				for(Manifest manifest : bag.getPayloadManifests()) {
-					if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+					if (this.isCancelled()) return null;
 					if (manifest.containsKey(filepath)) {
 						inManifest = true;
 						break;
@@ -110,9 +90,9 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 			count = 0;
 			for(Manifest manifest : bag.getPayloadManifests()) {			
 				count++;
-				if (this.progressListener != null) this.progressListener.reportProgress("verifying payload files in manifest exist", manifest.getFilepath(), count, total);
+				this.progress("verifying payload files in manifest exist", manifest.getFilepath(), count, total);
 				this.checkManifest(manifest, bag, result);
-				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+				if (this.isCancelled()) return null;
 			}
 
 			//Every tag file exists
@@ -120,9 +100,9 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 			count = 0;
 			for(Manifest manifest : bag.getTagManifests()) {
 				count++;
-				if (this.progressListener != null) this.progressListener.reportProgress("verifying tag files in manifest exist", manifest.getFilepath(), count, total);
+				this.progress("verifying tag files in manifest exist", manifest.getFilepath(), count, total);
 				this.checkManifest(manifest, bag, result);
-				if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+				if (this.isCancelled()) return null;
 			}
 			
 			//Additional checks if an existing Bag
@@ -131,7 +111,7 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 				//Only directory is a data directory
 				for(FileObject fileObject : bagFileObject.getChildren())
 				{
-					if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+					if (this.isCancelled()) return null;
 					if (fileObject.getType() == FileType.FOLDER) {
 						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
 						if (! folderName.equals(bag.getBagConstants().getDataDirectory())) {
@@ -147,10 +127,10 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 					total = fileObjects.length;
 					count = 0;
 					for(FileObject fileObject : fileObjects) {
-						if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
+						if (this.isCancelled()) return null;
 						String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
 						count++;
-						if (this.progressListener != null) this.progressListener.reportProgress("verifying payload files on disk are in bag", filepath, count, total);
+						this.progress("verifying payload files on disk are in bag", filepath, count, total);
 						if (bag.getBagFile(filepath) == null) {
 							result.setSuccess(false);
 							result.addMessage(MessageFormat.format("Bag has file {0} not found in manifest file.", filepath));
@@ -171,9 +151,9 @@ public class CompleteVerifierImpl implements CompleteVerifier, Cancellable, Prog
 		int manifestTotal = manifest.keySet().size();
 		int manifestCount = 0;
 		for(String filepath : manifest.keySet()) {
-			if (cancelIndicator != null && cancelIndicator.performCancel()) return;
+			if (this.isCancelled()) return;
 			manifestCount++;
-			if (this.progressListener != null) this.progressListener.reportProgress("verifying files in manifest exist", filepath, manifestCount, manifestTotal);
+			this.progress("verifying files in manifest exist", filepath, manifestCount, manifestTotal);
 			BagFile bagFile = bag.getBagFile(filepath);					
 			if (bagFile == null || ! bagFile.exists())
 			{

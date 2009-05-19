@@ -22,18 +22,15 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
-import gov.loc.repository.bagit.ProgressListener;
-import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
 
-public class DefaultCompleter implements Completer, Cancellable, ProgressListenable {
+public class DefaultCompleter extends LongRunningOperationBase implements Completer {
 	
     private static final Log log = LogFactory.getLog(DefaultCompleter.class);
 	
@@ -47,8 +44,6 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	private Algorithm tagManifestAlgorithm = Algorithm.MD5;
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
-	private CancelIndicator cancelIndicator;
-	private ProgressListener progressListener;
 	private BagFactory bagFactory;
 	private int numberOfThreads = 1;
 	
@@ -101,16 +96,6 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 	}
 		
 	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;		
-	}
-	
-	@Override
-	public void setProgressListener(ProgressListener progressListener) {
-		this.progressListener = progressListener;
-	}
-	
-	@Override
 	public Bag complete(Bag bag) {		
 		this.newBag = this.bagFactory.createBag(bag);
 		this.newBag.putBagFiles(bag.getPayload());
@@ -119,9 +104,9 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		this.handleBagInfo();
 		this.handlePayloadManifests();
 		this.handleTagManifests();
-		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
-			return null;
-		}
+		
+		if (this.isCancelled()) return null;
+		
 		return this.newBag;
 	}
 	
@@ -183,10 +168,12 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		int manifestCount = 0;
 		for(Manifest manifest : manifests) {			
 			manifestCount++;
-			if (this.progressListener != null) progressListener.reportProgress("cleaning manifest", manifest.getFilepath(), manifestCount, manifestTotal);
+			
+			this.progress("cleaning manifest", manifest.getFilepath(), manifestCount, manifestTotal);
+			
 			List<String> deleteFilepaths = new ArrayList<String>();
 			for(String filepath : manifest.keySet()) {
-				if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) return;
+				if (this.isCancelled()) return;
 				BagFile bagFile = this.newBag.getBagFile(filepath);
 				if (bagFile == null || ! bagFile.exists()) {
 					deleteFilepaths.add(filepath);
@@ -219,8 +206,8 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
 		                Map<String,String> manifestEntries = new LinkedHashMap<String, String>();
 		                
 		        		for(final BagFile bagFile : safeIterator) {
-		        			if (cancelIndicator != null && cancelIndicator.performCancel()) return null;
-		        			if (progressListener != null) progressListener.reportProgress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
+		        			if (isCancelled()) return null;
+		        			progress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
 		        			if (newBag.getChecksums(bagFile.getFilepath()).isEmpty()) {
 		        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
 		        				log.debug(MessageFormat.format("Generated fixity for {0}.", bagFile.getFilepath()));
@@ -252,10 +239,5 @@ public class DefaultCompleter implements Completer, Cancellable, ProgressListena
         	log.debug("Thread pool shut down.");
         }
 		this.newBag.putBagFile(manifest);
-	}
-
-	@Override
-	public CancelIndicator getCancelIndicator() {
-		return this.cancelIndicator;
 	}
 }

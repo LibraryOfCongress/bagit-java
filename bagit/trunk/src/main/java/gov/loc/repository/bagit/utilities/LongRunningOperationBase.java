@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.verify.impl;
+package gov.loc.repository.bagit.utilities;
 
 import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
