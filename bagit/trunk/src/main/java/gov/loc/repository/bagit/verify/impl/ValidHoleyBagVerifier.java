@@ -50,16 +50,6 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 			log.trace("Confirming version specified matches version in declaration.");
 			if (bag.getBagItTxt() != null && !bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion()))
 				this.fail("Version is not {0}.", bag.getBagConstants().getVersion());				
-
-			log.trace("Verifying tag manifest.");
-			for (int total = bag.getTagManifests().size(), i = 0; i < total; i++)
-			{
-				if (this.isCancelled()) return null;
-				
-				Manifest manifest = bag.getTagManifests().get(i);
-				this.progress("verifying tag manifest", manifest.getFilepath(), i, total);
-				this.checkManifest(manifest);
-			}
 			
 			//Additional checks if an existing Bag
 			if (bag.getFile() != null)
