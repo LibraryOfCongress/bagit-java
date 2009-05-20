@@ -22,22 +22,35 @@ public class NameValueReaderImpl implements NameValueReader {
 	
 	public NameValueReaderImpl(String encoding, InputStream in, String type) {
 		this.type = type;
+
+		InputStreamReader fr = null;
+		BufferedReader reader = null;
 		try
 		{
 			// Replaced FileReader with InputStreamReader since all bagit manifest and metadata files must be UTF-8
 			// encoded.  If UTF-8 is not explicitly set then data will be read in default native encoding.
-			InputStreamReader fr = new InputStreamReader(in, encoding);
-			BufferedReader reader = new BufferedReader(fr);
+			fr = new InputStreamReader(in, encoding);
+			reader = new BufferedReader(fr);
 			String line = reader.readLine();
 			while(line != null) {
 				lines.addLast(line);
 				line = reader.readLine();
 			}
-			reader.close();
 		}
 		catch(Exception ex)
 		{
 			throw new RuntimeException(ex);
+		}
+		finally {
+			try {
+				if (fr != null) {
+					fr.close();
+				}
+				if (reader != null) {
+					reader.close();
+				}
+			} catch (Exception ex) {				
+			}
 		}
 	}
 		

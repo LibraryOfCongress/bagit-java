@@ -80,6 +80,9 @@ public class ZipWriter extends AbstractWriter {
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
+		if (this.newBagFile != null) {
+			this.switchTemp(this.newBagFile);
+		}
 		if (this.newBag != null) {
 			for(BagFile bagFile : this.tagBagFiles) {
 				this.newBag.putBagFile(bagFile);
@@ -134,7 +137,6 @@ public class ZipWriter extends AbstractWriter {
 		log.info("Writing bag");
 		
 		this.newBagFile = file;
-
 		if (this.bagDir == null) {
 			this.bagDir = file.getName().replaceFirst("\\..*$", "");	
 		}
@@ -144,14 +146,14 @@ public class ZipWriter extends AbstractWriter {
 			if (parentDir != null && ! parentDir.exists()) {
 				FileUtils.forceMkdir(parentDir);
 			}
-			this.out = new FileOutputStream(file);
+			this.out = new FileOutputStream(this.getTempFile(file));
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
 		
 		bag.accept(this);
-		
+				
 		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
 			return null;
 		}

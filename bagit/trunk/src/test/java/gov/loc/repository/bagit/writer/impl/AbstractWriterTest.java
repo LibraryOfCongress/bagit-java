@@ -67,5 +67,19 @@ public abstract class AbstractWriterTest {
 		assertNull(newBag);
 		
 	}
+	
+	@Test
+	public void testOverwrite() throws Exception {
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Writer writer = this.getBagWriter();
+		
+		Bag newBag = writer.write(bag, this.getBagFile());
+		assertTrue(newBag.verifyValid().isSuccess());
+
+		//OK, now write the bag again
+		Bag newestBag = writer.write(newBag, this.getBagFile());
+		assertTrue(newestBag.verifyValid().isSuccess());
+		
+	}
 
 }

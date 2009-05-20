@@ -88,7 +88,7 @@ public class FileSystemWriter extends AbstractWriter {
 				FileUtils.forceMkdir(parentDir);
 			}
 			
-			FileOutputStream out = new FileOutputStream(file);
+			FileOutputStream out = new FileOutputStream(this.getTempFile(file));
 			InputStream in = bagFile.newInputStream();
 			byte[] dataBytes = new byte[BUFFERSIZE];
 			int nread = in.read(dataBytes);
@@ -98,6 +98,7 @@ public class FileSystemWriter extends AbstractWriter {
 			}
 			in.close();
 			out.close();
+			this.switchTemp(file);
 		}
 		catch (Exception ex) {
 			throw new RuntimeException(ex);

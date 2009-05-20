@@ -92,6 +92,10 @@ public class TarWriter extends AbstractWriter {
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
+		if (this.newBagFile != null) {
+			this.switchTemp(this.newBagFile);
+		}
+		
 		if (this.newBag != null) {
 			for(BagFile bagFile : this.tagBagFiles) {
 				this.newBag.putBagFile(bagFile);
@@ -166,7 +170,7 @@ public class TarWriter extends AbstractWriter {
 			if (parentDir != null && ! parentDir.exists()) {
 				FileUtils.forceMkdir(parentDir);
 			}
-			OutputStream out = new FileOutputStream(file);
+			OutputStream out = new FileOutputStream(this.getTempFile(file));
 			this.init(out);
 		}
 		catch(Exception ex) {
