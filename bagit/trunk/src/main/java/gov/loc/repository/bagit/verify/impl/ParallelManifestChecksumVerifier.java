@@ -89,8 +89,10 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
             for (final Manifest manifest : manifests)
             {
             	if (this.isCancelled()) return null;
+            	
             	manifestCount++;
             	this.progress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
+            	
             	final Manifest.Algorithm alg = manifest.getAlgorithm();
                 final Iterator<String> manifestIterator = manifest.keySet().iterator();
                 ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
@@ -110,6 +112,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                             	progress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
                             	if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
+                            	
                                 BagFile file = bag.getBagFile(filePath);
                                 
                                 if (file != null && file.exists())
@@ -178,7 +181,9 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
             threadPool.shutdown();
             log.debug("Thread pool shut down.");
         }
+        
     	if (this.isCancelled()) return null;
+    	
     	return finalResult;
     }
     

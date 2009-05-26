@@ -17,8 +17,6 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.impl.VFSBagFile;
@@ -48,16 +46,6 @@ public class ZipWriter extends AbstractWriter {
 		this.bagDir = bagDir;
 	}
 		
-	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;
-	}
-	
-	@Override
-	public void setProgressListener(ProgressListener progressListener) {
-		this.progressListener = progressListener;		
-	}
-	
 	@Override
 	public void startBag(Bag bag) {
 		this.zipOut = new ZipOutputStream(this.out);
@@ -113,7 +101,7 @@ public class ZipWriter extends AbstractWriter {
 	
 	private void write(BagFile bagFile) {
 		this.fileCount++;
-		if (this.progressListener != null) this.progressListener.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
+		this.progress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		try {
 			//Add zip entry
 			zipOut.putNextEntry(new ZipEntry(this.bagDir + "/" + bagFile.getFilepath()));
@@ -154,9 +142,7 @@ public class ZipWriter extends AbstractWriter {
 		
 		bag.accept(this);
 				
-		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
-			return null;
-		}
+		if (this.isCancelled()) return null;
 		
 		return this.newBag;		
 	}
@@ -166,9 +152,7 @@ public class ZipWriter extends AbstractWriter {
 		
 		bag.accept(this);
 		
-		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
-			return null;
-		}
+		if (this.isCancelled()) return null;
 		
 		return this.newBag;		
 	}

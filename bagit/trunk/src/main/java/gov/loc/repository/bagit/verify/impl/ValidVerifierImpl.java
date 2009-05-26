@@ -34,14 +34,14 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 	}
 
 	@Override
-	public void setProgressListener(ProgressListener progressListener) {
-		super.setProgressListener(progressListener);
+	public void addProgressListener(ProgressListener progressListener) {
+		super.addProgressListener(progressListener);
 		
 		if (completeVerifier instanceof ProgressListenable) {
-			((ProgressListenable)completeVerifier).setProgressListener(progressListener);
+			((ProgressListenable)completeVerifier).addProgressListener(progressListener);
 		}
 		if (manifestVerifier instanceof ProgressListenable) {
-			((ProgressListenable)manifestVerifier).setProgressListener(progressListener);
+			((ProgressListenable)manifestVerifier).addProgressListener(progressListener);
 		}
 	}
 	

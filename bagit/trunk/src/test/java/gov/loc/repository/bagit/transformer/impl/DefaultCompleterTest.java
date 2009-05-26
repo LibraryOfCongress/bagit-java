@@ -29,7 +29,7 @@ public class DefaultCompleterTest {
 	@Before
 	public void setup() throws Exception {
 		completer = new DefaultCompleter(this.bagFactory);
-		completer.setProgressListener(new LoggingProgressListener());
+		completer.addProgressListener(new LoggingProgressListener());
 		bag = bagFactory.createBag();
 		bag.addFileToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir1", BagFactory.LATEST.toString().toLowerCase())));
 		bag.addFileToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir2", BagFactory.LATEST.toString().toLowerCase())));

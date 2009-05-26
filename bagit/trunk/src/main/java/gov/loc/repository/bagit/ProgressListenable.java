@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit;
 
 public interface ProgressListenable {
-	void setProgressListener(ProgressListener progressListener);
+	void addProgressListener(ProgressListener progressListener);
+	void removeProgressListener(ProgressListener progressListener);
 }

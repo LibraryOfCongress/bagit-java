@@ -488,18 +488,18 @@ public abstract class AbstractBagImplTest {
 		
 		CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
 		completeVerifier.setCancelIndicator(new DummyCancelIndicator(5));
-		completeVerifier.setProgressListener(new PrintingProgressListener());
+		completeVerifier.addProgressListener(new PrintingProgressListener());
 		assertNull(bag.verify(completeVerifier));
 		
 		ParallelManifestChecksumVerifier manifestVerifier = new ParallelManifestChecksumVerifier();
 		manifestVerifier.setCancelIndicator(new DummyCancelIndicator(5));
-		manifestVerifier.setProgressListener(new PrintingProgressListener());
+		manifestVerifier.addProgressListener(new PrintingProgressListener());
 
 		assertNull(manifestVerifier.verify(bag.getPayloadManifests(), bag));
 		
 		ValidVerifierImpl validVerifier = new ValidVerifierImpl(completeVerifier, manifestVerifier);
 		validVerifier.setCancelIndicator(new DummyCancelIndicator(10));
-		validVerifier.setProgressListener(new PrintingProgressListener());
+		validVerifier.addProgressListener(new PrintingProgressListener());
 		assertNull(bag.verify(validVerifier));
 				
 	}

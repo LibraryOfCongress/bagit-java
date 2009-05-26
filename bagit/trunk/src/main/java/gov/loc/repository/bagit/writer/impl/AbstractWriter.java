@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.writer.impl;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
 
@@ -14,8 +15,8 @@ import gov.loc.repository.bagit.writer.Writer;
 
 public abstract class AbstractWriter extends AbstractBagVisitor implements Writer {
 
-	protected CancelIndicator cancelIndicator = null;
-	protected ProgressListener progressListener = null;
+	private CancelIndicator cancelIndicator = null;
+	private ArrayList<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
 	protected BagFactory bagFactory;
 	
 	public AbstractWriter(BagFactory bagFactory) {
@@ -32,11 +33,29 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 		return this.cancelIndicator;
 	}
 	
-	@Override
-	public void setProgressListener(ProgressListener progressListener) {
-		this.progressListener = progressListener;
+	protected boolean isCancelled()
+	{
+		return this.cancelIndicator != null && this.cancelIndicator.performCancel();
 	}
 	
+	@Override
+	public void addProgressListener(ProgressListener progressListener) {
+		this.progressListeners.add(progressListener);
+	}
+
+	@Override
+	public void removeProgressListener(ProgressListener progressListener) {
+		this.progressListeners.remove(progressListener);
+	}
+	
+	protected void progress(String activity, String item, int count, int total)
+	{
+		for (ProgressListener listener : this.progressListeners)
+		{
+			listener.reportProgress(activity, item, count, total);
+		}
+	}
+
 	protected File getTempFile(File file) {
 		return new File(file.getPath() + ".biltemp");
 	}
@@ -56,5 +75,4 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 		}
 
 	}
-
 }

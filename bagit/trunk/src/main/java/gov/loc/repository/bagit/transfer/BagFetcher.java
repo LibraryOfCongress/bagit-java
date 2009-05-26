@@ -1,9 +1,12 @@
 package gov.loc.repository.bagit.transfer;
 
+import gov.loc.repository.bagit.ActiveCancellable;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.FetchTxt;
+import gov.loc.repository.bagit.ProgressListenable;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 
@@ -32,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Brian Vargas
  * @version $Id$
  */
-public class BagFetcher
+public class BagFetcher implements ActiveCancellable, ProgressListenable
 {
     private static final Log log = LogFactory.getLog(BagFetcher.class);
     
@@ -49,6 +52,24 @@ public class BagFetcher
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
     	this.numberOfThreads = Runtime.getRuntime().availableProcessors();
+    }
+    
+    @Override
+    public void cancel()
+    {
+    	//TODO Implement Cancel functionality
+    }
+    
+    @Override
+    public void addProgressListener(ProgressListener progressListener)
+    {
+    	//TODO Implement addProgressListener()
+    }
+    
+    @Override
+    public void removeProgressListener(ProgressListener progressListener)
+    {
+    	// TODO Implement removeProgressListener(0
     }
     
     public int getNumberOfThreads()

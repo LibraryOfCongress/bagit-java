@@ -125,7 +125,7 @@ public class TarWriter extends AbstractWriter {
 	
 	private void write(BagFile bagFile) {
 		this.fileCount++;
-		if (this.progressListener != null) this.progressListener.reportProgress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
+		this.progress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		try {
 			//Add tar entry
 			TarEntry entry = new TarEntry(this.bagDir + "/" + bagFile.getFilepath());
@@ -180,9 +180,7 @@ public class TarWriter extends AbstractWriter {
 		
 		bag.accept(this);
 		
-		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
-			return null;
-		}
+		if (this.isCancelled()) return null;
 		
 		return this.newBag;		
 
@@ -194,9 +192,7 @@ public class TarWriter extends AbstractWriter {
 		
 		bag.accept(this);
 		
-		if (this.cancelIndicator != null && this.cancelIndicator.performCancel()) {
-			return null;
-		}
+		if (this.isCancelled()) return null;
 		
 		return this.newBag;		
 

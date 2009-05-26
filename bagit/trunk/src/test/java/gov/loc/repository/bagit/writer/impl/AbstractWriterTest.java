@@ -37,7 +37,7 @@ public abstract class AbstractWriterTest {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
 		assertTrue(bag.verifyValid().isSuccess());
 		Writer writer = this.getBagWriter();
-		writer.setProgressListener(new PrintingProgressListener());
+		writer.addProgressListener(new PrintingProgressListener());
 		
 		Bag newBag = writer.write(bag, this.getBagFile());
 		assertNotNull(newBag);
