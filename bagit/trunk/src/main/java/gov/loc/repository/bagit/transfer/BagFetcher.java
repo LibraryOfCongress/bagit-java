@@ -32,10 +32,18 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Fetches a bag.  This class is not thread-safe.
  * 
+ * <p>The default {@link FetchFailStrategy failure strategy} for
+ * the fetcher will be {@link StandardFailStrategies#FAIL_FAST}.
+ * A new failure strategy may set with the
+ * {@link #setFetchFailStrategy(FetchFailStrategy) setFetchFailStrategy()}
+ * method.</p>
+ * 
  * @author Brian Vargas
  * @version $Id$
+ * @see FetchFailStrategy
+ * @see StandardFailStrategies
  */
-public class BagFetcher implements ActiveCancellable, ProgressListenable
+public final class BagFetcher implements ActiveCancellable, ProgressListenable
 {
     private static final Log log = LogFactory.getLog(BagFetcher.class);
     
@@ -48,6 +56,7 @@ public class BagFetcher implements ActiveCancellable, ProgressListenable
     private Map<String, FetchProtocol> protocolFactories = Collections.synchronizedMap(new HashMap<String, FetchProtocol>());
     private List<BagFile> newBagFiles;
     private BagFactory bagFactory;
+    private FetchFailStrategy failStrategy = StandardFailStrategies.FAIL_FAST;  // As per docs above.
     
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
@@ -58,6 +67,12 @@ public class BagFetcher implements ActiveCancellable, ProgressListenable
     public void cancel()
     {
     	//TODO Implement Cancel functionality
+    }
+    
+    private boolean isCancelled()
+    {
+    	// TODO Implement this.
+    	return false;
     }
     
     @Override
@@ -83,6 +98,35 @@ public class BagFetcher implements ActiveCancellable, ProgressListenable
             throw new IllegalArgumentException(format("Number of threads cannot be less than 1: {0}", numberOfThreads));
         
         this.numberOfThreads = numberOfThreads;
+    }
+    
+    /**
+     * Gets the current fetch failure strategy.
+     * @return The currently set failure strategy.
+     * 		   Will never be <c>null</c>.
+     */
+    public FetchFailStrategy getFetchFailStrategy()
+    {
+    	return this.failStrategy;
+    }
+    
+    /**
+     * Sets the failure strategy for this fetcher instance.
+     * The failure strategy should be set prior to beginning
+     * the actual fetch operation.  Behavior is undefined
+     * if the strategy is set after the
+     * {@link #fetch(Bag, FetchedFileDestinationFactory) fetch()}
+     * method has been called. 
+     * 
+     * @param strategy The new strategy to use.  Cannot be <c>null</c>.
+     * @throws NullPointerException Thrown if <c>null</c> is set.  
+     */
+    public void setFetchFailStrategy(FetchFailStrategy strategy)
+    {
+    	if (strategy == null)
+    		throw new NullPointerException("strategy cannot be null");
+    	
+    	this.failStrategy = strategy;
     }
         
     public void registerProtocol(String scheme, FetchProtocol protocol)
@@ -249,7 +293,7 @@ public class BagFetcher implements ActiveCancellable, ProgressListenable
         	{
 	            FetchTxt.FilenameSizeUrl target = getNextFetchItem();
 	            
-	            while (target != null)
+	            while (target != null && !isCancelled())
 	            {
 	                try
 	                {
@@ -276,18 +320,38 @@ public class BagFetcher implements ActiveCancellable, ProgressListenable
 	                    newBagFiles.add(committedFile); // synchronized
 
 		                log.trace(format("Fetched: {0} -> {1}", uri, destinationPath));
+
+		                target = getNextFetchItem();
 	                }
 	                catch (BagTransferException e)
 	                {
-	                    failedFetchTargets.add(target);
-	                    
-	                    String msg = format("Unable to fetch target: {0}", target);
-	                    result.addMessage(msg);
-	                    result.setSuccess(false);
-	                    log.error(msg, e);
+	                    String msg = format("An error occurred while fetching target: {0}", target);
+	                    log.warn(msg, e);
+
+	                    FetchFailureAction failureAction = failStrategy.registerFailure(target.getUrl(), target.getSize(), null);
+	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", target.getUrl(), target.getSize(), failureAction));
+	                	
+	                	if (failureAction == FetchFailureAction.RETRY_CURRENT)
+	                	{
+	                		// Do nothing.  The target variable will
+	                		// remain the same, and we'll loop back around.
+	                	}
+	                	else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT)
+	                	{
+	                		target = getNextFetchItem();
+	                	}
+	                	else // Default to STOP
+	                	{
+	                		// Stopping includes stopping all other thread
+	                		// Make them finish up, too.
+	                		cancel();
+	                		
+		                    failedFetchTargets.add(target);		                    
+		                    result.addMessage(msg);
+		                    result.setSuccess(false);
+		                    break;
+	                	}
 	                }
-	                
-	                target = getNextFetchItem();
 	            }
         	}
         	finally
