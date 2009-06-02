@@ -211,7 +211,7 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
         {
             if (resultBag.getFetchTxt() == null)
             {
-                resultBag.getBagPartFactory().createFetchTxt();
+                resultBag.putBagFile(resultBag.getBagPartFactory().createFetchTxt());
             }
 
             resultBag.getFetchTxt().clear();
@@ -328,7 +328,7 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
 	                    String msg = format("An error occurred while fetching target: {0}", target);
 	                    log.warn(msg, e);
 
-	                    FetchFailureAction failureAction = failStrategy.registerFailure(target.getUrl(), target.getSize(), null);
+	                    FetchFailureAction failureAction = failStrategy.registerFailure(target.getUrl(), target.getSize(), e);
 	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", target.getUrl(), target.getSize(), failureAction));
 	                	
 	                	if (failureAction == FetchFailureAction.RETRY_CURRENT)

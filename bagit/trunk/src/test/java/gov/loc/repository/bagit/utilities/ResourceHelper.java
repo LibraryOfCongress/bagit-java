@@ -55,9 +55,8 @@ public class ResourceHelper {
 			if (!initialCopyCompleted)
 			{
 				if (TEST_DATA_DIR.exists())
-					FileUtils.forceDelete(TEST_DATA_DIR);
+					FileUtils.deleteQuietly(TEST_DATA_DIR);
 				
-				FileUtils.forceMkdir(TEST_DATA_DIR);
 				FileUtils.copyDirectory(new File(PROJECT_DIR, "src/test/resources/bags"), new File(TEST_DATA_DIR, "bags"), HiddenFileFilter.VISIBLE, true);
 				
 				initialCopyCompleted = true;
