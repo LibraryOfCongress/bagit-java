@@ -29,6 +29,7 @@ import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
+import gov.loc.repository.bagit.utilities.VFSHelper;
 
 public class DefaultCompleter extends LongRunningOperationBase implements Completer {
 	
@@ -216,10 +217,12 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 		        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));
 		        			}
 		        		}
+		        		VFSHelper.closeFileSystemManager();
 		        		return manifestEntries;
 		            }
 	            });
 		    	futures.add(future);
+		    	
 		    }
             for (Future<Map<String,String>> future : futures) {
                 Map<String,String> futureResult = future.get();

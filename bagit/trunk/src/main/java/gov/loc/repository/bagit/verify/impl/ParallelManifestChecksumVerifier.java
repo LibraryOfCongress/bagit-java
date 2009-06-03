@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
+import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
 
@@ -70,33 +71,26 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
     
     @Override
     public SimpleResult verify(final List<Manifest> manifests, final Bag bag) {
-
-    	ExecutorService threadPool = Executors.newCachedThreadPool();
         
         log.debug(MessageFormat.format("Verifying manifests on {0} threads.", this.numberOfThreads));
         
-        SimpleResult finalResult;
-        
-        try
+        SimpleResult finalResult = new SimpleResult(true);
+                
+        int manifestCount = 0;
+        int manifestTotal = manifests.size();
+        for (final Manifest manifest : manifests)
         {
-            // Initialize finalResult here, so that the compiler will check that
-            // it is properly set to something elsewhere by all the catch
-            // blocks.
-            finalResult = new SimpleResult(true);
-            
-            int manifestCount = 0;
-            int manifestTotal = manifests.size();
-            for (final Manifest manifest : manifests)
-            {
-            	if (this.isCancelled()) return null;
-            	
-            	manifestCount++;
-            	this.progress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
-            	
-            	final Manifest.Algorithm alg = manifest.getAlgorithm();
-                final Iterator<String> manifestIterator = manifest.keySet().iterator();
-                ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
-
+        	if (this.isCancelled()) return null;
+        	
+        	manifestCount++;
+        	this.progress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
+        	
+        	final Manifest.Algorithm alg = manifest.getAlgorithm();
+            final Iterator<String> manifestIterator = manifest.keySet().iterator();
+            ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
+        	
+            ExecutorService threadPool = Executors.newCachedThreadPool();
+            try {
                 final int fileTotal = manifest.size();
                 final AtomicInteger fileCount = new AtomicInteger();
                 for (int i = 0; i < this.numberOfThreads; i++)
@@ -143,7 +137,8 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                     result.setSuccess(false);
                                 }
                             }
-                            
+                            //Close the FileSystemManager on this thread
+                            VFSHelper.closeFileSystemManager();
                             return result;
                         }
                     });
@@ -172,16 +167,15 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
 
                     finalResult.merge(futureResult);
                 }               
-                
+            } finally
+            {
+                log.debug("Shutting down thread pool.");
+                threadPool.shutdown();
+                log.debug("Thread pool shut down.");
             }
+
         }
-        finally
-        {
-            log.debug("Shutting down thread pool.");
-            threadPool.shutdown();
-            log.debug("Thread pool shut down.");
-        }
-        
+                
     	if (this.isCancelled()) return null;
     	
     	return finalResult;

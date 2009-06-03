@@ -37,7 +37,12 @@ public class FileSystemWriter extends AbstractWriter {
 	public void setSkipIfPayloadFileExists(boolean skip) {
 		this.skipIfPayloadFileExists = skip;
 	}
-		
+
+	@Override
+	protected Format getFormat(File file) {
+		return Format.FILESYSTEM;
+	}
+	
 	@Override
 	public void startBag(Bag bag) {
 		try {

@@ -10,7 +10,10 @@ import org.apache.commons.io.FileUtils;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.ProgressListener;
+import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.AbstractBagVisitor;
+import gov.loc.repository.bagit.utilities.FormatHelper;
+import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.writer.Writer;
 
 public abstract class AbstractWriter extends AbstractBagVisitor implements Writer {
@@ -60,6 +63,10 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 		return new File(file.getPath() + ".biltemp");
 	}
 	
+	protected Format getFormat(File file) {
+		return FormatHelper.getFormat(file);
+	}
+	
 	protected void switchTemp(File file) {
 		File tempFile = this.getTempFile(file);
 		if (! tempFile.exists()) {
@@ -67,7 +74,8 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 		}
 		try {
 			if (file.exists()) {
-					FileUtils.forceDelete(file);
+				VFSHelper.getFileObject(VFSHelper.getUri(file, this.getFormat(file)), true).close();
+				FileUtils.forceDelete(file);
 			}
 			FileUtils.moveFile(tempFile, file);
 		} catch (IOException e) {

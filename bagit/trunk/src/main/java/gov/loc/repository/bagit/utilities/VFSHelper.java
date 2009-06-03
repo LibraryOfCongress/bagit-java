@@ -8,6 +8,7 @@ import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
+import org.apache.commons.vfs.impl.DefaultFileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 
 import gov.loc.repository.bagit.Bag.Format;
@@ -19,8 +20,6 @@ public class VFSHelper {
 	/**
 	 * Thread local variable to store a {@link FileSystemManager}.  This solves the problem
 	 * of VFS not being thread-safe.
-	 * 
-	 * @see https://beryllium.rdc.lctl.gov/trac/transfer/ticket/352
 	 */
 	private static final ThreadLocal<FileSystemManager> fileSystemManager = new ThreadLocal<FileSystemManager>() {
 		@Override
@@ -77,6 +76,10 @@ public class VFSHelper {
 
 	public static FileObject getFileObject(File file) {		
 		return getFileObject(file, true);
+	}
+	
+	public static void closeFileSystemManager() {
+		((DefaultFileSystemManager)(fileSystemManager.get())).close();
 	}
 	
 	public static FileObject getFileObject(File file, boolean flushCache) {		
