@@ -13,6 +13,7 @@ public class TarWriterTest extends AbstractWriterTest {
 	File bagFile;
 	
 	@Before
+    @Override
 	public void setUp() throws Exception {
 		bagFile = new File(ResourceHelper.getFile("bags"), "foo.tar");
 	}

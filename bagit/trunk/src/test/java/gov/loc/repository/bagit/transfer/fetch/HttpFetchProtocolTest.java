@@ -38,10 +38,6 @@ import static org.junit.Assert.*;
 public class HttpFetchProtocolTest
 {
     private static final URI TEST1_URI = newV96Uri("data/test1.txt");
-    private static final URI TEST2_URI = newV96Uri("data/test2.txt");
-    private static final URI TEST3_URI = newV96Uri("data/dir1/test3.txt");
-    private static final URI TEST4_URI = newV96Uri("data/dir2/test4.txt");
-    private static final URI TEST5_URI = newV96Uri("data/dir2/dir3/test5.txt");
     
     private static Server webServer;
     private Mockery context = new JUnit4Mockery();

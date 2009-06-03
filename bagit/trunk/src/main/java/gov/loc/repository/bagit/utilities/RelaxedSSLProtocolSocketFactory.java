@@ -134,6 +134,7 @@ public class RelaxedSSLProtocolSocketFactory implements SecureProtocolSocketFact
 	    /**
 	     * All instances of SSLProtocolSocketFactory are the same.
 	     */
+	    @Override
 	    public boolean equals(Object obj) {
 	        return ((obj != null) && obj.getClass().equals(getClass()));
 	    }
@@ -141,6 +142,7 @@ public class RelaxedSSLProtocolSocketFactory implements SecureProtocolSocketFact
 	    /**
 	     * All instances of SSLProtocolSocketFactory have the same hash code.
 	     */
+	    @Override
 	    public int hashCode() {
 	        return getClass().hashCode();
 	    } 

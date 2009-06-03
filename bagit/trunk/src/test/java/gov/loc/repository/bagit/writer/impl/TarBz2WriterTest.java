@@ -12,6 +12,7 @@ public class TarBz2WriterTest extends AbstractWriterTest {
 	File bagFile;
 	
 	@Before
+    @Override
 	public void setUp() throws Exception {
 		bagFile = new File(ResourceHelper.getFile("bags"), "foo.tar.gz");
 	}

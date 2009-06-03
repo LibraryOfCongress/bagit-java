@@ -14,6 +14,7 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 
 	
 	@Before
+    @Override
 	public void setUp() throws Exception {
 		bagDir = new File(ResourceHelper.getFile("bags"), "foo");
 	}

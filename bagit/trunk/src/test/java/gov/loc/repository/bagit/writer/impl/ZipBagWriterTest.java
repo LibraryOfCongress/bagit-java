@@ -13,6 +13,7 @@ public class ZipBagWriterTest extends AbstractWriterTest {
 	File bagFile;
 	
 	@Before
+    @Override
 	public void setUp() throws Exception {
 		bagFile = new File(ResourceHelper.getFile("bags"), "foo.zip");
 	}

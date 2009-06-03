@@ -73,6 +73,7 @@ public class TarWriter extends AbstractWriter {
 		}
 	}
 		
+    @Override
 	public void startBag(Bag bag) {
 		this.tarOut = new TarOutputStream(this.out);
 		if (this.newBagFile != null) {
@@ -83,6 +84,7 @@ public class TarWriter extends AbstractWriter {
 
 	}
 	
+	@Override
 	public void endBag() {
 		try {
 			if (this.tarOut != null) {

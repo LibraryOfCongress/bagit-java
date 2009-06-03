@@ -1,9 +1,7 @@
 package gov.loc.repository.bagit.transfer.fetch;
 
 import static junit.framework.Assert.*;
-import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
