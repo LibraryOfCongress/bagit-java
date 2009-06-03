@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.NotFileFilter;
+import org.apache.commons.io.filefilter.PrefixFileFilter;
 
 public class ResourceHelper {
 	/**
@@ -23,6 +27,12 @@ public class ResourceHelper {
 	 * The unit test bag data directory.
 	 */
 	public static final File TEST_DATA_DIR = new File(TARGET_DIR, "unit-test-data");
+
+	/**
+	 * An {@link IOFileFilter} that filters out any hidden files,
+	 * or any files starting with "." (the UNIX hidden file convention).
+	 */
+	private static final IOFileFilter REAL_FILE_FILTER = new AndFileFilter(HiddenFileFilter.VISIBLE, new NotFileFilter(new PrefixFileFilter(".")));
 	
 	private static boolean initialCopyCompleted = false;
 
@@ -57,7 +67,7 @@ public class ResourceHelper {
 				if (TEST_DATA_DIR.exists())
 					FileUtils.deleteQuietly(TEST_DATA_DIR);
 				
-				FileUtils.copyDirectory(new File(PROJECT_DIR, "target/test-classes/bags"), new File(TEST_DATA_DIR, "bags"), HiddenFileFilter.VISIBLE, true);
+				FileUtils.copyDirectory(new File(PROJECT_DIR, "src/test/resources/bags"), new File(TEST_DATA_DIR, "bags"), REAL_FILE_FILTER, true);
 				
 				initialCopyCompleted = true;
 			}
