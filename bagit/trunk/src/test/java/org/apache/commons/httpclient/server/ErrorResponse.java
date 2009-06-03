@@ -43,6 +43,7 @@ import org.apache.commons.httpclient.HttpVersion;
  * 
  * @author Christian Kohlschuetter
  */
+@SuppressWarnings("all")
 public class ErrorResponse {
     
     private static final HashMap responses = new HashMap();

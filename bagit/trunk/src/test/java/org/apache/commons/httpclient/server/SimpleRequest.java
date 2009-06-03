@@ -47,6 +47,7 @@ import org.apache.commons.httpclient.NameValuePair;
  * 
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleRequest {
     
     public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";

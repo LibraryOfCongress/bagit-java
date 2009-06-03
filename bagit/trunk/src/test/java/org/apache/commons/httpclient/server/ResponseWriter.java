@@ -42,6 +42,7 @@ import java.io.UnsupportedEncodingException;
  * 
  * @author Christian Kohlschuetter
  */
+@SuppressWarnings("all")
 public class ResponseWriter extends FilterWriter {
     public static final String CRLF = "\r\n";
     public static final String ISO_8859_1 = "ISO-8859-1";

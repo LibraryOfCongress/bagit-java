@@ -49,6 +49,7 @@ import org.apache.commons.httpclient.StatusLine;
  * @author Christian Kohlschuetter
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleHttpServerConnection {
     
     private static final String HTTP_ELEMENT_CHARSET = "US-ASCII";

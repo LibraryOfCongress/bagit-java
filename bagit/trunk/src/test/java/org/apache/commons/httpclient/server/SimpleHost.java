@@ -33,6 +33,7 @@ package org.apache.commons.httpclient.server;
 /**
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleHost implements Cloneable {
 
     private String hostname = null;

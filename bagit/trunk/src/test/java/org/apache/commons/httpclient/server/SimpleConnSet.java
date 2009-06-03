@@ -39,6 +39,7 @@ import java.util.Set;
  * 
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleConnSet {
     
     private Set connections = new HashSet();

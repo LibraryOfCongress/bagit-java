@@ -46,6 +46,7 @@ import org.apache.commons.httpclient.ProtocolException;
  * @author Christian Kohlschuetter
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class RequestLine {
 
     private HttpVersion httpversion = null;

@@ -41,6 +41,7 @@ import java.util.Map;
  * 
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleConnManager {
     
     private Map connsets = new HashMap();

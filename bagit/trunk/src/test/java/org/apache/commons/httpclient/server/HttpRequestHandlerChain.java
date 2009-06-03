@@ -47,6 +47,7 @@ import java.util.List;
  * 
  * @author Christian Kohlschuetter
  */
+@SuppressWarnings("all")
 public class HttpRequestHandlerChain implements HttpRequestHandler {
     
     private List subhandlers = new ArrayList();

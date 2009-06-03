@@ -53,6 +53,7 @@ import org.apache.commons.httpclient.StatusLine;
  * @author Christian Kohlschuetter
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleResponse {
     
     public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";

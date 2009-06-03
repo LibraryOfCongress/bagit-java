@@ -40,6 +40,7 @@ import org.apache.commons.httpclient.Credentials;
  * @author Ortwin Glueck
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleProxy extends SimpleHttpServer {
     
     private SimpleConnManager connmanager = null; 

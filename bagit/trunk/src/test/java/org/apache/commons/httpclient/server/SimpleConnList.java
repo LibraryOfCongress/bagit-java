@@ -39,6 +39,7 @@ import java.util.List;
  * 
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleConnList {
     
     private List connections = new ArrayList();

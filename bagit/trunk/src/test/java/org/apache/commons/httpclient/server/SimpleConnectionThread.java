@@ -42,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Christian Kohlschuetter
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class SimpleConnectionThread extends Thread {
 
     private static final Log LOG = LogFactory.getLog(SimpleConnectionThread.class);

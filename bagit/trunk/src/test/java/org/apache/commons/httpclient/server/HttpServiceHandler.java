@@ -41,6 +41,7 @@ import org.apache.commons.httpclient.HttpVersion;
  * 
  * @author Oleg Kalnichevski
  */
+@SuppressWarnings("all")
 public class HttpServiceHandler implements HttpRequestHandler {
 
     private HttpService service = null;
