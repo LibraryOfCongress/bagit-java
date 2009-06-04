@@ -72,11 +72,11 @@ public class BagFetcherTest
 			
 			// Fetcher
 			one(mockFetcher).initialize(); when(fetcherState.is("new")); then(fetcherState.is("ready"));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class))); when(fetcherState.is("ready"));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class))); when(fetcherState.is("ready"));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class))); when(fetcherState.is("ready"));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class))); when(fetcherState.is("ready"));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
 		}});
 		

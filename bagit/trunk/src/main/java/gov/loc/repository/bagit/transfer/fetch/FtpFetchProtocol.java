@@ -21,6 +21,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
 import gov.loc.repository.bagit.transfer.BagTransferException;
+import gov.loc.repository.bagit.transfer.FetchContext;
 import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
@@ -67,7 +68,7 @@ public class FtpFetchProtocol implements FetchProtocol
         }
         
         @Override
-        public void fetchFile(URI uri, Long size, FetchedFileDestination destination) throws BagTransferException
+        public void fetchFile(URI uri, Long size, FetchedFileDestination destination, FetchContext context) throws BagTransferException
         {
             if (this.client == null)
             {

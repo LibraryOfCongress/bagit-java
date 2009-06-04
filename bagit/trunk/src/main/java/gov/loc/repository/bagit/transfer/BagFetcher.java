@@ -353,7 +353,7 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
 		                
 		                // Now do the fetch.
 		                log.trace(format("Fetching: {0} {1} {2}", uri, size == null ? "-" : size, destinationPath));
-		                fetcher.fetchFile(uri, size, destination);
+		                fetcher.fetchFile(uri, size, destination, new MyContext());
 
 		                // Finally, commit the file.
 		                log.trace("Committing destination.");
@@ -429,5 +429,21 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
         		fetcher.close();
         	}
         }
+    }
+    
+    private class MyContext implements FetchContext
+    {
+		public boolean isCancelled()
+		{
+			return isCancelled;
+		}
+
+		public void reportProgress(String activity, String item, long count, long total)
+		{
+			count = Math.min(count, Integer.MAX_VALUE);
+			total = Math.min(total, Integer.MAX_VALUE);
+			
+			BagFetcher.this.progress(activity, item, (int)count, (int)total);
+		}
     }
 }

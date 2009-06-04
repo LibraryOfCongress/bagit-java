@@ -6,6 +6,7 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.transfer.NullFetchContext;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
@@ -109,7 +110,7 @@ public class HttpFetchProtocolTest
         
         HttpFetchProtocol protocol = new HttpFetchProtocol();
         FileFetcher fetcher = protocol.createFetcher(TEST1_URI, null);
-        fetcher.fetchFile(TEST1_URI, null, destination);
+        fetcher.fetchFile(TEST1_URI, null, destination, new NullFetchContext());
         
         assertEquals(IOUtils.toString(TEST1_URI.toURL().openStream()), new String(stream.toByteArray()));
     }

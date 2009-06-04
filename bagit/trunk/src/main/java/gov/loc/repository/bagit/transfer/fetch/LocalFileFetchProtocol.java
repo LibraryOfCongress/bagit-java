@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.transfer.BagTransferException;
+import gov.loc.repository.bagit.transfer.FetchContext;
 import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
@@ -37,7 +38,7 @@ public class LocalFileFetchProtocol implements FetchProtocol
 		}
 		
 		@Override
-		public void fetchFile(URI uri, Long size, FetchedFileDestination destination) throws BagTransferException 
+		public void fetchFile(URI uri, Long size, FetchedFileDestination destination, FetchContext context) throws BagTransferException 
 		{
 			final String srcPath = uri.getPath();
 			final String dstPath = destination.getFilepath();

@@ -4,6 +4,7 @@ import static junit.framework.Assert.*;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.transfer.NullFetchContext;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
@@ -51,7 +52,7 @@ public class LocalFileFetchProtocolTest
 
 		FileFetcher fetcher = this.unit.createFetcher(uri, null);
 		FetchedFileDestination destinationLocation = destination.createDestination("data/test1.txt", null);
-		fetcher.fetchFile(uri, null, destinationLocation);
+		fetcher.fetchFile(uri, null, destinationLocation, new NullFetchContext());
 		BagFile bagFile = destinationLocation.commit();
 		
 		// Make sure the bag file comes out correctly.

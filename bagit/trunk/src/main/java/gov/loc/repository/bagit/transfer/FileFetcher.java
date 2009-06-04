@@ -59,7 +59,8 @@ public interface FileFetcher
      * 			  fetcher, then a {@link BagTransferException} should be thrown.
      * @param size The size of the file.  If no size was specified, this will be <c>null</c>.
      * @param destination The destination for the fetched file.
+     * @param context The context for this fetch.
      * @throws BagTransferException Thrown if the file could not be fetched for any reason.
      */
-	void fetchFile(URI uri, Long size, FetchedFileDestination destination) throws BagTransferException;
+	void fetchFile(URI uri, Long size, FetchedFileDestination destination, FetchContext context) throws BagTransferException;
 }
