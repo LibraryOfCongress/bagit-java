@@ -92,7 +92,7 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
     	this.progressListeners.remove(progressListener);
     }
     
-    private void progress(String activity, String item, int count, int total)
+    private void progress(String activity, String item, long count, long total)
     {
     	for (ProgressListener listener : this.progressListeners)
     	{

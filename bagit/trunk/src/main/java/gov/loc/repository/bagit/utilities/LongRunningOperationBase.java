@@ -37,7 +37,7 @@ public class LongRunningOperationBase implements Cancellable, ProgressListenable
 		return this.cancelIndicator != null && this.cancelIndicator.performCancel();
 	}
 	
-	protected void progress(String activity, String item, int count, int total)
+	protected void progress(String activity, String item, long count, long total)
 	{
 		for (ProgressListener listener : this.progressListeners)
 		{
