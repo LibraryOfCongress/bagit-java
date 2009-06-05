@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.utilities;
 import java.io.File;
 import java.text.MessageFormat;
 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
@@ -15,7 +16,7 @@ import gov.loc.repository.bagit.Bag.Format;
 
 public class VFSHelper {
 	
-	private static final Log log = gov.loc.repository.bagit.utilities.LogFactory.getLog(VFSHelper.class);
+	private static final Log log = LogFactory.getLog(VFSHelper.class);
 	
 	/**
 	 * Thread local variable to store a {@link FileSystemManager}.  This solves the problem
