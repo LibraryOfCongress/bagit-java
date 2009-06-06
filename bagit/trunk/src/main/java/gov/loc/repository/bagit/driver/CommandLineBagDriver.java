@@ -17,6 +17,7 @@ import gov.loc.repository.bagit.transfer.SwordSender;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
+import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
@@ -34,7 +35,9 @@ import java.io.File;
 import java.net.Authenticator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +48,6 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
-import com.martiansoftware.jsap.SimpleJSAP;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.UnflaggedOption;
 import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
@@ -59,7 +61,6 @@ public class CommandLineBagDriver {
 	
 	public static final String OPERATION_VERIFYVALID = "verifyvalid";
 	public static final String OPERATION_VERIFYCOMPLETE = "verifycomplete";
-	public static final String OPERATION_WRITE = "write";
 	public static final String OPERATION_MAKE_COMPLETE = "makecomplete";
 	public static final String OPERATION_CREATE = "create";
 	public static final String OPERATION_MAKE_HOLEY = "makeholey";
@@ -93,6 +94,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_PASSWORD = "password";
 	public static final String PARAM_THROTTLE = "throttle";
+	public static final String PARAM_HELP = "help";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -108,6 +110,13 @@ public class CommandLineBagDriver {
 	public static void main(String[] args) throws Exception {
 		CommandLineBagDriver driver = new CommandLineBagDriver();		
 		int ret = driver.execute(args);
+		if (ret == RETURN_ERROR) {
+			System.err.println("An error occurred");
+		} else if (ret == RETURN_FAILURE) {
+			System.out.println("Returning failure");
+		} else {
+			System.out.println("Returning success");
+		}
 		System.exit(ret);
 	}
 	
@@ -116,44 +125,46 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
-		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
+		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload. To add the children of a directory, but not the directory itself append with " + File.separator + "*.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
 		Parameter urlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
-		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use when posting resources with BOB.  Default is equal to the number of processors.");
+		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use.  Default is equal to the number of processors.");
 		//Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(PARAM_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_BAG_INFO, "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(PARAM_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_PAYLOAD_OXUM, "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
 		Parameter noUpdateBaggingDateParam = new Switch(PARAM_NO_UPDATE_BAGGING_DATE, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_BAGGING_DATE, "Does not update Bagging-Date in bag-info.txt when completing a bag.");
 		Parameter noUpdateBagSizeParam = new Switch(PARAM_NO_UPDATE_BAG_SIZE, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_BAG_SIZE, "Does not update Bag-Size in bag-info.txt when completing a bag.");
 		Parameter excludeTagManifestParam = new Switch(PARAM_EXCLUDE_TAG_MANIFEST, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_TAG_MANIFEST, "Excludes creating a tag manifest when completing a bag.");
-		Parameter tagManifestAlgorithmParam = new FlaggedOption(PARAM_TAG_MANIFEST_ALGORITHM, EnumeratedStringParser.getParser(getAlgorithmList()), Algorithm.MD5.bagItAlgorithm, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_TAG_MANIFEST_ALGORITHM, MessageFormat.format("The algorithm used to generate the tag manifest. Valid values are {0}. Default is {1}.", getAlgorithmListString(), Algorithm.MD5.bagItAlgorithm ));
-		Parameter payloadManifestAlgorithmParam = new FlaggedOption(PARAM_PAYLOAD_MANIFEST_ALGORITHM, EnumeratedStringParser.getParser(getAlgorithmList()), Algorithm.MD5.bagItAlgorithm, JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PAYLOAD_MANIFEST_ALGORITHM, MessageFormat.format("The algorithm used to generate the payload manifest. Valid values are {0}. Default is {1}.", getAlgorithmListString(), Algorithm.MD5.bagItAlgorithm ));
+		Parameter tagManifestAlgorithmParam = new FlaggedOption(PARAM_TAG_MANIFEST_ALGORITHM, EnumeratedStringParser.getParser(getAlgorithmList()), Algorithm.MD5.bagItAlgorithm, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_TAG_MANIFEST_ALGORITHM, MessageFormat.format("The algorithm used to generate the tag manifest. Valid values are {0}. Default is {1}.", getAlgorithmListString(), Algorithm.MD5.bagItAlgorithm ));
+		Parameter payloadManifestAlgorithmParam = new FlaggedOption(PARAM_PAYLOAD_MANIFEST_ALGORITHM, EnumeratedStringParser.getParser(getAlgorithmList()), Algorithm.MD5.bagItAlgorithm, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PAYLOAD_MANIFEST_ALGORITHM, MessageFormat.format("The algorithm used to generate the payload manifest. Valid values are {0}. Default is {1}.", getAlgorithmListString(), Algorithm.MD5.bagItAlgorithm ));
 		Parameter versionParam = new FlaggedOption(PARAM_VERSION, EnumeratedStringParser.getParser(getVersionList(), false, false), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_VERSION, MessageFormat.format("The version used to check the bag. Valid values are {0}. Default is to discover from the bag-it.txt or latest version.", getVersionListString()));
-		Parameter relaxSSLParam = new Switch(PARAM_RELAX_SSL, JSAP.NO_SHORTFLAG, "relaxssl", "Tolerant of self-signed SSL certificates.");
+		Parameter relaxSSLParam = new Switch(PARAM_RELAX_SSL, JSAP.NO_SHORTFLAG, PARAM_RELAX_SSL, "Tolerant of self-signed SSL certificates.");
 		Parameter usernameParam = new FlaggedOption(PARAM_USERNAME, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_USERNAME, "The username for basic authentication.");
 		Parameter passwordParam = new FlaggedOption(PARAM_PASSWORD, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PASSWORD, "The password for basic authentication.");
 		Parameter throttleParam = new FlaggedOption(PARAM_THROTTLE, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THROTTLE, "A pause between HTTP posts in milliseconds for BOB.");
 		
-		List<Parameter> params = new ArrayList<Parameter>();		
-		params.add(sourceParam);
-		params.add(versionParam);
-		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS, "Verifies the checksums in all tag manifests.", params.toArray(new Parameter[] {}));
-		this.addOperation(OPERATION_VERIFY_PAYLOADMANIFESTS, "Verifies the checksums in all payload manifests.", params.toArray(new Parameter[] {}));
-		params.add(missingBagItTolerantParam);
-		this.addOperation(OPERATION_VERIFYVALID, "Checks validity of a bag.", params.toArray(new Parameter[] {}));
-		this.addOperation(OPERATION_VERIFYCOMPLETE, "Checks completeness of a bag.", params.toArray(new Parameter[] {}));
+		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
+				"Verifies the checksums in all tag manifests.",
+				new Parameter[] {sourceParam, versionParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFY_TAGMANIFESTS, this.getBag("mybag"))});
+
+		this.addOperation(OPERATION_VERIFY_PAYLOADMANIFESTS,
+				"Verifies the checksums in all payload manifests.",
+				new Parameter[] {sourceParam, versionParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFY_PAYLOADMANIFESTS, this.getBag("mybag"))});
+
+		this.addOperation(OPERATION_VERIFYVALID,
+				"Verifies the validity of a bag.",
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYVALID, this.getBag("mybag"))});
+
+		this.addOperation(OPERATION_VERIFYCOMPLETE,
+				"Verifies the completeness of a bag.",
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
 		
-		List<Parameter> writerParams = new ArrayList<Parameter>();
-		writerParams.add(writerParam);
-		//writerParams.add(bagDirParam);
-		
-		params.clear();
-		params.add(sourceParam);
-		params.add(destParam);
-		params.addAll(writerParams);
-		this.addOperation(OPERATION_WRITE, "Writes a bag in a specified format.", params.toArray(new Parameter[] {}));		
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
@@ -165,41 +176,52 @@ public class CommandLineBagDriver {
 		completeParams.add(payloadManifestAlgorithmParam);
 		completeParams.add(versionParam);
 		
-		params.clear();
-		params.add(sourceParam);
-		params.add(destParam);
-		params.addAll(writerParams);
-		params.addAll(completeParams);
-		this.addOperation(OPERATION_MAKE_COMPLETE, "Completes a bag and then writes in a specified format.", params.toArray(new Parameter[] {}));
-
-		params.clear();
-		params.add(destParam);
-		params.addAll(writerParams);
-		params.addAll(completeParams);
-		params.add(payloadParam);
+		List<Parameter> makeCompleteParams = new ArrayList<Parameter>();
+		makeCompleteParams.add(sourceParam);
+		makeCompleteParams.add(destParam);
+		makeCompleteParams.add(writerParam);
+		makeCompleteParams.addAll(completeParams);
 		
-		this.addOperation(OPERATION_CREATE, "Creates a bag from supplied files/directories, completes the bag, and then writes in a specified format.", params.toArray(new Parameter[] {}));
-
-		params.clear();
-		params.add(sourceParam);
-		params.add(baseUrlParam);
-		params.add(destParam);
-		params.addAll(writerParams);
-		params.add(excludePayloadDirParam);
-		this.addOperation(OPERATION_MAKE_HOLEY, "Add holes to a bag and then writes in a specified format.", params.toArray(new Parameter[] {}));
-
-		params.clear();
-		params.add(sourceParam);		
-		this.addOperation(OPERATION_GENERATE_PAYLOAD_OXUM, "Generates Payload-Oxum for the bag.", params.toArray(new Parameter[] {}));
-		this.addOperation(OPERATION_CHECK_PAYLOAD_OXUM, "Generates Payload-Oxum and checks against Payload-Oxum in bag-info.txt.", params.toArray(new Parameter[] {}));
+		this.addOperation(OPERATION_MAKE_COMPLETE,
+				"Completes a bag and then writes in a specified format.  Completing a bag fills in any missing parts.",
+				makeCompleteParams,
+				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_MAKE_COMPLETE, this.getBag("mybag"), this.getBag("myDestBag"))});
+				
+		List<Parameter> createParams = new ArrayList<Parameter>();
+		createParams.add(destParam);
+		createParams.add(payloadParam);
+		createParams.add(writerParam);
+		createParams.addAll(completeParams);		
+		this.addOperation(OPERATION_CREATE,
+				"Creates a bag from supplied files/directories, completes the bag, and then writes in a specified format.",
+				createParams, 
+				new String[] {MessageFormat.format("bag {0} {1} {2} {3}", OPERATION_CREATE, this.getBag("mybag"), this.getData("somedata"), this.getData("otherdata/afile.txt"))});
 		
-		// bag retrieve [--threads n] [--username user] [--password pass] BAG
-		params.clear();
-		params.add(sourceParam);
-		params.add(threadsParam);
-		params.add(usernameParam);
-		params.add(passwordParam);
-		this.addOperation(OPERATION_RETRIEVE, "Retrieves any missing pieces of a bag specified in the fetch.txt.", params.toArray(new Parameter[0]));
+		List<Parameter> makeHoleyParam = new ArrayList<Parameter>();
+		makeHoleyParam.add(sourceParam);
+		makeHoleyParam.add(destParam);
+		makeHoleyParam.add(baseUrlParam);
+		makeHoleyParam.add(writerParam);
+		makeHoleyParam.add(excludePayloadDirParam);
+		this.addOperation(OPERATION_MAKE_HOLEY, 
+				"Generates a fetch.txt and then writes bag in a specified format.", 
+				makeHoleyParam, 
+				new String[] {MessageFormat.format("bag {0} {1} {2} http://www.loc.gov/bags", OPERATION_MAKE_HOLEY, this.getBag("mybag"), this.getBag("myDestBag"))});
+
+		this.addOperation(OPERATION_GENERATE_PAYLOAD_OXUM,
+				"Generates and returns the Payload-Oxum for the bag.",
+				new Parameter[] {sourceParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_GENERATE_PAYLOAD_OXUM, this.getBag("mybag"))});
+		
+		this.addOperation(OPERATION_CHECK_PAYLOAD_OXUM, 
+				"Generates Payload-Oxum and checks against Payload-Oxum in bag-info.txt.", 
+				new Parameter[] {sourceParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_CHECK_PAYLOAD_OXUM, this.getBag("mybag"))});
+
+		this.addOperation(OPERATION_RETRIEVE, 
+				"Retrieves any missing pieces of a bag specified in the fetch.txt.", 
+				new Parameter[] {sourceParam, destParam, threadsParam, usernameParam, passwordParam},
+				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_RETRIEVE, this.getBag("mybag"), this.getBag("myDestBag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
 		senderParams.add(sourceParam);
@@ -207,16 +229,48 @@ public class CommandLineBagDriver {
 		senderParams.add(relaxSSLParam);
 		senderParams.add(usernameParam);
 		senderParams.add(passwordParam);
+		this.addOperation(OPERATION_SEND_SWORD, 
+				"Sends a bag using SWORD.",
+				senderParams,
+				new String[] {MessageFormat.format("bag {0} {1} http://locdrop.loc.gov/sword", OPERATION_SEND_SWORD, this.getBag("mybag"))});
 
-		this.addOperation(OPERATION_SEND_SWORD, "Sends a bag using SWORD.", senderParams.toArray(new Parameter[0]));
-
-		senderParams.add(throttleParam);
-		senderParams.add(threadsParam);
-		this.addOperation(OPERATION_SEND_BOB, "Sends a bag using BOB.", senderParams.toArray(new Parameter[0]));
+		List<Parameter> bobParams = new ArrayList<Parameter>();
+		bobParams.addAll(senderParams);
+		bobParams.add(throttleParam);
+		bobParams.add(threadsParam);
+		this.addOperation(OPERATION_SEND_BOB, 
+				"Sends a bag using BOB.", 
+				bobParams, 
+				new String[] {MessageFormat.format("bag {0} {1} http://locdrop.loc.gov/bob", OPERATION_SEND_BOB, this.getBag("mybag"))});
 	}
 
-	private void addOperation(String name, String help, Parameter[] params) throws Exception {
-		this.operationMap.put(name, new Operation(name, new SimpleJSAP(name, help, params), help));
+	private String getBag(String bagName) {
+		if (OperatingSystemHelper.isWindows()) {
+			return "c:\\bags\\" + bagName;
+		}
+		return "/bags/" + bagName;
+	}
+
+	private String getData(String filepath) {
+		if (OperatingSystemHelper.isWindows()) {
+			return "c:\\data\\" + filepath;
+		}
+		return "/data/" + filepath;
+		
+	}
+	
+	private void addOperation(String name, String help, Parameter[] params, String[] examples) throws Exception {
+		JSAP jsap = new JSAP();
+		//jsap.setHelp(help);
+		for(Parameter param : params) {
+			jsap.registerParameter(param);
+		}
+		jsap.registerParameter(new Switch( PARAM_HELP, JSAP.NO_SHORTFLAG, PARAM_HELP, "Prints help." ));
+		this.operationMap.put(name, new Operation(name, jsap, help, examples));
+	}
+	
+	private void addOperation(String name, String help, List<Parameter> params, String[] examples) throws Exception {
+		this.addOperation(name, help, params.toArray(new Parameter[] {}), examples);
 	}
 
 	
@@ -226,9 +280,7 @@ public class CommandLineBagDriver {
 		int ret = RETURN_SUCCESS;
 		
 		if (args.length == 0) {
-			System.err.println("Error: An operation is required.");
 			printUsage();
-			ret = RETURN_ERROR;
 		} else	{	
 			String operationArg = args[0];		
 			if (! this.operationMap.containsKey(operationArg)) {
@@ -246,7 +298,10 @@ public class CommandLineBagDriver {
 				}
 				
 				JSAPResult config = operation.jsap.parse(newArgs);
-				if (operation.jsap.messagePrinted()) {
+				if (config.getBoolean(PARAM_HELP, false)) {
+					printOperationUsage(config, operation);
+				} else if (! config.success()) {
+					printOperationUsage(config, operation);
 					ret = RETURN_ERROR;
 				} else {
 					ret = this.performOperation(operation, config);
@@ -309,28 +364,56 @@ public class CommandLineBagDriver {
 		
 	}
 		
+	@SuppressWarnings("unchecked")
+	private void printOperationUsage(JSAPResult config, Operation operation) {
+		if (! config.getBoolean(PARAM_HELP, false)) {
+			Iterator<String> errIter = config.getErrorMessageIterator();
+			while(errIter.hasNext()) {
+				System.err.println("Error: " + errIter.next());
+			}
+		}
+		System.out.println(MessageFormat.format("Usage: bag {0} {1}", operation.name, operation.jsap.getUsage()));
+        System.out.println("Operation explanation:");
+        System.out.println("\t" + operation.help);
+        System.out.println("Operation parameters:");
+		System.out.println(operation.jsap.getHelp());
+		if (operation.examples.length > 0) {
+			System.out.println("Examples:");
+			for(String example : operation.examples) {
+				System.out.println("\t" + example);
+			}
+		}
+		
+
+	}
+	
 	private void printUsage() {
-		System.out.println("Usage: bag <operation> [--help]");
+		System.out.println("Usage: bag <operation> [operation arguments] [--help]");
+        System.out.println("Parameters:");
 		System.out.println("\t<operation>");
 		System.out.print("\t\tValid operations are: ");
-		Operation[] operationArray = this.operationMap.values().toArray(new Operation[] {});
-		for(int i=0; i<operationArray.length; i++) {
-			System.out.print(operationArray[i].name);
-			if (i == operationArray.length-2) {
+		List<String> names = new ArrayList<String>(this.operationMap.keySet());
+		Collections.sort(names);
+		for(int i=0; i<names.size(); i++) {
+			System.out.print(names.get(i));
+			if (i == names.size()-2) {
 				System.out.print(" and ");
-			} else if (i == operationArray.length-1) {
+			} else if (i == names.size()-1) {
 				System.out.println(".");
 			} else {
 				System.out.print(", ");
 			}			
 		}
 		System.out.println("\t\tOperation explanations: ");
-		for(int i=0; i<operationArray.length; i++) {
-			System.out.println(MessageFormat.format("\t\t\t{0}: {1}", operationArray[i].name, operationArray[i].help));
+		for(String name : names) {
+			System.out.println(MessageFormat.format("\t\t\t{0}: {1}", name, this.operationMap.get(name).help));
 		}
 		
 		System.out.println("\t[--help]");
 		System.out.println("\t\tPrints usage message for the operation.");
+		System.out.println("Examples:");
+		System.out.println("\tbag verifyvalid --help");
+		System.out.println("\t\tPrints help for the verifyvalid operation.");
 	}
 	
 	private static String argsToString(String[] args) {
@@ -361,7 +444,9 @@ public class CommandLineBagDriver {
 	}
 	
 	private int performOperation(Operation operation, JSAPResult config) {
-		log.info("Performing operation: " + operation.name);
+		String msg = "Performing operation: " + operation.name;
+		System.out.println(msg);
+		log.info(msg);
 		
 		try {
 			File sourceFile = null;
@@ -412,6 +497,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
+				System.out.println(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -422,6 +508,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = completeVerifier.verify(bag);
 				log.info(result.toString());
+				System.out.println(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -429,6 +516,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = bag.verifyTagManifests();
 				log.info(result.toString());
+				System.out.println(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -436,12 +524,10 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = bag.verifyTagManifests();
 				log.info(result.toString());
+				System.out.println(result.toString());
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
-			} else if (OPERATION_WRITE.equals(operation.name)) {								
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				bag.write(writer, destFile);
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				Bag newBag = completer.complete(bag);
@@ -475,23 +561,28 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				String oxum = BagHelper.generatePayloadOxum(bag);				
-				log.info("Payload-Oxum: " + oxum);
+				log.info("Payload-Oxum is " + oxum);
+				System.out.println("Payload-Oxum is " + oxum);
 			} else if (OPERATION_CHECK_PAYLOAD_OXUM.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				String genOxum = BagHelper.generatePayloadOxum(bag);
 				BagInfoTxt bagInfo = bag.getBagInfoTxt();
 				if (bagInfo == null) {
+					System.err.println("Bag does not contain bag-info.txt.");
 					log.error("Bag does not contain bag-info.txt.");
 					ret = RETURN_ERROR;
 				} else {
 					String checkOxum = bagInfo.getPayloadOxum();
 					if (checkOxum == null) {
+						System.err.println("bag-info.txt does not contain Payload-Oxum.");
 						log.error("bag-info.txt does not contain Payload-Oxum.");
 						ret = RETURN_ERROR;
 					} else {
 						if (checkOxum.equals(genOxum)) {
+							System.out.println("Payload-Oxum matches.");
 							log.info("Payload-Oxum matches.");
 						} else {
+							System.out.println("Payload-Oxum does not match.");
 							log.info("Payload-Oxum does not match.");
 							ret = RETURN_FAILURE;
 						}
@@ -521,7 +612,7 @@ public class CommandLineBagDriver {
 					fetcher.setNumberOfThreads(threads);
 				}
 			    
-			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
+			    FileSystemFileDestination dest = new FileSystemFileDestination(destFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
 			    SimpleResult result = fetcher.fetch(bag, dest);
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
@@ -560,7 +651,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				sender.send(bag, config.getString(PARAM_URL));				
 			}
-				
+			System.out.println("Operation completed.");	
 			log.info("Operation completed.");
 			return ret;
 		}
@@ -572,13 +663,15 @@ public class CommandLineBagDriver {
 	
 	private class Operation {
 		public String help;
-		public SimpleJSAP jsap;
+		public JSAP jsap;
 		public String name;
+		public String[] examples;
 		
-		public Operation(String name, SimpleJSAP jsap, String help) {
+		public Operation(String name, JSAP jsap, String help, String[] examples) {
 			this.name = name;
 			this.help = help;
 			this.jsap = jsap;
+			this.examples = examples;
 		}
 	}
 
