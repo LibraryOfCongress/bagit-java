@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.bag.DummyCancelIndicator;
+import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
 import gov.loc.repository.bagit.bag.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
@@ -61,11 +61,10 @@ public abstract class AbstractWriterTest {
 		assertTrue(bag.verifyValid().isSuccess());
 		
 		Writer writer = this.getBagWriter();
-		writer.setCancelIndicator(new DummyCancelIndicator(3));		
 		
-		Bag newBag = writer.write(bag, this.getBagFile());
+		
+		Bag newBag = writer.write(new CancelTriggeringBagDecorator(bag, 10, writer), this.getBagFile());
 		assertNull(newBag);
-		
 	}
 	
 	@Test

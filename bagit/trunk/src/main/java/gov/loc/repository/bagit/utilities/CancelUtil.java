@@ -1,6 +1,5 @@
 package gov.loc.repository.bagit.utilities;
 
-import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
 
 public class CancelUtil 
@@ -14,14 +13,17 @@ public class CancelUtil
 		
 		if (o != null && o instanceof Cancellable)
 		{
-			CancelIndicator indicator = ((Cancellable)o).getCancelIndicator();
-			
-			if (indicator != null)
-			{
-				isCancelled = indicator.performCancel();
-			}
+			isCancelled = ((Cancellable)o).isCancelled();
 		}
 		
 		return isCancelled;
+	}
+	
+	public static void cancel(Object o)
+	{
+		if (o != null && o instanceof Cancellable)
+		{
+			((Cancellable)o).cancel();
+		}
 	}
 }

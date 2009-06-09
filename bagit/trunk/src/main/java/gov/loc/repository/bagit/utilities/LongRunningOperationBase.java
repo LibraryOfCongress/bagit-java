@@ -2,25 +2,14 @@ package gov.loc.repository.bagit.utilities;
 
 import java.util.ArrayList;
 
-import gov.loc.repository.bagit.CancelIndicator;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.ProgressListener;
 
 public class LongRunningOperationBase implements Cancellable, ProgressListenable 
 {
-	private CancelIndicator cancelIndicator = null;
+	private boolean isCancelled = false;
 	private ArrayList<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
-
-	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		this.cancelIndicator = cancelIndicator;
-	}
-
-	@Override
-	public CancelIndicator getCancelIndicator() {
-		return this.cancelIndicator;
-	}
 
 	@Override
 	public void addProgressListener(ProgressListener progressListener) {
@@ -32,9 +21,16 @@ public class LongRunningOperationBase implements Cancellable, ProgressListenable
 		this.progressListeners.remove(progressListener);
 	}
 	
-	protected boolean isCancelled()
+	@Override
+	public void cancel()
 	{
-		return this.cancelIndicator != null && this.cancelIndicator.performCancel();
+		this.isCancelled = true;
+	}
+	
+	@Override
+	public boolean isCancelled()
+	{
+		return this.isCancelled;
 	}
 	
 	protected void progress(String activity, String item, long count, long total)

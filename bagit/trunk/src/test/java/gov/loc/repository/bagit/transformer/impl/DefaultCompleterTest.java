@@ -12,7 +12,7 @@ import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.bag.DummyCancelIndicator;
+import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
 import gov.loc.repository.bagit.bag.LoggingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
@@ -98,8 +98,6 @@ public class DefaultCompleterTest {
 
 	@Test
 	public void testCancel() throws Exception {		
-		completer.setCancelIndicator(new DummyCancelIndicator(3));
-		assertNull(completer.complete(bag));		
+		assertNull(completer.complete(new CancelTriggeringBagDecorator(bag, 3, completer)));	
 	}
-
 }

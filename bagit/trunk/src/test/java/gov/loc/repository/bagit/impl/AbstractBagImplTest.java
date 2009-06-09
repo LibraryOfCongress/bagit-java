@@ -20,8 +20,7 @@ import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.bag.DummyCancelIndicator;
-import gov.loc.repository.bagit.bag.PrintingProgressListener;
+import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
@@ -483,27 +482,32 @@ public abstract class AbstractBagImplTest {
 	public void addlTestCreateBag(Bag bag){};
 
 	@Test
-	public void testCancel() throws Exception {
+	public void testCompleterCancels() throws Exception
+	{
 		Bag bag = this.getBagByPayloadManifests(Format.FILESYSTEM);
 		
 		CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
-		completeVerifier.setCancelIndicator(new DummyCancelIndicator(5));
-		completeVerifier.addProgressListener(new PrintingProgressListener());
-		assertNull(bag.verify(completeVerifier));
-		
-		ParallelManifestChecksumVerifier manifestVerifier = new ParallelManifestChecksumVerifier();
-		manifestVerifier.setCancelIndicator(new DummyCancelIndicator(5));
-		manifestVerifier.addProgressListener(new PrintingProgressListener());
-
-		assertNull(manifestVerifier.verify(bag.getPayloadManifests(), bag));
-		
-		ValidVerifierImpl validVerifier = new ValidVerifierImpl(completeVerifier, manifestVerifier);
-		validVerifier.setCancelIndicator(new DummyCancelIndicator(10));
-		validVerifier.addProgressListener(new PrintingProgressListener());
-		assertNull(bag.verify(validVerifier));
-				
+		assertNull(completeVerifier.verify(new CancelTriggeringBagDecorator(bag, 10, completeVerifier)));
 	}
 	
+	@Test
+	public void testManifestVerifierCancels() throws Exception
+	{
+		Bag bag = this.getBagByPayloadManifests(Format.FILESYSTEM);
+		
+		ParallelManifestChecksumVerifier manifestVerifier = new ParallelManifestChecksumVerifier();
+		assertNull(manifestVerifier.verify(bag.getPayloadManifests(), new CancelTriggeringBagDecorator(bag, 2, manifestVerifier)));
+	}
+	
+	@Test
+	public void testValidVerifierCancels() throws Exception
+	{
+		Bag bag = this.getBagByPayloadManifests(Format.FILESYSTEM);
+		
+		ValidVerifierImpl validVerifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+		assertNull(validVerifier.verify(new CancelTriggeringBagDecorator(bag, 10, validVerifier)));
+	}
+		
 	@Test
 	public void testRemoveDirectory() throws Exception {
 		Bag bag = this.getBagByPayloadManifests(Format.FILESYSTEM);

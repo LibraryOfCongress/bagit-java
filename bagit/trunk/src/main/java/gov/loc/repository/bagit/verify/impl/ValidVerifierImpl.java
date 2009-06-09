@@ -4,10 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.CancelIndicator;
-import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.ProgressListenable;
+import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
@@ -21,18 +20,11 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 	private CompleteVerifier completeVerifier;
 	private ManifestChecksumVerifier manifestVerifier;
 	
-	@Override
-	public void setCancelIndicator(CancelIndicator cancelIndicator) {
-		super.setCancelIndicator(cancelIndicator);
-		
-		if (completeVerifier instanceof Cancellable) {
-			((Cancellable)completeVerifier).setCancelIndicator(cancelIndicator);
-		}
-		if (manifestVerifier instanceof Cancellable) {
-			((Cancellable)manifestVerifier).setCancelIndicator(cancelIndicator);
-		}		
+	public ValidVerifierImpl(CompleteVerifier completeVerifier, ManifestChecksumVerifier manifestVerifier) {
+		this.completeVerifier = completeVerifier;
+		this.manifestVerifier = manifestVerifier;
 	}
-
+	
 	@Override
 	public void addProgressListener(ProgressListener progressListener) {
 		super.addProgressListener(progressListener);
@@ -45,9 +37,13 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 		}
 	}
 	
-	public ValidVerifierImpl(CompleteVerifier completeVerifier, ManifestChecksumVerifier manifestVerifier) {
-		this.completeVerifier = completeVerifier;
-		this.manifestVerifier = manifestVerifier;
+	@Override
+	public void cancel()
+	{
+		super.cancel();
+		
+		CancelUtil.cancel(this.completeVerifier);
+		CancelUtil.cancel(this.manifestVerifier);
 	}
 	
 	@Override

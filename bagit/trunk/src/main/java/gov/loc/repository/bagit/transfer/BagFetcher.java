@@ -1,9 +1,9 @@
 package gov.loc.repository.bagit.transfer;
 
-import gov.loc.repository.bagit.ActiveCancellable;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.ProgressListener;
@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  * @see FetchFailStrategy
  * @see StandardFailStrategies
  */
-public final class BagFetcher implements ActiveCancellable, ProgressListenable
+public final class BagFetcher implements Cancellable, ProgressListenable
 {
     private static final Log log = LogFactory.getLog(BagFetcher.class);
 
@@ -75,7 +75,8 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
     	this.isCancelled = true;
     }
     
-    private boolean isCancelled()
+    @Override
+    public boolean isCancelled()
     {
     	return this.isCancelled;
     }
