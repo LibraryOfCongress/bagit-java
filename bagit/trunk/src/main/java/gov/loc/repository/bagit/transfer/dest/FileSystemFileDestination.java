@@ -80,6 +80,18 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
         {
             return new FileBagFile(this.bagPath, this.file);
         }
+        
+        @Override
+        public void abandon()
+        {
+        	if (this.file.exists())
+        	{
+        		if (!this.file.delete())
+        		{
+        			this.file.deleteOnExit();
+        		}
+        	}
+        }
 
         private File file;
         private String bagPath;

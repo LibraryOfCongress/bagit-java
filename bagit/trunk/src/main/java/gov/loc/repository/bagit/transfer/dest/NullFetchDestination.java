@@ -44,6 +44,12 @@ public class NullFetchDestination implements FetchedFileDestinationFactory
 		{
 			return new NullBagFile(this.path);
 		}
+		
+		@Override
+		public void abandon()
+		{
+			// Do nothing.
+		}
 	};
 	
 	private static class NullBagFile implements BagFile

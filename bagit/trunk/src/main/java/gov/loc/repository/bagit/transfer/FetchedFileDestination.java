@@ -9,4 +9,5 @@ public interface FetchedFileDestination
     String getFilepath();
     OutputStream openOutputStream(boolean append) throws BagTransferException;
     BagFile commit() throws BagTransferException;
+    void abandon();
 }

@@ -216,9 +216,16 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
         {
         	log.debug("Fetching in single-threaded mode.");
         	
-            Fetcher fetcher = new Fetcher();
-            SimpleResult result = fetcher.call();
-            finalResult.merge(result);
+        	try
+        	{
+	            Fetcher fetcher = new Fetcher();
+	            SimpleResult result = fetcher.call();
+	            finalResult.merge(result);
+        	}
+        	catch (Exception e)
+        	{
+        		throw new BagTransferException("Caught unexpected exception from fetcher.", e);
+        	}
         }
         
         // Clone the existing bag, and set it to be returned.
@@ -337,6 +344,8 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
 	            
 	            while (target != null && !isCancelled())
 	            {
+	            	FetchedFileDestination destination = null;
+	            	
 	                try
 	                {
 	                	// The fetch.txt line parts.
@@ -346,7 +355,7 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
 		                
 		                // Create the destination for the file.
 		                log.trace(format("Creating destination: {0}", destinationPath));
-		                FetchedFileDestination destination = destinationFactory.createDestination(destinationPath, size);
+		                destination = destinationFactory.createDestination(destinationPath, size);
 
 		                // Create the object to do the fetching.
 		                FileFetcher fetcher = this.getFetcher(uri, size);
@@ -369,6 +378,12 @@ public final class BagFetcher implements ActiveCancellable, ProgressListenable
 	                {
 	                    String msg = format("An error occurred while fetching target: {0}", target);
 	                    log.warn(msg, e);
+	                    
+	                    if (destination != null)
+	                    {
+	                    	destination.abandon();
+	                    	destination = null;
+	                    }
 
 	                    FetchFailureAction failureAction = failStrategy.registerFailure(target.getUrl(), target.getSize(), e);
 	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", target.getUrl(), target.getSize(), failureAction));

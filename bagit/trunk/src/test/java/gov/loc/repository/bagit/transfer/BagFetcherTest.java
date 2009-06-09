@@ -89,6 +89,136 @@ public class BagFetcherTest
 		assertTrue("Bag did not transfer successfully.", result.isSuccess());
 	}
 	
+	@Test
+	public void testFailsFast() throws Exception
+	{
+		this.unit.setNumberOfThreads(1);
+		this.unit.setFetchFailStrategy(StandardFailStrategies.FAIL_FAST);
+
+		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
+		final FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class);
+		final FetchProtocol mockProtocol = this.context.mock(FetchProtocol.class);
+		final FileFetcher mockFetcher = this.context.mock(FileFetcher.class);
+		final States fetcherState = this.context.states("fetcher").startsAs("new");
+		
+		context.checking(new Expectations() {{
+			// Destination
+			one(mockDestinationFactory).createDestination("data/dir1/test3.txt", null); will(returnValue(mockDestination));
+			allowing(mockDestination).getFilepath(); will(returnValue("data/dir1/test3.txt"));
+			never(mockDestination).commit();
+			one(mockDestination).abandon();
+						
+			// Protocol
+			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"), null);	will(returnValue(mockFetcher));
+			
+			// Fetcher
+			one(mockFetcher).initialize(); when(fetcherState.is("new")); then(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready")); will(throwException(new BagTransferException("Unit test failure.")));
+			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
+		}});
+		
+		this.unit.registerProtocol("http", mockProtocol);
+		
+		Bag bag = this.bagFactory.createBag(tempDir);
+		
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		
+		assertFalse("Bag transferred successfully when it shouldn't have.", result.isSuccess());
+	}
+	
+	@Test
+	public void testRetriesFile() throws Exception
+	{
+		this.unit.setNumberOfThreads(1);
+		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_RETRY);
+
+		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
+		final FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class);
+		final FetchProtocol mockProtocol = this.context.mock(FetchProtocol.class);
+		final FileFetcher mockFetcher = this.context.mock(FileFetcher.class);
+		final States fetcherState = this.context.states("fetcher").startsAs("new");
+		
+		context.checking(new Expectations() {{
+			// Destination - first try
+			one(mockDestinationFactory).createDestination("data/dir1/test3.txt", null); will(returnValue(mockDestination));
+			allowing(mockDestination).getFilepath(); will(returnValue("data/dir1/test3.txt"));
+			never(mockDestination).commit();
+			one(mockDestination).abandon();
+						
+			// Destination - second try
+			expectDest(this, mockDestinationFactory, "data/dir1/test3.txt");
+						
+			// Protocol
+			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"), null);	will(returnValue(mockFetcher));
+			
+			// Fetcher
+			one(mockFetcher).initialize(); when(fetcherState.is("new")); then(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready")); will(throwException(new BagTransferException("Unit test failure.")));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready")); // Second one succeeds
+			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
+		}});
+		
+		this.unit.registerProtocol("http", mockProtocol);
+		
+		Bag bag = this.bagFactory.createBag(tempDir);
+
+		// Trim out all but one file from the fetch.txt, for simplicity.
+		bag.getFetchTxt().remove(1);
+		bag.getFetchTxt().remove(1);
+		bag.getFetchTxt().remove(1);
+		bag.getFetchTxt().remove(1);
+		
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		
+		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
+	}
+
+	@Test
+	public void testRetriesNextFile() throws Exception
+	{
+		this.unit.setNumberOfThreads(1);
+		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_CONTINUE);
+
+		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
+		final FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class);
+		final FetchProtocol mockProtocol = this.context.mock(FetchProtocol.class);
+		final FileFetcher mockFetcher = this.context.mock(FileFetcher.class);
+		final States fetcherState = this.context.states("fetcher").startsAs("new");
+		
+		context.checking(new Expectations() {{
+			// Destination - first file
+			one(mockDestinationFactory).createDestination("data/dir1/test3.txt", null); will(returnValue(mockDestination));
+			allowing(mockDestination).getFilepath(); will(returnValue("data/dir1/test3.txt"));
+			never(mockDestination).commit();
+			one(mockDestination).abandon();
+						
+			// Destination - second file
+			expectDest(this, mockDestinationFactory, "data/dir2/dir3/test5.txt");
+						
+			// Protocol
+			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"), null);	will(returnValue(mockFetcher));
+			
+			// Fetcher
+			one(mockFetcher).initialize(); when(fetcherState.is("new")); then(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready")); will(throwException(new BagTransferException("Unit test failure.")));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
+		}});
+		
+		this.unit.registerProtocol("http", mockProtocol);
+		
+		Bag bag = this.bagFactory.createBag(tempDir);
+
+		// Trim out all but two files from the fetch.txt, for simplicity.
+		bag.getFetchTxt().remove(2);
+		bag.getFetchTxt().remove(2);
+		bag.getFetchTxt().remove(2);
+		
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		
+		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
+	}
+
 	private void expectDest(Expectations e, FetchedFileDestinationFactory destFactory, String path) throws Exception
 	{
 		FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class, "FetchedFileDestination:" + path);
@@ -110,5 +240,8 @@ public class BagFetcherTest
 		
 		// 3) Be committed once.		
 		e.one(mockDestination).commit();
+		
+		// 4) Will not be abandoned.
+		e.never(mockDestination).abandon();
 	}
 }
