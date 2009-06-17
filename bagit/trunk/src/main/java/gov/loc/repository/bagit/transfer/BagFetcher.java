@@ -12,6 +12,7 @@ import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 
 import static java.text.MessageFormat.format;
 
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -449,6 +450,16 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     
     private class MyContext implements FetchContext
     {
+    	public boolean requiresLogin()
+    	{
+    		return false;
+    	}
+    	
+    	public PasswordAuthentication getCredentials()
+    	{
+    		return null;
+    	}
+    	
 		public boolean isCancelled()
 		{
 			return isCancelled;

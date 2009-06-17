@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.transfer;
 
+import java.net.PasswordAuthentication;
+
 /**
  * A very naieve implementation of a {@link FetchContext}.
  * This implementation always returns <c>false</c> for
@@ -11,6 +13,16 @@ package gov.loc.repository.bagit.transfer;
  */
 public class NullFetchContext implements FetchContext
 {
+	public boolean requiresLogin()
+	{
+		return false;
+	}
+	
+	public PasswordAuthentication getCredentials()
+	{
+		return null;
+	}
+	
 	public boolean performCancel()
 	{
 		return false;

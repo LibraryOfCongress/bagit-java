@@ -11,6 +11,12 @@ public class StringBagFile implements BagFile {
 	private byte[] buf = new byte[0];
 	private static final String ENC = "utf-8";
 	
+	public StringBagFile(String name, byte[] data)
+	{
+		this.filepath = name;
+		this.buf = data;
+	}
+	
 	public StringBagFile(String name, String str) {		
 		this.filepath = name;
 		if (str != null) {
