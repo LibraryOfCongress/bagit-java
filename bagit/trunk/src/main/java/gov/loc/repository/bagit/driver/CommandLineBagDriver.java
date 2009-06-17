@@ -111,11 +111,11 @@ public class CommandLineBagDriver {
 		CommandLineBagDriver driver = new CommandLineBagDriver();		
 		int ret = driver.execute(args);
 		if (ret == RETURN_ERROR) {
-			System.err.println("An error occurred");
+			System.err.println("An error occurred. Check the log for more details.");
 		} else if (ret == RETURN_FAILURE) {
-			System.out.println("Returning failure");
+			System.out.println("Returning failure.");
 		} else {
-			System.out.println("Returning success");
+			System.out.println("Returning success.");
 		}
 		System.exit(ret);
 	}
@@ -556,7 +556,7 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncher puncher = new HolePuncherImpl(bagFactory);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
+				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
 				newBag.write(writer, destFile);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
