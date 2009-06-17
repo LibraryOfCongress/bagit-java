@@ -25,6 +25,7 @@ import gov.loc.repository.bagit.transfer.FetchContext;
 import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 public class FtpFetchProtocol implements FetchProtocol
 {
@@ -36,7 +37,7 @@ public class FtpFetchProtocol implements FetchProtocol
         return new FtpFetcher();
     }
 
-    private class FtpFetcher implements FileFetcher
+    private class FtpFetcher extends LongRunningOperationBase implements FileFetcher
     {
         private FTPClient client;
         
@@ -89,7 +90,9 @@ public class FtpFetchProtocol implements FetchProtocol
                 out = destination.openOutputStream(false);
 
                 log.trace("Copying from network to destination.");
-                long bytesCopied = IOUtils.copyLarge(in, out);
+                FetchStreamCopier copier = new FetchStreamCopier("Downloading", uri, size);
+                this.delegateProgress(copier);
+                long bytesCopied = copier.copy(in, out);
                 log.trace(format("Successfully copied {0} bytes.", bytesCopied));
                 
                 this.client.completePendingCommand();

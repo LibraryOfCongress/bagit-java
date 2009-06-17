@@ -33,11 +33,30 @@ public class LongRunningOperationBase implements Cancellable, ProgressListenable
 		return this.isCancelled;
 	}
 	
-	protected void progress(String activity, String item, long count, long total)
+	protected void progress(String activity, Object item, Long count, Long total)
 	{
 		for (ProgressListener listener : this.progressListeners)
 		{
 			listener.reportProgress(activity, item, count, total);
 		}
+	}
+	
+	protected void progress(String activity, Object item, Integer count, Integer total)
+	{
+		this.progress(activity, item, count == null? (Long)null : new Long(count), total == null? (Long)null : new Long(total));
+	}
+	
+	protected void delegateProgress(ProgressListenable listenable)
+	{
+		listenable.addProgressListener(new ProgressDelegate());
+	}
+	
+	private class ProgressDelegate implements ProgressListener
+	{
+		@Override
+		public void reportProgress(String activity, Object item, Long count, Long total)
+		{
+			LongRunningOperationBase.this.progress(activity, item, count, total);
+		}		
 	}
 }

@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.transfer.FetchContext;
 import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 @SuppressWarnings("serial")
 public class HttpFetchProtocol implements FetchProtocol
@@ -56,7 +57,7 @@ public class HttpFetchProtocol implements FetchProtocol
     private final HttpState state;
     private final HttpFetcher instance;
     
-    private class HttpFetcher implements FileFetcher
+    private class HttpFetcher extends LongRunningOperationBase implements FileFetcher
     {
     	public void initialize() throws BagTransferException
     	{
@@ -91,7 +92,9 @@ public class HttpFetchProtocol implements FetchProtocol
                 in = method.getResponseBodyAsStream();
                 
                 log.trace("Copying from network to destination.");
-                long bytesCopied = IOUtils.copyLarge(in, out);
+                FetchStreamCopier copier = new FetchStreamCopier("Downloading", uri, size);
+                this.delegateProgress(copier);
+                long bytesCopied = copier.copy(in, out);
                 log.trace(format("Successfully copied {0} bytes.", bytesCopied));
             }
             catch (HttpException e)

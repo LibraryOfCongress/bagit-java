@@ -17,6 +17,7 @@ import gov.loc.repository.bagit.transfer.FetchContext;
 import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 public class LocalFileFetchProtocol implements FetchProtocol
 {
@@ -29,10 +30,16 @@ public class LocalFileFetchProtocol implements FetchProtocol
 		return singleton;
 	}
 	
-	private static class LocalFileFetcher implements FileFetcher
+	private static class LocalFileFetcher extends LongRunningOperationBase implements FileFetcher
 	{
 		@Override
 		public void initialize() throws BagTransferException 
+		{
+			// Do nothing.
+		}
+		
+		@Override
+		public void close() 
 		{
 			// Do nothing.
 		}
@@ -58,7 +65,9 @@ public class LocalFileFetchProtocol implements FetchProtocol
 				out = destination.openOutputStream(false);
 				
 				log.trace("Copying...");
-				long bytesCopied = IOUtils.copyLarge(in, out);
+				FetchStreamCopier copier = new FetchStreamCopier("Copying", srcPath, src.length());
+				this.delegateProgress(copier);
+				long bytesCopied = copier.copy(in, out);
 				log.trace(format("Successfully copied {0} bytes.", bytesCopied));
 			}
 			catch (IOException e)
@@ -70,12 +79,6 @@ public class LocalFileFetchProtocol implements FetchProtocol
 				IOUtils.closeQuietly(in);
 				IOUtils.closeQuietly(out);
 			}
-		}
-		
-		@Override
-		public void close() 
-		{
-			// Do nothing.
 		}
 	}
 }

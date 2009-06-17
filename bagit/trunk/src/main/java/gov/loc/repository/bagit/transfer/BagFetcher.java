@@ -63,6 +63,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     private List<FetchTxt.FilenameSizeUrl> failedFetchTargets;
     private AtomicInteger nextFetchTargetIndex;
     private List<BagFile> newBagFiles;
+    private List<Fetcher> runningFetchers = new ArrayList<Fetcher>();
     
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
@@ -74,6 +75,11 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     {
     	log.info("Cancelled.");
     	this.isCancelled = true;
+    	
+    	for (Fetcher fetcher : this.runningFetchers)
+    	{
+    		fetcher.cancel();
+    	}
     }
     
     @Override
@@ -94,7 +100,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	this.progressListeners.remove(progressListener);
     }
     
-    private void progress(String activity, String item, long count, long total)
+    private void progress(String activity, Object item, Long count, Long total)
     {
     	for (ProgressListener listener : this.progressListeners)
     	{
@@ -179,7 +185,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable
             	for (int i = 0; i < this.numberOfThreads; i++)
                 {
                 	log.trace(format("Submitting job {0} of {1}.", i + 1, this.numberOfThreads));
-                    futureResults.add(threadPool.submit(new Fetcher()));
+                	Fetcher newFetcher = new Fetcher();
+                	this.runningFetchers.add(newFetcher);
+                    futureResults.add(threadPool.submit(newFetcher));
                 }
                 
             	log.debug("Jobs submitted.  Waiting on results.");
@@ -292,8 +300,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         if (next < size)
         {
             nextItem = this.fetchTargets.get(next);
-            log.trace(format("Fetching {0}/{1}: {2}", next, size, nextItem.getUrl()));
-            this.progress("starting fetch", nextItem.getUrl(), next, size);
+            log.trace(format("Fetching {0}/{1}: {2}", next + 1, size, nextItem.getUrl()));
+            this.progress("starting fetch", nextItem.getUrl(), (long)next + 1, (long)size);
         }
         else
         {
@@ -335,7 +343,16 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     {
     	private SimpleResult result = new SimpleResult(true);
     	private Map<String, FileFetcher> fetchers = new HashMap<String, FileFetcher>();
-
+    	
+    	public synchronized void cancel()
+    	{
+    		for (FileFetcher fetcher : this.fetchers.values())
+    		{
+    			if (!fetcher.isCancelled())
+    				fetcher.cancel();
+    		}
+    	}
+    	
         public SimpleResult call()
         {
         	log.trace("Internal fetcher started.");
@@ -376,6 +393,14 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 
 		                target = getNextFetchItem();
 	                }
+	                catch (BagTransferCancelledException e)
+	                {
+	                	log.info("Transfer cancelled.");
+	                	failedFetchTargets.add(target);
+	                	result.addMessage("Transfer cancelled.");
+	                	result.setSuccess(false);
+	                	break;
+	                }
 	                catch (BagTransferException e)
 	                {
 	                    String msg = format("An error occurred while fetching target: {0}", target);
@@ -403,7 +428,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 	                	{
 	                		// Stopping includes stopping all other thread
 	                		// Make them finish up, too.
-	                		cancel();
+	                		BagFetcher.this.cancel();
 	                		
 		                    failedFetchTargets.add(target);		                    
 		                    result.addMessage(msg);
@@ -421,7 +446,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
             return result;
         }
         
-        private FileFetcher getFetcher(URI uri, Long size) throws BagTransferException
+        private synchronized FileFetcher getFetcher(URI uri, Long size) throws BagTransferException
         {
         	FileFetcher fetcher = this.fetchers.get(uri.getScheme());
         	
@@ -439,38 +464,29 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         	return fetcher;
         }
         
-        private void closeFetchers()
+        private synchronized void closeFetchers()
         {
         	for (FileFetcher fetcher : this.fetchers.values())
         	{
         		fetcher.close();
         	}
+        	
+        	this.fetchers.clear();
         }
     }
     
     private class MyContext implements FetchContext
     {
+    	@Override
     	public boolean requiresLogin()
     	{
     		return false;
     	}
-    	
+
+    	@Override
     	public PasswordAuthentication getCredentials()
     	{
     		return null;
     	}
-    	
-		public boolean isCancelled()
-		{
-			return isCancelled;
-		}
-
-		public void reportProgress(String activity, String item, long count, long total)
-		{
-			count = Math.min(count, Integer.MAX_VALUE);
-			total = Math.min(total, Integer.MAX_VALUE);
-			
-			BagFetcher.this.progress(activity, item, (int)count, (int)total);
-		}
     }
 }

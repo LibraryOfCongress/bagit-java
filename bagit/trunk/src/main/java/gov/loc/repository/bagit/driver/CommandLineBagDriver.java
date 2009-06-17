@@ -15,6 +15,7 @@ import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.BobSender;
 import gov.loc.repository.bagit.transfer.SwordSender;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
@@ -594,6 +595,7 @@ public class CommandLineBagDriver {
 			    // TODO Make this dynamically register somehow.
 			    fetcher.registerProtocol("http", new HttpFetchProtocol());
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
+			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
 			    
 			    String username = config.getString(PARAM_USERNAME);
 			    String password = config.getString(PARAM_PASSWORD);

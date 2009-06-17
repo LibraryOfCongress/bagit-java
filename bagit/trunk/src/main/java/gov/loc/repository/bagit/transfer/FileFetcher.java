@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.transfer;
 
+import gov.loc.repository.bagit.Cancellable;
+import gov.loc.repository.bagit.ProgressListenable;
 import java.net.URI;
 
 /**
@@ -31,7 +33,7 @@ import java.net.URI;
  * @see #fetchFile(URI, Long, FetchedFileDestination)
  * @see BagTransferException
  */
-public interface FileFetcher
+public interface FileFetcher extends Cancellable, ProgressListenable
 {
 	/**
 	 * Permits the FileFetcher to initialize.  Guaranteed to be called

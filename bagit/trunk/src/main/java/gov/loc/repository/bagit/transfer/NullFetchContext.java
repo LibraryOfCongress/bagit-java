@@ -23,12 +23,18 @@ public class NullFetchContext implements FetchContext
 		return null;
 	}
 	
-	public boolean performCancel()
+	public void cancel()
+	{
+		// Nothing to do.
+	}
+	
+	public boolean isCancelled()
 	{
 		return false;
 	}
 
-	public void reportProgress(String activity, String item, int count, int total)
+	public void reportProgress(String activity, Object item, Long count, Long total)
 	{
+		// Nothing to do.
 	}
 }
