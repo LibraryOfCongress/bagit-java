@@ -4,6 +4,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
@@ -72,6 +73,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_RETRIEVE = "retrieve";
 	public static final String OPERATION_SEND_BOB = "bob";
 	public static final String OPERATION_SEND_SWORD = "sword";
+	public static final String OPERATION_BAG_IN_PLACE = "baginplace";
 	
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
@@ -96,6 +98,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_PASSWORD = "password";
 	public static final String PARAM_THROTTLE = "throttle";
 	public static final String PARAM_HELP = "help";
+	public static final String PARAM_RETAIN_BASE_DIR = "retainbasedir";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -145,6 +148,7 @@ public class CommandLineBagDriver {
 		Parameter usernameParam = new FlaggedOption(PARAM_USERNAME, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_USERNAME, "The username for basic authentication.");
 		Parameter passwordParam = new FlaggedOption(PARAM_PASSWORD, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PASSWORD, "The password for basic authentication.");
 		Parameter throttleParam = new FlaggedOption(PARAM_THROTTLE, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THROTTLE, "A pause between HTTP posts in milliseconds for BOB.");
+		Parameter retainBaseDirParam = new Switch(PARAM_RETAIN_BASE_DIR, JSAP.NO_SHORTFLAG, PARAM_RETAIN_BASE_DIR, "Indicates that the base directory (not just the contents of the base directory) should be placed in the data directory of the bag.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -165,7 +169,8 @@ public class CommandLineBagDriver {
 				"Verifies the completeness of a bag.",
 				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
-		
+
+
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
@@ -187,7 +192,16 @@ public class CommandLineBagDriver {
 				"Completes a bag and then writes in a specified format.  Completing a bag fills in any missing parts.",
 				makeCompleteParams,
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_MAKE_COMPLETE, this.getBag("mybag"), this.getBag("myDestBag"))});
-				
+
+		List<Parameter> bagInPlaceParams = new ArrayList<Parameter>();
+		bagInPlaceParams.add(sourceParam);
+		bagInPlaceParams.add(retainBaseDirParam);
+		bagInPlaceParams.addAll(completeParams);
+		this.addOperation(OPERATION_BAG_IN_PLACE,
+				"Creates a bag-in-place.  The source must be a directory on a filesystem and may already have a data directory.",
+				bagInPlaceParams,
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_BAG_IN_PLACE, this.getBag("mybag"))});
+		
 		List<Parameter> createParams = new ArrayList<Parameter>();
 		createParams.add(destParam);
 		createParams.add(payloadParam);
@@ -458,7 +472,7 @@ public class CommandLineBagDriver {
 			if (config.contains(PARAM_VERSION)) {
 				version = Version.valueOfString(config.getString(PARAM_VERSION));
 			}
-					
+
 			File destFile = null;
 			if (config.contains(PARAM_DESTINATION)) {				
 				destFile = new File(config.getString(PARAM_DESTINATION));
@@ -532,7 +546,10 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				Bag newBag = completer.complete(bag);
-				newBag.write(writer, destFile);
+				newBag.write(writer, destFile);				
+			} else if (OPERATION_BAG_IN_PLACE.equals(operation.name)) {
+				PreBag preBag = this.bagFactory.createPreBag(sourceFile);
+				preBag.makeBagInPlace(version != null ? version : BagFactory.LATEST, config.getBoolean(PARAM_RETAIN_BASE_DIR, false), completer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, null);
 				for(String filepath : config.getStringArray(PARAM_PAYLOAD)) {

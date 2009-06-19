@@ -2,6 +2,7 @@ package gov.loc.repository.bagit;
 
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
+import gov.loc.repository.bagit.impl.PreBagImpl;
 
 import java.io.File;
 
@@ -151,6 +152,15 @@ public class BagFactory {
 			return new gov.loc.repository.bagit.v0_96.impl.BagConstantsImpl();
 		}
 		throw new RuntimeException("Not yet supported");
-	}	
+	}
+	
+	/**
+	 * Creates a PreBag which can be bagged-in-place.
+	 */
+	public PreBag createPreBag(File dir) {
+		PreBag preBag = new PreBagImpl(this);
+		preBag.setFile(dir);
+		return preBag;
+	}
 	
 }
