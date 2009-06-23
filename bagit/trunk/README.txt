@@ -24,6 +24,8 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  * Commons Codec - http://commons.apache.org/codec/license.html
  * Commons VFS - http://commons.apache.org/vfs/license.html
  * Commons HttpClient - http://hc.apache.org/httpclient-3.x/license.html
+ * Commons Net - http://commons.apache.org/net/license.html
+ * Commons Exec - http://commons.apache.org/exec/license.html
  * Ant - http://ant.apache.org/license.html
  * Log4j - http://logging.apache.org/log4j/1.2/license.html
  * Dom4j - http://www.dom4j.org/dom4j-1.6.1/license.html
@@ -33,13 +35,18 @@ RELEASE NOTES:
 
 Changes in 3.0:
 1. Numerous changes to Bag interface for clarity, consistency, and simplification.
-	This includes removing methods that modify the Bag (e.g., makeHoley()).
 2. Add support for visitor pattern.  Changed Writers to use visitor.
 3. Writer (formerly BagWriter), Completeter (formerly CompletionStrategy), Hole Puncher (formerly Bag.makeHoley())
 	return a new Bag instead of modifying existing bag.
-4. Added support for cancelling long-running operations (CancelIndicator).
+4. Added support for cancelling long-running operations.
+5. Added support for monitoring progress of long-running operations.
 5. Changed DefaultCompleter to re-use existing fixities rather than always re-generating.
 6. Added multithreading of manifest generation and checking.
+7. Added support for filling holey bags using http, ftp, and rsync.
+8. Added support for deleting payload files by directory.
+9. Added commandline support for adding directory contents to payload (as opposed to adding directory).
+10. Added support for bag-in-place.
+11. Improved usability of commandline interface.
 
 Changes in 2.4:
 1. Added support for getting lists of standard and non-standard fields in manifests.

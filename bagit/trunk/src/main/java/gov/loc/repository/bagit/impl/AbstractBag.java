@@ -124,7 +124,7 @@ public abstract class AbstractBag implements Bag {
 				if (fileObject.getType() == FileType.FILE) {
 					
 					String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
-					log.debug("Reading " + filepath);
+					log.trace("Reading " + filepath);
 					BagFile bagFile = new VFSBagFile(filepath, fileObject);
 					this.putBagFile(bagFile);
 				}
