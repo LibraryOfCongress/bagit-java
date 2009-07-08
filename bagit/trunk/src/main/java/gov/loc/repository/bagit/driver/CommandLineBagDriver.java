@@ -14,7 +14,10 @@ import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.BobSender;
+import gov.loc.repository.bagit.transfer.FetchFailStrategy;
+import gov.loc.repository.bagit.transfer.StandardFailStrategies;
 import gov.loc.repository.bagit.transfer.SwordSender;
+import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
@@ -93,6 +96,9 @@ public class CommandLineBagDriver {
 	public static final String PARAM_PAYLOAD_MANIFEST_ALGORITHM = "payloadmanifestalgorithm";
 	public static final String PARAM_VERSION = "version";
 	public static final String PARAM_THREADS = "threads";
+	public static final String PARAM_FETCH_RETRY = "on-failure";
+	public static final String PARAM_FETCH_FAILURE_THRESHOLD = "max-failures";
+	public static final String PARAM_FETCH_FILE_FAILURE_THRESHOLD = "max-file-failures";
 	public static final String PARAM_RELAX_SSL = "relaxssl";
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_PASSWORD = "password";
@@ -135,6 +141,9 @@ public class CommandLineBagDriver {
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
 		Parameter urlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
 		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use.  Default is equal to the number of processors.");
+		Parameter fetchRetryParam = new FlaggedOption(PARAM_FETCH_RETRY, EnumeratedStringParser.getParser("none;next;retry;threshold"), "threshold", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_RETRY, "How to handle fetch failures.  Must be one of none, next, retry, or threshold.");
+		Parameter fetchFailThreshold = new FlaggedOption(PARAM_FETCH_FAILURE_THRESHOLD, JSAP.INTEGER_PARSER, "200", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_FAILURE_THRESHOLD, "The number of total fetch failures to tolerate before giving up.");
+		Parameter fetchFileFailThreshold = new FlaggedOption(PARAM_FETCH_FILE_FAILURE_THRESHOLD, JSAP.INTEGER_PARSER, "3", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_FILE_FAILURE_THRESHOLD, "The number times to retry a file before giving up on that file.");
 		//Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(PARAM_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_BAG_INFO, "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(PARAM_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_PAYLOAD_OXUM, "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
@@ -235,7 +244,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_RETRIEVE, 
 				"Retrieves any missing pieces of a bag specified in the fetch.txt.", 
-				new Parameter[] {sourceParam, destParam, threadsParam, usernameParam, passwordParam},
+				new Parameter[] {sourceParam, destParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_RETRIEVE, this.getBag("mybag"), this.getBag("myDestBag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
@@ -630,6 +639,27 @@ public class CommandLineBagDriver {
 				if (threads != 0) {
 					fetcher.setNumberOfThreads(threads);
 				}
+
+				// Should always have a default value, as the parser is told
+				// to give it one.
+				String fetchRetryString = config.getString(PARAM_FETCH_RETRY);
+				FetchFailStrategy failStrategy;
+				
+				if (fetchRetryString.equalsIgnoreCase("none"))
+					failStrategy = StandardFailStrategies.FAIL_FAST;
+				else if (fetchRetryString.equalsIgnoreCase("next"))
+					failStrategy = StandardFailStrategies.ALWAYS_CONTINUE;
+				else if (fetchRetryString.equalsIgnoreCase("retry"))
+					failStrategy = StandardFailStrategies.ALWAYS_RETRY;
+				else // threshold
+				{
+					int fileFailThreshold = config.getInt(PARAM_FETCH_FILE_FAILURE_THRESHOLD);
+					int failThreshold = config.getInt(PARAM_FETCH_FAILURE_THRESHOLD);
+					
+					failStrategy = new ThresholdFailStrategy(fileFailThreshold, failThreshold);
+				}
+				
+				fetcher.setFetchFailStrategy(failStrategy);
 			    
 			    FileSystemFileDestination dest = new FileSystemFileDestination(destFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
