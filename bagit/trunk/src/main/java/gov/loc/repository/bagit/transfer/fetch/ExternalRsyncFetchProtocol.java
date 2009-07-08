@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -38,6 +39,7 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 	
 	private static final Log log = LogFactory.getLog(ExternalRsyncFetchProtocol.class);
 	private String rsyncPath;
+	private AtomicBoolean sanityChecked = new AtomicBoolean(false);
 	
 	public ExternalRsyncFetchProtocol()
 	{
@@ -52,7 +54,43 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 	@Override
 	public ExternalRsyncFetcher createFetcher(URI uri, Long size) throws BagTransferException
 	{
+		this.checkRsyncSanity();
 		return new ExternalRsyncFetcher();
+	}
+	
+	private void checkRsyncSanity() throws BagTransferException
+	{
+		if (this.sanityChecked.compareAndSet(false, true))
+		{
+			log.debug(format("Checking for sanity of rsync: {0}", this.rsyncPath));
+			
+			CommandLine commandLine = CommandLine.parse(rsyncPath);	
+			commandLine.addArgument("--version");
+			
+			try
+			{
+				log.trace(format("Executing test command line: {0}", commandLine));
+				DefaultExecutor executor = new DefaultExecutor();
+				int result = executor.execute(commandLine);
+				
+				if (result == 0)
+				{
+					log.debug("Rsync test successful.");
+				}
+				else
+				{
+					log.warn(format("{0}: returned non-zero exit code during sanity check: {1}", this.rsyncPath, result));
+				}
+			}
+			catch (ExecuteException e)
+			{
+				throw new BagTransferException(format("Unable to execute rsync: {0}", this.rsyncPath), e);
+			}
+			catch (IOException e)
+			{
+				throw new BagTransferException(format("Unable to execute rsync: {0}", this.rsyncPath), e);
+			}
+		}
 	}
 	
 	private class ExternalRsyncFetcher extends LongRunningOperationBase implements FileFetcher
