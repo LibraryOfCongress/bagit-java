@@ -10,8 +10,8 @@ public class ThresholdFailStrategyTest
 	@Test
 	public void testFailsGlobally()
 	{
-		this.unit.setFileFailureThreshold(2);
-		this.unit.setTotalFailureThreshold(3);
+		this.unit.setFileFailureThreshold(3);
+		this.unit.setTotalFailureThreshold(4);
 		
 		this.check("uri-1", FetchFailureAction.RETRY_CURRENT);
 		this.check("uri-2", FetchFailureAction.RETRY_CURRENT);
@@ -25,8 +25,8 @@ public class ThresholdFailStrategyTest
 	@Test
 	public void testFailsForFile()
 	{
-		this.unit.setFileFailureThreshold(2);
-		this.unit.setTotalFailureThreshold(10);
+		this.unit.setFileFailureThreshold(3);
+		this.unit.setTotalFailureThreshold(11);
 		
 		this.check("uri-1", FetchFailureAction.RETRY_CURRENT);
 		this.check("uri-2", FetchFailureAction.RETRY_CURRENT);

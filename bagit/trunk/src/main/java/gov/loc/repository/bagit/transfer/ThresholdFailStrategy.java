@@ -19,11 +19,11 @@ import java.util.Map;
  * the strategy will return
  * {@link FetchFailureAction#RETRY_CURRENT RETRY_CURRENT} until the
  * number of failures for that file exceeds the per-file threshold.
- * After exceeding that threshold, the strategy will return
+ * After meeting or exceeding that threshold, the strategy will return
  * {@link FetchFailureAction#CONTINUE_WITH_NEXT CONTINUE_WITH_NEXT}.</p> 
  * 
  * <p>If at any time the total number of failures (across
- * all files) exceeds the total failures threshold, the
+ * all files) meets or exceeds the total failures threshold, the
  * strategy will return {@link FetchFailureAction#STOP STOP}.</p>
  * 
  * <p>For both thresholds, a threshold of 0 will be exceeded immediately.</p>
@@ -83,13 +83,23 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 		
 		this.fileFailureThreshold = fileFailureThreshold;
 	}
+	
+	public ThresholdFailStrategy()
+	{
+	}
+	
+	public ThresholdFailStrategy(int fileFailureThreshold, int totalFailureThreshold)
+	{
+		this.setFileFailureThreshold(fileFailureThreshold);
+		this.setTotalFailureThreshold(totalFailureThreshold);
+	}
 
 	@Override
 	public synchronized FetchFailureAction registerFailure(String uri, Long size, Object context)
 	{
 		FetchFailureAction action;
 		
-		if (++this.totalFailures > this.totalFailureThreshold)
+		if (++this.totalFailures >= this.totalFailureThreshold)
 		{
 			action = FetchFailureAction.STOP;
 		}
@@ -104,7 +114,7 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 
 			this.failures.put(uri, ++fileFailures);
 
-			if (fileFailures > this.fileFailureThreshold)
+			if (fileFailures >= this.fileFailureThreshold)
 			{
 				action = FetchFailureAction.CONTINUE_WITH_NEXT;
 			}
