@@ -129,8 +129,17 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			
 			try
 			{
-				log.trace("Creating temp file.");
-				tempFile = File.createTempFile("bagit-temp-", ".tmp");
+				if (destination.getSupportsTempFiles())
+				{
+					log.trace("Creating temp file in destination location.");
+					tempFile = new File(destination.createNewTempFilePath("bagit-temp-", ".tmp"));
+				}
+				else
+				{
+					log.warn("File destination does not support temp files.  Temporary data will be downloaded to the system temp location.");
+					tempFile = File.createTempFile("bagit-temp-", ".tmp");
+				}
+
 				log.trace(format("Created temp file: {0}", tempFile.getAbsolutePath()));
 			}
 			catch (IOException e)

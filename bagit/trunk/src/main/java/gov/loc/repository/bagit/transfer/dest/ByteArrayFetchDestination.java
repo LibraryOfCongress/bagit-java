@@ -30,6 +30,18 @@ public class ByteArrayFetchDestination implements FetchedFileDestination
 	{
 		return this.path;
 	}
+	
+	@Override
+	public boolean getSupportsTempFiles()
+	{
+		return false;
+	}
+	
+	@Override
+	public String createNewTempFilePath(String prefix, String suffix)
+	{
+		return null;
+	}
 
 	@Override
 	public void abandon()

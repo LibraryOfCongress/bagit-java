@@ -10,4 +10,8 @@ public interface FetchedFileDestination
     OutputStream openOutputStream(boolean append) throws BagTransferException;
     BagFile commit() throws BagTransferException;
     void abandon();
+    
+    // Temp file handling
+    boolean getSupportsTempFiles();
+    String createNewTempFilePath(String prefix, String suffix);
 }

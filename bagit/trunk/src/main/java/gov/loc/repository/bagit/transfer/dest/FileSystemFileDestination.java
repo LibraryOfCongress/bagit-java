@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FileSystemFileDestination implements FetchedFileDestinationFactory
 {
@@ -56,6 +57,27 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
             return this.bagPath;
         }
 
+    	@Override
+    	public boolean getSupportsTempFiles()
+    	{
+    		return true;
+    	}
+    	
+    	@Override
+    	public String createNewTempFilePath(String prefix, String suffix)
+    	{
+    		File tempFile;
+    		
+    		do
+    		{
+	    		String tempFilePath = prefix + tempFileNumber.getAndIncrement() + suffix;
+	    		tempFile = new File(this.file.getParent(), tempFilePath);
+    		}
+    		while (tempFile.exists());
+    		
+    		return tempFile.getAbsolutePath();
+    	}
+    	
         @Override
         public OutputStream openOutputStream(boolean append) throws BagTransferException
         {
@@ -95,5 +117,6 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
 
         private File file;
         private String bagPath;
+        private static AtomicLong tempFileNumber = new AtomicLong(1);
     }
 }

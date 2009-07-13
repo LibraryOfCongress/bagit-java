@@ -35,6 +35,18 @@ public class NullFetchDestination implements FetchedFileDestinationFactory
 		}
 
 		@Override
+		public boolean getSupportsTempFiles()
+		{
+			return false;
+		}
+		
+		@Override
+		public String createNewTempFilePath(String prefix, String suffix)
+		{
+			return null;
+		}
+
+		@Override
 		public OutputStream openOutputStream(boolean append) throws BagTransferException {
 			return new NullOutputStream();
 		}		
