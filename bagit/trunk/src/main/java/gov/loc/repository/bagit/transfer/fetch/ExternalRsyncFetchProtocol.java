@@ -69,8 +69,10 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			
 			try
 			{
-				log.trace(format("Executing test command line: {0}", commandLine));
 				DefaultExecutor executor = new DefaultExecutor();
+				executor.setStreamHandler(new PumpStreamHandler(NullOutputStream.NULL_OUTPUT_STREAM));
+
+				log.trace(format("Executing test command line: {0}", commandLine));
 				int result = executor.execute(commandLine);
 				
 				if (result == 0)
