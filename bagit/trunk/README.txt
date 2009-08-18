@@ -14,7 +14,8 @@ COMMANDLINE:
 A commandline interface is provided to perform various operations on bag.
 Scripts to invoke the commandline interface can be found in the bin directory.
 To learn more about the supported operations, invoke the commandline interface
-with no arguments.
+with no arguments.  If you encounter memory issues, the memory allocation can
+be increased in the scripts found in the bin directory.
 
 LICENSES FOR BUNDLED DEPENDENCIES:
  * JSAP - http://www.martiansoftware.com/jsap/license.html
