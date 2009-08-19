@@ -42,6 +42,8 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 	private boolean generateBagInfoTxt = true;
 	private boolean clearPayloadManifests = false;
 	private boolean clearTagManifests = true;
+	private boolean completePayloadManifests = true;
+	private boolean completeTagManifests = true;
 	private Algorithm tagManifestAlgorithm = Algorithm.MD5;
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
@@ -60,6 +62,14 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
         this.numberOfThreads = num;
     }
 	
+    public void setCompleteTagManifests(boolean complete) {
+    	this.completeTagManifests = complete;
+    }
+
+    public void setCompletePayloadManifests(boolean complete) {
+    	this.completePayloadManifests = complete;
+    }
+    
 	public void setGenerateTagManifest(boolean generateTagManifest) {
 		this.generateTagManifest = generateTagManifest;
 	}
@@ -103,8 +113,12 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 		this.newBag.putBagFiles(bag.getTags());
 		this.handleBagIt();
 		this.handleBagInfo();
-		this.handlePayloadManifests();
-		this.handleTagManifests();
+		if (this.completePayloadManifests) {
+			this.handlePayloadManifests();
+		}
+		if (this.completeTagManifests) {
+			this.handleTagManifests();
+		}
 		
 		if (this.isCancelled()) return null;
 		
