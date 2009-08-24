@@ -58,7 +58,7 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 		return new ExternalRsyncFetcher();
 	}
 	
-	private void checkRsyncSanity() throws BagTransferException
+	public void checkRsyncSanity() throws BagTransferException
 	{
 		if (this.sanityChecked.compareAndSet(false, true))
 		{
