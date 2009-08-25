@@ -32,15 +32,15 @@ public class ByteArrayFetchDestination implements FetchedFileDestination
 	}
 	
 	@Override
-	public boolean getSupportsTempFiles()
+	public boolean getSupportsDirectAccess()
 	{
 		return false;
 	}
 	
 	@Override
-	public String createNewTempFilePath(String prefix, String suffix)
+	public String getDirectAccessPath()
 	{
-		return null;
+		throw new IllegalStateException("Direct access is not supported by this fetch destination.");
 	}
 
 	@Override

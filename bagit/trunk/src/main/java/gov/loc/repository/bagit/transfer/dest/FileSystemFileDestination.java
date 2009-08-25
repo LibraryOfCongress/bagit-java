@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class FileSystemFileDestination implements FetchedFileDestinationFactory
 {
@@ -58,24 +57,15 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
         }
 
     	@Override
-    	public boolean getSupportsTempFiles()
+    	public boolean getSupportsDirectAccess()
     	{
     		return true;
     	}
     	
     	@Override
-    	public String createNewTempFilePath(String prefix, String suffix)
+    	public String getDirectAccessPath()
     	{
-    		File tempFile;
-    		
-    		do
-    		{
-	    		String tempFilePath = prefix + tempFileNumber.getAndIncrement() + suffix;
-	    		tempFile = new File(this.file.getParent(), tempFilePath);
-    		}
-    		while (tempFile.exists());
-    		
-    		return tempFile.getAbsolutePath();
+    		return this.file.getAbsolutePath();
     	}
     	
         @Override
@@ -86,8 +76,7 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
                 // TODO Ensure that the file path requested is not above the root.
                 
                 // Create the parent directories, if need be.
-                if (!this.file.getParentFile().exists())
-                    this.file.getParentFile().mkdirs();
+            	this.createParentDirectories();
                 
                 return new BufferedOutputStream(new FileOutputStream(this.file, append));
             }
@@ -114,9 +103,15 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
         		}
         	}
         }
+        
+        private void createParentDirectories()
+        {
+            // Create the parent directories, if need be.
+            if (!this.file.getParentFile().exists())
+                this.file.getParentFile().mkdirs();
+        }
 
         private File file;
         private String bagPath;
-        private static AtomicLong tempFileNumber = new AtomicLong(1);
     }
 }

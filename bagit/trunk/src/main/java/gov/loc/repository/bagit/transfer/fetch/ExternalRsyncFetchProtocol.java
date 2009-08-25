@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -39,7 +38,7 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 	
 	private static final Log log = LogFactory.getLog(ExternalRsyncFetchProtocol.class);
 	private String rsyncPath;
-	private AtomicBoolean sanityChecked = new AtomicBoolean(false);
+	private boolean sanityChecked = false;
 	
 	public ExternalRsyncFetchProtocol()
 	{
@@ -58,10 +57,12 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 		return new ExternalRsyncFetcher();
 	}
 	
-	public void checkRsyncSanity() throws BagTransferException
+	public synchronized void checkRsyncSanity() throws BagTransferException
 	{
-		if (this.sanityChecked.compareAndSet(false, true))
+		if (!this.sanityChecked)
 		{
+			this.sanityChecked = true;
+			
 			log.debug(format("Checking for sanity of rsync: {0}", this.rsyncPath));
 			
 			CommandLine commandLine = CommandLine.parse(rsyncPath);	
@@ -125,22 +126,37 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 		@Override
 		public void fetchFile(URI uri, Long size, FetchedFileDestination destination, FetchContext context) throws BagTransferException
 		{
-			File tempFile;
+			File downloadFile;
 			
 			try
 			{
-				if (destination.getSupportsTempFiles())
+				// Try to do our best to download the data in the actual location
+				// it will be used.  Rsync will automatically do temp-file download
+				// handling, so we just need to point it at the final file location,
+				// and make sure 
+				if (destination.getSupportsDirectAccess())
 				{
-					log.trace("Creating temp file in destination location.");
-					tempFile = new File(destination.createNewTempFilePath("bagit-temp-", ".tmp"));
+					log.trace("Creating direct-access file in destination location.");
+					downloadFile = new File(destination.getDirectAccessPath());
+					
+					File containingDirectory = downloadFile.getParentFile();
+					
+					if (!containingDirectory.exists())
+					{
+						log.trace(format("Creating directory: {0}", containingDirectory.getAbsolutePath()));
+						
+						if (!containingDirectory.mkdirs())
+							log.debug(format("Unable to create parent directory when downloading file (Maybe somebody created it before us?): {0}", destination.getDirectAccessPath()));
+					}
 				}
 				else
 				{
-					log.warn("File destination does not support temp files.  Temporary data will be downloaded to the system temp location.");
-					tempFile = File.createTempFile("bagit-temp-", ".tmp");
+					log.warn("File destination does not support direct-access files.  Temporary data will be downloaded to the system temp location, and then copied into its final location.");
+					String baseName = FilenameUtils.getBaseName(destination.getFilepath());
+					downloadFile = File.createTempFile(baseName, "-bagit.tmp");
 				}
 
-				log.trace(format("Created temp file: {0}", tempFile.getAbsolutePath()));
+				log.trace(format("Created rsync destination file: {0}", downloadFile.getAbsolutePath()));
 			}
 			catch (IOException e)
 			{
@@ -151,7 +167,7 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			commandLine.addArgument("--quiet");
 			commandLine.addArgument("--times");
 			commandLine.addArgument(uri.toString());
-			commandLine.addArgument(this.getLocalPath(tempFile));
+			commandLine.addArgument(this.getLocalPath(downloadFile));
 			
 			ByteArrayOutputStream err = new ByteArrayOutputStream();
 			PumpStreamHandler streamHandler = new PumpStreamHandler(NullOutputStream.NULL_OUTPUT_STREAM, err);
@@ -170,16 +186,24 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 				executor.execute(commandLine);
 				log.trace("External process exited successfully.");
 				
-				log.trace("Opening destination.");
-				destinationStream = destination.openOutputStream(false);
-				log.trace("Opening temp file.");
-				tempStream = new BufferedInputStream(new FileInputStream(tempFile));
-				
-				log.trace("Copying temp file to destination.");
-				FetchStreamCopier copier = new FetchStreamCopier("Copying from temp", destination.getFilepath(), tempFile.length());
-				this.delegateProgress(copier);
-				long bytesCopied = copier.copy(tempStream, destinationStream);
-				log.debug(format("Successfully copied {0} bytes.", bytesCopied));
+				// Only copy the bytes over if the filesystem doesn't do direct access.
+				// If it does support direct access, then rsync takes care of the
+				// temp files and re-names for us.
+				if (!destination.getSupportsDirectAccess())
+				{
+					log.debug("Destination does not support direct access.  Copying from temporary location to destination.");
+					
+					log.trace("Opening destination.");
+					destinationStream = destination.openOutputStream(false);
+					log.trace("Opening destination file.");
+					tempStream = new BufferedInputStream(new FileInputStream(downloadFile));
+
+					log.trace("Copying temp file to destination.");
+					FetchStreamCopier copier = new FetchStreamCopier("Copying from temp", destination.getFilepath(), downloadFile.length());
+					this.delegateProgress(copier);
+					long bytesCopied = copier.copy(tempStream, destinationStream);
+					log.debug(format("Successfully copied {0} bytes.", bytesCopied));
+				}
 			}
 			catch (ExecuteException e)
 			{
@@ -202,11 +226,14 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 				IOUtils.closeQuietly(tempStream);
 				IOUtils.closeQuietly(destinationStream);
 			
-				log.trace("Deleting temporary file.");
-				if (!tempFile.delete())
+				if (!destination.getSupportsDirectAccess())
 				{
-					log.trace("Unable to delete temporary file.  Marking for delete on exit.");
-					tempFile.deleteOnExit();
+					log.trace("Deleting temporary file.");
+					if (!downloadFile.delete())
+					{
+						log.trace("Unable to delete temporary file.  Marking for delete on exit.");
+						downloadFile.deleteOnExit();
+					}
 				}
 			}
 		}

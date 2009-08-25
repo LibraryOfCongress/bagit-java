@@ -78,6 +78,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_SEND_SWORD = "sword";
 	public static final String OPERATION_BAG_IN_PLACE = "baginplace";
 	
+	public static final String PARAM_PROGRESS = "show-progress";
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
 	//public static final String PARAM_BAG_DIR = "bagdir";
@@ -132,6 +133,7 @@ public class CommandLineBagDriver {
 	
 	public CommandLineBagDriver() throws Exception {
 		//Initialize
+		Parameter showProgressParam = new Switch(PARAM_PROGRESS, JSAP.NO_SHORTFLAG, PARAM_PROGRESS, "Reports progress of the operation to the console.");
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
@@ -244,7 +246,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_RETRIEVE, 
 				"Retrieves any missing pieces of a bag specified in the fetch.txt.", 
-				new Parameter[] {sourceParam, destParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
+				new Parameter[] {sourceParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_RETRIEVE, this.getBag("mybag"), this.getBag("myDestBag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
@@ -660,8 +662,13 @@ public class CommandLineBagDriver {
 				}
 				
 				fetcher.setFetchFailStrategy(failStrategy);
+				
+				if (config.getBoolean(PARAM_PROGRESS, false))
+				{
+					fetcher.addProgressListener(new ConsoleProgressListener());
+				}
 			    
-			    FileSystemFileDestination dest = new FileSystemFileDestination(destFile);
+			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
 			    SimpleResult result = fetcher.fetch(bag, dest);
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;

@@ -21,10 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
@@ -63,7 +65,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     private List<FetchTxt.FilenameSizeUrl> failedFetchTargets;
     private AtomicInteger nextFetchTargetIndex;
     private List<BagFile> newBagFiles;
-    private List<Fetcher> runningFetchers = new ArrayList<Fetcher>();
+    private List<Fetcher> runningFetchers = Collections.synchronizedList(new ArrayList<Fetcher>());
     
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
@@ -176,11 +178,14 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         {
             ExecutorService threadPool = Executors.newCachedThreadPool();
             
+            BagFetcherShutdownHook shutdownHook = new BagFetcherShutdownHook();
+            shutdownHook.hook();
+            
             try
             {        
             	log.debug(format("Submitting {0} jobs.", this.numberOfThreads));
             	
-                ArrayList<Future<SimpleResult>> futureResults = new ArrayList<Future<SimpleResult>>();                
+                ArrayList<Future<SimpleResult>> futureResults = new ArrayList<Future<SimpleResult>>();      
 
             	for (int i = 0; i < this.numberOfThreads; i++)
                 {
@@ -220,6 +225,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable
             	log.trace("Shutting down thread pool.");
                 threadPool.shutdown();
             	log.trace("Shutting down thread pool.");
+            	
+            	log.trace("Releasing shutdown hook.");
+            	shutdownHook.unhook();
             }
         }
         else
@@ -487,6 +495,49 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	public PasswordAuthentication getCredentials()
     	{
     		return null;
+    	}
+    }
+    
+    private class BagFetcherShutdownHook extends Thread
+    {
+        private CountDownLatch shutdownLatch;
+        
+        public synchronized void hook()
+        {
+        	this.shutdownLatch = new CountDownLatch(1);
+        	Runtime.getRuntime().addShutdownHook(this);
+        }
+        
+        public synchronized void unhook()
+        {
+        	this.shutdownLatch.countDown();       
+        	
+        	try
+        	{
+        		Runtime.getRuntime().removeShutdownHook(this);
+        	}
+        	catch (IllegalStateException e)
+        	{
+        		// Ignore this - we're already shutting down.
+        		// http://java.sun.com/javase/6/docs/api/java/lang/Runtime.html#addShutdownHook(java.lang.Thread)
+        	}
+        }
+        
+    	@Override
+    	public void run()
+    	{
+    		cancel();
+    		
+    		try
+			{
+    			// Wait for a few seconds, so that the thread pool and
+    			// fetchers can clean up a bit.  Then let things die.
+				this.shutdownLatch.await(7, TimeUnit.SECONDS);
+			}
+    		catch (InterruptedException e)
+			{
+    			log.error("Timed out while waiting for fetch shutdown to finish.");
+			}
     	}
     }
 }

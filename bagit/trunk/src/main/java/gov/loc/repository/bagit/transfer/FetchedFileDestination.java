@@ -11,7 +11,7 @@ public interface FetchedFileDestination
     BagFile commit() throws BagTransferException;
     void abandon();
     
-    // Temp file handling
-    boolean getSupportsTempFiles();
-    String createNewTempFilePath(String prefix, String suffix);
+    // Direct access support.
+    boolean getSupportsDirectAccess();
+    String getDirectAccessPath();
 }
