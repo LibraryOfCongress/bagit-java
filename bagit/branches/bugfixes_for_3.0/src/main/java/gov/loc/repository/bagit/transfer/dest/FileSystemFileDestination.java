@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.transfer.dest;
 
+import static java.text.MessageFormat.*;
+
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.impl.FileBagFile;
 import gov.loc.repository.bagit.transfer.BagTransferException;
@@ -11,9 +13,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class FileSystemFileDestination implements FetchedFileDestinationFactory
 {
+	private static final Log log = LogFactory.getLog(FileSystemFileDestination.class);
+	
     public FileSystemFileDestination()
     {
         this.destinationRoot = new File(".");
@@ -65,7 +71,14 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
                 
                 // Create the parent directories, if need be.
                 if (!this.file.getParentFile().exists())
-                    this.file.getParentFile().mkdirs();
+                {
+                	log.trace(format("Parent directory of destination file does not exist.  Making directories: {0}", this.file.getParentFile().getAbsolutePath()));
+                    
+                	if (!this.file.getParentFile().mkdirs())
+                	{
+                		log.warn(format("Unable to create directories: {0}", this.file.getParentFile().getAbsolutePath()));
+                	}
+                }
                 
                 return new BufferedOutputStream(new FileOutputStream(this.file, append));
             }
