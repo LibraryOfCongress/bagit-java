@@ -1,10 +1,18 @@
 #! /bin/bash
 
 MAXMEM=512m
+#JAVA_HOME=/usr/lib/jvm/java-6-sun
+
 
 # DO NOT EDIT BELOW THIS LINE
 if [ "$JAVA_OPTS" = "" ] ; then
   JAVA_OPTS="-Dfoo=bar"
+fi
+
+if [ "$JAVA_HOME" = "" ] ; then
+  JAVA_BIN=`which java`
+else
+  JAVA_BIN="$JAVA_HOME/bin/java"
 fi
 
 PRG=$0
@@ -27,4 +35,4 @@ APP_HOME=`cd $APP_HOME && pwd`
 
 APP_NAME=`basename $PRG`
 
-java "$JAVA_OPTS" -Xmx$MAXMEM -classpath $APP_HOME/lib/classworlds-1.1.jar -Dclassworlds.conf=$APP_HOME/bin/$APP_NAME.classworlds.conf -Dapp.home=$APP_HOME -Dlog_file=$APP_HOME/logs/bag.log org.codehaus.classworlds.Launcher "$@"
+"$JAVA_BIN" "$JAVA_OPTS" -Xmx$MAXMEM -classpath $APP_HOME/lib/classworlds-1.1.jar -Dclassworlds.conf=$APP_HOME/bin/$APP_NAME.classworlds.conf -Dapp.home=$APP_HOME -Dlog_file=$APP_HOME/logs/bag.log org.codehaus.classworlds.Launcher "$@"

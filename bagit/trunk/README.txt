@@ -31,7 +31,13 @@ LICENSES FOR BUNDLED DEPENDENCIES:
  * Log4j - http://logging.apache.org/log4j/1.2/license.html
  * Dom4j - http://www.dom4j.org/dom4j-1.6.1/license.html
  * Jaxen - http://fisheye.codehaus.org/browse/~raw,r=1340/trunk/jaxen/jaxen/LICENSE.txt
- 
+
+NOTE IF USING WITH ECLIPSE:
+There is a known defect with m2eclipse (https://issues.sonatype.org/browse/MNGECLIPSE-1091)
+that will cause problems with this project.  To work around the problem, in Eclipse select
+the project's Properties, then Maven and unselect "Skip Maven compiler plugin when processing
+resources".
+
 RELEASE NOTES:
 
 Changes in 3.0:
