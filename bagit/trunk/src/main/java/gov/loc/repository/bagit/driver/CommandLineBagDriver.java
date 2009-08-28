@@ -548,7 +548,7 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = bag.verifyTagManifests();
+				SimpleResult result = bag.verifyPayloadManifests();
 				log.info(result.toString());
 				System.out.println(result.toString());
 				if (! result.isSuccess()) {
