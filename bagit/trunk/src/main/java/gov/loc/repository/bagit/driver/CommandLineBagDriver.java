@@ -527,7 +527,6 @@ public class CommandLineBagDriver {
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
-				return RETURN_SUCCESS;
 			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
