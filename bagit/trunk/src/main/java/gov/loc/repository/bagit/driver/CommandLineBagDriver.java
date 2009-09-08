@@ -83,6 +83,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_DESTINATION = "dest";
 	//public static final String PARAM_BAG_DIR = "bagdir";
 	public static final String PARAM_MISSING_BAGIT_TOLERANT = "missingbagittolerant";
+	public static final String PARAM_ADDITIONAL_DIRECTORY_TOLERANT = "additionaldirectorytolerant";
 	public static final String PARAM_WRITER = "writer";
 	public static final String PARAM_PAYLOAD = "payload";
 	public static final String PARAM_EXCLUDE_PAYLOAD_DIR = "excludepayloaddir";
@@ -137,6 +138,7 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
+		Parameter additionalDirectoryTolerantParam = new Switch(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_ADDITIONAL_DIRECTORY_TOLERANT, "Tolerant of additional directories in the bag_dir.");
 		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload. To add the children of a directory, but not the directory itself append with " + File.separator + "*.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
@@ -173,12 +175,12 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_VERIFYVALID,
 				"Verifies the validity of a bag.",
-				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam},
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYVALID, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFYCOMPLETE,
 				"Verifies the completeness of a bag.",
-				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam},
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
 
 
@@ -518,7 +520,8 @@ public class CommandLineBagDriver {
 			
 			if (OPERATION_VERIFYVALID.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
-				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
+				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
+				completeVerifier.setAdditionalDirectoriesInBagDirTolerant(config.getBoolean(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, false));
 				ValidVerifier verifier = new ValidVerifierImpl(completeVerifier, new ParallelManifestChecksumVerifier());
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = verifier.verify(bag);
@@ -530,6 +533,7 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
 				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
+				completeVerifier.setAdditionalDirectoriesInBagDirTolerant(config.getBoolean(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, false));
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = completeVerifier.verify(bag);
 				log.info(result.toString());

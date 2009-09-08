@@ -405,6 +405,10 @@ public abstract class AbstractBagImplTest {
 		
 		assertTrue(bag.verifyTagManifests().isSuccess());
 		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
+		CompleteVerifier verifier = new CompleteVerifierImpl();
+		verifier.setAdditionalDirectoriesInBagDirTolerant(true);
+		assertTrue(bag.verify(verifier).isSuccess());		
 
 	}
 	

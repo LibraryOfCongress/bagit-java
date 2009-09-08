@@ -40,6 +40,10 @@ resources".
 
 RELEASE NOTES:
 
+Changes in 3.1:
+1. Updates to bag.bat.
+2. Added support for tolerating additional directories in bag_dir.
+
 Changes in 3.0:
 1. Numerous changes to Bag interface for clarity, consistency, and simplification.
 2. Add support for visitor pattern.  Changed Writers to use visitor.

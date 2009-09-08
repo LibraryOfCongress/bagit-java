@@ -22,11 +22,21 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
 	private boolean missingBagItTolerant = false;
+
+	private boolean additionalDirectoriesInBagDirTolerant = false;
 	
 	@Override
 	public void setMissingBagItTolerant(boolean missingBagItTolerant) {
 		this.missingBagItTolerant = missingBagItTolerant;
 	}
+	
+	@Override
+	public void setAdditionalDirectoriesInBagDirTolerant(
+			boolean additionalDirectoriesInBagDirTolerant) {
+		this.additionalDirectoriesInBagDirTolerant = additionalDirectoriesInBagDirTolerant;
+		
+	}
+	
 	
 	@Override
 	public SimpleResult verify(Bag bag) {
@@ -109,17 +119,20 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			if (bag.getFile() != null) {
 				FileObject bagFileObject = VFSHelper.getFileObjectForBag(bag.getFile());
 				//Only directory is a data directory
-				for(FileObject fileObject : bagFileObject.getChildren())
-				{
-					if (this.isCancelled()) return null;
-					if (fileObject.getType() == FileType.FOLDER) {
-						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
-						if (! folderName.equals(bag.getBagConstants().getDataDirectory())) {
-							result.setSuccess(false);
-							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir.", folderName));
+				if (! this.additionalDirectoriesInBagDirTolerant) {
+					for(FileObject fileObject : bagFileObject.getChildren())
+					{
+						if (this.isCancelled()) return null;
+						if (fileObject.getType() == FileType.FOLDER) {
+							String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
+							if (! folderName.equals(bag.getBagConstants().getDataDirectory())) {
+								result.setSuccess(false);
+								result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir.", folderName));
+							}
 						}
 					}
 				}
+				
 				//If there is a bagFileObject, all payload FileObjects have payload BagFiles
 				FileObject dataFileObject = bagFileObject.getChild(bag.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
