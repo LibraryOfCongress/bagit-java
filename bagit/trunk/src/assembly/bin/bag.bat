@@ -12,4 +12,4 @@ cd "%START%
 
 REM DO NOT EDIT BELOW THIS LINE
 shift
-java -Xmx%MAXMEM% -classpath "%APP_HOME%\lib\classworlds-1.1.jar" -Dclassworlds.conf="%APP_HOME%\bin\bag.classworlds.conf" -Dapp.home="%APP_HOME%" -Dlog_file="%APP_HOME%\logs\bag.log" org.codehaus.classworlds.Launcher "%*"
+java -Xmx%MAXMEM% -classpath "%APP_HOME%\lib\classworlds-1.1.jar" -Dclassworlds.conf="%APP_HOME%\bin\bag.classworlds.conf" -Dapp.home="%APP_HOME%" -Dlog_file="%APP_HOME%\logs\bag.log" org.codehaus.classworlds.Launcher %*
