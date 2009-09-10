@@ -3,6 +3,8 @@ package gov.loc.repository.bagit.impl;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -23,6 +25,7 @@ public class PreBagImpl implements PreBag {
 	
 	BagFactory bagFactory;
 	File dir;
+	List<File> tagFiles = new ArrayList<File>();
 	
 	public PreBagImpl(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
@@ -68,6 +71,16 @@ public class PreBagImpl implements PreBag {
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
+		//Copy the tags
+		for(File tagFile : this.tagFiles) {
+			log.trace(MessageFormat.format("Copying tag file {0} to {1}", tagFile, this.dir));
+			try {
+				FileUtils.copyFileToDirectory(tagFile, this.dir);
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
+		}
+		
 		//Create a bag
 		Bag bag = this.bagFactory.createBag(this.dir, version, LoadOption.BY_PAYLOAD_FILES);
 		//Complete the bag
@@ -85,6 +98,16 @@ public class PreBagImpl implements PreBag {
 			throw new RuntimeException(MessageFormat.format("{0} is not a directory", dir));
 		}
 		this.dir = dir;
+	}
+
+	@Override
+	public List<File> getTagFiles() {
+		return this.tagFiles;
+	}
+
+	@Override
+	public void setTagFiles(List<File> tagFiles) {
+		this.tagFiles = tagFiles;		
 	}
 
 }

@@ -107,6 +107,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_THROTTLE = "throttle";
 	public static final String PARAM_HELP = "help";
 	public static final String PARAM_RETAIN_BASE_DIR = "retainbasedir";
+	public static final String PARAM_BAGINFOTXT = "baginfotxt";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -162,6 +163,7 @@ public class CommandLineBagDriver {
 		Parameter passwordParam = new FlaggedOption(PARAM_PASSWORD, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PASSWORD, "The password for basic authentication.");
 		Parameter throttleParam = new FlaggedOption(PARAM_THROTTLE, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THROTTLE, "A pause between HTTP posts in milliseconds for BOB.");
 		Parameter retainBaseDirParam = new Switch(PARAM_RETAIN_BASE_DIR, JSAP.NO_SHORTFLAG, PARAM_RETAIN_BASE_DIR, "Indicates that the base directory (not just the contents of the base directory) should be placed in the data directory of the bag.");
+		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -210,6 +212,7 @@ public class CommandLineBagDriver {
 		bagInPlaceParams.add(sourceParam);
 		bagInPlaceParams.add(retainBaseDirParam);
 		bagInPlaceParams.addAll(completeParams);
+		bagInPlaceParams.add(bagInfoTxtParam);
 		this.addOperation(OPERATION_BAG_IN_PLACE,
 				"Creates a bag-in-place.  The source must be a directory on a filesystem and may already have a data directory.",
 				bagInPlaceParams,
@@ -219,7 +222,8 @@ public class CommandLineBagDriver {
 		createParams.add(destParam);
 		createParams.add(payloadParam);
 		createParams.add(writerParam);
-		createParams.addAll(completeParams);		
+		createParams.addAll(completeParams);
+		createParams.add(bagInfoTxtParam);
 		this.addOperation(OPERATION_CREATE,
 				"Creates a bag from supplied files/directories, completes the bag, and then writes in a specified format.",
 				createParams, 
@@ -230,7 +234,7 @@ public class CommandLineBagDriver {
 		makeHoleyParam.add(destParam);
 		makeHoleyParam.add(baseUrlParam);
 		makeHoleyParam.add(writerParam);
-		makeHoleyParam.add(excludePayloadDirParam);
+		makeHoleyParam.add(excludePayloadDirParam);		
 		this.addOperation(OPERATION_MAKE_HOLEY, 
 				"Generates a fetch.txt and then writes bag in a specified format.", 
 				makeHoleyParam, 
@@ -563,6 +567,18 @@ public class CommandLineBagDriver {
 				newBag.write(writer, destFile);				
 			} else if (OPERATION_BAG_IN_PLACE.equals(operation.name)) {
 				PreBag preBag = this.bagFactory.createPreBag(sourceFile);
+				if (config.contains(PARAM_BAGINFOTXT)) {
+					File bagInfoTxtFile = config.getFile(PARAM_BAGINFOTXT);
+					if (! bagInfoTxtFile.getName().equals(bagFactory.getBagConstants().getBagInfoTxt())) {
+						msg = MessageFormat.format("External bag-info.txt must be named {0}.", bagFactory.getBagConstants().getBagInfoTxt());
+						System.err.println(msg);
+						log.error(msg);
+						ret = RETURN_ERROR;
+					}
+					List<File> tagFiles = new ArrayList<File>();
+					tagFiles.add(bagInfoTxtFile);
+					preBag.setTagFiles(tagFiles);
+				}				
 				preBag.makeBagInPlace(version != null ? version : BagFactory.LATEST, config.getBoolean(PARAM_RETAIN_BASE_DIR, false), completer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, null);
@@ -581,6 +597,16 @@ public class CommandLineBagDriver {
 					} else {						
 						bag.addFileToPayload(new File(filepath));
 					}
+				}
+				if (config.contains(PARAM_BAGINFOTXT)) {
+					File bagInfoTxtFile = config.getFile(PARAM_BAGINFOTXT);
+					if (! bagInfoTxtFile.getName().equals(bag.getBagConstants().getBagInfoTxt())) {
+						msg = MessageFormat.format("External bag-info.txt must be named {0}.", bag.getBagConstants().getBagInfoTxt());
+						System.err.println(msg);
+						log.error(msg);
+						ret = RETURN_ERROR;
+					}
+					bag.addFileAsTag(bagInfoTxtFile);
 				}
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);
