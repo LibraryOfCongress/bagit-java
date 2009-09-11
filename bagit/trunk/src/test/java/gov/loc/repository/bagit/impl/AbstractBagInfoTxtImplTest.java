@@ -13,6 +13,7 @@ import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.impl.StringBagFile;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,6 +55,14 @@ public abstract class AbstractBagInfoTxtImplTest {
 	}
 	public abstract String getTestBagInfoTxtBagInfoTxtString();	
 	public void addlTestBagInfoTxt(BagInfoTxt bagInfo) {}
+	
+	@Test
+	public void testBagInfoTxtNullFields() throws Exception {
+		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), this.getTestBagInfoTxtBagInfoTxtString()));
+		bagInfo.put("Foo", null);
+		String bagInfoString = new String(IOUtils.toByteArray(bagInfo.newInputStream()));
+		assertFalse(bagInfoString.contains("null"));
+		}
 	
 	@Test
 	public void testCaseInsensitive() {
