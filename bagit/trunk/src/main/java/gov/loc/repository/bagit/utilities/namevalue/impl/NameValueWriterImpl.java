@@ -44,7 +44,7 @@ public class NameValueWriterImpl implements NameValueWriter {
 	}
 	
 	public void write(String name, String value) {		
-		String line = name + ": " + value;
+		String line = name + ": " + (value !=null ? value : "");
 		boolean isFirst = true;
 		while (line.length() > 0) {
 			int workingLength = lineLength;
