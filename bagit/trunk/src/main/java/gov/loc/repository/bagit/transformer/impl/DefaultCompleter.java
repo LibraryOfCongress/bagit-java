@@ -1,39 +1,16 @@
 package gov.loc.repository.bagit.transformer.impl;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
-import gov.loc.repository.bagit.utilities.MessageDigestHelper;
-import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 
 public class DefaultCompleter extends LongRunningOperationBase implements Completer {
-	
-    private static final Log log = LogFactory.getLog(DefaultCompleter.class);
 	
 	private boolean generateTagManifest = true;
 	private boolean updatePayloadOxum = true;
@@ -48,18 +25,17 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 	private Algorithm payloadManifestAlgorithm = Algorithm.MD5;
 	private Bag newBag;
 	private BagFactory bagFactory;
-	private int numberOfThreads = 1;
+	private CompleterHelper helper;
 	
 	public DefaultCompleter(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
-		this.numberOfThreads = Runtime.getRuntime().availableProcessors();
+		this.helper = new CompleterHelper();
+		this.addChainedCancellable(this.helper);
+		this.addChainedProgressListenable(this.helper);
 	}
 	
     public void setNumberOfThreads(int num) {
-        if (num < 1)
-            throw new IllegalArgumentException("Number of threads must be at least 1.");
-        
-        this.numberOfThreads = num;
+    	this.helper.setNumberOfThreads(num);
     }
 	
     public void setCompleteTagManifests(boolean complete) {
@@ -156,105 +132,20 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 	
 	protected void handleTagManifests() {
 		if (this.clearTagManifests) {
-			this.clearManifests(this.newBag.getTagManifests());
+			this.helper.clearManifests(this.newBag, this.newBag.getTagManifests());
 		}
-		this.cleanManifests(this.newBag.getTagManifests());
+		this.helper.cleanManifests(this.newBag, this.newBag.getTagManifests());
 		if (this.generateTagManifest) {
-			this.handleManifest(this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants()), this.newBag.getTags());
+			this.helper.handleManifest(this.newBag, this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants()), this.newBag.getTags());
 		}
 	}
 	
 	protected void handlePayloadManifests() {
 		if (this.clearPayloadManifests) {
-			this.clearManifests(this.newBag.getPayloadManifests());
+			this.helper.clearManifests(this.newBag, this.newBag.getPayloadManifests());
 		}
-		this.cleanManifests(this.newBag.getPayloadManifests());
-		this.handleManifest(this.payloadManifestAlgorithm, ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants()),this.newBag.getPayload());		
-	}
-
-	protected void clearManifests(Collection<Manifest> manifests) {
-		for(Manifest manifest : manifests) {
-			this.newBag.removeBagFile(manifest.getFilepath());
-		}
+		this.helper.cleanManifests(this.newBag, this.newBag.getPayloadManifests());
+		this.helper.handleManifest(this.newBag, this.payloadManifestAlgorithm, ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants()),this.newBag.getPayload());		
 	}
 	
-	protected void cleanManifests(Collection<Manifest> manifests) {
-		int manifestTotal = manifests.size();
-		int manifestCount = 0;
-		for(Manifest manifest : manifests) {			
-			manifestCount++;
-			
-			this.progress("cleaning manifest", manifest.getFilepath(), manifestCount, manifestTotal);
-			
-			List<String> deleteFilepaths = new ArrayList<String>();
-			for(String filepath : manifest.keySet()) {
-				if (this.isCancelled()) return;
-				BagFile bagFile = this.newBag.getBagFile(filepath);
-				if (bagFile == null || ! bagFile.exists()) {
-					deleteFilepaths.add(filepath);
-				}
-			}
-			for(String filepath : deleteFilepaths) {
-				manifest.remove(filepath);
-			}
-		}
-	}
-	
-	protected void handleManifest(final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
-		Manifest manifest = (Manifest)this.newBag.getBagFile(filepath);
-		if (manifest == null) {
-			manifest = this.newBag.getBagPartFactory().createManifest(filepath);
-		}
-		
-		final int total = bagFiles.size();
-    	final AtomicInteger count = new AtomicInteger();
-		ExecutorService threadPool = Executors.newCachedThreadPool();
-		ArrayList<Future<Map<String,String>>> futures = new ArrayList<Future<Map<String,String>>>(this.numberOfThreads);
-		//Since a Manifest is not synchronized, creating separate manifestEntry maps and merging
-    	try {
-	    	final Iterator<BagFile> bagFileIter = bagFiles.iterator();
-		    for (int i = 0; i < this.numberOfThreads; i++) {
-		    	log.debug(MessageFormat.format("Starting thread {0} of {1}.", i, this.numberOfThreads));
-		    	Future<Map<String, String>> future = threadPool.submit(new Callable<Map<String,String>>() {
-		            public Map<String,String> call() {
-		                ThreadSafeIteratorWrapper<BagFile> safeIterator = new ThreadSafeIteratorWrapper<BagFile>(bagFileIter);
-		                Map<String,String> manifestEntries = new LinkedHashMap<String, String>();
-		                
-		        		for(final BagFile bagFile : safeIterator) {
-		        			if (isCancelled()) return null;
-		        			progress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
-		        			if (newBag.getChecksums(bagFile.getFilepath()).isEmpty()) {
-		        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
-		        				log.debug(MessageFormat.format("Generated fixity for {0}.", bagFile.getFilepath()));
-		        				manifestEntries.put(bagFile.getFilepath(), checksum);
-		        			} else {
-		        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));
-		        			}
-		        		}
-		        		VFSHelper.closeFileSystemManager();
-		        		return manifestEntries;
-		            }
-	            });
-		    	futures.add(future);
-		    	
-		    }
-            for (Future<Map<String,String>> future : futures) {
-                Map<String,String> futureResult = future.get();
-                if (futureResult != null) {
-                	manifest.putAll(futureResult);
-                }
-            }               
-
-    	} catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }    	
-    	finally {
-        	log.debug("Shutting down thread pool.");
-        	threadPool.shutdown();
-        	log.debug("Thread pool shut down.");
-        }
-		this.newBag.putBagFile(manifest);
-	}
 }

@@ -45,6 +45,7 @@ Changes in 3.1:
 2. Added support for tolerating additional directories in bag_dir.
 3. Added support for adding external bag-info.txt when creating bag or bagging-in-place
 	from commandline.
+4. Added support for updating tag manifests only.
 
 Changes in 3.0:
 1. Numerous changes to Bag interface for clarity, consistency, and simplification.

@@ -1,6 +1,8 @@
 package gov.loc.repository.bagit.utilities;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.ProgressListenable;
@@ -10,27 +12,54 @@ public class LongRunningOperationBase implements Cancellable, ProgressListenable
 {
 	private boolean isCancelled = false;
 	private ArrayList<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
-
+	private Set<ProgressListenable> chainedProgressListenables = new HashSet<ProgressListenable>();
+	private Set<Cancellable> chainedCancellables = new HashSet<Cancellable>();
+	
 	@Override
 	public void addProgressListener(ProgressListener progressListener) {
 		this.progressListeners.add(progressListener);
+		for(ProgressListenable progressListenable : this.chainedProgressListenables) {
+			progressListenable.addProgressListener(progressListener);
+		}
 	}
 	
 	@Override
 	public void removeProgressListener(ProgressListener progressListener) {
 		this.progressListeners.remove(progressListener);
+		for(ProgressListenable progressListenable : this.chainedProgressListenables) {
+			progressListenable.removeProgressListener(progressListener);
+		}
 	}
 	
 	@Override
 	public void cancel()
 	{
 		this.isCancelled = true;
+		for(Cancellable cancellable : this.chainedCancellables) {
+			cancellable.cancel();
+		}
 	}
 	
 	@Override
 	public boolean isCancelled()
 	{
 		return this.isCancelled;
+	}
+	
+	protected void addChainedProgressListenable(ProgressListenable progressListenable) {
+		this.chainedProgressListenables.add(progressListenable);
+	}
+	
+	protected void removeChainedProgressListenable(ProgressListenable progressListenable) {
+		this.chainedProgressListenables.remove(progressListenable);
+	}
+	
+	protected void addChainedCancellable(Cancellable cancellable) {
+		this.chainedCancellables.add(cancellable);
+	}
+	
+	protected void removeChainedCancellable(Cancellable cancellable) {
+		this.chainedCancellables.remove(cancellable);
 	}
 	
 	protected void progress(String activity, Object item, Long count, Long total)

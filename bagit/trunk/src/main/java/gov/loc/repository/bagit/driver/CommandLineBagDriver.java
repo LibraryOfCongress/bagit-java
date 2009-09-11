@@ -4,6 +4,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
@@ -12,6 +13,7 @@ import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
 import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.BobSender;
 import gov.loc.repository.bagit.transfer.FetchFailStrategy;
@@ -30,6 +32,7 @@ import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
 import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemHelper;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 import gov.loc.repository.bagit.writer.impl.TarBz2Writer;
 import gov.loc.repository.bagit.writer.impl.TarGzWriter;
@@ -67,6 +70,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_VERIFYVALID = "verifyvalid";
 	public static final String OPERATION_VERIFYCOMPLETE = "verifycomplete";
 	public static final String OPERATION_MAKE_COMPLETE = "makecomplete";
+	public static final String OPERATION_UPDATE_TAGMANIFESTS = "updatetagmanifests";
 	public static final String OPERATION_CREATE = "create";
 	public static final String OPERATION_MAKE_HOLEY = "makeholey";
 	public static final String OPERATION_GENERATE_PAYLOAD_OXUM = "generatepayloadoxum";
@@ -208,6 +212,11 @@ public class CommandLineBagDriver {
 				makeCompleteParams,
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_MAKE_COMPLETE, this.getBag("mybag"), this.getBag("myDestBag"))});
 
+		this.addOperation(OPERATION_UPDATE_TAGMANIFESTS,
+				"Updates the tag manifests for a bag.  The bag must be unserialized.",
+				new Parameter[] {sourceParam, tagManifestAlgorithmParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_UPDATE_TAGMANIFESTS, this.getBag("mybag"))});
+				
 		List<Parameter> bagInPlaceParams = new ArrayList<Parameter>();
 		bagInPlaceParams.add(sourceParam);
 		bagInPlaceParams.add(retainBaseDirParam);
@@ -565,6 +574,14 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);				
+			} else if (OPERATION_UPDATE_TAGMANIFESTS.equals(operation.name)) {
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
+				TagManifestCompleter tagManifestCompleter = new TagManifestCompleter(bagFactory);
+				tagManifestCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
+				Bag newBag = tagManifestCompleter.complete(bag);
+				for(Manifest manifest : newBag.getTagManifests()) {
+					FileSystemHelper.write(manifest, new File(sourceFile, manifest.getFilepath()));
+				}
 			} else if (OPERATION_BAG_IN_PLACE.equals(operation.name)) {
 				PreBag preBag = this.bagFactory.createPreBag(sourceFile);
 				if (config.contains(PARAM_BAGINFOTXT)) {
