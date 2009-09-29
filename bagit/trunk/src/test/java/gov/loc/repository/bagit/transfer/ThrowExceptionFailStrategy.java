@@ -21,11 +21,11 @@ public class ThrowExceptionFailStrategy implements FetchFailStrategy
 	 * @throws RuntimeException Always.
 	 */
 	@Override
-	public FetchFailureAction registerFailure(String uri, Long size, Object context) 
+	public FetchFailureAction registerFailure(FetchTarget target, Object context) 
 	{
 		if (context instanceof Throwable)
-			throw new RuntimeException("Could not fetch: " + uri, (Throwable)context);
+			throw new RuntimeException("Could not fetch: " + target.getFilename(), (Throwable)context);
 		else
-			throw new RuntimeException("Could not fetch: " + uri);
+			throw new RuntimeException("Could not fetch: " + target.getFilename());
 	}
 }

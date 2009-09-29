@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.transfer;
 
 import static junit.framework.Assert.*;
+import gov.loc.repository.bagit.FetchTxt;
 import org.junit.Test;
 
 public class ThresholdFailStrategyTest
@@ -38,8 +39,9 @@ public class ThresholdFailStrategyTest
 		this.check("uri-2", FetchFailureAction.CONTINUE_WITH_NEXT);
 	}
 	
-	private void check(String uri, FetchFailureAction expectedAction)
+	private void check(String filename, FetchFailureAction expectedAction)
 	{
-		assertEquals(expectedAction, this.unit.registerFailure(uri, null, null));
+		FetchTarget target = new FetchTarget(new FetchTxt.FilenameSizeUrl(filename, null, null));
+		assertEquals(expectedAction, this.unit.registerFailure(target, null));
 	}
 }

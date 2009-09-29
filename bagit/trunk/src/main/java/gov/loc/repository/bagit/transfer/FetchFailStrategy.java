@@ -27,5 +27,5 @@ package gov.loc.repository.bagit.transfer;
  */
 public interface FetchFailStrategy
 {
-	FetchFailureAction registerFailure(String uri, Long size, Object context);
+	FetchFailureAction registerFailure(FetchTarget target, Object context);
 }

@@ -95,7 +95,7 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 	}
 
 	@Override
-	public synchronized FetchFailureAction registerFailure(String uri, Long size, Object context)
+	public synchronized FetchFailureAction registerFailure(FetchTarget target, Object context)
 	{
 		FetchFailureAction action;
 		
@@ -105,14 +105,14 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 		}
 		else
 		{
-			Integer fileFailures = this.failures.get(uri);
+			Integer fileFailures = this.failures.get(target.getFilename());
 			
 			if (fileFailures == null)
 			{
 				fileFailures = 0;
 			}
 
-			this.failures.put(uri, ++fileFailures);
+			this.failures.put(target.getFilename(), ++fileFailures);
 
 			if (fileFailures >= this.fileFailureThreshold)
 			{
