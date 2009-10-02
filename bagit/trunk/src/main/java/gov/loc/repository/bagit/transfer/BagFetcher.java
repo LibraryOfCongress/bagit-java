@@ -451,6 +451,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 	                	}
 	                	else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT)
 	                	{
+		                    failedFetchTargets.add(fetchTarget);		                    
+		                    result.addMessage(format("An error occurred while fetching target: {0}", fetchTarget.getFilename()));
+		                    result.setSuccess(false);
 	                		fetchTarget = getNextFetchTarget();
 	                	}
 	                	else // Default to STOP
