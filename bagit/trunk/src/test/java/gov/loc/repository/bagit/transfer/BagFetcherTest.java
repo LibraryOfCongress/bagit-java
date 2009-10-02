@@ -217,7 +217,7 @@ public class BagFetcherTest
 		
 		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
 		
-		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
+		assertFalse("Bag failed transfer.", result.isSuccess());
 	}
 	
 	@Test
