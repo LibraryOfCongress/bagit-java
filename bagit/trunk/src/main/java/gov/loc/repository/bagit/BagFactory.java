@@ -10,7 +10,7 @@ public class BagFactory {
 	
 	public enum LoadOption { NO_LOAD, BY_PAYLOAD_MANIFESTS, BY_PAYLOAD_FILES }
 	
-	public enum Version { V0_95 ("0.95"), V0_96 ("0.96");
+	public enum Version { V0_93 ("0.93"), V0_94 ("0.94"), V0_95 ("0.95"), V0_96 ("0.96");
 	
 	public String versionString;
 	
@@ -46,6 +46,12 @@ public class BagFactory {
 	 * Creates a new Bag of the specified version.
 	 */
 	public Bag createBag(Version version) {
+		if (Version.V0_93.equals(version)) {
+			return new gov.loc.repository.bagit.v0_93.impl.BagImpl(this);
+		}
+		if (Version.V0_94.equals(version)) {
+			return new gov.loc.repository.bagit.v0_94.impl.BagImpl(this);
+		}
 		if (Version.V0_95.equals(version)) {
 			return new gov.loc.repository.bagit.v0_95.impl.BagImpl(this);
 		}
@@ -125,6 +131,12 @@ public class BagFactory {
 	 * Gets a BagPartFactory of the specified version.
 	 */
 	public BagPartFactory getBagPartFactory(Version version) {
+		if (Version.V0_93.equals(version)) {
+			return new gov.loc.repository.bagit.v0_93.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
+		}
+		if (Version.V0_94.equals(version)) {
+			return new gov.loc.repository.bagit.v0_94.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
+		}
 		if (Version.V0_95.equals(version)) {
 			return new gov.loc.repository.bagit.v0_95.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
 		}
@@ -145,6 +157,12 @@ public class BagFactory {
 	 * Gets BagConstants of the specified version.
 	 */
 	public BagConstants getBagConstants(Version version) {
+		if (Version.V0_93.equals(version)) {
+			return new gov.loc.repository.bagit.v0_93.impl.BagConstantsImpl();
+		}
+		if (Version.V0_94.equals(version)) {
+			return new gov.loc.repository.bagit.v0_94.impl.BagConstantsImpl();
+		}
 		if (Version.V0_95.equals(version)) {
 			return new gov.loc.repository.bagit.v0_95.impl.BagConstantsImpl();
 		}
