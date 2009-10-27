@@ -40,6 +40,9 @@ resources".
 
 RELEASE NOTES:
 
+Changes in 3.2:
+1. Fixed handling of bag-info.txt with colons in the value.
+
 Changes in 3.1:
 1. Updates to bag.bat.
 2. Added support for tolerating additional directories in bag_dir.

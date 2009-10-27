@@ -72,8 +72,8 @@ public class NameValueReaderImpl implements NameValueReader {
 		String value = null;
 		if (splitString.length == 2) {
 			value = splitString[1].trim();
-			while(! this.lines.isEmpty() && ! this.lines.getFirst().contains(":")) {
-				value += " " + this.lines.removeFirst().replaceAll("^( |\\t)*", "");
+			while(! this.lines.isEmpty() && this.lines.getFirst().matches("^( |\\t)+.+$")) {
+				value += " " + this.lines.removeFirst().replaceAll("^( |\\t)+", "");
 			}			
 		}
 		NameValue ret = new NameValue(name, value);

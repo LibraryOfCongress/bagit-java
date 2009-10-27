@@ -78,6 +78,45 @@ public abstract class AbstractBagInfoTxtImplTest {
 	}
 
 	@Test
+	public void testColons() {
+		String bagInfoTxtStr1 = 
+			"External-Description: This collection consists of six\n" +
+			"   large-scale web crawls run against U.S. city web sites from May 2005\n" +
+			"   to October 2007 as part of the Stanford WebBase project. Format:  ARC files\n" +
+			"   generated from WebBase content.\n" +
+			"External-Identifier: ark:/13030/sw1154dn7r\n";
+		String bagInfoTxtStr2 = 
+			"External-Description: This collection consists of six " +
+			"large-scale web crawls run against U.S. city web sites from May 2005 " +
+			"to October 2007 as part of the Stanford WebBase project. Format:  ARC files " +
+			"generated from WebBase content.\n" +
+			"External-Identifier: ark:/13030/sw1154dn7r\n";
+		String bagInfoTxtStr3 = 
+			"External-Description: This collection consists of six\n" +
+			"   large-scale web crawls run against U.S. city web sites from May 2005\n" +
+			"   to October 2007 as part of the Stanford WebBase project.\n" +
+			"   Format:  ARC files\n" +
+			"   generated from WebBase content.\n" +
+			"External-Identifier: ark:/13030/sw1154dn7r\n";
+
+		final String externalDescription = "This collection consists of six large-scale web crawls run against U.S. city web sites from May 2005 to October 2007 as part of the Stanford WebBase project. Format:  ARC files generated from WebBase content.";
+		final String externalIdentifier = "ark:/13030/sw1154dn7r";
+		BagInfoTxt bagInfo1 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr1));
+		assertEquals(externalDescription, bagInfo1.getExternalDescription());
+		assertEquals(externalIdentifier, bagInfo1.getExternalIdentifier());
+		
+		BagInfoTxt bagInfo2 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr2));
+		assertEquals(externalDescription, bagInfo2.getExternalDescription());
+		assertEquals(externalIdentifier, bagInfo2.getExternalIdentifier());
+
+		BagInfoTxt bagInfo3 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr3));
+		assertEquals(externalDescription, bagInfo3.getExternalDescription());
+		assertEquals(externalIdentifier, bagInfo3.getExternalIdentifier());
+
+	}
+
+	
+	@Test
 	public void testBaggingDate() throws Exception {
 		BagInfoTxt bagInfo = this.factory.createBagInfoTxt();
 		bagInfo.setBaggingDate("2008-01-15");
