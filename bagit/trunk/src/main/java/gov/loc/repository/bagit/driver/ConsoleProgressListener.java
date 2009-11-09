@@ -32,16 +32,21 @@ public class ConsoleProgressListener extends Object implements ProgressListener
 					try
 					{
 						int lastLength = this.lastLineLength;
-						for (int i = 0; i < lastLength; i++)
+
+						this.backup(lastLength);
+						this.console.format(msg);
+						
+						if (msg.length() > lastLength)
 						{
-							this.console.format("\b");
+							int spacesNeeded = lastLength - msg.length();
+							this.spaces(spacesNeeded);
+							this.backup(spacesNeeded);
 						}
 						
-						this.nextUpdate = now + 1000;
-						this.console.format(msg);
 						this.console.flush();
 						
 						this.lastLineLength = msg.length();
+						this.nextUpdate = now + 1000;
 					}
 					finally
 					{
@@ -49,6 +54,22 @@ public class ConsoleProgressListener extends Object implements ProgressListener
 					}
 				}
 			}
+		}
+	}
+	
+	private void backup(int length)
+	{
+		for (int i = 0; i < length; i++)
+		{
+			this.console.format("\b");
+		}
+	}
+	
+	private void spaces(int length)
+	{
+		for (int i = 0; i < length; i++)
+		{
+			this.console.format(" ");
 		}
 	}
 }
