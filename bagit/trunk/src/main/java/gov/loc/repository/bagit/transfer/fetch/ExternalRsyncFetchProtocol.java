@@ -9,7 +9,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -163,10 +165,13 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 				throw new BagTransferException("Unable to create temp file.", e);
 			}
 			
+			// Unescape the URI string.  See Ticket #728
+			String srcUriString = this.decodeUri(uri);
+			
 			CommandLine commandLine = CommandLine.parse(rsyncPath);
 			commandLine.addArgument("--quiet");
 			commandLine.addArgument("--times");
-			commandLine.addArgument(uri.toString());
+			commandLine.addArgument(srcUriString);
 			commandLine.addArgument(this.getLocalPath(downloadFile));
 			
 			ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -236,6 +241,24 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 					}
 				}
 			}
+		}
+		
+		private String decodeUri(URI uri) throws BagTransferException
+		{
+			String uriString = uri.toString();
+			
+			try
+			{
+				// UTF-8 is specfied, as per
+				// http://java.sun.com/javase/6/docs/api/java/net/URLDecoder.html#decode(java.lang.String,%20java.lang.String)
+				uriString = URLDecoder.decode(uriString, "UTF-8");
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				throw new BagTransferException(e);
+			}
+			
+			return uriString;
 		}
 		
 		private String getLocalPath(File file)
