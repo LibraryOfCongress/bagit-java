@@ -3,6 +3,8 @@ package gov.loc.repository.bagit.transfer.fetch;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import static java.text.MessageFormat.format;
 
@@ -12,6 +14,8 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.io.IOUtils;
@@ -35,6 +39,27 @@ public class HttpFetchProtocol implements FetchProtocol
         this.connectionManager = new MultiThreadedHttpConnectionManager();
         this.client = new HttpClient(this.connectionManager);
         this.state = new HttpState();
+
+        // Since we control the threading manually, set the max
+        // configuration values to Very Large Numbers.
+    	this.connectionManager.getParams().setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, Integer.MAX_VALUE);
+    	this.connectionManager.getParams().setMaxTotalConnections(Integer.MAX_VALUE);
+
+        // If there are credentials present, then set up for premptive authentication.
+        PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("remote", null, 80, "http", "", "scheme");
+        
+        if (auth != null)
+        {
+        	log.debug(format("Setting premptive authentication using username and password: {0}/xxxxx", auth.getUserName()));
+        	state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(auth.getUserName(), new String(auth.getPassword())));
+        	this.defaultParams.setAuthenticationPreemptive(true);
+        	this.doAuthentication = true;
+        }
+        else
+        {
+        	this.defaultParams.setAuthenticationPreemptive(false);
+        	this.doAuthentication = false;
+        }
         
         // There's no state in this class right now, so just
         // return the same one over and over.
@@ -47,8 +72,7 @@ public class HttpFetchProtocol implements FetchProtocol
         return this.instance;
     }
 
-    private static final HttpClientParams defaultParams = new HttpClientParams() {{
-        setAuthenticationPreemptive(false);
+    private final HttpClientParams defaultParams = new HttpClientParams() {{
         setParameter(USER_AGENT, "BagIt Library Parallel Fetcher ($Id$)");
     }};
     
@@ -56,6 +80,7 @@ public class HttpFetchProtocol implements FetchProtocol
     private final HttpClient client;
     private final HttpState state;
     private final HttpFetcher instance;
+    private final boolean doAuthentication;
     
     private class HttpFetcher extends LongRunningOperationBase implements FileFetcher
     {
@@ -74,6 +99,7 @@ public class HttpFetchProtocol implements FetchProtocol
             
             GetMethod method = new GetMethod(uri.toString());
             method.setParams(defaultParams);
+            method.setDoAuthentication(doAuthentication);
             
             InputStream in = null;
             OutputStream out = null;
@@ -82,7 +108,7 @@ public class HttpFetchProtocol implements FetchProtocol
             {
                 log.trace("Executing GET");
                 int responseCode = client.executeMethod(HostConfiguration.ANY_HOST_CONFIGURATION, method, state);
-                log.trace(format("Server said: {0}", method.getStatusLine()));  
+                log.trace(format("Server said: {0}", method.getStatusLine()));
                 
                 if (responseCode != HttpStatus.SC_OK)
                     throw new BagTransferException(format("Server returned code {0}: {1}", responseCode, uri));

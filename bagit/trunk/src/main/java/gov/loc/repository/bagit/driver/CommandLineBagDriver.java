@@ -665,13 +665,6 @@ public class CommandLineBagDriver {
 					}
 				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
-			    BagFetcher fetcher = new BagFetcher(bagFactory);
-
-			    // TODO Make this dynamically register somehow.
-			    fetcher.registerProtocol("http", new HttpFetchProtocol());
-			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
-			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
-			    
 			    String username = config.getString(PARAM_USERNAME);
 			    String password = config.getString(PARAM_PASSWORD);
 			    
@@ -683,6 +676,13 @@ public class CommandLineBagDriver {
 			    {
 				    Authenticator.setDefault(new ConsoleAuthenticator(username));
 			    }
+
+			    BagFetcher fetcher = new BagFetcher(bagFactory);
+
+			    // TODO Make this dynamically register somehow.
+			    fetcher.registerProtocol("http", new HttpFetchProtocol());
+			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
+			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
 			    
 				int threads = config.getInt(PARAM_THREADS, 0);
 				if (threads != 0) {
