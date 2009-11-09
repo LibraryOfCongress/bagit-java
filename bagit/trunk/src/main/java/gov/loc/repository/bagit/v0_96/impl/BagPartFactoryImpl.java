@@ -15,7 +15,7 @@ import gov.loc.repository.bagit.impl.ManifestWriterImpl;
 public class BagPartFactoryImpl extends AbstractBagPartFactory {
 
 	private static final String SPLIT_REGEX = "( \\*)|(\\s+)";
-	private static final String SEPARATOR = " ";
+	private static final String SEPARATOR = "  ";
 	
 	public BagPartFactoryImpl(BagFactory bagFactory, BagConstants bagConstants) {
 		super(bagFactory, bagConstants);
