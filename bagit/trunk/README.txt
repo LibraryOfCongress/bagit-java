@@ -42,6 +42,7 @@ RELEASE NOTES:
 
 Changes in 3.2:
 1. Fixed handling of bag-info.txt with colons in the value.
+2. Added Update Completer, which updates the manifests and bag-info.txt for a modified bag.
 
 Changes in 3.1:
 1. Updates to bag.bat.
