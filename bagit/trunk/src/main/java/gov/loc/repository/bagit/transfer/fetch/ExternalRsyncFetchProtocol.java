@@ -167,12 +167,12 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			
 			// Unescape the URI string.  See Ticket #728
 			String srcUriString = this.decodeUri(uri);
-			
+						
 			CommandLine commandLine = CommandLine.parse(rsyncPath);
 			commandLine.addArgument("--quiet");
 			commandLine.addArgument("--times");
-			commandLine.addArgument(srcUriString);
-			commandLine.addArgument(this.getLocalPath(downloadFile));
+			commandLine.addArgument(srcUriString, false);
+			commandLine.addArgument(this.getLocalPath(downloadFile), false);
 			
 			ByteArrayOutputStream err = new ByteArrayOutputStream();
 			PumpStreamHandler streamHandler = new PumpStreamHandler(NullOutputStream.NULL_OUTPUT_STREAM, err);
