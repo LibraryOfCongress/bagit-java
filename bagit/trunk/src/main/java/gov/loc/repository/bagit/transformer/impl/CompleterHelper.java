@@ -131,7 +131,7 @@ public class CompleterHelper extends LongRunningOperationBase {
         }
 		bag.putBagFile(manifest);
 	}
-	
+		
 	public void regenerateManifest(final Bag bag, final Manifest manifest) {
 		
 		final int total = manifest.size();

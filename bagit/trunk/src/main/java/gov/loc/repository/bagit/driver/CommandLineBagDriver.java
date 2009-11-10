@@ -14,6 +14,7 @@ import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.BobSender;
 import gov.loc.repository.bagit.transfer.FetchFailStrategy;
@@ -70,6 +71,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_VERIFYVALID = "verifyvalid";
 	public static final String OPERATION_VERIFYCOMPLETE = "verifycomplete";
 	public static final String OPERATION_MAKE_COMPLETE = "makecomplete";
+	public static final String OPERATION_UPDATE = "update";
 	public static final String OPERATION_UPDATE_TAGMANIFESTS = "updatetagmanifests";
 	public static final String OPERATION_CREATE = "create";
 	public static final String OPERATION_MAKE_HOLEY = "makeholey";
@@ -142,6 +144,7 @@ public class CommandLineBagDriver {
 		Parameter showProgressParam = new Switch(PARAM_PROGRESS, JSAP.NO_SHORTFLAG, PARAM_PROGRESS, "Reports progress of the operation to the console.");
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
+		Parameter optionalDestParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "The location of the destination bag (if different than the source bag).");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
 		Parameter additionalDirectoryTolerantParam = new Switch(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_ADDITIONAL_DIRECTORY_TOLERANT, "Tolerant of additional directories in the bag_dir.");
 		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
@@ -212,6 +215,12 @@ public class CommandLineBagDriver {
 				makeCompleteParams,
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_MAKE_COMPLETE, this.getBag("mybag"), this.getBag("myDestBag"))});
 
+		this.addOperation(OPERATION_UPDATE,
+				"Updates the manifests and (if it exists) the bag-info.txt for a bag.",
+				new Parameter[] {sourceParam, optionalDestParam, writerParam},
+				new String[] {MessageFormat.format("bag {0} {1} ", OPERATION_UPDATE, this.getBag("mybag"))});
+
+		
 		this.addOperation(OPERATION_UPDATE_TAGMANIFESTS,
 				"Updates the tag manifests for a bag.  The bag must be unserialized.",
 				new Parameter[] {sourceParam, tagManifestAlgorithmParam},
@@ -575,7 +584,13 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);				
-			} else if (OPERATION_UPDATE_TAGMANIFESTS.equals(operation.name)) {
+			}  else if (OPERATION_UPDATE.equals(operation.name)) {
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
+				UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
+				Bag newBag = updateCompleter.complete(bag);
+				newBag.write(writer, destFile != null?destFile:sourceFile);
+			}
+			else if (OPERATION_UPDATE_TAGMANIFESTS.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				TagManifestCompleter tagManifestCompleter = new TagManifestCompleter(bagFactory);
 				tagManifestCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
