@@ -80,6 +80,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_VERIFY_PAYLOADMANIFESTS = "verifypayloadmanifests";
 	public static final String OPERATION_VERIFY_TAGMANIFESTS = "verifytagmanifests";
 	public static final String OPERATION_RETRIEVE = "retrieve";
+	public static final String OPERATION_FILL_HOLEY = "fillholey";	
 	public static final String OPERATION_SEND_BOB = "bob";
 	public static final String OPERATION_SEND_SWORD = "sword";
 	public static final String OPERATION_BAG_IN_PLACE = "baginplace";
@@ -269,6 +270,11 @@ public class CommandLineBagDriver {
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_CHECK_PAYLOAD_OXUM, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_RETRIEVE, 
+				"Turns a remote complete bag to a local holey bag and generates a fetch.txt, then retrieves the bag using the fetch.txt. Uses Bagit Library tool to fetch the remote bag efficiently using multi thread mechanism.", 
+				new Parameter[] {destParam, baseUrlParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
+				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
+		
+		this.addOperation(OPERATION_FILL_HOLEY, 
 				"Retrieves any missing pieces of a bag specified in the fetch.txt.", 
 				new Parameter[] {sourceParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
 //				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_RETRIEVE, this.getBag("mybag"), this.getBag("myDestBag"))});
@@ -538,6 +544,59 @@ public class CommandLineBagDriver {
 			completer.setGenerateTagManifest(! config.getBoolean(PARAM_EXCLUDE_TAG_MANIFEST, false));
 			completer.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 			completer.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
+
+			//
+//			if(operation.name.equals(OPERATION_FILL_HOLEY) || operation.name.equals(OPERATION_RETRIEVE) ){
+			    BagFetcher fetcher = new BagFetcher(bagFactory);
+				
+			    // TODO Make this dynamically register somehow.
+			    fetcher.registerProtocol("http", new HttpFetchProtocol());
+			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
+			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
+					    
+			    String username = config.getString(PARAM_USERNAME);
+			    String password = config.getString(PARAM_PASSWORD);
+							    
+			    if (username != null && password != null)
+			    {
+			    	Authenticator.setDefault(new ConstantCredentialsAuthenticator(username, password));
+			    }
+			    else
+			    {
+				    Authenticator.setDefault(new ConsoleAuthenticator(username));
+			    }
+					    
+				int threads = config.getInt(PARAM_THREADS, 0);
+				if (threads != 0) {
+					fetcher.setNumberOfThreads(threads);
+				}
+				
+				// Should always have a default value, as the parser is told
+				// to give it one.
+				String fetchRetryString = config.getString(PARAM_FETCH_RETRY);
+				FetchFailStrategy failStrategy;
+								
+				if (fetchRetryString.equalsIgnoreCase("none"))
+					failStrategy = StandardFailStrategies.FAIL_FAST;
+				else if (fetchRetryString.equalsIgnoreCase("next"))
+					failStrategy = StandardFailStrategies.ALWAYS_CONTINUE;
+				else if (fetchRetryString.equalsIgnoreCase("retry"))
+					failStrategy = StandardFailStrategies.ALWAYS_RETRY;
+				else // threshold
+				{
+					int fileFailThreshold = config.getInt(PARAM_FETCH_FILE_FAILURE_THRESHOLD);
+					int failThreshold = config.getInt(PARAM_FETCH_FAILURE_THRESHOLD);
+						
+					failStrategy = new ThresholdFailStrategy(fileFailThreshold, failThreshold);
+				}
+							
+				fetcher.setFetchFailStrategy(failStrategy);
+								
+				if (config.getBoolean(PARAM_PROGRESS, false))
+				{
+					fetcher.addProgressListener(new ConsoleProgressListener());
+				}
+//			}
 			
 			int ret = RETURN_SUCCESS;
 			
@@ -679,68 +738,23 @@ public class CommandLineBagDriver {
 						}
 					}
 				}
-			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
-			    String username = config.getString(PARAM_USERNAME);
-			    String password = config.getString(PARAM_PASSWORD);
-			    
-			    if (username != null && password != null)
-			    {
-			    	Authenticator.setDefault(new ConstantCredentialsAuthenticator(username, password));
-			    }
-			    else
-			    {
-				    Authenticator.setDefault(new ConsoleAuthenticator(username));
-			    }
-
-			    BagFetcher fetcher = new BagFetcher(bagFactory);
-
-			    // TODO Make this dynamically register somehow.
-			    fetcher.registerProtocol("http", new HttpFetchProtocol());
-			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
-			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
-			    
-				int threads = config.getInt(PARAM_THREADS, 0);
-				if (threads != 0) {
-					fetcher.setNumberOfThreads(threads);
-				}
-
-				// Should always have a default value, as the parser is told
-				// to give it one.
-				String fetchRetryString = config.getString(PARAM_FETCH_RETRY);
-				FetchFailStrategy failStrategy;
-				
-				if (fetchRetryString.equalsIgnoreCase("none"))
-					failStrategy = StandardFailStrategies.FAIL_FAST;
-				else if (fetchRetryString.equalsIgnoreCase("next"))
-					failStrategy = StandardFailStrategies.ALWAYS_CONTINUE;
-				else if (fetchRetryString.equalsIgnoreCase("retry"))
-					failStrategy = StandardFailStrategies.ALWAYS_RETRY;
-				else // threshold
-				{
-					int fileFailThreshold = config.getInt(PARAM_FETCH_FILE_FAILURE_THRESHOLD);
-					int failThreshold = config.getInt(PARAM_FETCH_FAILURE_THRESHOLD);
-					
-					failStrategy = new ThresholdFailStrategy(fileFailThreshold, failThreshold);
-				}
-				
-				fetcher.setFetchFailStrategy(failStrategy);
-				
-				if (config.getBoolean(PARAM_PROGRESS, false))
-				{
-					fetcher.addProgressListener(new ConsoleProgressListener());
-				}
-			    
+			} else if (OPERATION_FILL_HOLEY.equals(operation.name)) {
 			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
 			    SimpleResult result = fetcher.fetch(bag, dest);
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
+			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
+				Bag bag = bagFactory.createBag();
+			    SimpleResult result = fetcher.fetchRemoteBag(bag, destFile, config.getString(PARAM_BASE_URL));
+			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
+
 			} else if (OPERATION_SEND_BOB.equals(operation.name)) {
 				BobSender sender = new BobSender();
-				String username = config.getString(PARAM_USERNAME);
+				username = config.getString(PARAM_USERNAME);
 				if (username != null) {
 					sender.setUsername(username);
 				}
-				String password = config.getString(PARAM_PASSWORD);
+				password = config.getString(PARAM_PASSWORD);
 				if (password != null) {
 					sender.setPassword(password);
 				}
@@ -749,7 +763,7 @@ public class CommandLineBagDriver {
 				if (throttle != 0) {
 					sender.setThrottle(throttle);
 				}
-				int threads = config.getInt(PARAM_THREADS, 0);
+				threads = config.getInt(PARAM_THREADS, 0);
 				if (threads != 0) {
 					sender.setThreads(threads);
 				}
@@ -757,11 +771,11 @@ public class CommandLineBagDriver {
 				sender.send(bag, config.getString(PARAM_URL));
 			} else if (OPERATION_SEND_SWORD.equals(operation.name)) {
 				SwordSender sender = new SwordSender(new ZipWriter(bagFactory));
-				String username = config.getString(PARAM_USERNAME);
+				username = config.getString(PARAM_USERNAME);
 				if (username != null) {
 					sender.setUsername(username);
 				}
-				String password = config.getString(PARAM_PASSWORD);
+				password = config.getString(PARAM_PASSWORD);
 				if (password != null) {
 					sender.setPassword(password);
 				}
