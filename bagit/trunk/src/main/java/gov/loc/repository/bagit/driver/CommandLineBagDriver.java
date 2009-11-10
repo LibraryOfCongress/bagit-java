@@ -545,9 +545,10 @@ public class CommandLineBagDriver {
 			completer.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 			completer.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 
-			//
-//			if(operation.name.equals(OPERATION_FILL_HOLEY) || operation.name.equals(OPERATION_RETRIEVE) ){
-			    BagFetcher fetcher = new BagFetcher(bagFactory);
+		    BagFetcher fetcher = new BagFetcher(bagFactory);
+
+		    //These settings applies only for operations FillHoley bag and Retrieve a remote bag
+			if(operation.name.equals(OPERATION_FILL_HOLEY) || operation.name.equals(OPERATION_RETRIEVE) ){
 				
 			    // TODO Make this dynamically register somehow.
 			    fetcher.registerProtocol("http", new HttpFetchProtocol());
@@ -596,7 +597,7 @@ public class CommandLineBagDriver {
 				{
 					fetcher.addProgressListener(new ConsoleProgressListener());
 				}
-//			}
+			}
 			
 			int ret = RETURN_SUCCESS;
 			
@@ -750,11 +751,11 @@ public class CommandLineBagDriver {
 
 			} else if (OPERATION_SEND_BOB.equals(operation.name)) {
 				BobSender sender = new BobSender();
-				username = config.getString(PARAM_USERNAME);
+				String username = config.getString(PARAM_USERNAME);
 				if (username != null) {
 					sender.setUsername(username);
 				}
-				password = config.getString(PARAM_PASSWORD);
+				String password = config.getString(PARAM_PASSWORD);
 				if (password != null) {
 					sender.setPassword(password);
 				}
@@ -763,7 +764,7 @@ public class CommandLineBagDriver {
 				if (throttle != 0) {
 					sender.setThrottle(throttle);
 				}
-				threads = config.getInt(PARAM_THREADS, 0);
+				int threads = config.getInt(PARAM_THREADS, 0);
 				if (threads != 0) {
 					sender.setThreads(threads);
 				}
@@ -771,11 +772,11 @@ public class CommandLineBagDriver {
 				sender.send(bag, config.getString(PARAM_URL));
 			} else if (OPERATION_SEND_SWORD.equals(operation.name)) {
 				SwordSender sender = new SwordSender(new ZipWriter(bagFactory));
-				username = config.getString(PARAM_USERNAME);
+				String username = config.getString(PARAM_USERNAME);
 				if (username != null) {
 					sender.setUsername(username);
 				}
-				password = config.getString(PARAM_PASSWORD);
+				String password = config.getString(PARAM_PASSWORD);
 				if (password != null) {
 					sender.setPassword(password);
 				}
