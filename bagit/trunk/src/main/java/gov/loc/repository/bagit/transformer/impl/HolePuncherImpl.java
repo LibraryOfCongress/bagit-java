@@ -57,14 +57,14 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 		else {
 			url += bagFile.getFilepath().substring(this.newBag.getBagConstants().getDataDirectory().length() + 1);
 		}
-		fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.getSize(), url));
+		fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.exists()?bagFile.getSize():null, url));
 	}
 	
 	@Override
 	public void visitTag(BagFile bagFile) {
 		if (includeTags) {
 			String url = baseUrl + bagFile.getFilepath();
-			fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.getSize(), url));
+			fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.exists()?bagFile.getSize():null, url));
 		} else {
 			this.newBag.putBagFile(bagFile);
 		}
