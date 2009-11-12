@@ -152,7 +152,8 @@ public class CommandLineBagDriver {
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload. To add the children of a directory, but not the directory itself append with " + File.separator + "*.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
-		Parameter urlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
+		Parameter bobSwordUrlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
+		Parameter retrieveUrlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to retrieve the bag from.");
 		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use.  Default is equal to the number of processors.");
 		Parameter fetchRetryParam = new FlaggedOption(PARAM_FETCH_RETRY, EnumeratedStringParser.getParser("none;next;retry;threshold"), "threshold", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_RETRY, "How to handle fetch failures.  Must be one of none, next, retry, or threshold.");
 		Parameter fetchFailThreshold = new FlaggedOption(PARAM_FETCH_FAILURE_THRESHOLD, JSAP.INTEGER_PARSER, "200", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_FAILURE_THRESHOLD, "The number of total fetch failures to tolerate before giving up.");
@@ -270,19 +271,19 @@ public class CommandLineBagDriver {
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_CHECK_PAYLOAD_OXUM, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_RETRIEVE, 
-				"Turns a remote complete bag to a local holey bag and generates a fetch.txt, then retrieves the bag using the fetch.txt. Uses Bagit Library tool to fetch the remote bag efficiently using multi thread mechanism.", 
-				new Parameter[] {destParam, baseUrlParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
+				"Retrieves a bag exposed by a web server. A local holey bag is not required.", 
+				new Parameter[] {destParam, retrieveUrlParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
 				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
-				"Retrieves any missing pieces of a bag specified in the fetch.txt.", 
+				"Retrieves any missing pieces of a local bag specified in the fetch.txt.", 
 				new Parameter[] {sourceParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
 //				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_RETRIEVE, this.getBag("mybag"), this.getBag("myDestBag"))});
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_RETRIEVE, this.getBag("mybag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
 		senderParams.add(sourceParam);
-		senderParams.add(urlParam);
+		senderParams.add(bobSwordUrlParam);
 		senderParams.add(relaxSSLParam);
 		senderParams.add(usernameParam);
 		senderParams.add(passwordParam);
@@ -745,8 +746,7 @@ public class CommandLineBagDriver {
 			    SimpleResult result = fetcher.fetch(bag, dest);
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
-				Bag bag = bagFactory.createBag();
-			    SimpleResult result = fetcher.fetchRemoteBag(bag, destFile, config.getString(PARAM_BASE_URL));
+			    SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL));
 			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
 
 			} else if (OPERATION_SEND_BOB.equals(operation.name)) {

@@ -3,28 +3,26 @@ package gov.loc.repository.bagit.transfer;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
-import gov.loc.repository.bagit.FetchTxtWriter;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.Bag.BagConstants;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
-import gov.loc.repository.bagit.ManifestReader.FilenameFixity;
-import gov.loc.repository.bagit.impl.FetchTxtWriterImpl;
-import gov.loc.repository.bagit.impl.ManifestReaderImpl;
+import gov.loc.repository.bagit.impl.FileBagFile;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 import static java.text.MessageFormat.format;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -75,7 +73,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     private List<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
 
     // Internal state.
-    private Bag bagToFetch, currentBag;
+    private Bag bagToFetch;
     private List<FetchTarget> fetchTargets;
     private List<FetchTarget> failedFetchTargets;
     private AtomicInteger nextFetchTargetIndex;
@@ -418,112 +416,87 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         }
     }
     
-    public SimpleResult fetchRemoteBag(Bag bag, File destFile, String url) throws BagTransferException{
+    public SimpleResult fetchRemoteBag(File destFile, String url) throws BagTransferException{
     		
         this.newBagFiles = Collections.synchronizedList(new ArrayList<BagFile>());
-		String filename;
-        this.bagToFetch = bag;
-        this.currentBag = bag; 
         this.destinationFactory = new FileSystemFileDestination(destFile);
-        SimpleResult result = new SimpleResult(true);
-        boolean fetchTxtFlag = false;
 
-        log.info("Making remote bag local holey");
+        log.info("Making local holey bag from remote bag");
 		this.baseUrl = url;
 		if (! this.baseUrl.endsWith("/")) {
 			this.baseUrl += "/";
 		}
 
-		//Fetch "bagit.txt" 
-		filename = this.bagToFetch.getBagConstants().getBagItTxt();
-		result = fetchFile(baseUrl, filename);
-		if (!result.isSuccess()){
+		//Fetch "bagit.txt" and write to disk
+		SimpleResult bagItResult = fetchFile(baseUrl, bagFactory.getBagConstants().getBagItTxt());
+		if (! bagItResult.isSuccess()){
 			log.info("Failed: BagIt.txt file does not exist on remote bag");
-			return result;
+			return bagItResult;
 		} 
+				
+		//Read bagit.txt to get version
+		String bagItTxtFilepath = destinationFactory.createDestination(bagFactory.getBagConstants().getBagItTxt(), null).getDirectAccessPath();
+		BagItTxt bagItTxt = bagFactory.getBagPartFactory().createBagItTxt(new FileBagFile(bagFactory.getBagConstants().getBagItTxt(), new File(bagItTxtFilepath)));
 
-		currentBag = bagFactory.createBag(destFile);
-
-		//Fetch "bag-info.txt/package-info.txt" if exists
-		filename = currentBag.getBagConstants().getBagInfoTxt();
-		result = fetchFile(baseUrl, filename);
-
-		//Fetch "Fetch.txt" may exist
-		filename = currentBag.getBagConstants().getFetchTxt();
-		result = fetchFile(baseUrl, filename);
-		if(result.isSuccess()){
-			fetchTxtFlag = true;
-		}
-
-		//Manifest Files
-		result = fetchManifestFiles(baseUrl, currentBag.getBagConstants());
+		BagConstants bagConstants = bagFactory.getBagConstants(Version.valueOfString(bagItTxt.getVersion()));
 		
-		currentBag = bagFactory.createBag(destFile);
-		for(Manifest manifest: currentBag.getTagManifests()){
-			result = fetchFromManifest(manifest);
-		}
-
-		currentBag = bagFactory.createBag(destFile);
+		//Get the manifests and write to disk
+		fetchManifestFiles(baseUrl, bagConstants);
 		
-		if(!fetchTxtFlag){
-			String fetchTxtName = currentBag.getBagConstants().getFetchTxt();
-            FetchedFileDestination fetchTxtDest = destinationFactory.createDestination(fetchTxtName, null);
-            
-            for(Manifest manifest: currentBag.getPayloadManifests()){
-				FetchTxtWriter fetchTxtWriter;
-				FilenameFixity filenamefixity;
-				try{
-					FetchedFileDestination manifestdest= destinationFactory.createDestination(manifest.getFilepath(), null);
-					FileInputStream in = new FileInputStream(manifestdest.getDirectAccessPath());
-					File fetchTxtFile = new File(fetchTxtDest.getDirectAccessPath());
-					if(!fetchTxtFile.exists()){
-				    	  fetchTxtFile.createNewFile();
-					}
-					fetchTxtWriter = new FetchTxtWriterImpl(new FileOutputStream(fetchTxtFile));
-					ManifestReaderImpl manifestReader = new ManifestReaderImpl(in, currentBag.getBagConstants().getBagEncoding(), "  ",false);
-					while(manifestReader.hasNext()){
-						filenamefixity = manifestReader.next();
-						fetchTxtWriter.write(filenamefixity.getFilename(), null, this.baseUrl+filenamefixity.getFilename().trim());
-					}
-					fetchTxtWriter.close();
-
-					log.info("Fetch.txt is created.");
-					result.setSuccess(true);
+		//Get fetch.txt (may exist) and write to disk
+		fetchFile(baseUrl, bagConstants.getFetchTxt());
 						
-				} catch(FileNotFoundException e){
-					log.error("BagFetcher.fetchRemoteBag.createFetchTxt: " + e);
-					throw new RuntimeException(e);
-				} catch(Exception e){
-					log.error("BagFetcher.fetchRemoteBag.createFetchTxt: " + e);
-					throw new RuntimeException(e);
-				}
+		//Read bag from disk
+		Bag partialBag = bagFactory.createBag(destFile, LoadOption.BY_PAYLOAD_MANIFESTS);
+		//Should be a payload manifest or fetch.txt
+		if (partialBag.getFetchTxt() == null && partialBag.getPayloadManifests().isEmpty()) {
+			return new SimpleResult(false, "Neither fetch.txt or payload manifest found");
+		}
+						
+		Bag holeyBag = null;
+		if (partialBag.getFetchTxt() != null) {
+			//If there is a fetch.txt, try retrieving tags in case omitted from fetch.txt
+			for(Manifest manifest: partialBag.getTagManifests()){
+				fetchFromManifest(manifest, partialBag.getBagConstants());
 			}
+
+		} else {
+			//If there is no fetch.txt, use hole puncher
+			holeyBag = partialBag.makeHoley(baseUrl, true, true);
+			//Write the fetch.txt to disk
+			holeyBag = holeyBag.write(new FileSystemWriter(bagFactory), destFile);
+			
 		}
 		
-	    if (result.isSuccess()){
-	    	//Fill the holey bag
-		    FileSystemFileDestination dest = new FileSystemFileDestination(destFile);
-			Bag newBag = bagFactory.createBag(destFile);
-		    result = this.fetch(newBag, dest);
+		//Retrieve holey bag
+	    FileSystemFileDestination dest = new FileSystemFileDestination(destFile);	    
+	    BagFetchResult fetchResult = this.fetch(holeyBag, dest);
+	    if (! fetchResult.isSuccess()) {
+	    	return fetchResult;
 	    }
-		
-		return result;
+	    
+	    Bag fetchedBag = fetchResult.getResultingBag();
+	    
+		//If there is no bag-info.txt, try retrieving
+	    if (fetchedBag.getBagInfoTxt() == null) {
+	    	fetchFile(baseUrl, fetchedBag.getBagConstants().getBagInfoTxt());
+	    }
+
+		return new SimpleResult(true);
     }
 
-	protected SimpleResult fetchFromManifest(Manifest manifest)
+	protected SimpleResult fetchFromManifest(Manifest manifest, BagConstants bagConstants) throws BagTransferException
 	{
 		SimpleResult result = new SimpleResult(true);
 		
 		for(String filepath : manifest.keySet()) 
 		{
-			BagFile bagFile = currentBag.getBagFile(filepath);
-			if (bagFile == null || ! bagFile.exists())
-			{
-				result = fetchFile(baseUrl, filepath);
-				if(!result.isSuccess()){
-					this.fail("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
-				}
+			result = fetchFile(baseUrl, filepath);
+			if(! result.isSuccess()) {
+				this.fail("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
+				return result;
 			}
+				
 		}
 		return result;
 	}
@@ -556,37 +529,31 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		return result;
 	}
 
-    private SimpleResult fetchManifestFiles(String url, BagConstants bagConstants){
+    private void fetchManifestFiles(String url, BagConstants bagConstants) throws BagTransferException{
     	
-    	SimpleResult result = new SimpleResult(false);
+    	//SimpleResult result = new SimpleResult(false);
 		Fetcher fetcher = new Fetcher();
-		String filename;
 
 		//Fetch TagManifests
 		for(Manifest.Algorithm algorithm: Manifest.Algorithm.values()){
 			
-			filename = ManifestHelper.getTagManifestFilename(algorithm, bagConstants);
+			String filename = ManifestHelper.getTagManifestFilename(algorithm, bagConstants);
 			FilenameSizeUrl filenNameSizeUrl = new FetchTxt.FilenameSizeUrl(filename,null,url+filename);
 			try{    		
 				fetcher.fetchSingleLine(filenNameSizeUrl);
-				result.setSuccess(true);
 			} catch (BagTransferCancelledException bte){
 				log.trace(format("Manifest file {0} does not exist in the remote bag",filename));
 			} catch (BagTransferException bte){
 				log.trace(format("Manifest file {0} does not exist in the remote bag",filename));
 			}
 		}
-		if(result.isSuccess()){
-			result.setSuccess(false);
-		}
-		
+				
 		//Fetch PayloadManifests
 		for(Manifest.Algorithm algorithm: Manifest.Algorithm.values()){
-			filename = ManifestHelper.getPayloadManifestFilename(algorithm, bagConstants);
+			String filename = ManifestHelper.getPayloadManifestFilename(algorithm, bagConstants);
 			FilenameSizeUrl filenNameSizeUrl = new FetchTxt.FilenameSizeUrl(filename,null,url+filename);
 			try{    		
 				fetcher.fetchSingleLine(filenNameSizeUrl);
-				result.setSuccess(true);
 			} catch (BagTransferCancelledException bte){
 				log.trace(format("Manifest file {0} does not exist in the remote bag",filename));
 				
@@ -594,7 +561,6 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 				log.trace(format("Manifest file {0} does not exist in the remote bag",filename));
 			}
 		}
-		return result;
 	}
     
     private class Fetcher implements Callable<SimpleResult>

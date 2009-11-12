@@ -10,8 +10,11 @@ public interface HolePuncher {
 	 * @param	baseUrl	the url part to prepend to create the payload url
 	 * @param	whether to include the payload directory ("data") in the payload url
 	 * @param	whether to include the tags in the fetch.txt.  If true then includePayloadDirectory will be true.
+	 * @param	whether to leave the tags in the returned bag.
 	 * @return	the newly holey bag
 	 */
+	Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean leaveTags);
+	
 	Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 
 }

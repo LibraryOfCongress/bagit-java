@@ -18,14 +18,21 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	private boolean includePayloadDirectory = false;
 	private boolean includeTags = false;
 	private BagFactory bagFactory;
+	private boolean leaveTags = true;
 	
 	public HolePuncherImpl(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
 	}
-	
+
 	@Override
 	public Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl,
 			boolean includeTags) {
+		return this.makeHoley(bag, baseUrl, includePayloadDirectoryInUrl, includeTags, true);
+	}
+	
+	@Override
+	public Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl,
+			boolean includeTags, boolean leaveTags) {
 		log.info("Making bag holey");
 		this.baseUrl = baseUrl;
 		if (! this.baseUrl.endsWith("/")) {
@@ -35,7 +42,8 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 		this.includeTags = includeTags;
 		if (includeTags) {
 			this.includePayloadDirectory = true;
-		}		
+		}
+		this.leaveTags = leaveTags;
 		bag.accept(this);
 		return this.newBag;
 	}
@@ -65,9 +73,9 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 		if (includeTags) {
 			String url = baseUrl + bagFile.getFilepath();
 			fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.exists()?bagFile.getSize():null, url));
-		} else {
+		}
+		if (! includeTags || leaveTags) {
 			this.newBag.putBagFile(bagFile);
 		}
-	}
-		
+	}		
 }
