@@ -5,7 +5,7 @@ BagIt Version ${bagit.version}
 DESCRIPTION:
 The BAGIT LIBRARY is a software library intended to support the creation, 
 manipulation, and validation of bags.  It is version aware.  The earliest
-supported version is 0.95.
+supported version is 0.93.
 
 REQUIREMENTS:
 Java 6
@@ -43,6 +43,10 @@ RELEASE NOTES:
 Changes in 3.2:
 1. Fixed handling of bag-info.txt with colons in the value.
 2. Added Update Completer, which updates the manifests and bag-info.txt for a modified bag.
+3. Added support for retrieving a bag exposed by a web server without first having a local
+	holey bag.
+4. Added support for BIL versions 0.93 and 0.94.
+5. Changed default number of spaces in manifests to 2.
 
 Changes in 3.1:
 1. Updates to bag.bat.
