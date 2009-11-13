@@ -1,0 +1,3 @@
+a702095f67e422fd14dc735d20b3b0b9  bagit.txt
+19c527d20b8ec8e12dcfb76600ce5653  package-info.txt
+dbefd260bb5aecda99dc32266fdda4bc  manifest-md5.txt
