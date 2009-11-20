@@ -205,6 +205,9 @@ public abstract class AbstractBag implements Bag {
 	}
 	
 	private void addPayload(File file, File rootDir) {
+		if (! file.canRead()) {
+			throw new RuntimeException("Can't read " + file.toString());
+		}
 		//If directory, recurse on children
 		if (file.isDirectory()) {
 			for(File child : file.listFiles()) {
@@ -254,6 +257,9 @@ public abstract class AbstractBag implements Bag {
 		if (! file.exists()) {
 			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
 		}
+		if (! file.canRead()) {
+			throw new RuntimeException(MessageFormat.format("Can't read {0}.", file));
+		}
 		this.addPayload(file, file.getParentFile());
 	}
 	
@@ -288,6 +294,9 @@ public abstract class AbstractBag implements Bag {
 	public void addFileAsTag(File file) {
 		if (! file.exists()) {
 			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
+		}
+		if (! file.canRead()) {
+			throw new RuntimeException(MessageFormat.format("Can't read {0}.", file));
 		}
 		
 		String filepath = file.getName();
