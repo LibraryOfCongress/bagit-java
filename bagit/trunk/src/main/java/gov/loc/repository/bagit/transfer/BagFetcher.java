@@ -298,7 +298,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	
     	if (!verifyResult.isSuccess())
     	{
-    		throw new BagTransferException(format("Bag is not valid: {0}", verifyResult.messagesToString()));
+    		throw new BagTransferException(format("Bag is not valid: {0}", verifyResult.toString()));
     	}
     }
     

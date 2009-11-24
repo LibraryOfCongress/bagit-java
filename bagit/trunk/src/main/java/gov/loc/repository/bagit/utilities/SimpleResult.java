@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleResult {
+	
 	private boolean isSuccess;
 	private List<String> messages = new ArrayList<String>();
+	
+	private static Integer MAX_MESSAGES = 100;
 	
 	public SimpleResult(boolean isSuccess) {
 		this.isSuccess = isSuccess;			
@@ -26,15 +29,20 @@ public class SimpleResult {
 		return this.isSuccess;
 	}
 	
-	public String messagesToString()
+	public String messagesToString(int maxMessages)
 	{
-		String messageString = "";
+		StringBuffer buf = new StringBuffer();
+		int count = 0;
 		for(String message : messages) {
-			if (messageString.length() > 0) {
-				messageString += " ";
+			count++;
+			if (count > maxMessages) {
+				buf.append("And others.");
+				break;
 			}
-			messageString += message;
+			if (buf.length() > 0) buf.append(" ");
+			buf.append(message);
 		}
+		String messageString = buf.toString();
 		return messageString;
 	}
 
@@ -44,8 +52,14 @@ public class SimpleResult {
 	
 	@Override
 	public String toString() {
-		return MessageFormat.format("Result is {0}. {1}", this.isSuccess, this.messagesToString());
+		return this.toString(MAX_MESSAGES);
 	}
+
+	public String toString(int maxMessages) {
+		String msg = MessageFormat.format("Result is {0}. {1}", this.isSuccess, this.messagesToString(maxMessages));
+		return msg;
+	}
+
 	
 	public void merge(SimpleResult result) {
 		if (result == null) {

@@ -153,11 +153,15 @@ public abstract class AbstractBag implements Bag {
 
 	@Override
 	public List<Manifest> getTagManifests() {
+		log.debug("Getting tag manifests");
 		List<Manifest> manifests = new ArrayList<Manifest>();
 		for(BagFile bagFile : this.tagMap.values()) {
+			log.trace(MessageFormat.format("Checking if {0} is a tag manifest", bagFile.getFilepath()));
 			if (bagFile instanceof Manifest) {
+				log.trace(MessageFormat.format("{0} is a manifest", bagFile.getFilepath()));
 				Manifest manifest = (Manifest)bagFile;
 				if (manifest.isTagManifest()) {
+					log.trace(MessageFormat.format("{0} is a tag manifest", bagFile.getFilepath()));
 					manifests.add(manifest);
 				}
 			}
