@@ -81,11 +81,8 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 					log.warn(MessageFormat.format("Payload file {0} not in data directory", filepath));
 				}
 			}
-			//TODO BNP
 			//All payload files are in data directory
 			log.debug("Checking that all payload files in data directory");
-			//int total2 = bag.getPayload().size();
-			//int count2 = 0;
 			for(BagFile bagFile : bag.getPayload()) {
 				if (this.isCancelled()) return null;
 				String filepath = bagFile.getFilepath();
