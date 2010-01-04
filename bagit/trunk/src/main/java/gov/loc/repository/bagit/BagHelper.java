@@ -3,6 +3,7 @@ package gov.loc.repository.bagit;
 import java.io.File;
 import java.text.MessageFormat;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
@@ -78,9 +79,7 @@ public class BagHelper {
 	}
 	
 	public static boolean isPayload(String filepath, BagConstants bagConstants) {
-		if (filepath.startsWith(bagConstants.getDataDirectory())) {
-			return true;
-		}
-		return false;
+		filepath = FilenameUtils.normalize(filepath);
+		return filepath.startsWith(bagConstants.getDataDirectory()); 
 	}
 }

@@ -62,11 +62,15 @@ public class ManifestReaderImpl implements ManifestReader {
 				if (splitString.length == 2)
 				{
 					String filepath = splitString[1];
+
 					if (this.treatBackwardSlashAsPathSeparator) {
 						filepath = FilenameHelper.normalizePathSeparators(filepath);
 					} else if (filepath.indexOf('\\') != -1) {
 						throw new UnsupportedOperationException("This Library does not support \\ in filepaths.");
 					}
+					
+					filepath = FilenameHelper.normalizePath(filepath, '/');
+					
 					this.next = new FilenameFixity(filepath, splitString[0]);
 					return;
 				}						

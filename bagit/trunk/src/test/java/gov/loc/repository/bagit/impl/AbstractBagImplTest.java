@@ -66,7 +66,15 @@ public abstract class AbstractBagImplTest {
 
 	
 	private File getBagDir(Version version, Bag.Format format) throws Exception {
-		return ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag{1}", version.toString().toLowerCase(), format.extension));		
+		String versionString = version.toString().toLowerCase();
+		String extension = format.extension;
+		String bagName = this.getBagName();
+		
+		return ResourceHelper.getFile(MessageFormat.format("bags/{0}/{1}{2}", versionString, bagName, extension));		
+	}
+	
+	protected String getBagName() {
+		return "bag";
 	}
 	
 	private File createTestBag() throws Exception {
@@ -117,10 +125,10 @@ public abstract class AbstractBagImplTest {
 		BagInfoTxt bagInfo = bag.getBagInfoTxt();
 		assertEquals("Spengler University", bagInfo.getSourceOrganization());
 
-		assertTrue(bag.verifyComplete().isSuccess());
-		assertTrue(bag.verifyValid().isSuccess());
-		assertTrue(bag.verifyTagManifests().isSuccess());
-		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		assertTrue("Verify Complete", bag.verifyComplete().isSuccess());
+		assertTrue("Verify Valid", bag.verifyValid().isSuccess());
+		assertTrue("Verify Tag Manifests", bag.verifyTagManifests().isSuccess());
+		assertTrue("Verify Payload Manifests", bag.verifyPayloadManifests().isSuccess());
 	}
 	
 	@Test
