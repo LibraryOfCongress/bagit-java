@@ -36,7 +36,7 @@ public class ConsoleProgressListener extends Object implements ProgressListener
 						this.backup(lastLength);
 						this.console.format(msg);
 						
-						if (msg.length() > lastLength)
+						if (msg.length() < lastLength)
 						{
 							int spacesNeeded = lastLength - msg.length();
 							this.spaces(spacesNeeded);
