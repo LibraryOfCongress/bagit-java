@@ -18,6 +18,8 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +30,7 @@ import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
+import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 
 @SuppressWarnings("serial")
 public class HttpFetchProtocol implements FetchProtocol
@@ -44,7 +47,7 @@ public class HttpFetchProtocol implements FetchProtocol
         // configuration values to Very Large Numbers.
     	this.connectionManager.getParams().setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, Integer.MAX_VALUE);
     	this.connectionManager.getParams().setMaxTotalConnections(Integer.MAX_VALUE);
-
+    	
         // If there are credentials present, then set up for preemptive authentication.
         PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("remote", null, 80, "http", "", "scheme");
         
@@ -66,6 +69,25 @@ public class HttpFetchProtocol implements FetchProtocol
         this.instance = new HttpFetcher();
     }
     
+	public void setRelaxedSsl(boolean relaxedSsl)
+	{
+		if (relaxedSsl != this.relaxedSsl)
+		{
+			this.relaxedSsl = relaxedSsl;
+
+			if (this.relaxedSsl)
+			{
+		    	// Set up our own custom HTTPS protocol, so that we can control certificate authentication.
+		    	Protocol.registerProtocol("https", new Protocol("https", new RelaxedSSLProtocolSocketFactory(), 443));
+			}
+			else
+			{
+		    	// Set up our own custom HTTPS protocol, so that we can control certificate authentication.
+		    	Protocol.registerProtocol("https", new Protocol("https", new DefaultProtocolSocketFactory(), 443));				
+			}
+		}
+	}
+    
     @Override
     public FileFetcher createFetcher(URI uri, Long size) throws BagTransferException
     {
@@ -81,6 +103,9 @@ public class HttpFetchProtocol implements FetchProtocol
     private final HttpState state;
     private final HttpFetcher instance;
     private final boolean doAuthentication;
+
+    // Configured
+    private boolean relaxedSsl = false;
     
     private class HttpFetcher extends LongRunningOperationBase implements FileFetcher
     {

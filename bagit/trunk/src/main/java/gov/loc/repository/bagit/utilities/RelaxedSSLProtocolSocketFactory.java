@@ -17,7 +17,7 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
 
-public class RelaxedSSLProtocolSocketFactory implements SecureProtocolSocketFactory, ProtocolSocketFactory {
+public class RelaxedSSLProtocolSocketFactory implements ProtocolSocketFactory {
 
 	
 		private SSLContext sslContext = null;

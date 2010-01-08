@@ -277,7 +277,7 @@ public class CommandLineBagDriver {
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
 				"Retrieves any missing pieces of a local bag specified in the fetch.txt.", 
-				new Parameter[] {sourceParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
+				new Parameter[] {sourceParam, showProgressParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_RETRIEVE, this.getBag("mybag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
@@ -551,7 +551,10 @@ public class CommandLineBagDriver {
 			if(operation.name.equals(OPERATION_FILL_HOLEY) || operation.name.equals(OPERATION_RETRIEVE) ){
 				
 			    // TODO Make this dynamically register somehow.
-			    fetcher.registerProtocol("http", new HttpFetchProtocol());
+				HttpFetchProtocol http = new HttpFetchProtocol();
+				http.setRelaxedSsl(config.getBoolean(PARAM_RELAX_SSL, false));				
+			    fetcher.registerProtocol("http", http);
+			    fetcher.registerProtocol("https", http);
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
 			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
 					    
