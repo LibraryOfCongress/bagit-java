@@ -549,7 +549,25 @@ public class CommandLineBagDriver {
 
 		    //These settings applies only for operations FillHoley bag and Retrieve a remote bag
 			if(operation.name.equals(OPERATION_FILL_HOLEY) || operation.name.equals(OPERATION_RETRIEVE) ){
-				
+
+				// The authenticator configuration must be first, since the
+				// HttpFetchProtocol constructor calls for authentication.
+			    String username = config.getString(PARAM_USERNAME);
+			    String password = config.getString(PARAM_PASSWORD);
+
+			    if (username != null && password != null)
+			    {
+			    	Authenticator.setDefault(new ConstantCredentialsAuthenticator(username, password));
+			    }
+			    else if (username != null && password == null)
+			    {
+				    Authenticator.setDefault(new ConsoleAuthenticator(username));
+			    }
+			    else
+			    {
+			    	Authenticator.setDefault(new NoCredentialsAuthenticator());
+			    }
+					    
 			    // TODO Make this dynamically register somehow.
 				HttpFetchProtocol http = new HttpFetchProtocol();
 				http.setRelaxedSsl(config.getBoolean(PARAM_RELAX_SSL, false));				
@@ -557,18 +575,6 @@ public class CommandLineBagDriver {
 			    fetcher.registerProtocol("https", http);
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
 			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
-					    
-			    String username = config.getString(PARAM_USERNAME);
-			    String password = config.getString(PARAM_PASSWORD);
-							    
-			    if (username != null && password != null)
-			    {
-			    	Authenticator.setDefault(new ConstantCredentialsAuthenticator(username, password));
-			    }
-			    else
-			    {
-				    Authenticator.setDefault(new ConsoleAuthenticator(username));
-			    }
 					    
 				int threads = config.getInt(PARAM_THREADS, 0);
 				if (threads != 0) {
