@@ -45,7 +45,7 @@ public class HttpFetchProtocol implements FetchProtocol
     	this.connectionManager.getParams().setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, Integer.MAX_VALUE);
     	this.connectionManager.getParams().setMaxTotalConnections(Integer.MAX_VALUE);
 
-        // If there are credentials present, then set up for premptive authentication.
+        // If there are credentials present, then set up for preemptive authentication.
         PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("remote", null, 80, "http", "", "scheme");
         
         if (auth != null)
