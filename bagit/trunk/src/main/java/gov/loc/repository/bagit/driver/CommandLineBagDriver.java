@@ -278,7 +278,6 @@ public class CommandLineBagDriver {
 		this.addOperation(OPERATION_FILL_HOLEY, 
 				"Retrieves any missing pieces of a local bag specified in the fetch.txt.", 
 				new Parameter[] {sourceParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
-//				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_RETRIEVE, this.getBag("mybag"), this.getBag("myDestBag"))});
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_RETRIEVE, this.getBag("mybag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
