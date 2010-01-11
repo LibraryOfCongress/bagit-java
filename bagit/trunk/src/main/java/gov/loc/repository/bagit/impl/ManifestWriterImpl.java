@@ -34,6 +34,14 @@ public class ManifestWriterImpl implements ManifestWriter {
 		log.debug(MessageFormat.format("Wrote to manifest:  Filename is {0}.  Fixity is {1}.", file, fixityValue));		
 	}
 	
+	public void write(String file, String fixityValue, String _separator) {
+		if(_separator != null)
+			this.separator = _separator;
+			
+		this.writer.println(fixityValue + separator + file);
+		log.debug(MessageFormat.format("Wrote to manifest:  Filename is {0}.  Fixity is {1}.", file, fixityValue));		
+	}
+	
 	public void close() {
 		this.writer.close();
 	}
