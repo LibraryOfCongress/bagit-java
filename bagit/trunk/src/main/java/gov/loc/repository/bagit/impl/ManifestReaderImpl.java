@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.exec.OS;
 
 public class ManifestReaderImpl implements ManifestReader {
 
@@ -65,7 +66,7 @@ public class ManifestReaderImpl implements ManifestReader {
 
 					if (this.treatBackwardSlashAsPathSeparator) {
 						filepath = FilenameHelper.normalizePathSeparators(filepath);
-					} else if (filepath.indexOf('\\') != -1) {
+					} else if ((filepath.indexOf('\\') != -1)&&(OS.isFamilyWindows())) {
 						throw new UnsupportedOperationException("This Library does not support \\ in filepaths.");
 					}
 					
