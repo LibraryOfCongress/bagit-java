@@ -181,6 +181,7 @@ public interface Bag {
 		FetchTxtWriter createFetchTxtWriter(OutputStream out);
 		FetchTxt createFetchTxt();
 		FetchTxt createFetchTxt(BagFile sourceBagFile);
-		Version getVersion();				
+		Version getVersion();	
+		void setManifestSeparator(String separator);
 	}
 }
