@@ -15,6 +15,7 @@ import gov.loc.repository.bagit.utilities.ResourceHelper;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 public class AddFilesToPayloadOperationTest {
 	
@@ -41,18 +42,19 @@ public class AddFilesToPayloadOperationTest {
 		//Read Bag from disk
 		Bag bag = this.bagFactory.createBag(sourceBagDir);
 
-//		bag.addFilesToPayload(srcAddFilesDir.list)
+		bag.addFilesToPayload(Arrays.asList(srcAddFilesDir.listFiles()));
 		
-		AddFilesToPayloadOperation driver = new AddFilesToPayloadOperation(bag);
-		if (srcAddFilesDir.isDirectory()) {
-				bag = driver.addFilesToPayload(srcAddFilesDir.listFiles());
-		}
+//		AddFilesToPayloadOperation driver = new AddFilesToPayloadOperation(bag);
+//		if (srcAddFilesDir.isDirectory()) {
+//				bag = driver.addFilesToPayload(Arrays.asList(srcAddFilesDir.listFiles()));
+//		}
 
 		DefaultCompleter completer = new DefaultCompleter(bagFactory);
 		bag = completer.complete(bag);
 		
         assertTrue(bag.verifyValid().isSuccess());
-        assertEquals(7, bag.getPayload().size());
+        System.out.println(bag.getPayload().size());
+        assertEquals(11, bag.getPayload().size());
         assertTrue(bag.verifyValid().isSuccess());
         BagInfoTxt bagInfo = bag.getBagInfoTxt();
         assertNotNull(bagInfo);

@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.impl;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.apache.commons.exec.OS;
 import org.apache.commons.logging.Log;
@@ -20,9 +21,8 @@ public class AddFilesToPayloadOperation extends LongRunningOperationBase {
 		this.bag = bag;		
 	}
 	
-	public Bag addFilesToPayload(File[] files) {
-
-		int total = files.length;
+	public Bag addFilesToPayload(List<File> files) {
+		int total = files.size();
 		int count = 0;
 			
 		for(File file : files) {
@@ -56,7 +56,7 @@ public class AddFilesToPayloadOperation extends LongRunningOperationBase {
 				int count = 0;
 				
 				for(File child : file.listFiles()) {
-					//TODO BNP
+					//TODO
 //					if (this.isCancelled()) return null;
 					String filepath = file.getAbsolutePath();
 					count++;
