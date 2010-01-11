@@ -68,6 +68,11 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		return this.generatedInputStream();
 	}
 
+	@Override
+	public InputStream originalInputStream() {
+		return this.sourceBagFile.newInputStream();
+	}
+	
 	private InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ManifestWriter writer = this.bagPartFactory.createManifestWriter(out);

@@ -131,8 +131,12 @@ public class CompleterHelper extends LongRunningOperationBase {
         }
 		bag.putBagFile(manifest);
 	}
-		
+
 	public void regenerateManifest(final Bag bag, final Manifest manifest) {
+		this.regenerateManifest(bag, manifest, false);
+	}
+	
+	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests) {
 		
 		final int total = manifest.size();
     	final AtomicInteger count = new AtomicInteger();
@@ -152,7 +156,12 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        			if (isCancelled()) return null;
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
 		        			
-	        				String checksum = MessageDigestHelper.generateFixity(bag.getBagFile(filepath).newInputStream(), manifest.getAlgorithm());
+	        				String checksum;
+	        				if (useOriginalPayloadManifests && ManifestHelper.isTagManifest(filepath, bag.getBagConstants())) {
+	        					checksum = MessageDigestHelper.generateFixity(((Manifest)bag.getBagFile(filepath)).originalInputStream(), manifest.getAlgorithm());
+	        				} else {
+	        					checksum = MessageDigestHelper.generateFixity(bag.getBagFile(filepath).newInputStream(), manifest.getAlgorithm());
+	        				}
 	        				log.debug(MessageFormat.format("Generated fixity for {0}.", filepath));
 	        				manifestEntries.put(filepath, checksum);
 		        			
@@ -182,5 +191,6 @@ public class CompleterHelper extends LongRunningOperationBase {
         	log.debug("Thread pool shut down.");
         }
 	}
+
 
 }

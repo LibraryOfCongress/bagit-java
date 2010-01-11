@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit;
 
+import java.io.InputStream;
 import java.util.Map;
 
 public interface Manifest extends Map<String,String>, BagFile {
@@ -41,5 +42,7 @@ public interface Manifest extends Map<String,String>, BagFile {
 	public boolean isTagManifest();
 		
 	public Algorithm getAlgorithm();
+	
+	public InputStream originalInputStream();
 	
 }

@@ -38,7 +38,7 @@ public class TagManifestCompleter implements Completer {
 		
 		//Regenerate the tag manifests
 		for(Manifest manifest : newBag.getTagManifests()) {
-			this.helper.regenerateManifest(newBag, manifest);
+			this.helper.regenerateManifest(newBag, manifest, true);
 		}
 		//See if anything is missing
 		this.helper.handleManifest(newBag, this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, newBag.getBagConstants()), newBag.getTags());
