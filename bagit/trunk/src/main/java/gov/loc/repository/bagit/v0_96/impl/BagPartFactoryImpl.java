@@ -14,8 +14,9 @@ import gov.loc.repository.bagit.impl.ManifestWriterImpl;
 
 public class BagPartFactoryImpl extends AbstractBagPartFactory {
 
-	private static final String SPLIT_REGEX = "( \\*)|(\\s+)";
+	private static final String SPLIT_REGEX = "( \\*)|( \\t)|(\\s+)";
 	private static final String SEPARATOR = "  ";
+	private static String manifestSeparator = SEPARATOR;
 	
 	public BagPartFactoryImpl(BagFactory bagFactory, BagConstants bagConstants) {
 		super(bagFactory, bagConstants);
@@ -24,7 +25,7 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	public ManifestReader createManifestReader(InputStream in, String encoding) {
 		return new ManifestReaderImpl(in, encoding, SPLIT_REGEX, false);
 	}
-
+	
 	@Override
 	public ManifestReader createManifestReader(InputStream in, String encoding,
 			boolean treatBackSlashAsPathSeparator) {
@@ -32,11 +33,18 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	}
 	
 	public ManifestWriter createManifestWriter(OutputStream out) {
-		return new ManifestWriterImpl(out, SEPARATOR);
+		return new ManifestWriterImpl(out, manifestSeparator);			
 	}
-
+	
 	@Override
 	public Version getVersion() {
 		return Version.V0_96;
 	}
+	
+	@Override
+	public void setManifestSeparator(String separator){
+		if (separator != null)
+			manifestSeparator = separator;
+	}
+
 }

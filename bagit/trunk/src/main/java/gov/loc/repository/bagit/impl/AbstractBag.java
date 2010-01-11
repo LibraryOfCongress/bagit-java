@@ -8,6 +8,7 @@ import java.util.Map;
 import java.io.File;
 import java.util.List;
 
+import org.apache.commons.exec.OS;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.AllFileSelector;
@@ -208,7 +209,9 @@ public abstract class AbstractBag implements Bag {
 		
 	}
 	
+	//TODO BNP
 	private void addPayload(File file, File rootDir) {
+//	public void addPayload(File file, File rootDir) {
 		if (! file.canRead()) {
 			throw new RuntimeException("Can't read " + file.toString());
 		}
@@ -227,7 +230,8 @@ public abstract class AbstractBag implements Bag {
 			} else {
 				filepath += file.toString();
 			}
-			if (filepath.indexOf('\\') != -1) {
+			//TODO BNP
+			if ((filepath.indexOf('\\') != -1)&&(OS.isFamilyWindows()))  {
 				throw new UnsupportedOperationException("This Library does not support \\ in filepaths: " + filepath);
 			}
 			
@@ -270,7 +274,8 @@ public abstract class AbstractBag implements Bag {
 	@Override
 	public void addFilesToPayload(List<File> files) {
 		for(File file : files) {
-			this.addFileToPayload(file);
+			//this.addFileToPayload(file);
+			new AddFilesToPayloadOperation(this).addFileToPayload(file);
 		}
 	}
 	
