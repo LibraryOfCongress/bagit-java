@@ -40,6 +40,10 @@ resources".
 
 RELEASE NOTES:
 
+Changes in 3.3:
+1. Added support for HTTPS, including lax certificate handling via the --relaxssl option.
+2. Fixed problems with the console authenticator.
+
 Changes in 3.2:
 1. Fixed handling of bag-info.txt with colons in the value.
 2. Added Update Completer, which updates the manifests and bag-info.txt for a modified bag.
