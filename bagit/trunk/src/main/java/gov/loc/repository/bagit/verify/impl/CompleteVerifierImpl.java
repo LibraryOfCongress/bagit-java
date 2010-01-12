@@ -174,21 +174,23 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				log.debug("Checking that all payload files on disk included in bag");
 				FileObject dataFileObject = bagFileObject.getChild(bag.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
-					FileObject[] fileObjects = bagFileObject.getChild(bag.getBagConstants().getDataDirectory()).findFiles(new FileTypeSelector(FileType.FILE));
+					FileObject[] fileObjects = dataFileObject.findFiles(new FileTypeSelector(FileType.FILE));
 					total = fileObjects.length;
 					count = 0;
 					for(FileObject fileObject : fileObjects) {
 						if (this.isCancelled()) return null;
-						String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
-						count++;
-						this.progress("verifying payload files on disk are in bag", filepath, count, total);
-						log.trace(MessageFormat.format("Checking that payload file {0} is in bag", filepath));
-						if (bag.getBagFile(filepath) == null) {
-							result.setSuccess(false);
-							String msg = MessageFormat.format("Bag has file {0} not found in manifest file.", filepath);
-							result.addMessage(msg);
-							log.warn(msg);
-						}							
+						if (fileObject.getType() == FileType.FILE) {
+							String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
+							count++;
+							this.progress("verifying payload files on disk are in bag", filepath, count, total);
+							log.trace(MessageFormat.format("Checking that payload file {0} is in bag", filepath));
+							if (bag.getBagFile(filepath) == null) {
+								result.setSuccess(false);
+								String msg = MessageFormat.format("Bag has file {0} not found in manifest file.", filepath);
+								result.addMessage(msg);
+								log.warn(msg);
+							}
+						}
 					}
 				}				
 			} else {
@@ -203,7 +205,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		return result;
 
 	}
-
+	
 	protected void checkManifest(Manifest manifest, Bag bag, SimpleResult result) {
 		log.trace("Checking manifest " + manifest.getFilepath());
 		int manifestTotal = manifest.keySet().size();

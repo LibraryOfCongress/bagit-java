@@ -36,7 +36,7 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	}
 	
 	public ManifestWriter createManifestWriter(OutputStream out) {
-		return new ManifestWriterImpl(out, this.manifestSeparator);			
+		return new ManifestWriterImpl(out, manifestSeparator);			
 	}
 	
 	@Override

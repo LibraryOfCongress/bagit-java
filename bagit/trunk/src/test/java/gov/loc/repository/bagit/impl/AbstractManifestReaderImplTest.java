@@ -31,6 +31,19 @@ public abstract class AbstractManifestReaderImplTest {
 		return this.canReadLine(line, "8ad8757baa8564dc136c1e07507f4a98", "data/test1.txt");
 	}
 
+	public boolean canReadLine(String line, String expectedFixityValue, String expectedFilename, boolean treatBackslashAsPathSeparator) throws Exception {
+		ManifestReader reader = factory.createManifestReader(new ByteArrayInputStream(line.getBytes("utf-8")), "utf-8", treatBackslashAsPathSeparator);
+		boolean canRead = false;
+		if (reader.hasNext()) {
+			canRead = true;
+			FilenameFixity ff = reader.next();
+			assertEquals(expectedFixityValue, ff.getFixityValue());
+			assertEquals(expectedFilename, ff.getFilename());			
+		}
+		reader.close();
+		return canRead;
+	}
+
 	public boolean canReadLine(String line, String expectedFixityValue, String expectedFilename) throws Exception {
 		ManifestReader reader = factory.createManifestReader(new ByteArrayInputStream(line.getBytes("utf-8")), "utf-8");
 		boolean canRead = false;
@@ -43,7 +56,7 @@ public abstract class AbstractManifestReaderImplTest {
 		reader.close();
 		return canRead;
 	}
-	
+
 	
 	@Test
 	public void testSingleSpaceWithUnixSep() throws Exception {
@@ -57,8 +70,7 @@ public abstract class AbstractManifestReaderImplTest {
 	
 	@Test
 	public void testSingleSpaceWithWindowsSep() throws Exception {
-		assertEquals(this.canReadLine("8ad8757baa8564dc136c1e07507f4a98 data\\test1.txt\n"), this.canReadSingleSpaceWithWindowsSep());
-		
+		assertEquals(this.canReadSingleSpaceWithWindowsSep(), this.canReadLine("8ad8757baa8564dc136c1e07507f4a98 data\\test1.txt\n"));
 	}
 	
 	public boolean canReadSingleSpaceWithWindowsSep() {
@@ -119,17 +131,6 @@ public abstract class AbstractManifestReaderImplTest {
 	}
 	
 	public boolean canReadSpaceAstericksWithUnixSep() {
-		return false;
-	}
-
-	
-	@Test
-	public void testSpaceWithUnixSepWithBackslashInFilename() throws Exception {
-		assertEquals(this.canReadLine("8ad8757baa8564dc136c1e07507f4a98 data/test1\\.txt\n"), this.canReadSpaceWithUnixSepWithBackslashInFilename());
-		
-	}
-
-	public boolean canReadSpaceWithUnixSepWithBackslashInFilename() {
 		return false;
 	}
 

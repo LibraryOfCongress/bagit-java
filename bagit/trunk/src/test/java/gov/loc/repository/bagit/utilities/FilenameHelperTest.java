@@ -23,4 +23,15 @@ public class FilenameHelperTest {
 		assertEquals("data/foo.txt", FilenameHelper.normalizePathSeparators("data/foo.txt"));
 		assertEquals("data/foo.txt", FilenameHelper.normalizePathSeparators("data\\foo.txt"));
 	}
+	
+	@Test
+	public void testNormalizePath() {
+		assertEquals("data/foo.txt", FilenameHelper.normalizePath("data/foo.txt"));
+		assertEquals("/data/foo.txt", FilenameHelper.normalizePath("/data/foo.txt"));
+		assertEquals("data/foo.txt", FilenameHelper.normalizePath("./data/foo.txt"));
+		assertEquals("data/foo.txt", FilenameHelper.normalizePath("data/./foo.txt"));
+		assertEquals("foo.txt", FilenameHelper.normalizePath("data/../foo.txt"));
+
+	}
+	
 }

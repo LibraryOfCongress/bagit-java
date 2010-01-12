@@ -45,12 +45,6 @@ public class ManifestReaderImplTest extends AbstractManifestReaderImplTest {
 	public boolean canReadSpaceAstericksWithUnixSep() {
 		return true;
 	}
-
-	@Override
-	@Test
-	public void testSpaceWithUnixSepWithBackslashInFilename() throws Exception {
-		assertTrue(this.canReadLine("8ad8757baa8564dc136c1e07507f4a98 data/test1\\.txt\n", "8ad8757baa8564dc136c1e07507f4a98", "data/test1/.txt"));	
-	}
 	
 	@Override
 	public Version getVersion() {

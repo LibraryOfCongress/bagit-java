@@ -38,6 +38,12 @@ that will cause problems with this project.  To work around the problem, in Ecli
 the project's Properties, then Maven and unselect "Skip Maven compiler plugin when processing
 resources".
 
+FILENAMES WITH BACKSLASHES (\):
+The BagIt specification requires that the only valid path separator is the forward slash /. Thus, a
+backslash (\) in a file name is completely legal.  However, due to a shortcoming in Commons VFS
+backslashes are supported by BIL.  Given platform compatability issues, this is not necessarily
+a bad thing.
+
 RELEASE NOTES:
 
 Changes in 3.3:

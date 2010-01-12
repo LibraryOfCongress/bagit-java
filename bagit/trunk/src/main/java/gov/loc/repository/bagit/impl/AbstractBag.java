@@ -8,7 +8,6 @@ import java.util.Map;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.exec.OS;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.AllFileSelector;
@@ -33,7 +32,6 @@ import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.utilities.CancelUtil;
-import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -208,42 +206,7 @@ public abstract class AbstractBag implements Bag {
 		}
 		
 	}
-	
-	//TODO BNP
-	private void addPayload(File file, File rootDir) {
-//	public void addPayload(File file, File rootDir) {
-		if (! file.canRead()) {
-			throw new RuntimeException("Can't read " + file.toString());
-		}
-		//If directory, recurse on children
-		if (file.isDirectory()) {
-			for(File child : file.listFiles()) {
-				this.addPayload(child, rootDir);
-			}
-				
-		} else if (file.isFile()) {
-			
-			//If file, add to payloadMap
-			String filepath = this.getBagConstants().getDataDirectory() + "/";
-			if (rootDir != null) {
-				filepath += FilenameHelper.removeBasePath(rootDir.toString(), file.toString());
-			} else {
-				filepath += file.toString();
-			}
-			//TODO BNP
-			if ((filepath.indexOf('\\') != -1)&&(OS.isFamilyWindows()))  {
-				throw new UnsupportedOperationException("This Library does not support \\ in filepaths: " + filepath);
-			}
-			
-			log.debug(MessageFormat.format("Adding {0} to payload.", filepath));
-			this.putBagFile(new FileBagFile(filepath, file));
-		}
-		else {
-			throw new RuntimeException("Neither a directory or file");
-		}
-
-	}
-	
+		
 	@Override
 	public void removeBagFile(String filepath) {
 		if (BagHelper.isPayload(filepath, this.getBagConstants())) {
@@ -262,21 +225,12 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void addFileToPayload(File file) {
-		if (! file.exists()) {
-			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
-		}
-		if (! file.canRead()) {
-			throw new RuntimeException(MessageFormat.format("Can't read {0}.", file));
-		}
-		this.addPayload(file, file.getParentFile());
+		new AddFilesToPayloadOperation(this).addFileToPayload(file);
 	}
 	
 	@Override
 	public void addFilesToPayload(List<File> files) {
-		for(File file : files) {
-			//this.addFileToPayload(file);
-			new AddFilesToPayloadOperation(this).addFileToPayload(file);
-		}
+		new AddFilesToPayloadOperation(this).addFilesToPayload(files);
 	}
 	
 	

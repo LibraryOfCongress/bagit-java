@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.impl;
 import gov.loc.repository.bagit.ManifestReader;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 
+import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.exec.OS;
 
 public class ManifestReaderImpl implements ManifestReader {
 
@@ -54,25 +54,26 @@ public class ManifestReaderImpl implements ManifestReader {
 			while(true)
 			{
 				String line = this.reader.readLine();
+				log.trace("Line: " + line);
 				if (line == null)
 				{
 					this.next = null;
 					return;
-				}
+				}				
 				String[] splitString = line.split(this.splitRegex, 2);
 				if (splitString.length == 2)
 				{
 					String filepath = splitString[1];
-
+					log.trace("Filepath before normalization: " + filepath);
 					if (this.treatBackwardSlashAsPathSeparator) {
 						filepath = FilenameHelper.normalizePathSeparators(filepath);
-					} else if ((filepath.indexOf('\\') != -1)&&(OS.isFamilyWindows())) {
-						throw new UnsupportedOperationException("This Library does not support \\ in filepaths.");
+					} else if (filepath.indexOf('\\') != -1) {
+						throw new UnsupportedOperationException(MessageFormat.format("This Library does not support \\ in filepaths: {0}. See README.txt.", filepath));
 					}
-					
-					filepath = FilenameHelper.normalizePath(filepath, '/');
-					
+					filepath = FilenameHelper.normalizePath(filepath);
+					log.trace("Filepath after normalization: " + filepath);
 					this.next = new FilenameFixity(filepath, splitString[0]);
+					log.debug("Read: " + this.next);
 					return;
 				}						
 				
