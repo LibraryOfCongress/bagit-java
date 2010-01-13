@@ -3,7 +3,6 @@ package gov.loc.repository.bagit.v0_96;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.ManifestReader;
@@ -77,13 +76,9 @@ public class ManifestReaderImplTest extends AbstractManifestReaderImplTest{
 		try {
 			assertEquals(true, this.canReadLine("8ad8757baa8564dc136c1e07507f4a98 data\\test1.txt\n", "8ad8757baa8564dc136c1e07507f4a98", "data\\test1.txt"));
 		} catch(RuntimeException ex) {
-			isException = false;
+			isException = true;
 		}
-		if (OperatingSystemHelper.isWindows()) {
-			assertTrue(isException);
-		} else {
-			assertFalse(isException);
-		}
+		assertTrue(isException);
 
 		//Reading / as a path separator
 		assertEquals(true, this.canReadLine("8ad8757baa8564dc136c1e07507f4a98 data\\test1.txt\n", "8ad8757baa8564dc136c1e07507f4a98", "data/test1.txt", true));		
@@ -107,18 +102,6 @@ public class ManifestReaderImplTest extends AbstractManifestReaderImplTest{
 	@Override
 	public Version getVersion() {
 		return Version.V0_96;
-	}
-
-	@Test
-	public void testFoo() throws Exception {
-		System.out.println("XXXXXXXX");
-		String f = new File("REMOVEME", "data/foo.txt").getCanonicalPath();
-		f = f.substring(f.indexOf("REMOVEME") + 9);
-		System.out.println(f);
-		System.out.println(new File("REMOVEME", "data/foo.txt").getCanonicalPath());
-		System.out.println(new File("./data/foo.txt").getCanonicalPath());
-		System.out.println(new File("data/./foo.txt").getCanonicalPath());
-		System.out.println(new File("data/../foo.txt").getCanonicalPath());
 	}
 	
 }

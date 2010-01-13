@@ -38,7 +38,7 @@ public class AddFilesToPayloadOperationTest {
 	@Test
 	public void testBagByAddingPayloadFiles() throws Exception{
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag", this.getVersion().toString().toLowerCase()));
-		File srcAddFilesDir = new File(ResourceHelper.PROJECT_DIR+"/src/test/resources/srcFiles");
+		File srcAddFilesDir = new File(ResourceHelper.PROJECT_DIR+"/target/test-classes/srcFiles");
 		//Read Bag from disk
 		Bag bag = this.bagFactory.createBag(sourceBagDir);
 
@@ -53,8 +53,7 @@ public class AddFilesToPayloadOperationTest {
 		bag = completer.complete(bag);
 		
         assertTrue(bag.verifyValid().isSuccess());
-        System.out.println(bag.getPayload().size());
-        assertEquals(11, bag.getPayload().size());
+        assertEquals(7, bag.getPayload().size());
         assertTrue(bag.verifyValid().isSuccess());
         BagInfoTxt bagInfo = bag.getBagInfoTxt();
         assertNotNull(bagInfo);
