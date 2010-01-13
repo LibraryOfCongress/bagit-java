@@ -47,6 +47,11 @@ public class HttpFetchProtocol implements FetchProtocol
         // configuration values to Very Large Numbers.
     	this.connectionManager.getParams().setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, Integer.MAX_VALUE);
     	this.connectionManager.getParams().setMaxTotalConnections(Integer.MAX_VALUE);
+
+    	// Set the socket timeout, so that it does not default to infinity.
+    	// Otherwise, broken TCP steams can hang threads forever.
+    	this.connectionManager.getParams().setSoTimeout(20 * 1000);
+		log.debug(format("Socket timeout: {0}ms", this.connectionManager.getParams().getSoTimeout()));
     	
         // If there are credentials present, then set up for preemptive authentication.
         PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("remote", null, 80, "http", "", "scheme");
