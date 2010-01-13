@@ -150,17 +150,26 @@ public class HttpFetchProtocol implements FetchProtocol
             }
             catch (HttpException e)
             {
+            	log.warn("Caught HttpException.", e);
                 throw new BagTransferException(format("Could not transfer URI: {0}", uri), e);
             }
             catch (IOException e)
             {
+            	log.warn("Caught IOException.", e);
                 throw new BagTransferException(format("Could not transfer URI: {0}", uri), e);
             }
             finally
             {
+            	log.trace("Releasing HTTP connection.");
                 method.releaseConnection();
+                
+                log.trace("Closing input stream.");
                 IOUtils.closeQuietly(in);
+
+                log.trace("Closing output stream.");
                 IOUtils.closeQuietly(out);
+                
+                log.trace("Exiting finally clause.");
             }
         }
     }
