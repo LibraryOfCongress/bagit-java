@@ -27,10 +27,17 @@ public class FilenameHelperTest {
 	@Test
 	public void testNormalizePath() {
 		assertEquals("data/foo.txt", FilenameHelper.normalizePath("data/foo.txt"));
+		assertEquals("data\\foo.txt", FilenameHelper.normalizePath("data\\foo.txt"));
 		assertEquals("/data/foo.txt", FilenameHelper.normalizePath("/data/foo.txt"));
+		assertEquals("\\data\\foo.txt", FilenameHelper.normalizePath("\\data\\foo.txt"));
 		assertEquals("data/foo.txt", FilenameHelper.normalizePath("./data/foo.txt"));
+		assertEquals("data\\foo.txt", FilenameHelper.normalizePath(".\\data\\foo.txt"));
 		assertEquals("data/foo.txt", FilenameHelper.normalizePath("data/./foo.txt"));
+		assertEquals("data\\foo.txt", FilenameHelper.normalizePath("data\\.\\foo.txt"));
 		assertEquals("foo.txt", FilenameHelper.normalizePath("data/../foo.txt"));
+		assertEquals("foo.txt", FilenameHelper.normalizePath("data\\..\\foo.txt"));
+		assertEquals("data/foo.txt", FilenameHelper.normalizePath("data/dir1/../foo.txt"));
+		assertEquals("data\\foo.txt", FilenameHelper.normalizePath("data\\dir1\\..\\foo.txt"));
 
 	}
 	

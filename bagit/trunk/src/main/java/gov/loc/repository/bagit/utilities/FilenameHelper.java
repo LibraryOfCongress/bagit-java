@@ -1,7 +1,5 @@
 package gov.loc.repository.bagit.utilities;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 
 import org.apache.commons.io.FilenameUtils;
@@ -49,15 +47,38 @@ public class FilenameHelper {
 	}
 
 	public static String normalizePath(String filepath) {
-		int offset = 9;
-		if (filepath.startsWith("/")) offset = 8;
-		String newFilepath;
-		try {
-			newFilepath = new File("REMOVEME", filepath).getCanonicalPath();
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+		if (filepath.startsWith("./") || filepath.startsWith(".\\")) {
+			filepath = filepath.substring(2);
 		}
-		return newFilepath.substring(newFilepath.indexOf("REMOVEME") + offset);
+		filepath = filepath.replace("/./", "/");
+		filepath = filepath.replace("\\.\\", "\\");
+		int endPos = filepath.indexOf("/../");
+		while(endPos != -1) {
+			int startPos = endPos-1;
+			while(startPos >= 0 && '/' != filepath.charAt(startPos)) {
+				startPos--;
+			}
+			if (startPos > 0) {
+				filepath = filepath.substring(0,startPos) + "/" + filepath.substring(endPos+4);
+			} else {
+				filepath = filepath.substring(endPos+4);
+			}
+			endPos = filepath.indexOf("/../");
+		}
+		endPos = filepath.indexOf("\\..\\");
+		while(endPos != -1) {
+			int startPos = endPos-1;
+			while(startPos >= 0 && '\\' != filepath.charAt(startPos)) {
+				startPos--;
+			}
+			if (startPos > 0) {
+				filepath = filepath.substring(0,startPos) + "\\" + filepath.substring(endPos+4);
+			} else {
+				filepath = filepath.substring(endPos+4);
+			}
+			endPos = filepath.indexOf("\\..\\");
+		}
+		return filepath;
 	}
 
 }
