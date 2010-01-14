@@ -49,6 +49,10 @@ RELEASE NOTES:
 Changes in 3.3:
 1. Added support for HTTPS, including lax certificate handling via the --relaxssl option.
 2. Fixed problems with the console authenticator.
+3. Changed socket timeout from infinity to 20 seconds for http fetches.
+4. Made adding data to payload progress monitorable and cancellable (AddFilesToPayloadOperation)
+5. Made whitespace used in creating manifests configurable.
+6. Smarter handling of relative paths in manifests. 
 
 Changes in 3.2:
 1. Fixed handling of bag-info.txt with colons in the value.

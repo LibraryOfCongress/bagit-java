@@ -10,7 +10,6 @@ import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.ManifestReader.FilenameFixity;
 import gov.loc.repository.bagit.impl.AbstractManifestReaderImplTest;
-import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
 
 import org.junit.Test;
 
