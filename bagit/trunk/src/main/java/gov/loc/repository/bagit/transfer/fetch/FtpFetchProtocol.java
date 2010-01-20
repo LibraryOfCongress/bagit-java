@@ -85,6 +85,14 @@ public class FtpFetchProtocol implements FetchProtocol
             {
                 log.trace("Executing retrieveal.");
                 in = this.client.retrieveFileStream(uri.getPath());
+
+                if (in == null)
+                {
+                	int replyCode = this.client.getReplyCode();
+                	String replyString = this.client.getReplyString();
+                	
+                	throw new BagTransferException(format("Could not retrieve file stream.  Server returned code {0}: {1}", replyCode, replyString));
+                }
                 
                 log.trace("Opening destination.");
                 out = destination.openOutputStream(false);
