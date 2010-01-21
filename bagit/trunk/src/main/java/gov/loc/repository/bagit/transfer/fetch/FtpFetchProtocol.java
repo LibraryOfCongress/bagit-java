@@ -129,6 +129,9 @@ public class FtpFetchProtocol implements FetchProtocol
                 
                 log.trace(format("Connecting to server: {0}:{1}", server, port));
                 this.client.connect(server, port);
+
+                this.client.setSoTimeout(20 * 1000);
+                log.trace(format("Socket timeout: {0}ms", this.client.getSoTimeout()));
                 
                 int reply = this.client.getReplyCode();
                 log.trace(format("Connected.  Server replied with: {0}", reply));
