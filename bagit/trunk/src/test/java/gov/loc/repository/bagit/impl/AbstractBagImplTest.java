@@ -142,7 +142,7 @@ public abstract class AbstractBagImplTest {
 		assertEquals(this.getVersion().versionString, bagIt.getVersion());
 	}
 
-	private void assertBagPayloadFiles(Bag bag) throws Exception
+	protected void assertBagPayloadFiles(Bag bag) throws Exception
 	{
 		assertEquals(5, bag.getPayload().size());
 		assertNotNull(bag.getBagFile("data/dir1/test3.txt"));
