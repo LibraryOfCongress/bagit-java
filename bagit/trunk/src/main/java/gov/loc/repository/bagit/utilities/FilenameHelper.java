@@ -46,6 +46,12 @@ public class FilenameHelper {
 		return filenameWithoutBasePath;
 	}
 
+	/**
+	 * Normalizes a file path by replacing various special
+	 * path tokens (., .., etc.) with their canonical equivalents.
+	 * @param filepath The file path to normalize.
+	 * @return The normalized file path.
+	 */
 	public static String normalizePath(String filepath) {
 		if (filepath.startsWith("./") || filepath.startsWith(".\\")) {
 			filepath = filepath.substring(2);
