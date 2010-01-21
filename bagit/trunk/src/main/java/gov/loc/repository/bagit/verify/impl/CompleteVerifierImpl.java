@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.verify.impl;
 
+import static java.text.MessageFormat.*;
 import java.text.MessageFormat;
 
 import org.apache.commons.logging.Log;
@@ -12,6 +13,7 @@ import org.apache.commons.vfs.FileTypeSelector;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -81,23 +83,26 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 					log.warn(MessageFormat.format("Payload file {0} not in data directory", filepath));
 				}
 			}
-			//All payload files are in data directory
-			log.debug("Checking that all payload files in data directory");
-			for(BagFile bagFile : bag.getPayload()) {
+			
+			// Ensure no tag files are listed in the payload manifest.
+			log.debug("Checking that no tag files are listed in payload manifests.");
+			String payloadDirName = bag.getBagConstants().getDataDirectory();
+			
+			for (Manifest manifest : bag.getPayloadManifests())
+			{
 				if (this.isCancelled()) return null;
-				String filepath = bagFile.getFilepath();
-				count++;
-				this.progress("verifying tag file in data directory", filepath, count, total);
-				log.trace(MessageFormat.format("Verifying Tagfile {0} in data directory", filepath));
-				if (filepath.startsWith(bag.getBagConstants().getDataDirectory() + '/')) {
-					if (filepath.contains(bag.getBagConstants().getBagItTxt())  ||
-							filepath.contains(bag.getBagConstants().getBagInfoTxt())||
-							filepath.contains(bag.getBagConstants().getFetchTxt())  ||						
-							filepath.contains(bag.getBagConstants().getPayloadManifestPrefix()))
+
+				this.progress("checking payload manifest for tag files", manifest.getFilepath());
+				
+				for (String path : manifest.keySet())
+				{
+					String normalizedPath = FilenameHelper.normalizePath(path);
+					log.trace(format("Normalized path: {0} -> {1}", path, normalizedPath));
+					
+					if (!normalizedPath.startsWith(payloadDirName))
 					{
 						result.setSuccess(false);
-						result.addMessage(MessageFormat.format("Tag file {0} is in the {1} directory.", filepath, bag.getBagConstants().getDataDirectory()));
-						log.warn(MessageFormat.format("Tag file {0} is in data directory", filepath));
+						result.addMessage(format("Tag file is listed in payload manifest {0}: {1}", manifest.getFilepath(), path));
 					}
 				}
 			}

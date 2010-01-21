@@ -48,19 +48,19 @@ public abstract class AbstractBagImplTest {
 		this.constants = bagFactory.getBagConstants(this.getVersion());		
 	}
 	
-	private Bag getBagByPayloadManifests(Format format) throws Exception {
+	protected Bag getBagByPayloadManifests(Format format) throws Exception {
 		return this.getBagByPayloadManifests(this.getVersion(), format);  
 	}
 
-	private Bag getBagByPayloadFiles(Format format) throws Exception {
+	protected Bag getBagByPayloadFiles(Format format) throws Exception {
 		return this.getBagByPayloadFiles(this.getVersion(), format);  
 	}
 	
-	private Bag getBagByPayloadManifests(Version version, Bag.Format format) throws Exception {
+	protected Bag getBagByPayloadManifests(Version version, Bag.Format format) throws Exception {
 		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_MANIFESTS);  
 	}	
 
-	private Bag getBagByPayloadFiles(Version version, Bag.Format format) throws Exception {
+	protected Bag getBagByPayloadFiles(Version version, Bag.Format format) throws Exception {
 		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_FILES);  
 	}	
 
