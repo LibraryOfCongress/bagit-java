@@ -62,6 +62,11 @@ public class LongRunningOperationBase implements Cancellable, ProgressListenable
 		this.chainedCancellables.remove(cancellable);
 	}
 	
+	protected void progress(String activity, Object item)
+	{
+		this.progress(activity, item, (Long)null, (Long)null);
+	}
+	
 	protected void progress(String activity, Object item, Long count, Long total)
 	{
 		for (ProgressListener listener : this.progressListeners)
