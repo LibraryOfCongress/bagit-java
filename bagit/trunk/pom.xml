@@ -8,6 +8,14 @@
 	<bagit.version>0.96</bagit.version>
   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
   </properties>    
+  <issueManagement>
+  	<system>RDC Transfer Trac</system>
+  	<url>https://rdc.lctl.gov/trac/transfer/</url>
+  </issueManagement>
+  <ciManagement>
+  	<system>RDC Hudson Server</system>
+  	<url>http://pt.rdc.lctl.gov/hudson/job/bagit/</url>
+  </ciManagement>
   <developers>
     <developer>
       <id>justin</id>
@@ -17,7 +25,7 @@
   </developers>  
   <scm>
     <connection>scm:svn:https://rdc.lctl.gov/svn/transfer/bagit/trunk</connection>
-    <url>https://rdc.lctl.gov/trac/transfer/browser</url>
+    <url>https://rdc.lctl.gov/trac/transfer/browser/bagit</url>
   </scm>
   <build>
     <extensions>
@@ -112,6 +120,15 @@
            </execution>
          </executions>
        </plugin>            
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<extensions>false</extensions>
+			<inherited>false</inherited>
+			<configuration>
+				<show>private</show>
+			</configuration>
+		</plugin>
     </plugins>
   </build>  
   <dependencies>
@@ -218,6 +235,18 @@
     	<version>1.0</version>
     </dependency>
   </dependencies>
+  <reporting>
+  	<plugins>
+  		<plugin>
+  			<groupId>org.apache.maven.plugins</groupId>
+  			<artifactId>maven-javadoc-plugin</artifactId>
+  			<inherited>false</inherited>
+  			<configuration>
+  				<show>protected</show>
+  			</configuration>
+  		</plugin>
+  	</plugins>
+  </reporting>
   <distributionManagement>
     <repository>
       <id>rdc-releases</id>
