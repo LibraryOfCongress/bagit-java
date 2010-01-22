@@ -243,6 +243,9 @@
   			<inherited>false</inherited>
   			<configuration>
   				<show>protected</show>
+  				<links>
+  					<link>http://java.sun.com/j2se/1.6.0/docs/api</link>
+				</links>
   			</configuration>
   		</plugin>
   	</plugins>
@@ -257,4 +260,22 @@
       <url>dav:http://archiva.rdc.lctl.gov:8080/archiva/repository/rdc-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>  
+   <profiles>
+ 		<profile>
+ 			<id>rdc-hudson-snapshot</id>
+ 			<activation>
+ 				<property>
+ 					<name>rdc.build.type</name>
+ 					<value>hudson-snapshot</value>
+ 				</property>
+ 			</activation>
+	  		<distributionManagement>
+				<site>
+					<id>rdc.storage.site.bil</id>
+					<name>BIL Site on RDC Storage</name>
+					<url>file:/vol/transfer/mvn-sites/bil</url>
+				</site>
+			</distributionManagement>
+		</profile>
+	</profiles>
 </project>
