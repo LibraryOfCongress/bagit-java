@@ -15,12 +15,51 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <p>Represents a BagIt bag.  This is the core interface of the BagIt Library.
+ * Methods are available for creating, manipulating, writing, validating,
+ * and verifying bags.</p>
+ * 
+ * <p>You should not create a Bag instance directly.  Instead, use an
+ * appropriate method on the {@link BagFactory} class.</p>
+ *
+ * @see BagFactory
+ */
 public interface Bag {
 	
+	/**
+	 * <p>The format of a bag.  Bags may be serialized (such
+	 * as "zip" or "tar.gz") or they may simply be directories on
+	 * the filesystem (such as "file").</p>
+	 * 
+	 * <table border="2">
+	 * <tbody>
+	 * <tr><th>Format</th><th>Scheme</th><th>Extension</th><th>Serialized?</th></tr>
+	 * <tr><td>{@link #FILESYSTEM}</td><td>file</td><td>&lt;none&gt;</td><td>false</td></tr>
+	 * <tr><td>{@link #ZIP}</td><td>zip</td><td>.zip</td><td>true</td></tr>
+	 * <tr><td>{@link #TAR}</td><td>tar</td><td>.tar</td><td>true</td></tr>
+	 * <tr><td>{@link #TAR_GZ}</td><td>tgz</td><td>.tar.gz</td><td>true</td></tr>
+	 * <tr><td>{@link #TAR_BZ2}</td><td>tbz2</td><td>.tar.bz2</td><td>true</td></tr>
+	 * </tbody>
+	 * </table>
+	 */
 	enum Format {
 		ZIP ("zip", true, ".zip"), TAR ("tar", true, ".tar"), TAR_GZ ("tgz", true, ".tar.gz"), TAR_BZ2 ("tbz2", true, ".tar.bz2"), FILESYSTEM ("file", false, "");
+		
+		/**
+		 * The URI scheme for the format.
+		 */
 		public String scheme;
+		
+		/**
+		 * Whether or not the format is a serialized bag format.
+		 */
 		public boolean isSerialized;
+		
+		/**
+		 * The file extension typicaly appended to a bag name
+		 * in the given format when it is written to disk.
+		 */
 		public String extension;
 		
 		Format(String scheme, boolean isSerialized, String extension) {
@@ -32,6 +71,10 @@ public interface Bag {
 		
 	};
 	
+	/**
+	 * Gets the version of the BagIt spec to which the bag conforms.
+	 * @return The version of the bag.  Will never be null.
+	 */
 	Version getVersion();
 	
 	File getFile();
