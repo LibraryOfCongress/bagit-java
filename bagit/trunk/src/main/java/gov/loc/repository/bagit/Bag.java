@@ -191,20 +191,121 @@ public interface Bag {
 	
 	BagPartFactory getBagPartFactory();
 	
+	/**
+	 * <p>Contains names for constants associated with a bag.
+	 * BagIt defines and reserves several names, and some of those names
+	 * change between versions of the specification.  This interface
+	 * abstracts away those constants so they can be examined on a
+	 * per-version basis.</p>
+	 * 
+	 * <p>For example, the <c>bag-info.txt</c> file was called
+	 * <c>package-info.txt</c> in earlier versions of the spec.
+	 * The correct name can be determined by using the
+	 * {@link #getBagInfoTxt()} method.</p>
+	 * 
+	 * <p>You should never reference BagIt constants by name directly
+	 * in your code, as they may change from version to version.  Instead,
+	 * obtain an instance of this interface and its values as the
+	 * constants.
+	 * Constants for the current bag's version may be obtained by
+	 * calling the {@link Bag#getBagConstants()} method.
+	 * Constants for a particular BagIt version may be obtained
+	 * by calling the {@link BagFactory#getBagConstants(Version)}
+	 * method.</p>
+	 * 
+	 * @see Bag#getBagConstants()
+	 * @see BagFactory#getBagConstants()
+	 * @see BagFactory#getBagConstants(Version)
+	 */
 	public interface BagConstants {
 
+		/**
+		 * Get the prefix for a payload manifest, "manifest-"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getPayloadManifestPrefix();
+
+		/**
+		 * Get the prefix for a payload manifest, "tagmanifest-"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getTagManifestPrefix();
+
+		/**
+		 * Get the prefix for a payload manifest, ".txt"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getPayloadManifestSuffix();
+
+		/**
+		 * Get the prefix for a payload manifest, ".txt"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getTagManifestSuffix();
+
+		/**
+		 * Get the text encoding required for the
+		 * {@link #getBagItTxt() bagit.txt} file, "UTF-8" in the latest
+		 * version.
+		 * @return The constant.
+		 */
 		String getBagEncoding();
+
+		
+		/**
+		 * Get the name of the bag declaration file, "bagit.txt"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getBagItTxt();
+
+		/**
+		 * Get the name of the payload directory, "data"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getDataDirectory();
+
+		/**
+		 * Get the name of the standard bag metdata file, "bag-info.txt"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getBagInfoTxt();
+
+		/**
+		 * Get the name of the fetch file, "fetch.txt"
+		 * in the latest version.
+		 * @return The constant.
+		 */
 		String getFetchTxt();
+
+		/**
+		 * Get the version of the spec these constants are for.
+		 * @return The version.
+		 */
 		Version getVersion();
 	}
-	
+
+	/**
+	 * <p>Creates various parts of a bag, as appropriate for the
+	 * version and underlying implementation of the {@link Bag} interface.</p>
+	 * 
+	 * <p>You should never create implementations for the various components
+	 * of a bag directly.  Instead, you should obtain a parts factory through
+	 * {@link Bag#getBagPartFactory()} and then create the desired component
+	 * through the factory.</p>
+	 * 
+	 * <p>The components created are not already "bound" to a bag.  They
+	 * must still be added to the bag using methods such as
+	 * {@link Bag#putBagFile(BagFile)}.</p>
+	 * 
+	 * @see Bag
+	 */
 	public interface BagPartFactory {
 		ManifestReader createManifestReader(InputStream in, String encoding);
 		ManifestReader createManifestReader(InputStream in, String encoding, boolean treatBackSlashAsPathSeparator);
