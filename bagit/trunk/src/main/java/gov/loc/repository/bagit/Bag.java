@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Represents a BagIt bag.  This is the core interface of the BagIt Library.
+ * <p>This is the core interface of the BagIt Library, representing
+ * a bag from the BagIt spec.
  * Methods are available for creating, manipulating, writing, validating,
  * and verifying bags.</p>
  * 
