@@ -451,7 +451,12 @@ public class CommandLineBagDriver {
 
 	}
 	
+	private String getVersion() {
+		return System.getProperty("version");
+	}
+	
 	private void printUsage() {
+		System.out.println("BagIt Library (BIL) Version " + this.getVersion());
 		System.out.println("Usage: bag <operation> [operation arguments] [--help]");
         System.out.println("Parameters:");
 		System.out.println("\t<operation>");

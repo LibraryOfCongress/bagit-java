@@ -36,7 +36,8 @@
 	<fileSet>
     	<directory>src/assembly</directory>
     	<lineEnding>unix</lineEnding>
-    	<outputDirectory>/</outputDirectory>    	
+    	<outputDirectory>/</outputDirectory>
+    	<filtered>true</filtered>    	    	
       <includes>
         <include>bin/bag</include>
       </includes>
@@ -45,7 +46,8 @@
 	<fileSet>
     	<directory>src/assembly</directory>
     	<lineEnding>dos</lineEnding>
-    	<outputDirectory>/</outputDirectory>    	
+    	<outputDirectory>/</outputDirectory>
+        <filtered>true</filtered>               
       <includes>
         <include>bin/bag.bat</include>
       </includes>
