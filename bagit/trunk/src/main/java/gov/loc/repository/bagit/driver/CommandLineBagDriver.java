@@ -345,6 +345,9 @@ public class CommandLineBagDriver {
 		
 		if (args.length == 0 || (args.length == 1 && args[0].equals("--" + PARAM_HELP))) {
 			printUsage();
+		} else if (args.length == 1 && args[0].equals("--" + PARAM_VERSION)) {
+			printVersion();
+			
 		} else	{	
 			String operationArg = args[0];		
 			if (! this.operationMap.containsKey(operationArg)) {
@@ -455,8 +458,12 @@ public class CommandLineBagDriver {
 		return System.getProperty("version");
 	}
 	
-	private void printUsage() {
+	private void printVersion() {
 		System.out.println("BagIt Library (BIL) Version " + this.getVersion());
+	}
+	
+	private void printUsage() {
+		printVersion();
 		System.out.println("Usage: bag <operation> [operation arguments] [--help]");
         System.out.println("Parameters:");
 		System.out.println("\t<operation>");
@@ -477,6 +484,8 @@ public class CommandLineBagDriver {
 		for(String name : names) {
 			System.out.println(MessageFormat.format("\t\t\t{0}: {1}", name, this.operationMap.get(name).help));
 		}
+		System.out.println("\t[--version]");
+		System.out.println("\t\tPrints version of BIL and exits.");
 		
 		System.out.println("\t[--help]");
 		System.out.println("\t\tPrints usage message for the operation.");
