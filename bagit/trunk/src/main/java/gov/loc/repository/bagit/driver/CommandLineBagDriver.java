@@ -41,6 +41,8 @@ import gov.loc.repository.bagit.writer.impl.TarWriter;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.Authenticator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -116,6 +119,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_HELP = "help";
 	public static final String PARAM_RETAIN_BASE_DIR = "retainbasedir";
 	public static final String PARAM_BAGINFOTXT = "baginfotxt";
+	public static final String PARAM_NO_RESULTFILE = "noresultfile";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -132,7 +136,7 @@ public class CommandLineBagDriver {
 		CommandLineBagDriver driver = new CommandLineBagDriver();		
 		int ret = driver.execute(args);
 		if (ret == RETURN_ERROR) {
-			System.err.println("An error occurred. Check the log for more details.");
+			System.err.println(MessageFormat.format("An error occurred. Check the {0}/logs/bag-{1}.log for more details.", System.getProperty("app.home"), System.getProperty("log.timestamp")));
 		}
 		System.exit(ret);
 	}
@@ -171,28 +175,27 @@ public class CommandLineBagDriver {
 		Parameter throttleParam = new FlaggedOption(PARAM_THROTTLE, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THROTTLE, "A pause between HTTP posts in milliseconds for BOB.");
 		Parameter retainBaseDirParam = new Switch(PARAM_RETAIN_BASE_DIR, JSAP.NO_SHORTFLAG, PARAM_RETAIN_BASE_DIR, "Indicates that the base directory (not just the contents of the base directory) should be placed in the data directory of the bag.");
 		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
+		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
-				new Parameter[] {sourceParam, versionParam},
+				new Parameter[] {sourceParam, versionParam, noResultFileParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFY_TAGMANIFESTS, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFY_PAYLOADMANIFESTS,
 				"Verifies the checksums in all payload manifests.",
-				new Parameter[] {sourceParam, versionParam},
+				new Parameter[] {sourceParam, versionParam, noResultFileParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFY_PAYLOADMANIFESTS, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFYVALID,
 				"Verifies the validity of a bag.",
-				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam},
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYVALID, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFYCOMPLETE,
 				"Verifies the completeness of a bag.",
-				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam},
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
-
-
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
@@ -565,6 +568,8 @@ public class CommandLineBagDriver {
 
 		    BagFetcher fetcher = new BagFetcher(bagFactory);
 
+		    boolean writeResultFile = ! config.getBoolean(PARAM_NO_RESULTFILE, false);
+		    
 		    //These settings applies only for operations FillHoley bag and Retrieve a remote bag
 			if(operation.name.equals(OPERATION_FILL_HOLEY) || operation.name.equals(OPERATION_RETRIEVE) ){
 
@@ -638,6 +643,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
+					if (writeResultFile) this.writeResultFile(operation.name, result);
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
@@ -649,6 +655,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
+					if (writeResultFile) this.writeResultFile(operation.name, result);
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
@@ -657,6 +664,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
+					if (writeResultFile) this.writeResultFile(operation.name, result);
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
@@ -665,6 +673,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
+					if (writeResultFile) this.writeResultFile(operation.name, result);
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
@@ -822,6 +831,24 @@ public class CommandLineBagDriver {
 			log.error("Error: " + ex.getMessage(), ex);
 			return RETURN_ERROR;
 		}
+	}
+	
+	private void writeResultFile(String operation, SimpleResult result) {
+		if (result.isSuccess()) return;
+		File file = new File(MessageFormat.format("{0}-{1}.txt", operation, System.getProperty("log.timestamp")));
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(file);
+			for(String msg : result.getMessages()) {
+				writer.write(msg + "\n");
+			}
+			System.out.println("Complete results written to " + file.getCanonicalPath());
+		} catch (IOException e) {
+			log.error("Unable to write results", e);
+		} finally {
+			IOUtils.closeQuietly(writer);
+		}
+		
 	}
 	
 	private class Operation {

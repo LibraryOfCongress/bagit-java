@@ -36,4 +36,4 @@ APP_HOME=`cd $APP_HOME && pwd`
 APP_NAME=`basename $PRG`
 DATE=`date "+%Y%m%d-%T"`
 
-"$JAVA_BIN" "$JAVA_OPTS" -Xmx$MAXMEM -classpath $APP_HOME/lib/classworlds-1.1.jar -Dclassworlds.conf=$APP_HOME/bin/$APP_NAME.classworlds.conf -Dapp.home=$APP_HOME -Dlog_file=$APP_HOME/logs/bag-$DATE.log org.codehaus.classworlds.Launcher "$@"
+"$JAVA_BIN" "$JAVA_OPTS" -Xmx$MAXMEM -classpath $APP_HOME/lib/classworlds-1.1.jar -Dclassworlds.conf=$APP_HOME/bin/$APP_NAME.classworlds.conf -Dapp.home=$APP_HOME -Dlog.timestamp=$DATE org.codehaus.classworlds.Launcher "$@"
