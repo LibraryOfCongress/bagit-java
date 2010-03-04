@@ -133,10 +133,6 @@ public class CommandLineBagDriver {
 		int ret = driver.execute(args);
 		if (ret == RETURN_ERROR) {
 			System.err.println("An error occurred. Check the log for more details.");
-		} else if (ret == RETURN_FAILURE) {
-			System.out.println("Returning failure.");
-		} else {
-			System.out.println("Returning success.");
 		}
 		System.exit(ret);
 	}
@@ -344,7 +340,7 @@ public class CommandLineBagDriver {
 		
 		int ret = RETURN_SUCCESS;
 		
-		if (args.length == 0) {
+		if (args.length == 0 || (args.length == 1 && args[0].equals("--" + PARAM_HELP))) {
 			printUsage();
 		} else	{	
 			String operationArg = args[0];		
@@ -359,7 +355,7 @@ public class CommandLineBagDriver {
 				if (newArgs.length > 0) {
 					System.arraycopy(args, 1, newArgs, 0, args.length-1);
 				} else {
-					newArgs = new String[] {"--help"};
+					newArgs = new String[] {"--" + PARAM_HELP};
 				}
 				
 				JSAPResult config = operation.jsap.parse(newArgs);
@@ -510,7 +506,6 @@ public class CommandLineBagDriver {
 	
 	private int performOperation(Operation operation, JSAPResult config) {
 		String msg = "Performing operation: " + operation.name;
-		System.out.println(msg);
 		log.info(msg);
 		
 		try {
@@ -641,7 +636,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
-				System.out.println(result.toString());
+				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -652,7 +647,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = completeVerifier.verify(bag);
 				log.info(result.toString());
-				System.out.println(result.toString());
+				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -660,7 +655,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = bag.verifyTagManifests();
 				log.info(result.toString());
-				System.out.println(result.toString());
+				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -668,7 +663,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = bag.verifyPayloadManifests();
 				log.info(result.toString());
-				System.out.println(result.toString());
+				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
 					ret = RETURN_FAILURE;
 				}
@@ -820,7 +815,6 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				sender.send(bag, config.getString(PARAM_URL));				
 			}
-			System.out.println("Operation completed.");	
 			log.info("Operation completed.");
 			return ret;
 		}

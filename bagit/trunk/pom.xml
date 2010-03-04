@@ -80,10 +80,8 @@
         <configuration>
           <descriptors>
             <descriptor>src/assembly/bin.xml</descriptor>
+            <descriptor>src/assembly/src.xml</descriptor>
           </descriptors>
-          <descriptorRefs>
-          	<descriptorRef>src</descriptorRef>
-          </descriptorRefs>          	
         </configuration>
         <executions>
           <execution>

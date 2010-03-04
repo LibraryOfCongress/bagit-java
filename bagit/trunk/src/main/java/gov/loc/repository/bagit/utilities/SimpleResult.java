@@ -9,7 +9,8 @@ public class SimpleResult {
 	private boolean isSuccess;
 	private List<String> messages = new ArrayList<String>();
 	
-	private static Integer MAX_MESSAGES = 100;
+	public static Integer DEFAULT_MAX_MESSAGES = 100;
+	public static String DEFAULT_DELIM = " ";
 	
 	public SimpleResult(boolean isSuccess) {
 		this.isSuccess = isSuccess;			
@@ -28,18 +29,23 @@ public class SimpleResult {
 	{
 		return this.isSuccess;
 	}
-	
+
 	public String messagesToString(int maxMessages)
+	{
+		return this.messagesToString(maxMessages, DEFAULT_DELIM);
+	}
+	
+	public String messagesToString(int maxMessages, String delim)
 	{
 		StringBuffer buf = new StringBuffer();
 		int count = 0;
 		for(String message : messages) {
 			count++;
 			if (count > maxMessages) {
-				buf.append("And others.");
+				buf.append(delim + "And others.");
 				break;
 			}
-			if (buf.length() > 0) buf.append(" ");
+			if (buf.length() > 0) buf.append(delim);
 			buf.append(message);
 		}
 		String messageString = buf.toString();
@@ -52,11 +58,16 @@ public class SimpleResult {
 	
 	@Override
 	public String toString() {
-		return this.toString(MAX_MESSAGES);
+		return this.toString(DEFAULT_MAX_MESSAGES, DEFAULT_DELIM);
 	}
 
 	public String toString(int maxMessages) {
-		String msg = MessageFormat.format("Result is {0}. {1}", this.isSuccess, this.messagesToString(maxMessages));
+		return this.toString(maxMessages, DEFAULT_DELIM);
+	}
+
+	public String toString(int maxMessages, String delim) {
+		if (this.messages.isEmpty()) delim = "";
+		String msg = MessageFormat.format("Result is {0}.{1}{2}", this.isSuccess, delim, this.messagesToString(maxMessages, delim));
 		return msg;
 	}
 
