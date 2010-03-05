@@ -334,8 +334,8 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 		Field[] fields = this.getClass().getFields();
 		try {
 			for(Field field : fields) {
-				if (field.getName().startsWith("FIELD_") && this.containsKey(field.get(this))) {
-					standardFields.add((String)field.get(this));
+				if (field.getName().startsWith("FIELD_") && this.containsKeyCaseInsensitive((String)field.get(this))) {
+					standardFields.add(this.getActualKey((String)field.get(this)));
 				}
 			}			
 		}

@@ -172,13 +172,17 @@ public abstract class AbstractBagInfoTxtImplTest {
 	}
 	
 	@Test
-	public void testGetStandardFields() throws Exception {
+	public void testGetStandardFields() throws Exception {		
 		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), this.getTestBagInfoTxtBagInfoTxtString()));
 		bagInfo.put("foo", "bar");
+		//Standard field, but alternate capitalization
+		bagInfo.remove(BagInfoTxtImpl.FIELD_BAG_SIZE);
+		bagInfo.put("bag-size", "1 gb");
 		List<String> fields = bagInfo.getStandardFields();
 		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_EMAIL));
 		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_NAME));
-		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_PHONE));		
+		assertTrue(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_PHONE));
+		assertTrue(fields.contains("bag-size"));
 		assertFalse(fields.contains("foo"));
 	}
 
@@ -186,9 +190,13 @@ public abstract class AbstractBagInfoTxtImplTest {
 	public void testGetNonstandardFields() throws Exception {
 		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), this.getTestBagInfoTxtBagInfoTxtString()));
 		bagInfo.put("foo", "bar");
+		//Standard field, but alternate capitalization
+		bagInfo.remove(BagInfoTxtImpl.FIELD_BAG_SIZE);
+		bagInfo.put("bag-size", "1 gb");
 		List<String> fields = bagInfo.getNonstandardFields();
 		assertFalse(fields.contains(BagInfoTxtImpl.FIELD_CONTACT_EMAIL));
 		assertTrue(fields.contains("foo"));
+		assertFalse(fields.contains("bag-size"));
 		assertEquals(1, fields.size());
 	}
 

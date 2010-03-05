@@ -90,6 +90,15 @@ public abstract class AbstractNameValueBagFile extends LinkedHashMap<String, Str
 		return false;
 	}
 	
+	public String getActualKey(String key) {
+		for(String name : this.keySet()) {
+			if (name.equalsIgnoreCase(key)) {
+				return name;
+			}
+		}
+		return null;		
+	}
+	
 	public String getCaseInsensitive(String key) {
 		if (key == null) {
 			return this.get(key);
