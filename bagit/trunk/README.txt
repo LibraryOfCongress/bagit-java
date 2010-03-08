@@ -46,6 +46,13 @@ a bad thing.
 
 RELEASE NOTES:
 
+Changes in 3.4:
+1. Fixed critical bug that disallowed payload files to have tag manifest names.
+2. Changed logging so each invocation produces a unique log file.
+3. Added a new results log written to working directory for failed verification commandline operations.
+4. Reduced output to System.out when invoking commandline.
+5. Added support for reporting BIL version number.
+
 Changes in 3.3:
 1. Added support for HTTPS, including lax certificate handling via the --relaxssl option.
 2. Fixed problems with the console authenticator.
