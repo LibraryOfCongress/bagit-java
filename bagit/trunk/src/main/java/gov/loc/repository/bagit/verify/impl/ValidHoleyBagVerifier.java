@@ -50,6 +50,11 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 			log.trace("Confirming version specified matches version in declaration.");
 			if (bag.getBagItTxt() != null && !bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion()))
 				this.fail("Version is not {0}.", bag.getBagConstants().getVersion());				
+	
+			log.trace("Checking for fetch.txt.");
+			if (bag.getFetchTxt() == null)
+				this.fail("Bag does not have {0}.", bag.getBagConstants().getFetchTxt());				
+
 			
 			//Additional checks if an existing Bag
 			if (bag.getFile() != null)

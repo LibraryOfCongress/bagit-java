@@ -335,6 +335,21 @@ public class BagFetcherTest
 		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
 	}
 
+	@Test(expected=BagTransferException.class)
+	public void testMissingFetchTxt() throws Exception
+	{
+		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
+		File fetchTxtFile = new File(tempDir, this.bagFactory.getBagConstants().getFetchTxt());
+		assertTrue(fetchTxtFile.exists());
+		fetchTxtFile.delete();
+		assertFalse(fetchTxtFile.exists());
+		Bag bag = this.bagFactory.createBag(tempDir);
+		
+		this.unit.fetch(bag, mockDestinationFactory);
+		
+	}
+
+	
 	private void expectDest(Expectations e, FetchedFileDestinationFactory destFactory, String path) throws Exception
 	{
 		FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class, "FetchedFileDestination:" + path);
