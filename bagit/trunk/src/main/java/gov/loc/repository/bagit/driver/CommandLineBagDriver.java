@@ -798,10 +798,20 @@ public class CommandLineBagDriver {
 			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
 			    SimpleResult result = fetcher.fetch(bag, dest);
-			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
+				log.info(result.toString());
+				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+				if (! result.isSuccess()) {
+					if (writeResultFile) this.writeResultFile(operation.name, result);
+					ret = RETURN_FAILURE;
+				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
 			    SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL));
-			    ret = result.isSuccess()?RETURN_SUCCESS:RETURN_FAILURE;
+				log.info(result.toString());
+				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+				if (! result.isSuccess()) {
+					if (writeResultFile) this.writeResultFile(operation.name, result);
+					ret = RETURN_FAILURE;
+				}
 
 			} else if (OPERATION_SEND_BOB.equals(operation.name)) {
 				BobSender sender = new BobSender();
