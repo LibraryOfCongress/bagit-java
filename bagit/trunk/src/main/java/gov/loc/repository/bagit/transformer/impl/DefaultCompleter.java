@@ -26,6 +26,7 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 	private Bag newBag;
 	private BagFactory bagFactory;
 	private CompleterHelper helper;
+	private String nonDefaultManifestSeparator = null;
 	
 	public DefaultCompleter(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
@@ -136,7 +137,7 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 		}
 		this.helper.cleanManifests(this.newBag, this.newBag.getTagManifests());
 		if (this.generateTagManifest) {
-			this.helper.handleManifest(this.newBag, this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants()), this.newBag.getTags());
+			this.helper.handleManifest(this.newBag, this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, this.newBag.getBagConstants()), this.newBag.getTags(), this.nonDefaultManifestSeparator);
 		}
 	}
 	
@@ -145,7 +146,16 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 			this.helper.clearManifests(this.newBag, this.newBag.getPayloadManifests());
 		}
 		this.helper.cleanManifests(this.newBag, this.newBag.getPayloadManifests());
-		this.helper.handleManifest(this.newBag, this.payloadManifestAlgorithm, ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants()),this.newBag.getPayload());		
+		this.helper.handleManifest(this.newBag, this.payloadManifestAlgorithm, ManifestHelper.getPayloadManifestFilename(this.payloadManifestAlgorithm, this.newBag.getBagConstants()),this.newBag.getPayload(), this.nonDefaultManifestSeparator);		
 	}
+	
+	public String getNonDefaultManifestSeparator() {
+		return this.nonDefaultManifestSeparator;
+	}
+	
+	public void setNonDefaultManifestSeparator(String manifestSeparator) {
+		this.nonDefaultManifestSeparator = manifestSeparator;
+	}
+
 	
 }

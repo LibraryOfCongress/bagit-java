@@ -12,7 +12,7 @@ public class TagManifestCompleter implements Completer {
 	private CompleterHelper helper;
 	private BagFactory bagFactory;
 	private Algorithm tagManifestAlgorithm = Algorithm.MD5;
-
+	private String nonDefaultManifestSeparator = null;
 	
 	//Not bothering with extending LongRunningOperation since this should be fast
 	//Not bothering with configuration of threadcount
@@ -41,8 +41,16 @@ public class TagManifestCompleter implements Completer {
 			this.helper.regenerateManifest(newBag, manifest, true);
 		}
 		//See if anything is missing
-		this.helper.handleManifest(newBag, this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, newBag.getBagConstants()), newBag.getTags());
+		this.helper.handleManifest(newBag, this.tagManifestAlgorithm, ManifestHelper.getTagManifestFilename(this.tagManifestAlgorithm, newBag.getBagConstants()), newBag.getTags(), this.nonDefaultManifestSeparator);
 		return newBag;
+	}
+
+	public String getNonDefaultManifestSeparator() {
+		return this.nonDefaultManifestSeparator;
+	}
+	
+	public void setNonDefaultManifestSeparator(String manifestSeparator) {
+		this.nonDefaultManifestSeparator = manifestSeparator;
 	}
 
 }

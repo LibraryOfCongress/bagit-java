@@ -15,6 +15,7 @@ import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.FetchTxtReader;
 import gov.loc.repository.bagit.FetchTxtWriter;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.ManifestWriter;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
 
@@ -64,7 +65,16 @@ public abstract class AbstractBagPartFactory implements BagPartFactory {
 	public Manifest createManifest(String name, BagFile sourceBagFile) {
 		return new ManifestImpl(name, this.bagConstants, this, sourceBagFile);
 	}
-
+	
+	@Override
+	public ManifestWriter createManifestWriter(OutputStream out,
+			String manifestSeparator) {
+		if (manifestSeparator != null) {
+			return new ManifestWriterImpl(out, manifestSeparator);
+		}
+		return this.createManifestWriter(out);
+	}
+	
 	@Override
 	public BagInfoTxt createBagInfoTxt() {
 		return new BagInfoTxtImpl(this.bagConstants);

@@ -45,4 +45,9 @@ public interface Manifest extends Map<String,String>, BagFile {
 	
 	public InputStream originalInputStream();
 	
+	public String getNonDefaultManifestSeparator();
+	
+	public void setNonDefaultManifestSeparator(String manifestSeparator);
+	
+	
 }

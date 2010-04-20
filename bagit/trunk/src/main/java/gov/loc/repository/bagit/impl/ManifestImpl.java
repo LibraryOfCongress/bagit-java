@@ -29,6 +29,7 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 	private String originalFixity = null;
 	private BagConstants bagConstants;
 	private BagPartFactory bagPartFactory;
+	private String nonDefaultManifestSeparator = null;
 	
 	public ManifestImpl(String name, BagConstants bagConstants, BagPartFactory bagPartFactory) {
 		this.init(name, bagConstants, bagPartFactory);
@@ -75,7 +76,7 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 	
 	private InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ManifestWriter writer = this.bagPartFactory.createManifestWriter(out);
+		ManifestWriter writer = this.bagPartFactory.createManifestWriter(out, this.nonDefaultManifestSeparator);
 		for(String filename : this.keySet()) {
 			writer.write(filename, this.get(filename));
 		}
@@ -121,6 +122,16 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 			throw new RuntimeException(ex);
 		}
 		return size;
+	}
+	
+	@Override
+	public String getNonDefaultManifestSeparator() {
+		return this.nonDefaultManifestSeparator;
+	}
+	
+	@Override
+	public void setNonDefaultManifestSeparator(String manifestSeparator) {
+		this.nonDefaultManifestSeparator = manifestSeparator;
 	}
 	
 }

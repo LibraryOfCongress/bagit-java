@@ -310,6 +310,7 @@ public interface Bag {
 		ManifestReader createManifestReader(InputStream in, String encoding);
 		ManifestReader createManifestReader(InputStream in, String encoding, boolean treatBackSlashAsPathSeparator);
 		ManifestWriter createManifestWriter(OutputStream out);
+		ManifestWriter createManifestWriter(OutputStream out, String manifestSeparator);
 		Manifest createManifest(String name);
 		Manifest createManifest(String name, BagFile sourceBagFile);
 		BagItTxtReader createBagItTxtReader(String encoding, InputStream in);
@@ -327,6 +328,5 @@ public interface Bag {
 		FetchTxt createFetchTxt();
 		FetchTxt createFetchTxt(BagFile sourceBagFile);
 		Version getVersion();	
-		void setManifestSeparator(String separator);
 	}
 }

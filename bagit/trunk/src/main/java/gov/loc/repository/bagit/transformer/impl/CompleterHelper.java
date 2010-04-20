@@ -72,11 +72,13 @@ public class CompleterHelper extends LongRunningOperationBase {
 		}
 	}
 	
-	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles) {
+	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles, String nonDefaultManifestSeparator) {
 		Manifest manifest = (Manifest)bag.getBagFile(filepath);
 		if (manifest == null) {
 			manifest = bag.getBagPartFactory().createManifest(filepath);
 		}
+	
+		manifest.setNonDefaultManifestSeparator(nonDefaultManifestSeparator);
 		
 		final int total = bagFiles.size();
     	final AtomicInteger count = new AtomicInteger();

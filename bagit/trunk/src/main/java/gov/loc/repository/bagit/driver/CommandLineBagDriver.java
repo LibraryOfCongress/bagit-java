@@ -94,7 +94,7 @@ public class CommandLineBagDriver {
 	//public static final String PARAM_BAG_DIR = "bagdir";
 	public static final String PARAM_MISSING_BAGIT_TOLERANT = "missingbagittolerant";
 	public static final String PARAM_ADDITIONAL_DIRECTORY_TOLERANT = "additionaldirectorytolerant";
-	public static final String PARAM_MANIFEST_DELIMITER = "manifestdelimiter";
+	public static final String PARAM_MANIFEST_SEPARATOR = "manifestseparator";
 	public static final String PARAM_WRITER = "writer";
 	public static final String PARAM_PAYLOAD = "payload";
 	public static final String PARAM_EXCLUDE_PAYLOAD_DIR = "excludepayloaddir";
@@ -149,7 +149,7 @@ public class CommandLineBagDriver {
 		Parameter optionalDestParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the destination bag (if different than the source bag).");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
 		Parameter additionalDirectoryTolerantParam = new Switch(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_ADDITIONAL_DIRECTORY_TOLERANT, "Tolerant of additional directories in the bag_dir.");
-		Parameter manifestDelimiterParam = new FlaggedOption(PARAM_MANIFEST_DELIMITER, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MANIFEST_DELIMITER, "Delimiter used in Payload and Tag Manifest files.");
+		Parameter manifestSeparatorParam = new FlaggedOption(PARAM_MANIFEST_SEPARATOR, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MANIFEST_SEPARATOR, "Delimiter used in Payload and Tag Manifest files.  Place within quotes for whitespace.");
 		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload. To add the children of a directory, but not the directory itself append with " + File.separator + "*.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
@@ -206,7 +206,7 @@ public class CommandLineBagDriver {
 		completeParams.add(tagManifestAlgorithmParam);
 		completeParams.add(payloadManifestAlgorithmParam);
 		completeParams.add(versionParam);
-		completeParams.add(manifestDelimiterParam);
+		completeParams.add(manifestSeparatorParam);
 		
 		List<Parameter> makeCompleteParams = new ArrayList<Parameter>();
 		makeCompleteParams.add(sourceParam);
@@ -221,13 +221,13 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_UPDATE,
 				"Updates the manifests and (if it exists) the bag-info.txt for a bag.",
-				new Parameter[] {sourceParam, optionalDestParam, writerParam, manifestDelimiterParam},
+				new Parameter[] {sourceParam, optionalDestParam, writerParam, manifestSeparatorParam},
 				new String[] {MessageFormat.format("bag {0} {1} ", OPERATION_UPDATE, this.getBag("mybag"))});
 
 		
 		this.addOperation(OPERATION_UPDATE_TAGMANIFESTS,
 				"Updates the tag manifests for a bag.  The bag must be unserialized.",
-				new Parameter[] {sourceParam, tagManifestAlgorithmParam, manifestDelimiterParam},
+				new Parameter[] {sourceParam, tagManifestAlgorithmParam, manifestSeparatorParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_UPDATE_TAGMANIFESTS, this.getBag("mybag"))});
 				
 		List<Parameter> bagInPlaceParams = new ArrayList<Parameter>();
@@ -556,21 +556,13 @@ public class CommandLineBagDriver {
 				}
 			}
 
-			String  delimiter = null;
-			String delimiter2 = null;
+			String manifestSeparator = null;
 			int ret = RETURN_SUCCESS;
 
-			if(config.contains(PARAM_MANIFEST_DELIMITER)){
-				delimiter = config.getString(PARAM_MANIFEST_DELIMITER);
-				delimiter2 = delimiter.replace("\\t", "\t");
-				if (delimiter2.trim().length() > 0){
-					System.err.println("Delimiter parameter contains invalid characters.");
-					log.error("Delimiter parameter contains invalid characters.");
-					ret = RETURN_ERROR;
-				}
+			if(config.contains(PARAM_MANIFEST_SEPARATOR)){
+				manifestSeparator = config.getString(PARAM_MANIFEST_SEPARATOR).replace("\\t", "\t");
 			}
-			
-						
+									
 			DefaultCompleter completer = new DefaultCompleter(bagFactory);
 			completer.setGenerateBagInfoTxt(! config.getBoolean(PARAM_EXCLUDE_BAG_INFO, false));
 			completer.setUpdateBaggingDate(! config.getBoolean(PARAM_NO_UPDATE_BAGGING_DATE, false));
@@ -579,7 +571,8 @@ public class CommandLineBagDriver {
 			completer.setGenerateTagManifest(! config.getBoolean(PARAM_EXCLUDE_TAG_MANIFEST, false));
 			completer.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 			completer.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
-
+			completer.setNonDefaultManifestSeparator(manifestSeparator);
+			
 		    BagFetcher fetcher = new BagFetcher(bagFactory);
 
 		    boolean writeResultFile = ! config.getBoolean(PARAM_NO_RESULTFILE, false);
@@ -692,13 +685,12 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
-				bag.getBagPartFactory().setManifestSeparator(delimiter2);
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);				
 			}  else if (OPERATION_UPDATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
-				bag.getBagPartFactory().setManifestSeparator(delimiter2);
+				completer.setNonDefaultManifestSeparator(manifestSeparator);
 				Bag newBag = updateCompleter.complete(bag);
 				newBag.write(writer, destFile != null?destFile:sourceFile);
 			}
@@ -706,7 +698,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				TagManifestCompleter tagManifestCompleter = new TagManifestCompleter(bagFactory);
 				tagManifestCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
-				bag.getBagPartFactory().setManifestSeparator(delimiter2);
+				tagManifestCompleter.setNonDefaultManifestSeparator(manifestSeparator);
 				Bag newBag = tagManifestCompleter.complete(bag);
 				for(Manifest manifest : newBag.getTagManifests()) {
 					FileSystemHelper.write(manifest, new File(sourceFile, manifest.getFilepath()));
@@ -754,14 +746,12 @@ public class CommandLineBagDriver {
 					}
 					bag.addFileAsTag(bagInfoTxtFile);
 				}
-				bag.getBagPartFactory().setManifestSeparator(delimiter2);
 				Bag newBag = completer.complete(bag);
 				newBag.write(writer, destFile);
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncher puncher = new HolePuncherImpl(bagFactory);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				bag.getBagPartFactory().setManifestSeparator(delimiter2);
 				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
 				newBag.write(writer, destFile);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {

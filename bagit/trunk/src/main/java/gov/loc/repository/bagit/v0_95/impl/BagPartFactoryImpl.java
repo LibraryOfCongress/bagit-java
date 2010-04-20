@@ -19,7 +19,6 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 
 	private static final String SPLIT_REGEX = "( |\\t)+";
 	private static final String SEPARATOR = "  ";
-	private static String manifestSeparator = SEPARATOR;
 
 	public BagPartFactoryImpl(BagFactory bagFactory, BagConstants bagConstants) {
 		super(bagFactory, bagConstants);
@@ -36,7 +35,7 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	}
 	
 	public ManifestWriter createManifestWriter(OutputStream out) {
-		return new ManifestWriterImpl(out, manifestSeparator);			
+		return new ManifestWriterImpl(out, SEPARATOR);			
 	}
 	
 	@Override
@@ -53,12 +52,5 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	public Version getVersion() {
 		return Version.V0_95;
 	}
-
-	@Override
-	public void setManifestSeparator(String separator){
-		if (separator != null)
-			manifestSeparator = separator;
-	}
-
 
 }

@@ -110,7 +110,7 @@ public class CommandLineBagDriverTest {
 	
 	@Test
 	public void testCreateIncludeDelimiter() throws Exception {
-        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_MANIFEST_DELIMITER, "    \t\t" }));
+        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath(), "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_MANIFEST_SEPARATOR, "    \t\t" }));
         Bag bag = this.bagFactory.createBag(destFile);
         assertEquals(3, bag.getPayload().size());
         assertTrue(bag.verifyValid().isSuccess());
@@ -148,7 +148,7 @@ public class CommandLineBagDriverTest {
 	@Test
 	public void testUpdateIncludeDelimiter() throws Exception {
 	    assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath()}));
-	    assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_UPDATE, destFile.getAbsolutePath(), "--" + PARAM_MANIFEST_DELIMITER, "    \t\t" }));
+	    assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_UPDATE, destFile.getAbsolutePath(), "--" + PARAM_MANIFEST_SEPARATOR, "    \t\t" }));
         Bag bag = this.bagFactory.createBag(destFile);
         assertEquals(3, bag.getPayload().size());
         assertTrue(bag.verifyValid().isSuccess());
