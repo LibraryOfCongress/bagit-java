@@ -650,7 +650,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result);
+					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
@@ -662,7 +662,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result);
+					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
@@ -671,7 +671,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result);
+					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
@@ -680,7 +680,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result);
+					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
@@ -791,7 +791,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result);
+					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
@@ -799,7 +799,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result);
+					if (writeResultFile) this.writeResultFile(operation.name, result, destFile);
 					ret = RETURN_FAILURE;
 				}
 
@@ -847,9 +847,13 @@ public class CommandLineBagDriver {
 		}
 	}
 	
-	private void writeResultFile(String operation, SimpleResult result) {
+	private void writeResultFile(String operation, SimpleResult result, File bagFile) {
 		if (result.isSuccess()) return;
-		File file = new File(MessageFormat.format("{0}-{1}.txt", operation, System.getProperty("log.timestamp")));
+		String filename = MessageFormat.format("{0}-{1}.txt", operation, System.getProperty("log.timestamp"));
+		if (bagFile != null) {
+			filename = MessageFormat.format("{0}-{1}", bagFile.getName(), filename);
+		}
+		File file = new File(filename);
 		FileWriter writer = null;
 		try {
 			writer = new FileWriter(file);

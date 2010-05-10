@@ -46,6 +46,13 @@ a bad thing.
 
 RELEASE NOTES:
 
+Changes in 3.5:
+1. Fixed bug with support for specifying a manifest delimeter.
+2. Added missing files to source zip.
+3. Added results log and output for retrieve and fill holey operations.
+4. Fixed bug with handling of holey bags missing fetch.txt.
+5. Set FTP data transfer sockets timeout.
+
 Changes in 3.4:
 1. Fixed critical bug that disallowed payload files to have tag manifest names.
 2. Changed logging so each invocation produces a unique log file.
