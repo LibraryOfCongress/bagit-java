@@ -3,12 +3,15 @@ package gov.loc.repository.bagit.transfer;
 import static junit.framework.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
@@ -23,6 +26,7 @@ import org.junit.runner.RunWith;
 @RunWith(JMock.class)
 public class BagFetcherTest
 {
+	private static final Log log = LogFactory.getLog(BagFetcherTest.class);
 	private static File tempDir = new File("target/unittestdata/BagFetcherTest");
 	private Mockery context = new Mockery();
 	private BagFactory bagFactory = new BagFactory();
@@ -38,9 +42,15 @@ public class BagFetcherTest
 		
 		this.unit = new BagFetcher(this.bagFactory);
 		this.unit.setFetchFailStrategy(new ThrowExceptionFailStrategy());
-
-		FileUtils.copyDirectory(ResourceHelper.getFile("bags/v0_96/holey-bag"), tempDir);
-		FileUtils.deleteDirectory(new File(tempDir, "data"));	
+		try {
+			File bagDirectory = ResourceHelper.getFile("bags/v0_96/holey-bag");		
+		
+			FileUtils.copyDirectory(bagDirectory, tempDir);
+			FileUtils.deleteDirectory(new File(tempDir, "data"));	
+		}
+		catch(IOException e) {
+			log.error("FileUtils error: " + e.toString());
+		}
 	}
 
 	@After
@@ -53,12 +63,14 @@ public class BagFetcherTest
 	@Test
 	public void testFetchSingleThread() throws Exception
 	{
+		log.info("testFetchSingleThread executing");
 		this.unit.setNumberOfThreads(1);
 
 		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);		
 		final FetchProtocol mockProtocol = this.context.mock(FetchProtocol.class);
 		final FileFetcher mockFetcher = this.context.mock(FileFetcher.class);
 		final States fetcherState = this.context.states("fetcher").startsAs("new");
+		
 		
 		context.checking(new Expectations() {{
 			// Destination
@@ -67,9 +79,13 @@ public class BagFetcherTest
 			expectDest(this, mockDestinationFactory, "data/dir2/test4.txt");
 			expectDest(this, mockDestinationFactory, "data/test1.txt");
 			expectDest(this, mockDestinationFactory, "data/test2.txt");
+			expectDest(this, mockDestinationFactory, "data/file name with spaces.txt");
 						
 			// Protocol
 			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"), null);	will(returnValue(mockFetcher));
+			
+			String uriWithSpaces = new String("http://localhost:8989/bags/v0_96/holey-bag/data/file name with spaces.txt");
+			uriWithSpaces = uriWithSpaces.replace(" ","+");
 			
 			// Fetcher
 			one(mockFetcher).initialize(); when(fetcherState.is("new")); then(fetcherState.is("ready"));
@@ -78,6 +94,7 @@ public class BagFetcherTest
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI(uriWithSpaces))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
 		}});
 		
@@ -93,6 +110,8 @@ public class BagFetcherTest
 	@Test
 	public void testFailsFast() throws Exception
 	{
+		log.info("testFailsFast executing");
+
 		this.unit.setNumberOfThreads(1);
 		this.unit.setFetchFailStrategy(StandardFailStrategies.FAIL_FAST);
 
@@ -130,6 +149,8 @@ public class BagFetcherTest
 	@Test
 	public void testRetriesFile() throws Exception
 	{
+		log.info("testRetriesFile executing");
+
 		this.unit.setNumberOfThreads(1);
 		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_RETRY);
 
@@ -177,6 +198,8 @@ public class BagFetcherTest
 	@Test
 	public void testRetriesNextFile() throws Exception
 	{
+		log.info("testRetriesNextFile executing");
+
 		this.unit.setNumberOfThreads(1);
 		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_CONTINUE);
 
@@ -223,6 +246,8 @@ public class BagFetcherTest
 	@Test
 	public void attemptsToTransferMultipleLines() throws Exception
 	{
+		log.info("attemptsToTransferMultipleLines executing.");
+		
 		this.unit.setNumberOfThreads(1);
 		
 		// Fail fast, so that if both lines fail to transfer, we'll
@@ -276,6 +301,8 @@ public class BagFetcherTest
 	@Test
 	public void attemptsToTransferMultipleLinesWithDifferentSchemas() throws Exception
 	{
+		log.info("attemptsToTransferMultipleLinesWithDifferentSchemas executing.");
+		
 		this.unit.setNumberOfThreads(1);
 		
 		// Fail fast, so that if both lines fail to transfer, we'll
@@ -338,6 +365,7 @@ public class BagFetcherTest
 	@Test(expected=BagTransferException.class)
 	public void testMissingFetchTxt() throws Exception
 	{
+		log.info("testMissingFetchTxt executing.");
 		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
 		File fetchTxtFile = new File(tempDir, this.bagFactory.getBagConstants().getFetchTxt());
 		assertTrue(fetchTxtFile.exists());

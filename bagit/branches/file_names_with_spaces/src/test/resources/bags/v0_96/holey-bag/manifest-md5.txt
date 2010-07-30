@@ -3,3 +3,4 @@ e3d704f3542b44a621ebed70dc0efe13 data/dir2/dir3/test5.txt
 86985e105f79b95d6bc918fb45ec7727 data/dir2/test4.txt
 5a105e8b9d40e1329780d62ea2265d8a data/test1.txt
 ad0234829205b9033196ba818f7a872b data/test2.txt
+c79103d96645a0a4cd4c63c2c4d8be8c data/file name with spaces.txt

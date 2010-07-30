@@ -3,3 +3,5 @@ http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt - data/dir2/
 http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt - data/dir2/test4.txt
 http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt - data/test1.txt
 http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt - data/test2.txt
+http://localhost:8989/bags/v0_96/holey-bag/data/file name with spaces.txt - data/file name with spaces.txt
+

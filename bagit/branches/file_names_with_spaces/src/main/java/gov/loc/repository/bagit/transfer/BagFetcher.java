@@ -406,7 +406,11 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     {
         try
         {
-            return new URI(uriString);
+        	URI FetchURI = new URI(uriString.replace(" ", "+"));
+        	
+        	log.trace("parseUri encoded URI: " + FetchURI.toString());
+        	// #1382 Make sure the string is URL-encoded so spaces in filenames are handled properly.        	        	
+            return FetchURI;
         }
         catch (URISyntaxException e)
         {
