@@ -9,6 +9,7 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.impl.AbstractBagVisitor;
 import gov.loc.repository.bagit.transformer.HolePuncher;
+import gov.loc.repository.bagit.utilities.UrlHelper;
 
 public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	private static final Log log = LogFactory.getLog(HolePuncherImpl.class);
@@ -29,7 +30,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 			boolean includeTags) {
 		return this.makeHoley(bag, baseUrl, includePayloadDirectoryInUrl, includeTags, true);
 	}
-	
+		
 	@Override
 	public Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl,
 			boolean includeTags, boolean leaveTags) {
@@ -60,10 +61,10 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	public void visitPayload(BagFile bagFile) {
 		String url = baseUrl;
 		if (includePayloadDirectory) {
-			url += bagFile.getFilepath();
+			url += UrlHelper.encodeFilepath(bagFile.getFilepath());
 		}
 		else {
-			url += bagFile.getFilepath().substring(this.newBag.getBagConstants().getDataDirectory().length() + 1);
+			url += UrlHelper.encodeFilepath(bagFile.getFilepath().substring(this.newBag.getBagConstants().getDataDirectory().length() + 1));
 		}
 		fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.exists()?bagFile.getSize():null, url));
 	}
@@ -71,7 +72,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	@Override
 	public void visitTag(BagFile bagFile) {
 		if (includeTags) {
-			String url = baseUrl + bagFile.getFilepath();
+			String url = baseUrl + UrlHelper.encodeFilepath(bagFile.getFilepath());
 			fetch.add(new FetchTxt.FilenameSizeUrl(bagFile.getFilepath(), bagFile.exists()?bagFile.getSize():null, url));
 		}
 		if (! includeTags || leaveTags) {

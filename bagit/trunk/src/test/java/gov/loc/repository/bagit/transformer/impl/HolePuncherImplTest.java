@@ -8,14 +8,9 @@ import org.junit.Test;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.FetchTxt;
-import gov.loc.repository.bagit.BagFactory.LoadOption;
-import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-
-import java.io.File;
-import java.text.MessageFormat;
 
 
 public class HolePuncherImplTest {
@@ -27,22 +22,10 @@ public class HolePuncherImplTest {
 	public void setup() {
 		puncher = new HolePuncherImpl(bagFactory);
 	}
-	
-	private Bag getBag(Bag.Format format) throws Exception {
-		return this.getBag(BagFactory.LATEST, format);  
-	}
-
-	private Bag getBag(Version version, Bag.Format format) throws Exception {
-		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_MANIFESTS);  
-	}	
-	
-	private File getBagDir(Version version, Bag.Format format) throws Exception {
-		return ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag{1}", version.toString().toLowerCase(), format.extension));		
-	}
-	
+			
 	@Test
 	public void testMakeHoley() throws Exception {
-		Bag bag = this.getBag(Bag.Format.FILESYSTEM);
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag-with-space"));
 		assertEquals(5, bag.getPayload().size());
 		assertNull(bag.getFetchTxt());
 		
@@ -50,23 +33,37 @@ public class HolePuncherImplTest {
 		FetchTxt fetch = newBag.getFetchTxt();
 		assertNotNull(fetch);
 		assertEquals(5, fetch.size());
-		FilenameSizeUrl filenameSizeUrl = fetch.get(0);
-		assertEquals("data/dir2/dir3/test5.txt", filenameSizeUrl.getFilename());
-		assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-		assertEquals("http://foo.com/bag/data/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
-		
+		boolean foundNoSpace = false;
+		boolean foundSpace = false;
+		for(int i=0; i < fetch.size(); i++) {
+			FilenameSizeUrl filenameSizeUrl = fetch.get(i);
+			if ("data/dir2/dir3/test5.txt".equals(filenameSizeUrl.getFilename())) {
+				assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+				assertEquals("http://foo.com/bag/data/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
+				foundNoSpace = true;
+			}
+			System.out.println(filenameSizeUrl.getFilename());
+			if ("data/test 1.txt".equals(filenameSizeUrl.getFilename())) {
+				assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+				assertEquals("http://foo.com/bag/data/test%201.txt", filenameSizeUrl.getUrl());
+				foundSpace = true;
+			}
+			
+		}
+		assertTrue(foundNoSpace);
+		assertTrue(foundSpace);
 		assertEquals(0, newBag.getPayload().size());
 		
 	}
 	
 	@Test
 	public void testMakeHoleyWithSlash() throws Exception {
-		Bag bag = this.getBag(Bag.Format.FILESYSTEM);
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag"));
 		assertEquals(5, bag.getPayload().size());
 		assertNull(bag.getFetchTxt());
 				
 		//Now test with a slash after the url
-		bag = this.getBag(Bag.Format.FILESYSTEM);
+		bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag"));
 		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag/", false, false);
 		FetchTxt fetch = newBag.getFetchTxt();
 		assertNotNull(fetch);

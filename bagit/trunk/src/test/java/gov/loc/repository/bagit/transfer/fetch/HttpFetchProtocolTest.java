@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
 @RunWith(JMock.class)
 public class HttpFetchProtocolTest
 {
-    private static final URI TEST1_URI = newV96Uri("data/test1.txt");
+    private static final URI TEST1_URI = newV96Uri("data/test%201.txt");
     
     private static Server webServer;
     private Mockery context = new JUnit4Mockery();
@@ -69,7 +69,7 @@ public class HttpFetchProtocolTest
     
     private static URI newV96Uri(String path)
     {
-        return URI.create("http://localhost:8989/bags/v0_96/bag/" + path);
+        return URI.create("http://localhost:8989/bags/v0_96/bag-with-space/" + path);
     }
     
     @Test
@@ -100,7 +100,7 @@ public class HttpFetchProtocolTest
     @Test
     public void testFetchesFiles() throws Exception
     {
-        final FetchedFileDestination destination = context.mock(FetchedFileDestination.class);
+    	final FetchedFileDestination destination = context.mock(FetchedFileDestination.class);
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         
         context.checking(new Expectations() {{

@@ -45,6 +45,8 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.6:
+1. Fixed bug with HolePunchers handling of filepaths with spaces.
 
 Changes in 3.5:
 1. Fixed bug with support for specifying a manifest delimeter.

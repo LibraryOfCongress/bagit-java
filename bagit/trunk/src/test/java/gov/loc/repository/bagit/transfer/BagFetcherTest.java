@@ -65,7 +65,7 @@ public class BagFetcherTest
 			expectDest(this, mockDestinationFactory, "data/dir1/test3.txt");
 			expectDest(this, mockDestinationFactory, "data/dir2/dir3/test5.txt");
 			expectDest(this, mockDestinationFactory, "data/dir2/test4.txt");
-			expectDest(this, mockDestinationFactory, "data/test1.txt");
+			expectDest(this, mockDestinationFactory, "data/test 1.txt");
 			expectDest(this, mockDestinationFactory, "data/test2.txt");
 						
 			// Protocol
@@ -76,7 +76,7 @@ public class BagFetcherTest
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
 		}});
@@ -238,12 +238,12 @@ public class BagFetcherTest
 		
 		context.checking(new Expectations() {{
 			// Destination - first try.
-			one(mockDestinationFactory).createDestination("data/test1.txt", null); will(returnValue(mockDestination));
-			allowing(mockDestination).getFilepath(); will(returnValue("data/test1.txt"));
+			one(mockDestinationFactory).createDestination("data/test 1.txt", null); will(returnValue(mockDestination));
+			allowing(mockDestination).getFilepath(); will(returnValue("data/test 1.txt"));
 			one(mockDestination).abandon();
 						
 			// Destination - second try.
-			expectDest(this, mockDestinationFactory, "data/test1.txt");
+			expectDest(this, mockDestinationFactory, "data/test 1.txt");
 						
 			// Protocol
 			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"), null);	will(returnValue(mockFetcher));
@@ -251,7 +251,7 @@ public class BagFetcherTest
 			// Fetcher
 			one(mockFetcher).initialize(); when(fetcherState.is("new")); then(fetcherState.is("ready"));
 			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready")); will(throwException(new BagTransferException("You got a 404!")));
-			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(fetcherState.is("ready"));
 			one(mockFetcher).close(); when(fetcherState.is("ready")); then(fetcherState.is("closed"));
 		}});
 		
@@ -265,8 +265,8 @@ public class BagFetcherTest
 		// http://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist - data/test1.txt
 		// http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt - data/test2.txt
 		bag.getFetchTxt().clear();
-		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"));
-		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"));
+		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"));
+		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"));
 		
 		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
 		
@@ -294,16 +294,16 @@ public class BagFetcherTest
 		
 		context.checking(new Expectations() {{
 			// Destination - first try.
-			one(mockDestinationFactory).createDestination("data/test1.txt", null); will(returnValue(mockDestination));
+			one(mockDestinationFactory).createDestination("data/test 1.txt", null); will(returnValue(mockDestination));
 			allowing(mockDestination).getFilepath(); will(returnValue("data/test1.txt"));
 			one(mockDestination).abandon();
 						
 			// Destination - second try.
-			expectDest(this, mockDestinationFactory, "data/test1.txt");
+			expectDest(this, mockDestinationFactory, "data/test 1.txt");
 						
 			// Protocol
 			one(mockFtpProtocol).createFetcher(new URI("ftp://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"), null);		will(returnValue(mockFtpFetcher));
-			one(mockHttpProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"), null);		will(returnValue(mockHttpFetcher));
+			one(mockHttpProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"), null);		will(returnValue(mockHttpFetcher));
 			
 			// FTP Fetcher
 			one(mockFtpFetcher).initialize(); when(ftpFetcherState.is("new")); then(ftpFetcherState.is("ready"));
@@ -312,7 +312,7 @@ public class BagFetcherTest
 
 			// HTTP Fetcher
 			one(mockHttpFetcher).initialize(); when(httpFetcherState.is("new")); then(httpFetcherState.is("ready"));
-			one(mockHttpFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(httpFetcherState.is("ready"));
+			one(mockHttpFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); when(httpFetcherState.is("ready"));
 			one(mockHttpFetcher).close(); when(httpFetcherState.is("ready")); then(httpFetcherState.is("closed"));
 		}});
 		
@@ -327,8 +327,8 @@ public class BagFetcherTest
 		// ftp://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist - data/test1.txt
 		// http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt - data/test2.txt
 		bag.getFetchTxt().clear();
-		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test1.txt", null, "ftp://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"));
-		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/test1.txt"));
+		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "ftp://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"));
+		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"));
 		
 		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
 		
