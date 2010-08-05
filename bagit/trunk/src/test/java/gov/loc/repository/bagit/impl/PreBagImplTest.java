@@ -63,6 +63,25 @@ public class PreBagImplTest {
 		
 	}
 
+	@Test
+	public void testBagInPlaceWithEmptyDir() throws Exception {
+		File testDir = createTestBag(false);
+		assertTrue(testDir.exists());
+		File emptyDir = new File(testDir, "empty");
+		assertTrue(emptyDir.mkdir());
+		assertTrue(emptyDir.exists());
+		File testDataDir = new File(testDir, "data");
+		assertFalse(testDataDir.exists());
+		
+		PreBag preBag = bagFactory.createPreBag(testDir);
+		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
+		assertTrue(testDataDir.exists());
+		File movedEmptyDir = new File(testDataDir, "empty");
+		assertTrue(movedEmptyDir.exists());
+		assertTrue(bag.verifyValid().isSuccess());
+		
+	}
+
 	
 	private File createTestBag(boolean includeDataDirectory) throws Exception {		
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag", BagFactory.LATEST.toString().toLowerCase()));

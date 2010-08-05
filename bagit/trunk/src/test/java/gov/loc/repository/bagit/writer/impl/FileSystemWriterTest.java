@@ -66,7 +66,7 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 		Bag newBag3 = writer.write(newBag2, this.getBagFile());
 		assertTrue(newBag3.verifyValid().isSuccess());
 		assertFalse(newFile.exists());
-		assertFalse(newDir.exists());
+		assertTrue(newDir.exists());
 		assertFalse(removeFile.exists());
 	}
 

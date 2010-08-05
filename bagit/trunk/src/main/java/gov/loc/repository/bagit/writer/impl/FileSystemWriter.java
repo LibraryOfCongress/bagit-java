@@ -109,7 +109,8 @@ public class FileSystemWriter extends AbstractWriter {
 				this.removeExtraFiles(file);
 				if (log.isTraceEnabled()) {
 					log.trace(MessageFormat.format("{0} now has {1} children", file, file.listFiles().length));
-				}				
+				}
+				/*
 				if (file.listFiles().length == 0) {					
 					try {
 						log.trace("Deleting " + file);
@@ -118,6 +119,7 @@ public class FileSystemWriter extends AbstractWriter {
 						throw new RuntimeException(e);
 					}
 				}
+				*/
 			} else {
 				String filepath = FilenameHelper.removeBasePath(this.newBagDir.toString(), file.toString());
 				log.trace(MessageFormat.format("{0} is a file whose filepath is {1}", file, filepath));
