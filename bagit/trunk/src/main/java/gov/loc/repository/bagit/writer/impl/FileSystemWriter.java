@@ -23,6 +23,7 @@ public class FileSystemWriter extends AbstractWriter {
 	
 	private File newBagDir;
 	private boolean skipIfPayloadFileExists = true;
+	private boolean ignoreNfsTmpFiles = true;
 	private Bag newBag;
 	private String newBagURI;
 	private int fileTotal = 0;
@@ -30,6 +31,10 @@ public class FileSystemWriter extends AbstractWriter {
 	
 	public FileSystemWriter(BagFactory bagFactory) {
 		super(bagFactory);
+	}
+	
+	public void setIgnoreNfsTmpFiles(boolean ignore) {
+		this.ignoreNfsTmpFiles = ignore;
 	}
 	
 	public void setSkipIfPayloadFileExists(boolean skip) {
@@ -124,12 +129,16 @@ public class FileSystemWriter extends AbstractWriter {
 				String filepath = FilenameHelper.removeBasePath(this.newBagDir.toString(), file.toString());
 				log.trace(MessageFormat.format("{0} is a file whose filepath is {1}", file, filepath));
 				if (this.newBag.getBagFile(filepath) == null) {
-					try {
-						log.trace("Deleting " + file);
-						FileUtils.forceDelete(file);
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}					
+					if (! this.ignoreNfsTmpFiles || ! file.getName().startsWith(".nfs")) { 
+						try {
+							log.trace("Deleting " + file);
+							FileUtils.forceDelete(file);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					} else {
+						log.warn("Ignoring nfs temp file: " + file);
+					}
 				}				
 			}
 		}

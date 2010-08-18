@@ -48,6 +48,7 @@ RELEASE NOTES:
 Changes in 3.6:
 1. Fixed bug with HolePunchers handling of filepaths with spaces.
 2. Fixed bug which caused the FileSystem Writer to delete empty directories.
+3. Added option for FileSystem Writer to ignore nfs temp files since they can't be deleted.
 
 Changes in 3.5:
 1. Fixed bug with support for specifying a manifest delimeter.
