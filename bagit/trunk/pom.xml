@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>loc-repository</groupId>
   <artifactId>bagit</artifactId>
-  <version>3.6-SNAPSHOT</version>
+  <version>3.6</version>
   <name>BagIt Implementation</name>
   <properties>
 	<bagit.version>0.96</bagit.version>
@@ -14,7 +14,7 @@
   </issueManagement>
   <ciManagement>
   	<system>RDC Hudson Server</system>
-  	<url>http://pt.rdc.lctl.gov/hudson/job/bagit/</url>
+  	<url>https://rdc.lctl.gov/hudson/job/bagit/</url>
   </ciManagement>
   <developers>
     <developer>
