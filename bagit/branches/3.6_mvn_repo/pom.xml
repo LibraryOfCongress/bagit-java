@@ -1,6 +1,6 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>gov.loc.repository</groupId>
+	<groupId>gov.loc</groupId>
 	<artifactId>bagit</artifactId>
 	<packaging>jar</packaging>
 	<name>BagIt Implementation</name>
