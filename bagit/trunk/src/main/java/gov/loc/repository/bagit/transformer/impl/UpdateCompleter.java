@@ -21,9 +21,9 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 	private BagFactory bagFactory;
 	private CompleterHelper helper;
 	private String nonDefaultManifestSeparator;
-	private List<String> limitUpdateFilepaths = new ArrayList<String>();
-	private List<String> limitDeleteFilepaths = new ArrayList<String>();
-	private List<String> limitAddFilepaths = new ArrayList<String>();
+	private List<String> limitUpdateFilepaths = null;
+	private List<String> limitDeleteFilepaths = null;
+	private List<String> limitAddFilepaths = null;
 	
 	public UpdateCompleter(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;

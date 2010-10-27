@@ -52,7 +52,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 	
 	private boolean listContains(List<String> list, String item) {
 		boolean res = false;
-		if (list == null || list.size() == 0 || list.contains(item)) res = true;
+		if (list == null || list.contains(item)) res = true;
 		log.trace(MessageFormat.format("Checking if list contains {0}: {1}", item, res));
 		return res;
 	}
