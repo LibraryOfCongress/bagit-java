@@ -1,6 +1,5 @@
 package gov.loc.repository.bagit.transformer.impl;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 		this.addChainedProgressListenable(this.helper);
 	}
 	
-	public void setLimitUpdatePaylaodFilepaths(List<String> limitUpdateFiles) {
+	public void setLimitUpdatePayloadFilepaths(List<String> limitUpdateFiles) {
 		this.limitUpdateFilepaths = limitUpdateFiles;
 	}
 	
