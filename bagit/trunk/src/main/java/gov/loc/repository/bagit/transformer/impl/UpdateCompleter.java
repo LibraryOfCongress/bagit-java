@@ -1,6 +1,8 @@
 package gov.loc.repository.bagit.transformer.impl;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
@@ -19,12 +21,27 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 	private BagFactory bagFactory;
 	private CompleterHelper helper;
 	private String nonDefaultManifestSeparator;
+	private List<String> limitUpdateFilepaths = new ArrayList<String>();
+	private List<String> limitDeleteFilepaths = new ArrayList<String>();
+	private List<String> limitAddFilepaths = new ArrayList<String>();
 	
 	public UpdateCompleter(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
 		this.helper = new CompleterHelper();
 		this.addChainedCancellable(this.helper);
 		this.addChainedProgressListenable(this.helper);
+	}
+	
+	public void setLimitUpdatePaylaodFilepaths(List<String> limitUpdateFiles) {
+		this.limitUpdateFilepaths = limitUpdateFiles;
+	}
+	
+	public void setLimitDeletePayloadFilepaths(List<String> limitDeleteFiles) {
+		this.limitDeleteFilepaths = limitDeleteFiles;
+	}
+	
+	public void setLimitAddPayloadFilepaths(List<String> limitAddFiles) {
+		this.limitAddFilepaths = limitAddFiles;
 	}
 	
     public void setNumberOfThreads(int num) {
@@ -98,10 +115,10 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 	
 	protected void handlePayloadManifests() {
 		//Takes care of deleted files
-		this.helper.cleanManifests(this.newBag, this.newBag.getPayloadManifests());
+		this.helper.cleanManifests(this.newBag, this.newBag.getPayloadManifests(), this.limitDeleteFilepaths);
 		//Takes care of changed files
 		for(Manifest manifest : this.newBag.getPayloadManifests()) {
-			this.helper.regenerateManifest(this.newBag, manifest);
+			this.helper.regenerateManifest(this.newBag, manifest, false, this.limitUpdateFilepaths);
 		}
 		//Looks for any added
 		Algorithm algorithm = this.payloadManifestAlgorithm;
@@ -112,7 +129,7 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 				algorithm = Algorithm.MD5;
 			}
 		}
-		this.helper.handleManifest(this.newBag, algorithm, ManifestHelper.getPayloadManifestFilename(algorithm, this.newBag.getBagConstants()),this.newBag.getPayload(), this.nonDefaultManifestSeparator);		
+		this.helper.handleManifest(this.newBag, algorithm, ManifestHelper.getPayloadManifestFilename(algorithm, this.newBag.getBagConstants()),this.newBag.getPayload(), this.nonDefaultManifestSeparator, this.limitAddFilepaths);		
 	}
 	
 	public String getNonDefaultManifestSeparator() {

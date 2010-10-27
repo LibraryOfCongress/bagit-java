@@ -50,7 +50,18 @@ public class CompleterHelper extends LongRunningOperationBase {
 		}
 	}
 	
+	private boolean listContains(List<String> list, String item) {
+		boolean res = false;
+		if (list == null || list.size() == 0 || list.contains(item)) res = true;
+		log.trace(MessageFormat.format("Checking if list contains {0}: {1}", item, res));
+		return res;
+	}
+
 	public void cleanManifests(Bag bag, Collection<Manifest> manifests) {
+		this.cleanManifests(bag, manifests, null);
+	}
+	
+	public void cleanManifests(Bag bag, Collection<Manifest> manifests, List<String> limitDeleteFilepaths) {
 		int manifestTotal = manifests.size();
 		int manifestCount = 0;
 		for(Manifest manifest : manifests) {			
@@ -62,7 +73,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 			for(String filepath : manifest.keySet()) {
 				if (this.isCancelled()) return;
 				BagFile bagFile = bag.getBagFile(filepath);
-				if (bagFile == null || ! bagFile.exists()) {
+				if ((bagFile == null || ! bagFile.exists()) && listContains(limitDeleteFilepaths, filepath)) {
 					deleteFilepaths.add(filepath);
 				}
 			}
@@ -71,8 +82,12 @@ public class CompleterHelper extends LongRunningOperationBase {
 			}
 		}
 	}
-	
+
 	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles, String nonDefaultManifestSeparator) {
+		this.handleManifest(bag, algorithm, filepath, bagFiles, nonDefaultManifestSeparator, null);
+	}
+	
+	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles, String nonDefaultManifestSeparator, final List<String> limitAddFilepaths) {
 		Manifest manifest = (Manifest)bag.getBagFile(filepath);
 		if (manifest == null) {
 			manifest = bag.getBagPartFactory().createManifest(filepath);
@@ -97,14 +112,16 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        		for(final BagFile bagFile : safeIterator) {
 		        			if (isCancelled()) return null;
 		        			progress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
-		        			if (ManifestHelper.isTagManifest(bagFile.getFilepath(), bag.getBagConstants())) {
-		        				log.debug(MessageFormat.format("Skipping {0} since it is a tag manifest.", bagFile.getFilepath()));
-		        			} else if (! bag.getChecksums(bagFile.getFilepath()).isEmpty()) {
-		        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));
-		        			} else {
-		        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
-		        				log.debug(MessageFormat.format("Generated fixity for {0}.", bagFile.getFilepath()));
-		        				manifestEntries.put(bagFile.getFilepath(), checksum);
+		        			if (listContains(limitAddFilepaths, bagFile.getFilepath())) {
+			        			if (ManifestHelper.isTagManifest(bagFile.getFilepath(), bag.getBagConstants())) {
+			        				log.debug(MessageFormat.format("Skipping {0} since it is a tag manifest.", bagFile.getFilepath()));
+			        			} else if (! bag.getChecksums(bagFile.getFilepath()).isEmpty()) {
+			        				log.debug(MessageFormat.format("Checksum already exists for {0}.", bagFile.getFilepath()));
+			        			} else {
+			        				String checksum = MessageDigestHelper.generateFixity(bagFile.newInputStream(), algorithm);
+			        				log.debug(MessageFormat.format("Generated fixity for {0}.", bagFile.getFilepath()));
+			        				manifestEntries.put(bagFile.getFilepath(), checksum);
+			        			}
 		        			}
 		        		}
 		        		VFSHelper.closeFileSystemManager();
@@ -137,8 +154,12 @@ public class CompleterHelper extends LongRunningOperationBase {
 	public void regenerateManifest(final Bag bag, final Manifest manifest) {
 		this.regenerateManifest(bag, manifest, false);
 	}
-	
+
 	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests) {
+		this.regenerateManifest(bag, manifest, useOriginalPayloadManifests, null);
+	}
+	
+	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests, final List<String> limitUpdateFilepaths) {
 		
 		final int total = manifest.size();
     	final AtomicInteger count = new AtomicInteger();
@@ -158,13 +179,15 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        			if (isCancelled()) return null;
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
 		        			
-	        				String checksum;
-	        				if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
-	        					checksum = MessageDigestHelper.generateFixity(((Manifest)bag.getBagFile(filepath)).originalInputStream(), manifest.getAlgorithm());
-	        				} else {
-	        					checksum = MessageDigestHelper.generateFixity(bag.getBagFile(filepath).newInputStream(), manifest.getAlgorithm());
+	        				String checksum = manifest.get(filepath);
+	        				if (listContains(limitUpdateFilepaths, filepath)) {
+		        				if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
+		        					checksum = MessageDigestHelper.generateFixity(((Manifest)bag.getBagFile(filepath)).originalInputStream(), manifest.getAlgorithm());
+		        				} else {
+		        					checksum = MessageDigestHelper.generateFixity(bag.getBagFile(filepath).newInputStream(), manifest.getAlgorithm());
+		        				}
+		        				log.debug(MessageFormat.format("Generated fixity for {0}.", filepath));
 	        				}
-	        				log.debug(MessageFormat.format("Generated fixity for {0}.", filepath));
 	        				manifestEntries.put(filepath, checksum);
 		        			
 		        		}

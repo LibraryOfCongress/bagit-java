@@ -45,6 +45,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.7:
+1. Added option to limit added, updated, and deleted files in UpdateCompleter.
+
 Changes in 3.6:
 1. Fixed bug with HolePunchers handling of filepaths with spaces.
 2. Fixed bug which caused the FileSystem Writer to delete empty directories.

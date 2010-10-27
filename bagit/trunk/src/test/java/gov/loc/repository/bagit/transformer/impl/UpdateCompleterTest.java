@@ -77,6 +77,7 @@ public class UpdateCompleterTest {
 		assertFalse(bag.verifyValid().isSuccess());
 		Bag newBag = completer.complete(bag);
 		SimpleResult result = newBag.verifyValid();
+		System.out.println("X:" + result);
 		assertTrue(result.isSuccess());
 		BagInfoTxt bagInfoTxt = newBag.getBagInfoTxt();
 		//Original doesn't have payload-oxum, so neither should completed
