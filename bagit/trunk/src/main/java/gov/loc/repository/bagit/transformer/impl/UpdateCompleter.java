@@ -23,6 +23,9 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 	private List<String> limitUpdateFilepaths = null;
 	private List<String> limitDeleteFilepaths = null;
 	private List<String> limitAddFilepaths = null;
+	private List<String> limitUpdateDirectories = null;
+	private List<String> limitDeleteDirectories = null;
+	private List<String> limitAddDirectories = null;
 	
 	public UpdateCompleter(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
@@ -31,17 +34,54 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 		this.addChainedProgressListenable(this.helper);
 	}
 	
+	/*
+	 * Limit updates to the provided filepaths, i.e., only the manifest entries of the
+	 * provided files will be updated.
+	 */
 	public void setLimitUpdatePayloadFilepaths(List<String> limitUpdateFiles) {
 		this.limitUpdateFilepaths = limitUpdateFiles;
 	}
 	
+	/*
+	 * Limit deletes to the provided filepaths, i.e., only the manifest entries of the
+	 * provided files will be removed. 
+	 */
 	public void setLimitDeletePayloadFilepaths(List<String> limitDeleteFiles) {
 		this.limitDeleteFilepaths = limitDeleteFiles;
 	}
 	
+	/*
+	 * Limit additions to the provided filepaths, i.e., only manifest entries for the
+	 * provided files will be added.
+	 */
 	public void setLimitAddPayloadFilepaths(List<String> limitAddFiles) {
 		this.limitAddFilepaths = limitAddFiles;
 	}
+
+	/*
+	 * Limit updates to the files in and below the provided directories, i.e.,
+	 * only the manifest entries of files in or below the provided directories will be updated.
+	 */
+	public void setLimitUpdatePayloadDirectories(List<String> limitUpdateDirectories) {
+		this.limitUpdateDirectories = limitUpdateDirectories;
+	}
+	
+	/*
+	 * Limit deletes to the files in and below the provided directories, i.e.,
+	 * only the manifest entries of files in or below the provided directories will be removed.
+	 */
+	public void setLimitDeletePayloadDirectories(List<String> limitDeleteDirectories) {
+		this.limitDeleteDirectories = limitDeleteDirectories;
+	}
+	
+	/*
+	 * Limit additions to the files in and below the provided directories, i.e.,
+	 * only manifest entries for files in or below the provided directories will be added.
+	 */
+	public void setLimitAddPayloadDirectories(List<String> limitAddDirectories) {
+		this.limitAddDirectories = limitAddDirectories;
+	}
+
 	
     public void setNumberOfThreads(int num) {
     	this.helper.setNumberOfThreads(num);
@@ -114,10 +154,10 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 	
 	protected void handlePayloadManifests() {
 		//Takes care of deleted files
-		this.helper.cleanManifests(this.newBag, this.newBag.getPayloadManifests(), this.limitDeleteFilepaths);
+		this.helper.cleanManifests(this.newBag, this.newBag.getPayloadManifests(), this.limitDeleteFilepaths, this.limitDeleteDirectories);
 		//Takes care of changed files
 		for(Manifest manifest : this.newBag.getPayloadManifests()) {
-			this.helper.regenerateManifest(this.newBag, manifest, false, this.limitUpdateFilepaths);
+			this.helper.regenerateManifest(this.newBag, manifest, false, this.limitUpdateFilepaths, this.limitUpdateDirectories);
 		}
 		//Looks for any added
 		Algorithm algorithm = this.payloadManifestAlgorithm;
@@ -128,7 +168,7 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 				algorithm = Algorithm.MD5;
 			}
 		}
-		this.helper.handleManifest(this.newBag, algorithm, ManifestHelper.getPayloadManifestFilename(algorithm, this.newBag.getBagConstants()),this.newBag.getPayload(), this.nonDefaultManifestSeparator, this.limitAddFilepaths);		
+		this.helper.handleManifest(this.newBag, algorithm, ManifestHelper.getPayloadManifestFilename(algorithm, this.newBag.getBagConstants()),this.newBag.getPayload(), this.nonDefaultManifestSeparator, this.limitAddFilepaths, this.limitAddDirectories);		
 	}
 	
 	public String getNonDefaultManifestSeparator() {

@@ -50,18 +50,34 @@ public class CompleterHelper extends LongRunningOperationBase {
 		}
 	}
 	
-	private boolean listContains(List<String> list, String item) {
+	private boolean filepathListcontains(List<String> filepaths, String filepath) {
 		boolean res = false;
-		if (list == null || list.contains(item)) res = true;
-		log.trace(MessageFormat.format("Checking if list contains {0}: {1}", item, res));
+		if (filepaths == null || filepaths.contains(filepath)) res = true;
+		log.trace(MessageFormat.format("Checking if filepath list contains {0}: {1}", filepath, res));
 		return res;
 	}
 
-	public void cleanManifests(Bag bag, Collection<Manifest> manifests) {
-		this.cleanManifests(bag, manifests, null);
+	private boolean dirListContains(List<String> dirs, String filepath) {
+		boolean res = false;
+		if (dirs == null) {
+			res = true;
+		} else {
+			for(String dir : dirs) {
+				if (filepath.startsWith(dir)) {
+					res = true;
+					break;
+				}
+			}
+		}
+		log.trace(MessageFormat.format("Checking if directory list contains {0}: {1}", filepath, res));
+		return res;
 	}
 	
-	public void cleanManifests(Bag bag, Collection<Manifest> manifests, List<String> limitDeleteFilepaths) {
+	public void cleanManifests(Bag bag, Collection<Manifest> manifests) {
+		this.cleanManifests(bag, manifests, null, null);
+	}
+	
+	public void cleanManifests(Bag bag, Collection<Manifest> manifests, List<String> limitDeleteFilepaths, List<String> limitDeleteDirectories) {
 		int manifestTotal = manifests.size();
 		int manifestCount = 0;
 		for(Manifest manifest : manifests) {			
@@ -73,7 +89,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 			for(String filepath : manifest.keySet()) {
 				if (this.isCancelled()) return;
 				BagFile bagFile = bag.getBagFile(filepath);
-				if ((bagFile == null || ! bagFile.exists()) && listContains(limitDeleteFilepaths, filepath)) {
+				if ((bagFile == null || ! bagFile.exists()) && filepathListcontains(limitDeleteFilepaths, filepath) && dirListContains(limitDeleteDirectories, filepath)) {
 					deleteFilepaths.add(filepath);
 				}
 			}
@@ -84,10 +100,10 @@ public class CompleterHelper extends LongRunningOperationBase {
 	}
 
 	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles, String nonDefaultManifestSeparator) {
-		this.handleManifest(bag, algorithm, filepath, bagFiles, nonDefaultManifestSeparator, null);
+		this.handleManifest(bag, algorithm, filepath, bagFiles, nonDefaultManifestSeparator, null, null);
 	}
 	
-	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles, String nonDefaultManifestSeparator, final List<String> limitAddFilepaths) {
+	public void handleManifest(final Bag bag, final Algorithm algorithm, String filepath, Collection<BagFile> bagFiles, String nonDefaultManifestSeparator, final List<String> limitAddFilepaths, final List<String> limitAddDirectories) {
 		Manifest manifest = (Manifest)bag.getBagFile(filepath);
 		if (manifest == null) {
 			manifest = bag.getBagPartFactory().createManifest(filepath);
@@ -112,7 +128,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        		for(final BagFile bagFile : safeIterator) {
 		        			if (isCancelled()) return null;
 		        			progress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
-		        			if (listContains(limitAddFilepaths, bagFile.getFilepath())) {
+		        			if (filepathListcontains(limitAddFilepaths, bagFile.getFilepath()) && dirListContains(limitAddDirectories, bagFile.getFilepath())) {
 			        			if (ManifestHelper.isTagManifest(bagFile.getFilepath(), bag.getBagConstants())) {
 			        				log.debug(MessageFormat.format("Skipping {0} since it is a tag manifest.", bagFile.getFilepath()));
 			        			} else if (! bag.getChecksums(bagFile.getFilepath()).isEmpty()) {
@@ -156,10 +172,10 @@ public class CompleterHelper extends LongRunningOperationBase {
 	}
 
 	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests) {
-		this.regenerateManifest(bag, manifest, useOriginalPayloadManifests, null);
+		this.regenerateManifest(bag, manifest, useOriginalPayloadManifests, null, null);
 	}
 	
-	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests, final List<String> limitUpdateFilepaths) {
+	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests, final List<String> limitUpdateFilepaths, final List<String> limitUpdateDirectories) {
 		
 		final int total = manifest.size();
     	final AtomicInteger count = new AtomicInteger();
@@ -180,7 +196,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
 		        			
 	        				String checksum = manifest.get(filepath);
-	        				if (listContains(limitUpdateFilepaths, filepath)) {
+	        				if (filepathListcontains(limitUpdateFilepaths, filepath) && dirListContains(limitUpdateDirectories, filepath)) {
 		        				if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
 		        					checksum = MessageDigestHelper.generateFixity(((Manifest)bag.getBagFile(filepath)).originalInputStream(), manifest.getAlgorithm());
 		        				} else {
