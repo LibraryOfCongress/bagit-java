@@ -22,11 +22,11 @@
 	</properties>
 	<issueManagement>
 		<system>RDC Transfer Trac</system>
-		<url>https://rdc.lctl.gov/trac/transfer/</url>
+		<url>https://rdc.lctl.gov/trac/bagit/</url>
 	</issueManagement>
 	<ciManagement>
 		<system>RDC Hudson Server</system>
-		<url>https://rdc.lctl.gov/hudson/job/bagit/</url>
+		<url>https://rdc.lctl.gov/hudson/job/bagit-library-java/</url>
 	</ciManagement>
 	<developers>
 		<developer>
@@ -36,9 +36,9 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:https://rdc.lctl.gov/svn/transfer/bagit/trunk
+		<connection>scm:svn:https://rdc.lctl.gov/svn/bagit/trunk
 		</connection>
-		<url>https://rdc.lctl.gov/trac/transfer/browser/bagit</url>
+		<url>https://rdc.lctl.gov/trac/bagit/browser/</url>
 	</scm>
 	<build>
 		<extensions>
@@ -105,15 +105,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<extensions>false</extensions>
-				<inherited>false</inherited>
-				<configuration>
-					<show>private</show>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -217,21 +208,6 @@
 			<version>1.0</version>
 		</dependency>
 	</dependencies>
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<inherited>false</inherited>
-				<configuration>
-					<show>protected</show>
-					<links>
-						<link>http://java.sun.com/j2se/1.6.0/docs/api</link>
-					</links>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
 	<distributionManagement>
 		<repository>
 			<id>rdc-releases</id>
@@ -245,22 +221,6 @@
 		</snapshotRepository>
 	</distributionManagement>
 	<profiles>
-		<profile>
-			<id>rdc-hudson-snapshot</id>
-			<activation>
-				<property>
-					<name>rdc.build.type</name>
-					<value>hudson-snapshot</value>
-				</property>
-			</activation>
-			<distributionManagement>
-				<site>
-					<id>rdc.storage.site.bil</id>
-					<name>BIL Site on RDC Storage</name>
-					<url>file:/vol/transfer/mvn-sites/bil</url>
-				</site>
-			</distributionManagement>
-		</profile>
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>
