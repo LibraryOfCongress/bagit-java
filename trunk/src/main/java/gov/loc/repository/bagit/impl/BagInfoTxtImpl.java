@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -14,9 +15,10 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.utilities.namevalue.impl.AbstractNameValueBagFile;
+import gov.loc.repository.bagit.utilities.namevalue.NameValueReader.NameValue;
+import gov.loc.repository.bagit.utilities.namevalue.impl.AbstractNameValueMapListBagFile;
 
-public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoTxt {
+public class BagInfoTxtImpl extends AbstractNameValueMapListBagFile implements BagInfoTxt {
 
 	public static final String FIELD_SOURCE_ORGANIZATION = "Source-Organization";
 	public static final String FIELD_ORGANIZATION_ADDRESS = "Organization-Address";
@@ -328,6 +330,45 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 		return BagInfoTxt.TYPE;
 	}
 	
+	public boolean containsKeyCaseInsensitive(String key) {
+		if (this.getCaseInsensitive(key) != null) {
+			return true;
+		}
+		return false;
+	}
+	
+	private Collection<String> getActualKeys(String key) {
+		List<String> actualKeys = new ArrayList<String>();
+		for(String name : this.keySet()) {
+			if (name.equalsIgnoreCase(key)) {
+				actualKeys.add(name);
+			}
+		}
+		return actualKeys;		
+	}
+	
+	public String getCaseInsensitive(String key) {
+		if (key == null) {
+			return this.get(key);
+		}
+		for(String name : this.keySet()) {
+			if (key.equalsIgnoreCase(name)) {
+				return this.get(name);
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public List<String> getListCaseInsensitive(String key) {
+		List<String> values = new ArrayList<String>();
+		for(NameValue nameValue : this.nameValueList) {
+			if (nameValue.getName().equalsIgnoreCase(key)) values.add(nameValue.getValue());
+		}
+		return values;
+
+	}
+	
 	@Override
 	public List<String> getStandardFields() {
 		List<String> standardFields = new ArrayList<String>();
@@ -335,7 +376,7 @@ public class BagInfoTxtImpl extends AbstractNameValueBagFile implements BagInfoT
 		try {
 			for(Field field : fields) {
 				if (field.getName().startsWith("FIELD_") && this.containsKeyCaseInsensitive((String)field.get(this))) {
-					standardFields.add(this.getActualKey((String)field.get(this)));
+					standardFields.addAll(this.getActualKeys((String)field.get(this)));
 				}
 			}			
 		}

@@ -200,4 +200,49 @@ public abstract class AbstractBagInfoTxtImplTest {
 		assertEquals(1, fields.size());
 	}
 
+	@Test
+	public void testDupeMapFunctions() {
+		String bagInfoTxtStr = 
+			"Source-Organization: Spengler University\n" +
+			"Source-Organization: Mangler University\n";
+			
+		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr));
+		assertEquals("Spengler University", bagInfo.getSourceOrganization());
+		bagInfo.put("Source-Organization", "Fangler University");
+		assertEquals("Fangler University", bagInfo.getSourceOrganization());
+		bagInfo.remove("Source-Organization");
+		assertTrue(bagInfo.containsKey("Source-Organization"));
+		assertEquals("Mangler University", bagInfo.getSourceOrganization());
+		
+	}
+
+	@Test
+	public void testDupeListFunctions() {
+		String bagInfoTxtStr = 
+			"Source-Organization: Spengler University\n" +
+			"Source-Organization: Mangler University\n";
+			
+		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr));
+		List<String> values = bagInfo.getList("Source-Organization");
+		assertEquals(2, values.size());
+		assertEquals("Spengler University", values.get(0));
+		assertEquals("Mangler University", values.get(1));
+		bagInfo.putList("Source-Organization", "Fangler University");
+		values = bagInfo.getList("Source-Organization");
+		assertEquals(3, values.size());
+		assertEquals("Fangler University", values.get(2));
+		
+		bagInfo.removeList("Source-Organization", "Mangler University");
+		values = bagInfo.getList("Source-Organization");
+		assertEquals(2, values.size());
+		
+		bagInfo.removeAllList("Source-Organization");
+		values = bagInfo.getList("Source-Organization");
+		assertEquals(0, values.size());
+		
+		
+		
+	}
+
+	
 }

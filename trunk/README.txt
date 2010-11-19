@@ -47,6 +47,8 @@ a bad thing.
 RELEASE NOTES:
 Changes in 3.7:
 1. Added option to limit added, updated, and deleted files in UpdateCompleter.
+2. Added support for repeating fields in bag-info.txt.  The existing Map interface was extended,
+    not changed.
 
 Changes in 3.6:
 1. Fixed bug with HolePunchers handling of filepaths with spaces.

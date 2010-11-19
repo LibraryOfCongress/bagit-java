@@ -83,31 +83,4 @@ public abstract class AbstractNameValueBagFile extends LinkedHashMap<String, Str
 	
 	public abstract String getType();
 	
-	public boolean containsKeyCaseInsensitive(String key) {
-		if (this.getCaseInsensitive(key) != null) {
-			return true;
-		}
-		return false;
-	}
-	
-	public String getActualKey(String key) {
-		for(String name : this.keySet()) {
-			if (name.equalsIgnoreCase(key)) {
-				return name;
-			}
-		}
-		return null;		
-	}
-	
-	public String getCaseInsensitive(String key) {
-		if (key == null) {
-			return this.get(key);
-		}
-		for(String name : this.keySet()) {
-			if (key.equalsIgnoreCase(name)) {
-				return this.get(name);
-			}
-		}
-		return null;
-	}
 }
