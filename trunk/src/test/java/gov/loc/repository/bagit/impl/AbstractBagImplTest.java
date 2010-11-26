@@ -26,11 +26,13 @@ import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -586,4 +588,32 @@ public abstract class AbstractBagImplTest {
 
 	}
 
+	@Test
+	public void testBagWithDupeFieldsInBagInfoTxt() throws Exception {
+		File testBagDir = this.createTestBag(true);
+		File bagInfoTxtFile = new File(testBagDir, this.constants.getBagInfoTxt());
+		BagInfoTxtWriter writer = this.factory.createBagInfoTxtWriter(new FileOutputStream(bagInfoTxtFile), this.constants.getBagEncoding());
+		writer.write("Foo", "test1");
+		writer.write("Foo", "test2");
+		writer.close();
+		assertTrue(bagInfoTxtFile.exists());
+		
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+
+		BagInfoTxt bagInfoTxt = bag.getBagInfoTxt();
+		assertEquals(2, bagInfoTxt.getList("Foo").size());
+		List<String> values = new ArrayList<String>();
+		values.add("test1");
+		values.add("test2");
+		bagInfoTxt.putList("Bar", values);
+		
+		bag.write(new FileSystemWriter(bagFactory), testBagDir);
+		
+		bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		assertEquals(2, bagInfoTxt.getList("Foo").size());
+		assertEquals(2, bagInfoTxt.getList("Bar").size());
+		
+	}
+
+	
 }

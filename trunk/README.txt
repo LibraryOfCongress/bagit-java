@@ -45,6 +45,10 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.7.1:
+1. Fixed defect in the writing of repeated fields in bag-info.txt.
+2. Fixed defect in adding a list of values to bag-info.txt.
+
 Changes in 3.7:
 1. Added option to limit added, updated, and deleted files in UpdateCompleter.
 2. Added support for repeating fields in bag-info.txt.  The existing Map interface was extended,

@@ -64,8 +64,8 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 	InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		NameValueWriter writer = new NameValueWriterImpl(out, this.encoding, this.getType());
-		for(String name : this.keySet()) {
-			writer.write(name, this.get(name));
+		for(NameValue nameValue : this.nameValueList) {
+			writer.write(nameValue.getName(), nameValue.getValue());
 		}
 		writer.close();
 		return new ByteArrayInputStream(out.toByteArray());					
@@ -173,7 +173,7 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 	@Override
 	public void putList(String key, Collection<String> values) {
 		for(String value : values) {
-			this.put(key, value);
+			this.putList(key, value);
 		}
 	}
 
