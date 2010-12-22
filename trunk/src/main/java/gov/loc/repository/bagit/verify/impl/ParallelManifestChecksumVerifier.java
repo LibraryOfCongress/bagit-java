@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -74,7 +75,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
         
         log.debug(MessageFormat.format("Verifying manifests on {0} threads.", this.numberOfThreads));
         
-        SimpleResult finalResult = new SimpleResult(true);
+        SimpleResult finalResult = new BagVerifyResult(true);
                 
         int manifestCount = 0;
         int manifestTotal = manifests.size();
@@ -87,7 +88,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
         	
         	final Manifest.Algorithm alg = manifest.getAlgorithm();
             final Iterator<String> manifestIterator = manifest.keySet().iterator();
-            ArrayList<Future<SimpleResult>> futures = new ArrayList<Future<SimpleResult>>(this.numberOfThreads);
+            ArrayList<Future<BagVerifyResult>> futures = new ArrayList<Future<BagVerifyResult>>(this.numberOfThreads);
         	
             ExecutorService threadPool = Executors.newCachedThreadPool();
             try {
@@ -95,10 +96,10 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                 final AtomicInteger fileCount = new AtomicInteger();
                 for (int i = 0; i < this.numberOfThreads; i++)
                 {            
-                    Future<SimpleResult> future = threadPool.submit(new Callable<SimpleResult>() {
-                        public SimpleResult call() {
+                    Future<BagVerifyResult> future = threadPool.submit(new Callable<BagVerifyResult>() {
+                        public BagVerifyResult call() {
                             ThreadSafeIteratorWrapper<String> safeIterator = new ThreadSafeIteratorWrapper<String>(manifestIterator);
-                            SimpleResult result = new SimpleResult(true);
+                            BagVerifyResult result = new BagVerifyResult(true);
                             
                             for (String filePath : safeIterator)
                             {
@@ -120,6 +121,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
 	                                    {
 	                                        String msg = MessageFormat.format("Fixity failure in manifest {0}: {1}", manifest.getFilepath(), filePath);
 	                                        log.debug(msg);
+	                                        result.addMissingOrInvalidFile(filePath);
 	                                        result.addMessage(msg);
 	                                        result.setSuccess(false); 
 	                                    }
@@ -133,6 +135,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                 {
                                     String msg = MessageFormat.format("File missing from manifest {0}: {1}", manifest.getFilepath(), filePath);
                                     log.debug(msg);
+                                    result.addMissingOrInvalidFile(filePath);
                                     result.addMessage(msg);
                                     result.setSuccess(false);
                                 }
@@ -146,7 +149,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                     futures.add(future);
                 }
             
-                for (Future<SimpleResult> future : futures)
+                for (Future<BagVerifyResult> future : futures)
                 {
                 	SimpleResult futureResult;
                 	

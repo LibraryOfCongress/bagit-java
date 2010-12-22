@@ -13,6 +13,7 @@ import org.apache.commons.vfs.FileTypeSelector;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -42,7 +43,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	
 	@Override
 	public SimpleResult verify(Bag bag) {
-		SimpleResult result = new SimpleResult(true);
+		BagVerifyResult result = new BagVerifyResult(true);
 		try
 		{
 			//Is at least one payload manifest
@@ -211,7 +212,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 
 	}
 	
-	protected void checkManifest(Manifest manifest, Bag bag, SimpleResult result) {
+	protected void checkManifest(Manifest manifest, Bag bag, BagVerifyResult result) {
 		log.trace("Checking manifest " + manifest.getFilepath());
 		int manifestTotal = manifest.keySet().size();
 		int manifestCount = 0;
@@ -224,6 +225,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			if (bagFile == null || ! bagFile.exists())
 			{
 				result.setSuccess(false);
+				result.addMissingOrInvalidFile(filepath);
 				String message = MessageFormat.format("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
 				log.warn(message);
 				result.addMessage(message);

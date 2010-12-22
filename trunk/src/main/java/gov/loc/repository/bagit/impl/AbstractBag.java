@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -294,6 +295,12 @@ public abstract class AbstractBag implements Bag {
 		ValidVerifier verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
 		return this.verify(verifier);
 	}
+	
+	@Override
+	public BagVerifyResult verifyValidFailSlow() {
+		ValidVerifierImpl verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+		return verifier.verifyFailSlow(this);
+	}
 		
 	@Override
 	public void accept(BagVisitor visitor) {
@@ -445,13 +452,13 @@ public abstract class AbstractBag implements Bag {
 	}
 	
 	@Override
-	public Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags) {
-		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags);
+	public Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume) {
+		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags, resume);
 	}
 	
 	@Override
-	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags) {
+	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume) {
 		HolePuncher holePuncher = new HolePuncherImpl(this.bagFactory);
-		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags);
+		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags, resume);
 	}
 }

@@ -4,6 +4,7 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.Writer;
@@ -138,6 +139,8 @@ public interface Bag {
 	 */	
 	SimpleResult verify(Verifier verifier);
 	
+	BagVerifyResult verifyValidFailSlow();
+	
 	/**
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
@@ -170,12 +173,13 @@ public interface Bag {
 	/**
 	 * Makes a bag holey by creating a fetch.txt and removing payload files.
 	 */
-	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
 	
+	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume);
+
 	/**
 	 * Invokes a HolePuncher to make a bag holey.
 	 */	
-	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
+	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume);
 	
 	/**
 	 * Makes a bag complete by filling in any pieces necessary to satisfy the BagIt Specification.

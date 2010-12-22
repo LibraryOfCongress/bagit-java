@@ -13,8 +13,8 @@ public interface HolePuncher {
 	 * @param	whether to leave the tags in the returned bag.
 	 * @return	the newly holey bag
 	 */
-	Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean leaveTags);
+	Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean leaveTags, boolean resume);
 	
-	Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags);
+	Bag makeHoley(Bag bag, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume);
 
 }

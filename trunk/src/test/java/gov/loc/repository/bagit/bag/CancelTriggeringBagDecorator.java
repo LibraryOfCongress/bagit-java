@@ -17,6 +17,7 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.Writer;
@@ -184,19 +185,19 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 	}
 
 	public Bag makeHoley(HolePuncher holePuncher, String baseUrl,
-			boolean includePayloadDirectoryInUrl, boolean includeTags)
+			boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume)
 	{
 		this.increment();
 		return realBag.makeHoley(holePuncher, baseUrl,
-				includePayloadDirectoryInUrl, includeTags);
+				includePayloadDirectoryInUrl, includeTags, resume);
 	}
 
 	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl,
-			boolean includeTags)
+			boolean includeTags, boolean resume)
 	{
 		this.increment();
 		return realBag.makeHoley(baseUrl, includePayloadDirectoryInUrl,
-				includeTags);
+				includeTags, resume);
 	}
 
 	public void putBagFile(BagFile bagFile)
@@ -257,6 +258,12 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 	{
 		this.increment();
 		return realBag.verifyValid();
+	}
+	
+	public BagVerifyResult verifyValidFailSlow()
+	{
+		this.increment();
+		return realBag.verifyValidFailSlow();
 	}
 
 	public Bag write(Writer writer, File file)

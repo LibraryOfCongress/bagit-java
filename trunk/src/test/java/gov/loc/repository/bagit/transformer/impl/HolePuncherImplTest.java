@@ -29,7 +29,7 @@ public class HolePuncherImplTest {
 		assertEquals(5, bag.getPayload().size());
 		assertNull(bag.getFetchTxt());
 		
-		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag", true, false);
+		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag", true, false, false);
 		FetchTxt fetch = newBag.getFetchTxt();
 		assertNotNull(fetch);
 		assertEquals(5, fetch.size());
@@ -64,7 +64,7 @@ public class HolePuncherImplTest {
 				
 		//Now test with a slash after the url
 		bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag"));
-		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag/", false, false);
+		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag/", false, false, false);
 		FetchTxt fetch = newBag.getFetchTxt();
 		assertNotNull(fetch);
 		FilenameSizeUrl filenameSizeUrl = fetch.get(0);

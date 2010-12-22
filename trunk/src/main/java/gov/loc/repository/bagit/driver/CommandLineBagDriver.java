@@ -120,6 +120,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_RETAIN_BASE_DIR = "retainbasedir";
 	public static final String PARAM_BAGINFOTXT = "baginfotxt";
 	public static final String PARAM_NO_RESULTFILE = "noresultfile";
+	public static final String PARAM_RESUME = "resume";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -176,6 +177,7 @@ public class CommandLineBagDriver {
 		Parameter retainBaseDirParam = new Switch(PARAM_RETAIN_BASE_DIR, JSAP.NO_SHORTFLAG, PARAM_RETAIN_BASE_DIR, "Indicates that the base directory (not just the contents of the base directory) should be placed in the data directory of the bag.");
 		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
 		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
+		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the bag was left off.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -258,6 +260,7 @@ public class CommandLineBagDriver {
 		makeHoleyParam.add(baseUrlParam);
 		makeHoleyParam.add(writerParam);
 		makeHoleyParam.add(excludePayloadDirParam);		
+		makeHoleyParam.add(resumeParam);		
 		//TODO
 //		makeHoleyParam.add(manifestDelimiterParam);
 		
@@ -278,7 +281,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_RETRIEVE, 
 				"Retrieves a bag exposed by a web server. A local holey bag is not required.", 
-				new Parameter[] {destParam, retrieveUrlParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
+				new Parameter[] {destParam, retrieveUrlParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
 				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
@@ -339,8 +342,6 @@ public class CommandLineBagDriver {
 	
 	public int execute(String[] args) throws Exception {		
 		log.debug("Executing with arguments: " + argsToString(args));
-		log.info("Executing with arguments: " + argsToString(args));
-		
 		int ret = RETURN_SUCCESS;
 		
 		if (args.length == 0 || (args.length == 1 && args[0].equals("--" + PARAM_HELP))) {
@@ -369,6 +370,7 @@ public class CommandLineBagDriver {
 					printOperationUsage(config, operation);
 				} else if (! config.success()) {
 					printOperationUsage(config, operation);
+					System.err.println("Error parse arguments.");
 					ret = RETURN_ERROR;
 				} else {
 					ret = this.performOperation(operation, config);
@@ -524,7 +526,6 @@ public class CommandLineBagDriver {
 	private int performOperation(Operation operation, JSAPResult config) {
 		String msg = "Performing operation: " + operation.name;
 		log.info(msg);
-		
 		try {
 			File sourceFile = null;
 			if (config.contains(PARAM_SOURCE)) {
@@ -752,7 +753,7 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncher puncher = new HolePuncherImpl(bagFactory);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false);
+				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false, config.getBoolean(PARAM_RESUME));
 				newBag.write(writer, destFile);
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
@@ -795,7 +796,7 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
-			    SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL));
+				SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL), config.getBoolean(PARAM_RESUME));
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {

@@ -270,7 +270,6 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         
         // And reset the fetch.txt, and add back any that failed.
         log.trace(format("Adding {0} files that failed to fetch to the new bag.", this.failedFetchTargets.size()));
-        
         if (this.failedFetchTargets.size() > 0)
         {
             if (resultBag.getFetchTxt() == null)
@@ -285,7 +284,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
             	resultBag.getFetchTxt().addAll(failedTarget.getLines());
             }
         }
-        
+              
         log.debug(format("Fetch completed with result: {0}", finalResult.isSuccess()));
         return finalResult;
     }
@@ -416,8 +415,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         }
     }
     
-    public SimpleResult fetchRemoteBag(File destFile, String url) throws BagTransferException{
-    		
+    public SimpleResult fetchRemoteBag(File destFile, String url, boolean resume) throws BagTransferException{
         this.newBagFiles = Collections.synchronizedList(new ArrayList<BagFile>());
         this.destinationFactory = new FileSystemFileDestination(destFile);
 
@@ -443,43 +441,40 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		//Get the manifests and write to disk
 		fetchManifestFiles(baseUrl, bagConstants);
 		
-		//Get fetch.txt (may exist) and write to disk
-		fetchFile(baseUrl, bagConstants.getFetchTxt());
-						
+		if(!resume){
+			//Get fetch.txt (may exist) and write to disk
+			fetchFile(baseUrl, bagConstants.getFetchTxt());
+		}
+			
 		//Read bag from disk
 		Bag partialBag = bagFactory.createBag(destFile, LoadOption.BY_PAYLOAD_MANIFESTS);
 		//Should be a payload manifest or fetch.txt
 		if (partialBag.getFetchTxt() == null && partialBag.getPayloadManifests().isEmpty()) {
 			return new SimpleResult(false, "Neither fetch.txt or payload manifest found");
 		}
-						
-		Bag holeyBag = null;
-		if (partialBag.getFetchTxt() != null) {
-			//If there is a fetch.txt, try retrieving tags in case omitted from fetch.txt
-			for(Manifest manifest: partialBag.getTagManifests()){
-				fetchFromManifest(manifest, partialBag.getBagConstants());
-			}
-
-		} else {
-			//If there is no fetch.txt, use hole puncher
-			holeyBag = partialBag.makeHoley(baseUrl, true, true);
-			//Write the fetch.txt to disk
-			holeyBag = holeyBag.write(new FileSystemWriter(bagFactory), destFile);
-			
+		
+		//Get tag manifests and write to disk
+		for(Manifest manifest: partialBag.getTagManifests()){
+			fetchFromManifest(manifest, partialBag.getBagConstants());
 		}
 		
-		//Retrieve holey bag
-	    FileSystemFileDestination dest = new FileSystemFileDestination(destFile);	    
-	    BagFetchResult fetchResult = this.fetch(holeyBag, dest);
-	    if (! fetchResult.isSuccess()) {
+		//Get bag-info.txt and write to disk		
+		fetchFile(baseUrl, bagConstants.getBagInfoTxt());
+		
+		//If resume a partial bag, or there is no fetch.txt on the remote server, generate a fetch.txt file 
+		if(resume || partialBag.getFetchTxt() == null){
+			//Generate a fetch.txt and add it to the partial bag and the holey bag
+			Bag holeyBag = partialBag.makeHoley(baseUrl, true, false, resume);
+			//Write the fetch.txt to disk
+			holeyBag.write(new FileSystemWriter(bagFactory), destFile);			
+		}
+		
+		FileSystemFileDestination dest = new FileSystemFileDestination(destFile);	    
+
+		BagFetchResult fetchResult = this.fetch(partialBag, dest);
+
+		if (! fetchResult.isSuccess()) {
 	    	return fetchResult;
-	    }
-	    
-	    Bag fetchedBag = fetchResult.getResultingBag();
-	    
-		//If there is no bag-info.txt, try retrieving
-	    if (fetchedBag.getBagInfoTxt() == null) {
-	    	fetchFile(baseUrl, fetchedBag.getBagConstants().getBagInfoTxt());
 	    }
 
 		return new SimpleResult(true);
@@ -516,6 +511,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		Fetcher fetcher = new Fetcher();
 
 		url += filename;
+		
     	FilenameSizeUrl filenNameSizeUrl = new FetchTxt.FilenameSizeUrl(filename,null,url);
    		try{    		
     		fetcher.fetchSingleLine(filenNameSizeUrl);
@@ -694,12 +690,12 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         	FetchedFileDestination destination = null;
         	
         	try
-        	{
-            	// The fetch.txt line parts.
+        	{        				 
+        		// The fetch.txt line parts.
                 URI uri = parseUri(fetchLine.getUrl());
                 Long size = fetchLine.getSize();
                 String destinationPath = fetchLine.getFilename();
-                
+
                 // Create the destination for the file.
                 log.trace(format("Creating destination: {0}", destinationPath));
                 destination = destinationFactory.createDestination(destinationPath, size);
