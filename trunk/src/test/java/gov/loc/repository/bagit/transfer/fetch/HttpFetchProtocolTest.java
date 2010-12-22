@@ -129,7 +129,7 @@ public class HttpFetchProtocolTest
         fetcher.setNumberOfThreads(1);
         fetcher.registerProtocol("http", new HttpFetchProtocol());
         
-        fetcher.fetch(bag, new FileSystemFileDestination(testDestination));
+        fetcher.fetch(bag, new FileSystemFileDestination(testDestination), false);
 
         Bag newBag = this.bagFactory.createBag(testDestination);
         assertTrue(newBag.verifyValid().isSuccess());

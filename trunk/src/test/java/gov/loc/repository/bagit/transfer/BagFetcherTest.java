@@ -85,7 +85,7 @@ public class BagFetcherTest
 		
 		Bag bag = this.bagFactory.createBag(tempDir);
 		
-		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory, false);
 		
 		assertTrue("Bag did not transfer successfully.", result.isSuccess());
 	}
@@ -122,7 +122,7 @@ public class BagFetcherTest
 		
 		Bag bag = this.bagFactory.createBag(tempDir);
 		
-		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory, false);
 		
 		assertFalse("Bag transferred successfully when it shouldn't have.", result.isSuccess());
 	}
@@ -169,7 +169,7 @@ public class BagFetcherTest
 		bag.getFetchTxt().remove(1);
 		bag.getFetchTxt().remove(1);
 		
-		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory, false);
 		
 		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
 	}
@@ -215,7 +215,7 @@ public class BagFetcherTest
 		bag.getFetchTxt().remove(2);
 		bag.getFetchTxt().remove(2);
 		
-		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory, false);
 		
 		assertFalse("Bag failed transfer.", result.isSuccess());
 	}
@@ -268,7 +268,7 @@ public class BagFetcherTest
 		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"));
 		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"));
 		
-		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory, false);
 		
 		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
 	}
@@ -330,7 +330,7 @@ public class BagFetcherTest
 		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "ftp://localhost:8989/bags/v0_96/holey-bag/data/does-not-exist"));
 		bag.getFetchTxt().add(new FetchTxt.FilenameSizeUrl("data/test 1.txt", null, "http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"));
 		
-		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory);
+		BagFetchResult result = this.unit.fetch(bag, mockDestinationFactory, false);
 		
 		assertTrue("Bag failed transfer when it should have succeeded.", result.isSuccess());
 	}
@@ -345,7 +345,7 @@ public class BagFetcherTest
 		assertFalse(fetchTxtFile.exists());
 		Bag bag = this.bagFactory.createBag(tempDir);
 		
-		this.unit.fetch(bag, mockDestinationFactory);
+		this.unit.fetch(bag, mockDestinationFactory, false);
 		
 	}
 

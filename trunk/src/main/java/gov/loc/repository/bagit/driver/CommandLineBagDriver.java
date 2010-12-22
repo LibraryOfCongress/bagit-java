@@ -285,9 +285,9 @@ public class CommandLineBagDriver {
 				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
-				"Retrieves any missing pieces of a local bag specified in the fetch.txt.", 
-				new Parameter[] {sourceParam, showProgressParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam},
-				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_RETRIEVE, this.getBag("mybag"))});
+				"Retrieves any missing pieces of a local bag.", 
+				new Parameter[] {sourceParam, showProgressParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_FILL_HOLEY, this.getBag("mybag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
 		senderParams.add(sourceParam);
@@ -788,7 +788,7 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_FILL_HOLEY.equals(operation.name)) {
 			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
-			    SimpleResult result = fetcher.fetch(bag, dest);
+			    SimpleResult result = fetcher.fetch(bag, dest, config.getBoolean(PARAM_RESUME));
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {

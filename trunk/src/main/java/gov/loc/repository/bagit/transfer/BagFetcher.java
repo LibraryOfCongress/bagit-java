@@ -16,6 +16,7 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.impl.FileBagFile;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
@@ -172,14 +173,14 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         this.protocolFactories.put(normalizedScheme, protocol);
     }
     
-    public BagFetchResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory) throws BagTransferException
+    public BagFetchResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory, boolean resume) throws BagTransferException
     {
         this.bagToFetch = bag;
         this.destinationFactory = destinationFactory;
         
         this.checkBagSanity();
         
-        this.buildFetchTargets();
+        this.buildFetchTargets(resume);
         this.nextFetchTargetIndex = new AtomicInteger(0);
         
         // Parts of the new bag.
@@ -301,9 +302,15 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	}
     }
     
-    private void buildFetchTargets()
+    private void buildFetchTargets(boolean resume)
     {
-        // Retrieve the fetch items into a separate list, and then sort the
+        // If resume is true, verify the bagToFetch to get a list of missing and corrupted files.
+    	BagVerifyResult bagVerifyResult = null;
+        if(resume){
+			bagVerifyResult = this.bagToFetch.verifyValidFailSlow();
+		}
+        
+    	// Retrieve the fetch items into a separate list, and then sort the
         // list by file name.  We want to group all the lines for the same file
     	// together.
     	log.trace("Sorting fetch lines by file name.");
@@ -319,14 +326,19 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	
     	for (FetchTxt.FilenameSizeUrl line : sortedFetchLines)
     	{
-    		if (currentTarget == null || !currentTarget.getFilename().equals(line.getFilename()))
-    		{
-    			currentTarget = new FetchTarget(line);
-    			this.fetchTargets.add(currentTarget);
-    		}
-    		else
-    		{
-    			currentTarget.addLine(line);
+    		// Do not add a file to the fetch targets if the file is not missing or corrupted.
+    		if(resume && !bagVerifyResult.getMissingAndInvalidFiles().contains(line.getFilename())){
+    			continue;
+    		}else {
+    			if (currentTarget == null || !currentTarget.getFilename().equals(line.getFilename()))
+        		{
+        			currentTarget = new FetchTarget(line);
+        			this.fetchTargets.add(currentTarget);
+        		}
+        		else
+        		{
+        			currentTarget.addLine(line);
+        		}
     		}
     	}
     	
@@ -461,17 +473,17 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		//Get bag-info.txt and write to disk		
 		fetchFile(baseUrl, bagConstants.getBagInfoTxt());
 		
-		//If resume a partial bag, or there is no fetch.txt on the remote server, generate a fetch.txt file 
-		if(resume || partialBag.getFetchTxt() == null){
+		//If there is no fetch.txt on the remote server, generate a fetch.txt file 
+		if(partialBag.getFetchTxt() == null){
 			//Generate a fetch.txt and add it to the partial bag and the holey bag
-			Bag holeyBag = partialBag.makeHoley(baseUrl, true, false, resume);
+			Bag holeyBag = partialBag.makeHoley(baseUrl, true, false, false);
 			//Write the fetch.txt to disk
 			holeyBag.write(new FileSystemWriter(bagFactory), destFile);			
 		}
 		
 		FileSystemFileDestination dest = new FileSystemFileDestination(destFile);	    
 
-		BagFetchResult fetchResult = this.fetch(partialBag, dest);
+		BagFetchResult fetchResult = this.fetch(partialBag, dest, resume);
 
 		if (! fetchResult.isSuccess()) {
 	    	return fetchResult;
