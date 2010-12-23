@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.AllFileSelector;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
+import org.apache.commons.vfs.provider.UriParser;
 
 
 import gov.loc.repository.bagit.Bag;
@@ -102,7 +103,8 @@ public abstract class AbstractBag implements Bag {
 			List<Manifest> payloadManifests = this.getPayloadManifests();
 			for(Manifest manifest : payloadManifests) {
 				for(String filepath : manifest.keySet()) {
-					BagFile bagFile = new VFSBagFile(filepath, bagFileObject.resolveFile(filepath));
+					//Encode % in filepath
+					BagFile bagFile = new VFSBagFile(filepath, bagFileObject.resolveFile(UriParser.encode(filepath)));
 					this.putBagFile(bagFile);
 				}
 			}
@@ -123,7 +125,7 @@ public abstract class AbstractBag implements Bag {
 			for(FileObject fileObject : bagFileObject.findFiles(new AllFileSelector())) {
 				if (fileObject.getType() == FileType.FILE) {
 					
-					String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
+					String filepath = UriParser.decode(bagFileObject.getName().getRelativeName(fileObject.getName()));
 					log.trace("Reading " + filepath);
 					BagFile bagFile = new VFSBagFile(filepath, fileObject);
 					this.putBagFile(bagFile);

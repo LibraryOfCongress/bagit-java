@@ -9,6 +9,7 @@ import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.FileTypeSelector;
+import org.apache.commons.vfs.provider.UriParser;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
@@ -186,7 +187,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 					for(FileObject fileObject : fileObjects) {
 						if (this.isCancelled()) return null;
 						if (fileObject.getType() == FileType.FILE) {
-							String filepath = bagFileObject.getName().getRelativeName(fileObject.getName());
+							String filepath = UriParser.decode(bagFileObject.getName().getRelativeName(fileObject.getName()));
 							count++;
 							this.progress("verifying payload files on disk are in bag", filepath, count, total);
 							log.trace(MessageFormat.format("Checking that payload file {0} is in bag", filepath));
