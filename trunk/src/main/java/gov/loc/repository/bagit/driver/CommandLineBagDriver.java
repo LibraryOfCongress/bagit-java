@@ -177,7 +177,7 @@ public class CommandLineBagDriver {
 		Parameter retainBaseDirParam = new Switch(PARAM_RETAIN_BASE_DIR, JSAP.NO_SHORTFLAG, PARAM_RETAIN_BASE_DIR, "Indicates that the base directory (not just the contents of the base directory) should be placed in the data directory of the bag.");
 		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
 		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
-		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the bag was left off.");
+		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
