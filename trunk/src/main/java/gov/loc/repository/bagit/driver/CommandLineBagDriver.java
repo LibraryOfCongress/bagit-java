@@ -11,6 +11,7 @@ import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.HolePuncher;
+import gov.loc.repository.bagit.transformer.impl.BagSplitter;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
@@ -87,6 +88,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_SEND_BOB = "bob";
 	public static final String OPERATION_SEND_SWORD = "sword";
 	public static final String OPERATION_BAG_IN_PLACE = "baginplace";
+	public static final String OPERATION_SPLIT_BAG_BY_SIZE = "splitbagbysize";
 	
 	public static final String PARAM_PROGRESS = "show-progress";
 	public static final String PARAM_SOURCE = "source";
@@ -121,6 +123,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_BAGINFOTXT = "baginfotxt";
 	public static final String PARAM_NO_RESULTFILE = "noresultfile";
 	public static final String PARAM_RESUME = "resume";
+	public static final String PARAM_MAX_BAG_SIZE = "maxbagsize";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -178,6 +181,7 @@ public class CommandLineBagDriver {
 		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
 		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
+		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -198,6 +202,11 @@ public class CommandLineBagDriver {
 				"Verifies the completeness of a bag.",
 				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
+		
+		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
+				"Splits a bag by size. The default destination of split bags is parentDirOfSourceBag/SourceBagName_split. The default max bag size is 300 GB.",
+				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
@@ -838,6 +847,13 @@ public class CommandLineBagDriver {
 				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				sender.send(bag, config.getString(PARAM_URL));				
+			} else if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)) {
+				BagSplitter bagSplitter = new BagSplitter();
+				SimpleResult splitBagResult = bagSplitter.splitBagBySize(sourceFile, destFile, config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null);
+				if(!splitBagResult.isSuccess()){
+					System.out.println("Split bag failed." + splitBagResult.getMessages());
+					return RETURN_FAILURE;
+				}
 			}
 			log.info("Operation completed.");
 			return ret;
