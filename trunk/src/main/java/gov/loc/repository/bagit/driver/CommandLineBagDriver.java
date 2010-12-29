@@ -124,6 +124,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_NO_RESULTFILE = "noresultfile";
 	public static final String PARAM_RESUME = "resume";
 	public static final String PARAM_MAX_BAG_SIZE = "maxbagsize";
+	public static final String PARAM_KEEP_LOWEST_LEVEL_DIR = "keeplowestleveldir";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -182,6 +183,7 @@ public class CommandLineBagDriver {
 		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
 		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
+		Parameter keepLowestLevelDirParam = new Switch(PARAM_KEEP_LOWEST_LEVEL_DIR, JSAP.NO_SHORTFLAG, PARAM_KEEP_LOWEST_LEVEL_DIR, "Does not split the lowest level directory.");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -205,7 +207,7 @@ public class CommandLineBagDriver {
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
 				"Splits a bag by size. The default destination of split bags is parentDirOfSourceBag/SourceBagName_split. The default max bag size is 300 GB.",
-				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam},
+				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
@@ -849,7 +851,9 @@ public class CommandLineBagDriver {
 				sender.send(bag, config.getString(PARAM_URL));				
 			} else if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)) {
 				BagSplitter bagSplitter = new BagSplitter();
-				SimpleResult splitBagResult = bagSplitter.splitBagBySize(sourceFile, destFile, config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null);
+				SimpleResult splitBagResult = bagSplitter.splitBagBySize(sourceFile, destFile, 
+						config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null,
+						config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR));
 				if(!splitBagResult.isSuccess()){
 					System.out.println("Split bag failed." + splitBagResult.getMessages());
 					return RETURN_FAILURE;
