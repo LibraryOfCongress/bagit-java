@@ -24,59 +24,83 @@ import org.apache.commons.logging.LogFactory;
 
 public class BagSplitter {
 	
-	private Bag sourceBag;
-	private Double maxBagSize = 300 * SizeHelper.GB; 
-	private List<BagFile> bagFiles = new ArrayList<BagFile>();
-	private SimpleResult splitBagResult = new SimpleResult(true);
+	private BagFactory bagFactory = new BagFactory();
 	
     private static final Log log = LogFactory.getLog(BagSplitter.class);
 
     public SimpleResult splitBagBySize(File sourceBagFile, File destBagFileIn, Double maxBagSizeInGBIn, boolean keepLowestLevelDir)
 	{				
-    	//Load source bag
-    	BagFactory bagFactory = new BagFactory();
-		this.sourceBag = bagFactory.createBag(sourceBagFile, BagFactory.LoadOption.BY_PAYLOAD_FILES);
-		Double sourceBagSize = new Double(sourceBag.getBagInfoTxt().getPayloadOxum());
+    	SimpleResult splitBagResult = new SimpleResult(true);
+		Bag srcBag = this.bagFactory.createBag(sourceBagFile, BagFactory.LoadOption.BY_PAYLOAD_FILES);
+		//Verify if the source bag is a complete and valid Bagit bag
+		SimpleResult verifyValidResult = srcBag.verifyValid();
+		if(!verifyValidResult.isSuccess()){
+			this.addMessage(splitBagResult, "The bag is not valid: " + verifyValidResult.toString());
+			return splitBagResult;
+		}
+		this.splitBagBySize1(srcBag, destBagFileIn, maxBagSizeInGBIn, keepLowestLevelDir, splitBagResult);	
+		return splitBagResult;
+	}
+    
+    /**
+     * Put the bag files of the type specified by fileExtensions to a separate bag. Write the new bag to disk. 
+     * 
+     * @param srcBag
+     * @param fileExtensions
+     * @return
+     */
+    public SimpleResult splitBagByFileType(File sourceBagFile, File destBagFileIn, String[] fileExtensions){
+    	SimpleResult splitBagResult = new SimpleResult(true);
+    	Bag newBag = this.getSplitBagByFileType(sourceBagFile, destBagFileIn, fileExtensions, splitBagResult);
+    	if(! splitBagResult.isSuccess()){
+    		return splitBagResult;
+    	}    	
+	    newBag.write(new FileSystemWriter(this.bagFactory), newBag.getFile());
+    	return splitBagResult;
+    }
+    
+    public SimpleResult splitBagBySizeAndFileType(File sourceBagFile, File destBagFileIn, String[] fileExtensions, Double maxBagSizeInGBIn, boolean keepLowestLevelDir){
+    	SimpleResult splitBagResult = new SimpleResult(true);
+    	Bag newBag = this.getSplitBagByFileType(sourceBagFile, destBagFileIn, fileExtensions, splitBagResult);
+    	if(! splitBagResult.isSuccess()) {
+    		return splitBagResult;
+    	}
+    	
+	    newBag.write(new FileSystemWriter(this.bagFactory), newBag.getFile());
+	    File newDestBagFile = new File(newBag.getFile().getPath().substring(0, newBag.getFile().getPath().lastIndexOf('/')));
+    	this.splitBagBySize1(newBag, newDestBagFile, maxBagSizeInGBIn, keepLowestLevelDir, splitBagResult);
+    	this.deleteDir(newBag.getFile());
+    	return splitBagResult;
+    }
+    
+    private void splitBagBySize1(Bag srcBag, File destBagFileIn, Double maxBagSizeInGBIn, boolean keepLowestLevelDir, SimpleResult splitBagResult)
+	{				
+    	List<BagFile> bagFiles = new ArrayList<BagFile>();
+    	
+		Double sourceBagSize = new Double(srcBag.getBagInfoTxt().getPayloadOxum());
 
 		//The default dest of split bags is parentDirOfSourceBag/SourceBagName_split
-    	File destBagFile = destBagFileIn == null ? new File(sourceBagFile.getAbsoluteFile() + "_split") : destBagFileIn;
+    	File destBagFile = destBagFileIn == null ? new File(srcBag.getFile() + "_split") : destBagFileIn;
 
     	//The default max bag size is 300 GB. 
     	Double maxBagSizeInGB = maxBagSizeInGBIn == null ? 300 : maxBagSizeInGBIn;
 		if(maxBagSizeInGB < 0.0001 || sourceBagSize <= maxBagSizeInGB * SizeHelper.GB){
-			String msg = "Max bag size should be no less than 0.0001 GB/104.9 KB, and no greater than the source bag size.";
-			splitBagResult.setSuccess(false);
-			splitBagResult.addMessage(msg);
-			System.out.println(msg);
-			log.info(msg);
-			return splitBagResult;
+			this.addMessage(splitBagResult, "Max bag size should be no less than 0.0001 GB/104.9 KB, and no greater than the source bag size.");
+			return;
 		}
-		if(maxBagSizeInGB != null){
-	    	maxBagSize =  maxBagSizeInGB * SizeHelper.GB;			
-		}
-		
-		//Verify if the source bag is a complete and valid Bagit bag
-		SimpleResult verifyValidResult = sourceBag.verifyValid();
-		if(!verifyValidResult.isSuccess()){
-			String msg = "The bag is not valid: " + verifyValidResult.toString();
-			splitBagResult.setSuccess(false);
-			splitBagResult.addMessage(msg);
-			log.info(msg);
-			System.out.println(msg);
-			return splitBagResult;
-		}
+	    Double maxBagSize =  maxBagSizeInGB != null ? maxBagSizeInGB * SizeHelper.GB : 300 * SizeHelper.GB;			
 		
 		//Get all the file paths in manifests
-		List<Manifest> manifests = sourceBag.getPayloadManifests();
+		List<Manifest> manifests = srcBag.getPayloadManifests();
 		Set<String> filePaths = new HashSet<String>();
 	    for(Manifest manifest : manifests){
 	    	filePaths.addAll(manifest.keySet());	    	
 	    }
 	    
 	    //Sort bag files in the source bag
-	    this.sortBagFiles(new File(sourceBagFile, sourceBag.getBagConstants().getDataDirectory()), keepLowestLevelDir);
+	    this.sortBagFiles(new File(srcBag.getFile(), srcBag.getBagConstants().getDataDirectory()), keepLowestLevelDir, splitBagResult, srcBag, bagFiles, maxBagSize);
 	    if(! splitBagResult.isSuccess()){
-	    	return splitBagResult;
+	    	return;
 	    }
 	    
 	    //Group the payload files of the source bag
@@ -86,12 +110,11 @@ public class BagSplitter {
 	    int i = 0;
 	    for(BagFileGroup bagFileGroup : bagFileGroups) {
 	    	List<BagFile> groupBagFiles = bagFileGroup.getBagFiles();
-	    	Bag subBag = bagFactory.createBag(sourceBag.getVersion());	    	
+	    	Bag subBag = bagFactory.createBag(srcBag.getVersion());	    	
 	    	BagInfoTxt bagInfoTxt = subBag.getBagPartFactory().createBagInfoTxt();
 	    	subBag.putBagFile(bagInfoTxt);
 	    	//Add bag info from the source bag to the split bag
-	    	subBag.getBagInfoTxt().putAll(sourceBag.getBagInfoTxt());
-	    	subBag.putBagFile(bagInfoTxt);
+	    	subBag.getBagInfoTxt().putAll(srcBag.getBagInfoTxt());
 	    	for(BagFile bagFile : groupBagFiles){
 	    		if(bagFile instanceof LowestLevelBagDir){
 	    			subBag.putBagFiles(((LowestLevelBagDir) bagFile).getBagFiles());
@@ -104,11 +127,79 @@ public class BagSplitter {
 	    	Bag newBag = new DefaultCompleter(bagFactory).complete(subBag);
 	    	
 	    	//Write the split bag to disk. 
-	    	newBag.write(new FileSystemWriter(bagFactory), new File(destBagFile, sourceBagFile.getName()+"_"+i));
+	    	newBag.write(new FileSystemWriter(bagFactory), new File(destBagFile, srcBag.getFile().getName()+"_"+i));
 	    	i++;
 	    }
 	    
-		return splitBagResult;
+		return;
+	}
+   
+    /**
+     * Put the bag files of the type specified by fileExtensions to a new bag. 
+     * 
+     * @param srcBag
+     * @param fileExtensions
+     * @return 
+     */
+    private Bag getSplitBagByFileType(File sourceBagFile, File destBagFileIn, String[] fileExtensionsIn, SimpleResult splitBagResult)
+	{				
+    	if(fileExtensionsIn == null || fileExtensionsIn.length <= 0){
+    		this.addMessage(splitBagResult, "File extensions should not be null or empty.");
+    		return null;
+    	}
+    	Set<String> fileExtensions = new HashSet<String>();
+    	for(String fileEx : fileExtensionsIn){
+    		fileExtensions.add(fileEx.trim());
+    	}
+    	
+    	//The default dest of split bags is parentDirOfSourceBag/SourceBagName_split
+    	File destBagFile = destBagFileIn == null ? new File(sourceBagFile.getAbsoluteFile() + "_split") : destBagFileIn;
+    	
+    	//Load source bag
+		Bag srcBag = this.bagFactory.createBag(sourceBagFile, BagFactory.LoadOption.BY_PAYLOAD_FILES);
+		
+    	//Verify if the source bag is a complete and valid Bagit bag
+		SimpleResult verifyValidResult = srcBag.verifyValid();
+		if(!srcBag.verifyValid().isSuccess()){
+			this.addMessage(splitBagResult, "The bag is not valid: " + verifyValidResult.toString());
+			return null;
+		}
+		
+		//Get all the file paths in manifests
+		List<Manifest> manifests = srcBag.getPayloadManifests();
+		Set<String> filePaths = new HashSet<String>();
+	    for(Manifest manifest : manifests){
+	    	filePaths.addAll(manifest.keySet());	    	
+	    }
+	    
+	    //Sort out targeted bag files in the source bag
+	    List<BagFile> targetedBagFiles = new ArrayList<BagFile>();
+	    for(String filePath : filePaths){
+	    	String fileExtension = filePath.substring(filePath.lastIndexOf('.') + 1);
+	    	for(String fileEx : fileExtensions){
+	    		if(fileEx.equalsIgnoreCase(fileExtension)){
+	    			targetedBagFiles.add(srcBag.getBagFile(filePath));
+	    			break;
+	    		}
+	    	}
+	    }
+	   
+	    //Put the targeted bag files to a new bag
+	    Bag subBag = this.bagFactory.createBag(srcBag.getVersion());	    	
+	    BagInfoTxt bagInfoTxt = subBag.getBagPartFactory().createBagInfoTxt();
+	    subBag.putBagFile(bagInfoTxt);
+	    //Add bag info from the source bag to the new bag
+	    subBag.getBagInfoTxt().putAll(srcBag.getBagInfoTxt());
+	    subBag.putBagFiles(targetedBagFiles);
+	    //Set file path for the new bag. The new bag name suffix is the concatenation of targeted file extensions. 
+	    StringBuffer bag_suffix = new StringBuffer("");
+	    for(String fileEx : fileExtensions) {
+	    	bag_suffix.append("_" +fileEx);
+	    }
+	    subBag.setFile(new File(destBagFile, sourceBagFile.getName() + bag_suffix.toString()));
+	    	
+	    //Complete the new bag. The completer will generated/complete tag files for the split bag.
+	    return new DefaultCompleter(this.bagFactory).complete(subBag);
 	}
     
     /**
@@ -118,7 +209,7 @@ public class BagSplitter {
      * @param maxBagSize
      * @return
      */
-    protected List<BagFileGroup> group(List<BagFile> bagFiles, Double maxBagSize){
+    private List<BagFileGroup> group(List<BagFile> bagFiles, Double maxBagSize){
     	
     	//Sort bag files by size in descending order
     	Collections.sort(bagFiles, new BagFileSizeReverseComparator());
@@ -259,7 +350,7 @@ public class BagSplitter {
      * @param file
      * @return
      */
-    protected boolean isLowestLevelDir(File file){
+    private boolean isLowestLevelDir(File file){
     	if(file == null || file.isFile() || !file.exists()){
     		return false;
     	}
@@ -280,21 +371,18 @@ public class BagSplitter {
      *    
      * @param file
      */
-    private void sortBagFiles(File file, boolean keepLowestLevelDir){
+    private void sortBagFiles(File file, boolean keepLowestLevelDir, SimpleResult result, Bag scrBag, List<BagFile> bagFiles, Double maxBagSize){
     	
     	//If the file is a lowest level directory, add it to the list and return
     	if(keepLowestLevelDir && isLowestLevelDir(file)){
-    		LowestLevelBagDir lowestLevelBagDir = new LowestLevelBagDir(this.getBagFilePath(file), file);
+    		LowestLevelBagDir lowestLevelBagDir = new LowestLevelBagDir(this.getBagFilePath(scrBag, file), file);
     		if(lowestLevelBagDir.getSize() >= maxBagSize) {
-	    		String msg = MessageFormat.format("The size of the lowest level directory {0} exceeds the maximum split bag size {1}.", lowestLevelBagDir.getFilepath(), SizeHelper.getSize((long)maxBagSize.longValue()));
-				splitBagResult.setSuccess(false);
-				splitBagResult.addMessage(msg);
-				log.info(msg);
+	    		this.addMessage(result, MessageFormat.format("The size of the lowest level directory {0} exceeds the maximum split bag size {1}.", lowestLevelBagDir.getFilepath(), SizeHelper.getSize((long)maxBagSize.longValue())));
 				return;
 	    	}
     		File[] files = file.listFiles();
         	for(File fileItem : files) {
-        		lowestLevelBagDir.addBagFile(sourceBag.getBagFile(this.getBagFilePath(fileItem)));
+        		lowestLevelBagDir.addBagFile(scrBag.getBagFile(this.getBagFilePath(scrBag, fileItem)));
         	}
     		bagFiles.add(lowestLevelBagDir);
 
@@ -306,21 +394,39 @@ public class BagSplitter {
     	for(File fileItem : files) {
     		if(fileItem.isFile()){
     			if(fileItem.length() >= maxBagSize) {
-    	    		String msg = MessageFormat.format("The size of the file {0} exceeds the maximum split bag size {1}.", fileItem.getPath(),SizeHelper.getSize((long)(maxBagSize.longValue())));
-    				splitBagResult.setSuccess(false);
-    				splitBagResult.addMessage(msg);
-    				log.info(msg);
+    	    		this.addMessage(result, MessageFormat.format("The size of the file {0} exceeds the maximum split bag size {1}.", fileItem.getPath(),SizeHelper.getSize((long)(maxBagSize.longValue()))));    				
     				return;
     	    	}
-    			bagFiles.add(sourceBag.getBagFile(this.getBagFilePath(fileItem)));
+    			bagFiles.add(scrBag.getBagFile(this.getBagFilePath(scrBag, fileItem)));
 
     		}else{
-    			sortBagFiles(fileItem, keepLowestLevelDir);
+    			sortBagFiles(fileItem, keepLowestLevelDir, result, scrBag, bagFiles, maxBagSize);
     		}
     	}
     }
     
-    private String getBagFilePath(File file){
-    	return file.getPath().substring(file.getPath().lastIndexOf(sourceBag.getBagConstants().getDataDirectory()));
+    private String getBagFilePath(Bag scrBag, File file){
+    	return file.getPath().substring(file.getPath().lastIndexOf(scrBag.getBagConstants().getDataDirectory()));
     }
+    
+    private void addMessage(SimpleResult result, String msg){
+    	result.setSuccess(false);
+    	result.addMessage(msg);
+		log.info(msg);
+    }
+    
+    private boolean deleteDir(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i=0; i<children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+    
+        // The directory is now empty so delete it
+        return dir.delete();
+    } 
 }

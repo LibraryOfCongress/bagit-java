@@ -89,6 +89,8 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_SEND_SWORD = "sword";
 	public static final String OPERATION_BAG_IN_PLACE = "baginplace";
 	public static final String OPERATION_SPLIT_BAG_BY_SIZE = "splitbagbysize";
+	public static final String OPERATION_SPLIT_BAG_BY_FILE_TYPE = "splitbagbyfiletype";
+	public static final String OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE = "splitbagbysizeandfiletype";
 	
 	public static final String PARAM_PROGRESS = "show-progress";
 	public static final String PARAM_SOURCE = "source";
@@ -125,6 +127,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_RESUME = "resume";
 	public static final String PARAM_MAX_BAG_SIZE = "maxbagsize";
 	public static final String PARAM_KEEP_LOWEST_LEVEL_DIR = "keeplowestleveldir";
+	public static final String PARAM_FILE_EXTENSIONS = "fileextensions";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -184,6 +187,8 @@ public class CommandLineBagDriver {
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
 		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
 		Parameter keepLowestLevelDirParam = new Switch(PARAM_KEEP_LOWEST_LEVEL_DIR, JSAP.NO_SHORTFLAG, PARAM_KEEP_LOWEST_LEVEL_DIR, "Does not split the lowest level directory.");
+		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The file extension string delimited by comma. You can specify one or more file extensions.");
+
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -209,6 +214,16 @@ public class CommandLineBagDriver {
 				"Splits a bag by size. The default destination of split bags is parentDirOfSourceBag/SourceBagName_split. The default max bag size is 300 GB.",
 				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
+		
+		this.addOperation(OPERATION_SPLIT_BAG_BY_FILE_TYPE,
+				"Splits a bag by file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. You can speficy one or more file extensions; files of these types will be grouped into a separate bag. ",
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam},
+				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
+		
+		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE,
+				"Splits a bag by size and file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. You can speficy one or more file extensions; files of these types will be grouped into separate bags of size no greater than the specified max bag size. ",
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam},
+				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
@@ -852,6 +867,23 @@ public class CommandLineBagDriver {
 			} else if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)) {
 				BagSplitter bagSplitter = new BagSplitter();
 				SimpleResult splitBagResult = bagSplitter.splitBagBySize(sourceFile, destFile, 
+						config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null,
+						config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR));
+				if(!splitBagResult.isSuccess()){
+					System.out.println("Split bag failed." + splitBagResult.getMessages());
+					return RETURN_FAILURE;
+				}
+			} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)) {
+				BagSplitter bagSplitter = new BagSplitter();
+				SimpleResult splitBagResult = bagSplitter.splitBagByFileType(sourceFile, destFile, config.getString(PARAM_FILE_EXTENSIONS).split(","));
+				if(!splitBagResult.isSuccess()){
+					System.out.println("Split bag failed." + splitBagResult.getMessages());
+					return RETURN_FAILURE;
+				}
+			}
+			else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)) {
+				BagSplitter bagSplitter = new BagSplitter();
+				SimpleResult splitBagResult = bagSplitter.splitBagBySizeAndFileType(sourceFile, destFile, config.getString(PARAM_FILE_EXTENSIONS).split(","), 
 						config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null,
 						config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR));
 				if(!splitBagResult.isSuccess()){
