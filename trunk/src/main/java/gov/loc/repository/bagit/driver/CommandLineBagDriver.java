@@ -10,10 +10,13 @@ import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
-import gov.loc.repository.bagit.transformer.impl.BagSplitter;
+import gov.loc.repository.bagit.transformer.Splitter;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.transformer.impl.SplitByFileType;
+import gov.loc.repository.bagit.transformer.impl.SplitBySize;
 import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.transfer.BagFetcher;
@@ -28,6 +31,7 @@ import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.SizeHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
@@ -212,18 +216,18 @@ public class CommandLineBagDriver {
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
 				"Splits a bag by size. The default destination of split bags is parentDirOfSourceBag/SourceBagName_split. The default max bag size is 300 GB.",
-				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam},
+				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_FILE_TYPE,
 				"Splits a bag by file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. You can speficy one or more file extensions; files of these types will be grouped into a separate bag. ",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam},
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam, writerParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE,
-				"Splits a bag by size and file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. You can speficy one or more file extensions; files of these types will be grouped into separate bags of size no greater than the specified max bag size. ",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam},
-				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
+				"Splits a bag by size and file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. File types delimted by comma will be grouped into different bags; file types demilited by colon will be grouped into one single bag.",
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam},
+				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE, this.getBag("mybag"), "pdf,gif:xml,gif")});	
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
 		completeParams.add(excludeBagInfoParam);
@@ -864,39 +868,98 @@ public class CommandLineBagDriver {
 				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				sender.send(bag, config.getString(PARAM_URL));				
-			} else if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)) {
-				BagSplitter bagSplitter = new BagSplitter();
-				SimpleResult splitBagResult = bagSplitter.splitBagBySize(sourceFile, destFile, 
-						config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null,
-						config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR));
-				if(!splitBagResult.isSuccess()){
-					System.out.println("Split bag failed." + splitBagResult.getMessages());
-					return RETURN_FAILURE;
+			} else if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)
+					|| OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)
+					|| OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)) {
+				
+				Bag srcBag = this.bagFactory.createBag(sourceFile, BagFactory.LoadOption.BY_PAYLOAD_FILES);
+				Double sourceBagSize = null;
+				if(srcBag.getBagInfoTxt() != null && srcBag.getBagInfoTxt().getPayloadOxum() != null){
+					sourceBagSize = new Double(srcBag.getBagInfoTxt().getPayloadOxum());					
 				}
-			} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)) {
-				BagSplitter bagSplitter = new BagSplitter();
-				SimpleResult splitBagResult = bagSplitter.splitBagByFileType(sourceFile, destFile, config.getString(PARAM_FILE_EXTENSIONS).split(","));
-				if(!splitBagResult.isSuccess()){
-					System.out.println("Split bag failed." + splitBagResult.getMessages());
-					return RETURN_FAILURE;
+
+				//The default dest of split bags is parentDirOfSourceBag/SourceBagName_split
+		    	File destBagFile = destFile == null ? new File(srcBag.getFile() + "_split") : destFile;
+
+		    	//The default max bag size is 300 GB. 
+		    	Double maxBagSizeInGB = config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : 300;
+			    Double maxBagSize =  maxBagSizeInGB != null ? maxBagSizeInGB * SizeHelper.GB : 300 * SizeHelper.GB;			
+				
+				String[] fileExtensions = config.contains(PARAM_FILE_EXTENSIONS) ? config.getString(PARAM_FILE_EXTENSIONS).split(",") : null;
+				String[][] fileExtensionsIn = null;
+				if(fileExtensions != null && fileExtensions.length > 0){
+					fileExtensionsIn = new String[fileExtensions.length][];
+					for(int i = 0 ; i < fileExtensions.length ; i++){
+						fileExtensionsIn[i] = fileExtensions[i].split(":");
+					}
 				}
-			}
-			else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)) {
-				BagSplitter bagSplitter = new BagSplitter();
-				SimpleResult splitBagResult = bagSplitter.splitBagBySizeAndFileType(sourceFile, destFile, config.getString(PARAM_FILE_EXTENSIONS).split(","), 
-						config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : null,
-						config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR));
-				if(!splitBagResult.isSuccess()){
-					System.out.println("Split bag failed." + splitBagResult.getMessages());
-					return RETURN_FAILURE;
+
+				boolean keepLowestLevelDir = config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR, false);
+				
+				if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)){
+					if(sourceBagSize != null && sourceBagSize <= maxBagSizeInGB * SizeHelper.GB){
+						System.out.println("Max bag size should not be greater than the source bag size.");
+						return RETURN_FAILURE;
+					}
+
+					Splitter splitter = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir);
+					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, true);
+
+				} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)){
+					if(fileExtensionsIn == null){
+						System.out.println("File extensions should not be null or empty.");
+						return RETURN_FAILURE;
+			    	}
+			    	
+					Splitter splitter = new SplitByFileType(this.bagFactory, fileExtensionsIn);
+					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, false);
+					
+				} else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)){
+					if(fileExtensionsIn == null){
+						System.out.println("File extensions should not be null or empty.");
+						return RETURN_FAILURE;
+			    	}
+
+					Splitter splitter1 = new SplitByFileType(this.bagFactory, fileExtensionsIn);
+					List<Bag> bags = splitter1.split(srcBag);
+					Splitter splitter2 = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir);
+					
+					for(Bag bag : bags) {
+						List<Bag> bagsUnderMaxSize = new ArrayList<Bag>();
+						if(new Double(bag.getBagInfoTxt().getPayloadOxum()) <= maxBagSizeInGB * SizeHelper.GB){
+							bagsUnderMaxSize.add(bag);
+						}else{
+							this.completeAndWriteBagToDisk(splitter2.split(bag), completer, writer, srcBag, destBagFile, true);							
+						}
+						this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true);							
+					}
 				}
-			}
+			} 
+			
 			log.info("Operation completed.");
 			return ret;
 		}
 		catch(Exception ex) {
 			log.error("Error: " + ex.getMessage(), ex);
 			return RETURN_ERROR;
+		}
+	}
+	
+	private void completeAndWriteBagToDisk(List<Bag> bags, Completer completer, Writer writer, Bag srcBag, File destBagFile, boolean appendNumber){
+		int i = 0;
+		for(Bag bag : bags) {
+			Bag newBag = completer.complete(bag);
+			
+			StringBuffer bagName = new StringBuffer();
+			bagName.append(srcBag.getFile().getName());
+			if(newBag.getBagInfoTxt().get(Splitter.FILE_TYPE_KEY) != null){
+				bagName.append("_").append(newBag.getBagInfoTxt().get(Splitter.FILE_TYPE_KEY).replaceAll(" ", "_"));
+			}
+			if(appendNumber && bags.size() > 1){
+				bagName.append("_").append(i);						
+			}
+	    	newBag.write(writer == null ? new FileSystemWriter(bagFactory) : writer, new File(destBagFile, bagName.toString()));
+	    	i++;
 		}
 	}
 	
