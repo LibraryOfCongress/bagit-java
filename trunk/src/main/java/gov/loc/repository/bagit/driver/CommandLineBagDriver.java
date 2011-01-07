@@ -159,6 +159,7 @@ public class CommandLineBagDriver {
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter optionalDestParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the destination bag (if different than the source bag).");
+		Parameter optionalSplitDestParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the split bags. The default <parent dir of source bag>/<source bag name>_split.");
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
 		Parameter additionalDirectoryTolerantParam = new Switch(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_ADDITIONAL_DIRECTORY_TOLERANT, "Tolerant of additional directories in the bag_dir.");
 		Parameter manifestSeparatorParam = new FlaggedOption(PARAM_MANIFEST_SEPARATOR, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MANIFEST_SEPARATOR, "Delimiter used in Payload and Tag Manifest files.  Place within quotes for whitespace.");
@@ -191,9 +192,9 @@ public class CommandLineBagDriver {
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
 		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
 		Parameter keepLowestLevelDirParam = new Switch(PARAM_KEEP_LOWEST_LEVEL_DIR, JSAP.NO_SHORTFLAG, PARAM_KEEP_LOWEST_LEVEL_DIR, "Does not split the lowest level directory.");
-		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The file extension string delimited by comma. You can specify one or more file extensions.");
+		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File extensions to be placed in a separate bag. File extensions are delimited by a comma.");
+		Parameter fileExtensions2Param = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File types delimited by a comma will be grouped into different bags; file types delimited by a colon will be grouped into one single bag.");
 
-		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
 				new Parameter[] {sourceParam, versionParam, noResultFileParam},
@@ -215,18 +216,18 @@ public class CommandLineBagDriver {
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
-				"Splits a bag by size. The default destination of split bags is parentDirOfSourceBag/SourceBagName_split. The default max bag size is 300 GB.",
-				new Parameter[] {sourceParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam},
+				"Splits a bag by size.",
+				new Parameter[] {sourceParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_FILE_TYPE,
-				"Splits a bag by file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. You can speficy one or more file extensions; files of these types will be grouped into a separate bag. ",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam, writerParam},
+				"Splits a bag by file types.",
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, writerParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE,
-				"Splits a bag by size and file types. The default destination of split bag is parentDirOfSourceBag/SourceBagName_split. File types delimted by comma will be grouped into different bags; file types demilited by colon will be grouped into one single bag.",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam},
+				"Splits a bag by size and file types.",
+				new Parameter[] {sourceParam, fileExtensions2Param, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE, this.getBag("mybag"), "pdf,gif:xml,gif")});	
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
