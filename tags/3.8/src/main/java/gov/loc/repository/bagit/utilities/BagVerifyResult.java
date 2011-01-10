@@ -27,8 +27,9 @@ public class BagVerifyResult extends SimpleResult {
 	public void merge(SimpleResult result){
 		if(result == null) {
 			return;
-		} else if(result instanceof BagVerifyResult) {
-			super.merge(result);
+		}
+		super.merge(result);
+		if(result instanceof BagVerifyResult) {
 			this.missingAndInvalidFiles.addAll(((BagVerifyResult) result).getMissingAndInvalidFiles());
 		}
 	}
