@@ -45,6 +45,11 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.8:
+1. Added support for splitting bags.
+2. Added support for resuming fetches of bags.
+3. Improved support for filepaths with encoding.
+
 Changes in 3.7.1:
 1. Fixed defect in the writing of repeated fields in bag-info.txt.
 2. Fixed defect in adding a list of values to bag-info.txt.
