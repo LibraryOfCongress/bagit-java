@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.transfer;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
@@ -327,7 +328,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	for (FetchTxt.FilenameSizeUrl line : sortedFetchLines)
     	{
     		// Do not add a file to the fetch targets if the file is not missing or corrupted.
-    		if(resume && !bagVerifyResult.getMissingAndInvalidFiles().contains(line.getFilename())){
+    		if(resume && BagHelper.isPayload(line.getFilename(), this.bagFactory.getBagConstants()) && !bagVerifyResult.getMissingAndInvalidFiles().contains(line.getFilename())){
     			continue;
     		}else {
     			if (currentTarget == null || !currentTarget.getFilename().equals(line.getFilename()))
