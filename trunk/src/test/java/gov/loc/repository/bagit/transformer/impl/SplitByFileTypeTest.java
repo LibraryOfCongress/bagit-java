@@ -29,7 +29,7 @@ public class SplitByFileTypeTest {
 		String[][] fileExtensions = new String[2][];
 		fileExtensions[0] = new String[]{"txt"};
 		fileExtensions[1] = new String[]{"xml", "html"};
-		splitter = new SplitByFileType(this.bagFactory, fileExtensions);
+		splitter = new SplitByFileType(this.bagFactory, fileExtensions, null);
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag-split", BagFactory.LATEST.toString().toLowerCase()));
 		bag = bagFactory.createBag(sourceBagDir, BagFactory.LoadOption.BY_PAYLOAD_FILES);
 		srcBagPayloadFiles = bag.getPayload();
@@ -86,6 +86,55 @@ public class SplitByFileTypeTest {
 		assertTrue(containsTxt);		
 		assertEquals(fileCount, srcBagPayloadFiles.size());
 		assertEquals(fileSize, this.srcBagPayloadSize);
+		assertEquals(newBags.size(), 2);
+	}
+	
+	@Test
+	public void testSplitExcludeDirs(){
+		splitter.setExludeDirs(new String[]{"data/dir1"});
+		List<Bag> newBags = splitter.split(bag);
+		boolean containsTxt = false;
+		boolean containsXmlAndHtml = false;
+		
+		int fileCount = 0;
+		long fileSize = 0L;
+		for(Bag newBag : newBags) {
+			long newBagSize = 0L;
+			Collection<BagFile> bagFiles = newBag.getPayload();
+			Set<String> bagFileDirs = new HashSet<String>();
+			fileCount += bagFiles.size();
+			for(BagFile bagFile : bagFiles) {
+				newBagSize += bagFile.getSize();		
+				bagFileDirs.add(bagFile.getFilepath());
+				assertTrue(srcBagPayloadFileDirs.contains(bagFile.getFilepath()));								
+			}
+			
+			assertFalse(bagFileDirs.contains("data/dir1/test3.txt"));
+			assertFalse(bagFileDirs.contains("data/dir1/test3.xml"));
+			assertFalse(bagFileDirs.contains("data/dir1/test3.html"));
+			
+			if(bagFileDirs.contains("data/test1.txt")){
+				assertTrue(bagFileDirs.contains("data/dir2/dir3/test5.txt"));
+				assertTrue(bagFileDirs.contains("data/dir2/test4.txt"));
+				assertTrue(bagFileDirs.contains("data/test2.txt"));
+				assertEquals(bagFileDirs.size(), 4);
+				containsTxt = true;
+			}
+			if(bagFileDirs.contains("data/dir2/dir3/test5.xml")){
+				assertTrue(bagFileDirs.contains("data/dir2/dir3/test5.html"));
+				assertTrue(bagFileDirs.contains("data/dir2/test4.xml"));
+				assertTrue(bagFileDirs.contains("data/test1.xml"));
+				assertEquals(bagFileDirs.size(), 4);
+				containsXmlAndHtml = true;
+			}
+			
+			
+			fileSize += newBagSize;
+		}
+		
+		assertTrue(containsXmlAndHtml);
+		assertTrue(containsTxt);		
+		assertEquals(fileCount, srcBagPayloadFiles.size() - 3);
 		assertEquals(newBags.size(), 2);
 	}
 }

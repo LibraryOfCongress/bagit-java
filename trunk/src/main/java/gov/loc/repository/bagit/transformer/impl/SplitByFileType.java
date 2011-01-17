@@ -13,7 +13,8 @@ public class SplitByFileType implements Splitter{
 	
 	private BagFactory bagFactory;
 	private String[][] fileExtensions;
-	
+	private String[] exludeDirs;
+
 	public String[][] getFileExtensions() {
 		return fileExtensions;
 	}
@@ -22,9 +23,10 @@ public class SplitByFileType implements Splitter{
 		this.fileExtensions = fileExtensions;
 	}
 
-	public SplitByFileType(BagFactory bagFactory, String[][] fileExtensions) {
+	public SplitByFileType(BagFactory bagFactory, String[][] fileExtensions, String[] excludeDirs) {
 		this.bagFactory = bagFactory;
 		this.setFileExtensions(fileExtensions);
+		this.setExludeDirs(excludeDirs);
 	}
 	
 	@Override
@@ -37,7 +39,7 @@ public class SplitByFileType implements Splitter{
 		    for(BagFile bagFile : srcBag.getPayload()){
 		    	String fileExtension = bagFile.getFilepath().substring(bagFile.getFilepath().lastIndexOf('.') + 1);
 		    	for(String fileEx : subFileExtension){
-		    		if(fileEx.trim().equalsIgnoreCase(fileExtension)){
+		    		if(fileEx.trim().equalsIgnoreCase(fileExtension) && ! SplitBagHelper.isExcluded(this.getExludeDirs(), bagFile.getFilepath())){
 		    			targetedBagFiles.add(bagFile);
 		    			break;
 		    		}
@@ -75,5 +77,13 @@ public class SplitByFileType implements Splitter{
 			i++;			
 		}
 		return sb.toString();
+	}
+	
+	public String[] getExludeDirs() {
+		return exludeDirs;
+	}
+
+	public void setExludeDirs(String[] exludeDirs) {
+		this.exludeDirs = exludeDirs;
 	}
 }

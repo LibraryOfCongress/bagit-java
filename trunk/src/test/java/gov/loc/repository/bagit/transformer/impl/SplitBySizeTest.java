@@ -28,7 +28,7 @@ public class SplitBySizeTest {
 	@Before
 	public void setup() throws Exception {
 		maxPayloadSize = new Double(20);
-		splitter = new SplitBySize(this.bagFactory, maxPayloadSize, false);
+		splitter = new SplitBySize(this.bagFactory, maxPayloadSize, false, null);
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag-split", BagFactory.LATEST.toString().toLowerCase()));
 		bag = bagFactory.createBag(sourceBagDir, BagFactory.LoadOption.BY_PAYLOAD_FILES);
 		srcBagPayloadFiles = bag.getPayload();
@@ -107,12 +107,77 @@ public class SplitBySizeTest {
 		assertEquals(newBags.size(), 3);
 	}
 	
+	@Test
+	public void testSplitExcludeDirs(){
+		splitter.setExludeDirs(new String[]{"data/dir1"});
+		assertEquals(splitter.getExludeDirs().length, 1);
+		List<Bag> newBags = splitter.split(bag);
+		
+		int fileCount = 0;
+		for(Bag newBag : newBags) {
+			long newBagSize = 0L;
+			Collection<BagFile> bagFiles = newBag.getPayload();
+			Set<String> bagFileDirs = new HashSet<String>();
+			fileCount += bagFiles.size();
+			for(BagFile bagFile : bagFiles) {
+				newBagSize += bagFile.getSize();		
+				bagFileDirs.add(bagFile.getFilepath());
+			}
+			
+			assertFalse(bagFileDirs.contains("data/dir1/test3.txt"));
+			assertFalse(bagFileDirs.contains("data/dir1/test3.xml"));
+			assertFalse(bagFileDirs.contains("data/dir1/test3.html"));
+		}
+
+		assertEquals(fileCount, srcBagPayloadFiles.size() - 3);
+		assertEquals(newBags.size(), 2);
+	}
+	
+	@Test
+	public void testSplitKeepLowestLevelDirAndExcludeDirs(){
+		splitter.setKeepLowestLevelDir(true);
+		splitter.setExludeDirs(new String[]{"data/dir1"});
+		List<Bag> newBags = splitter.split(bag);
+		boolean containsDir3 = false;
+		
+		int fileCount = 0;
+		long fileSize = 0L;
+		for(Bag newBag : newBags) {
+			long newBagSize = 0L;
+			Collection<BagFile> bagFiles = newBag.getPayload();
+			Set<String> bagFileDirs = new HashSet<String>();
+			fileCount += bagFiles.size();
+			for(BagFile bagFile : bagFiles) {
+				newBagSize += bagFile.getSize();		
+				bagFileDirs.add(bagFile.getFilepath());
+				assertTrue(srcBagPayloadFileDirs.contains(bagFile.getFilepath()));								
+			}
+			
+			assertFalse(bagFileDirs.contains("data/dir1/test3.txt"));
+			assertFalse(bagFileDirs.contains("data/dir1/test3.xml"));
+			assertFalse(bagFileDirs.contains("data/dir1/test3.html"));
+			
+			if(bagFileDirs.contains("data/dir2/dir3/test5.txt")){
+				assertTrue(bagFileDirs.contains("data/dir2/dir3/test5.xml"));
+				assertTrue(bagFileDirs.contains("data/dir2/dir3/test5.html"));
+				containsDir3 = true;
+			}
+						
+			assertTrue(newBagSize <= this.maxPayloadSize);
+			fileSize += newBagSize;
+		}
+		
+		assertTrue(containsDir3);		
+		assertEquals(fileCount, srcBagPayloadFiles.size() - 3);
+		assertEquals(newBags.size(), 2);
+	}
 	
 	@Test
 	public void testSplitWithException(){
 		this.maxPayloadSize = new Double(10);
 		splitter.setKeepLowestLevelDir(true);
 		splitter.setMaxBagSize(this.maxPayloadSize);
+		splitter.setExludeDirs(null);
 		boolean caughtEx = false;
 		try{
 			splitter.split(bag);			

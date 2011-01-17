@@ -22,11 +22,13 @@ public class SplitBySize implements Splitter{
 	private Double maxBagSize;
 	private boolean keepLowestLevelDir;
 	private BagFactory bagFactory;
-	
-	public SplitBySize(BagFactory bagFactory, Double maxBagSize, boolean keepLowestLevelDir) {
+	private String[] exludeDirs;
+
+	public SplitBySize(BagFactory bagFactory, Double maxBagSize, boolean keepLowestLevelDir, String[] excludeDirs) {
 		this.bagFactory = bagFactory;
 		this.setKeepLowestLevelDir(keepLowestLevelDir);
 		this.setMaxBagSize(maxBagSize);
+		this.setExludeDirs(excludeDirs);
 	}
 	
 	@Override
@@ -34,7 +36,7 @@ public class SplitBySize implements Splitter{
 	    List<Bag> subBags = new ArrayList<Bag>();
 		
 		//Sort bag files in the source bag
-		List<BagFile> sortedBagFiles = this.sortBagFiles(srcBag.getPayload(), this.isKeepLowestLevelDir(), this.getMaxBagSize());
+		List<BagFile> sortedBagFiles = this.sortBagFiles(srcBag.getPayload(), this.isKeepLowestLevelDir(), this.getMaxBagSize(), this.getExludeDirs());
 	    
 	    //Group bag files of the source bag
 	    List<BagFileGroup> bagFileGroups = group(sortedBagFiles, this.getMaxBagSize());
@@ -60,14 +62,15 @@ public class SplitBySize implements Splitter{
 		return subBags;
 	}
 
-	private List<BagFile> sortBagFiles(Collection<BagFile> payloadBagFiles, boolean keepLowestLevelDir, Double maxBagSize){
+	private List<BagFile> sortBagFiles(Collection<BagFile> payloadBagFiles, boolean keepLowestLevelDir, Double maxBagSize, String[] excludeDirs){
     	List<BagFile> sortedBagFiles = new ArrayList<BagFile>();
 		
     	//Get all the file path directories 
     	Set<String> filePathDirs = new HashSet<String>();
     	for(BagFile bagFile : payloadBagFiles){
-    		String filePath = bagFile.getFilepath();
-    		filePathDirs.add(this.getFilePathDir(filePath));
+    		if(! SplitBagHelper.isExcluded(excludeDirs, this.getFilePathDir(bagFile.getFilepath()))) {
+        		filePathDirs.add(this.getFilePathDir(bagFile.getFilepath()));	
+    		}
     	}
     	    	
     	if(keepLowestLevelDir){
@@ -94,7 +97,9 @@ public class SplitBySize implements Splitter{
     	        			if(bagFile.getSize() >= maxBagSize) {
     	        				throw new RuntimeException(MessageFormat.format("The size of the file {0} exceeds the maximum split bag size {1}.", bagFile.getFilepath(),SizeHelper.getSize((long)(maxBagSize.longValue()))));    				
     	        	    	}
-    	        			sortedBagFiles.add(bagFile);
+    	        			if( ! SplitBagHelper.isExcluded(excludeDirs, bagFile.getFilepath())){
+        	        			sortedBagFiles.add(bagFile);    	        				
+    	        			}
     	        		}
     	        	}
     			}
@@ -104,7 +109,9 @@ public class SplitBySize implements Splitter{
         		if(bagFile.getSize() >= maxBagSize) {
         			throw new RuntimeException(MessageFormat.format("The size of the file {0} exceeds the maximum split bag size {1}.", bagFile.getFilepath(),SizeHelper.getSize((long)(maxBagSize.longValue()))));    				
         	    }
-        		sortedBagFiles.add(bagFile);
+        		if( ! SplitBagHelper.isExcluded(excludeDirs, bagFile.getFilepath())){
+        			sortedBagFiles.add(bagFile);    	        				
+    			}  
         	}
     	}
     	
@@ -236,7 +243,7 @@ public class SplitBySize implements Splitter{
 			this.bagFiles.add(bagFile);
 		}
     }
-	 
+	
 	 public Double getMaxBagSize() {
 		return maxBagSize;
 	 }
@@ -251,5 +258,13 @@ public class SplitBySize implements Splitter{
 
 	public void setKeepLowestLevelDir(boolean keepLowestLevelDir) {
 		this.keepLowestLevelDir = keepLowestLevelDir;
-	}	
+	}
+	
+	public String[] getExludeDirs() {
+		return exludeDirs;
+	}
+
+	public void setExludeDirs(String[] exludeDirs) {
+		this.exludeDirs = exludeDirs;
+	}
 }
