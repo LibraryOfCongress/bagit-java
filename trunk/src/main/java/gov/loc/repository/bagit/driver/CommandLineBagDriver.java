@@ -194,9 +194,8 @@ public class CommandLineBagDriver {
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
 		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
 		Parameter keepLowestLevelDirParam = new Switch(PARAM_KEEP_LOWEST_LEVEL_DIR, JSAP.NO_SHORTFLAG, PARAM_KEEP_LOWEST_LEVEL_DIR, "Does not split the lowest level directory.");
-		Parameter keepSourceBagParam = new Switch(PARAM_KEEP_SOURCE_BAG, JSAP.NO_SHORTFLAG, PARAM_KEEP_SOURCE_BAG, "Does not delete the source bag.");
-		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File extensions to be placed in a separate bag. File extensions are delimited by a comma.");
-		Parameter fileExtensions2Param = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File types delimited by a comma will be grouped into different bags; file types delimited by a colon will be grouped into one single bag.");
+		//Parameter keepSourceBagParam = new Switch(PARAM_KEEP_SOURCE_BAG, JSAP.NO_SHORTFLAG, PARAM_KEEP_SOURCE_BAG, "Does not delete the source bag.");
+		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File types delimited by a comma will be grouped into different bags; file types delimited by a colon will be grouped into one single bag.");
 		Parameter excludeDirsParam = new FlaggedOption(PARAM_EXCLUDE_DIRS, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_DIRS, "Directories in the bag to be ignored in the split operation; they will be kept in the source bag; they should be relative to the base path of the bag. ");
 
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
@@ -221,17 +220,17 @@ public class CommandLineBagDriver {
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
 				"Splits a bag by size.",
-				new Parameter[] {sourceParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, excludeDirsParam, keepSourceBagParam},
+				new Parameter[] {sourceParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, excludeDirsParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_FILE_TYPE,
 				"Splits a bag by file types.",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, writerParam, excludeDirsParam, keepSourceBagParam},
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, writerParam, excludeDirsParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE,
 				"Splits a bag by size and file types.",
-				new Parameter[] {sourceParam, fileExtensions2Param, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, excludeDirsParam, keepSourceBagParam},
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, excludeDirsParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE, this.getBag("mybag"), "pdf,gif:xml,gif")});	
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
@@ -902,7 +901,7 @@ public class CommandLineBagDriver {
 				String[] excludeDirs = config.contains(PARAM_EXCLUDE_DIRS) ? config.getString(PARAM_EXCLUDE_DIRS).split(",") : null;
 
 				boolean keepLowestLevelDir = config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR, false);
-				boolean keepSourceBag = config.getBoolean(PARAM_KEEP_SOURCE_BAG, false);
+				//boolean keepSourceBag = config.getBoolean(PARAM_KEEP_SOURCE_BAG, false);
 				
 				if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)){
 					if(sourceBagSize != null && sourceBagSize <= maxBagSizeInGB * SizeHelper.GB){
@@ -911,7 +910,7 @@ public class CommandLineBagDriver {
 					}
 
 					Splitter splitter = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir, excludeDirs);
-					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, true, excludeDirs, keepSourceBag);
+					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, true);
 
 				} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)){
 					if(fileExtensionsIn == null){
@@ -920,7 +919,7 @@ public class CommandLineBagDriver {
 			    	}
 			    	
 					Splitter splitter = new SplitByFileType(this.bagFactory, fileExtensionsIn, excludeDirs);
-					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, false, excludeDirs, keepSourceBag);
+					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, false);
 					
 				} else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)){
 					if(fileExtensionsIn == null){
@@ -937,9 +936,9 @@ public class CommandLineBagDriver {
 						if(new Double(bag.getBagInfoTxt().getPayloadOxum()) <= maxBagSizeInGB * SizeHelper.GB){
 							bagsUnderMaxSize.add(bag);
 						}else{
-							this.completeAndWriteBagToDisk(splitter2.split(bag), completer, writer, srcBag, destBagFile, true, excludeDirs, keepSourceBag);							
+							this.completeAndWriteBagToDisk(splitter2.split(bag), completer, writer, srcBag, destBagFile, true);							
 						}
-						this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true, excludeDirs, keepSourceBag);							
+						this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true);							
 					}
 				}
 			} 
@@ -953,7 +952,7 @@ public class CommandLineBagDriver {
 		}
 	}
 	
-	private void completeAndWriteBagToDisk(List<Bag> bags, Completer completer, Writer writer, Bag srcBag, File destBagFile, boolean appendNumber, String[] excludeDirs, boolean keepSourceBag){
+	private void completeAndWriteBagToDisk(List<Bag> bags, Completer completer, Writer writer, Bag srcBag, File destBagFile, boolean appendNumber){
 					
 		int i = 0;
 		for(Bag bag : bags) {
@@ -972,12 +971,15 @@ public class CommandLineBagDriver {
 	    	i++;	    	
 		}
 		
+		/*
 		if(! keepSourceBag){
 			//Delete the source bag except excluded directories
 			this.deleteDir(srcBag.getFile(), excludeDirs);
 		}
+		*/
 	}
 	
+	/*
 	private boolean deleteDir(File dir, String[] excludeDirs) {
 		if(excludeDirs != null){
     		for(String excludeDir : excludeDirs){
@@ -1001,6 +1003,7 @@ public class CommandLineBagDriver {
     
         return dir.delete();        	
     } 
+	*/
 	
 	private void writeResultFile(String operation, SimpleResult result, File bagFile) {
 		if (result.isSuccess()) return;
