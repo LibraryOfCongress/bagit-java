@@ -173,7 +173,12 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         String normalizedScheme = scheme.toLowerCase();
         this.protocolFactories.put(normalizedScheme, protocol);
     }
-    
+
+    public BagFetchResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory) throws BagTransferException
+    {
+        return this.fetch(bag, destinationFactory, false);
+    }
+
     public BagFetchResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory, boolean resume) throws BagTransferException
     {
         this.bagToFetch = bag;

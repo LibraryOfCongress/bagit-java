@@ -17,20 +17,22 @@ To learn more about the supported operations, invoke the commandline interface
 with no arguments.  If you encounter memory issues, the memory allocation can
 be increased in the scripts found in the bin directory.
 
-LICENSES FOR BUNDLED DEPENDENCIES:
- * JSAP - http://www.martiansoftware.com/jsap/license.html
- * Classworlds - http://classworlds.codehaus.org/license.html
- * Commons Logging - http://commons.apache.org/logging/license.html
- * Commons IO - http://commons.apache.org/io/license.html
- * Commons Codec - http://commons.apache.org/codec/license.html
- * Commons VFS - http://commons.apache.org/vfs/license.html
- * Commons HttpClient - http://hc.apache.org/httpclient-3.x/license.html
- * Commons Net - http://commons.apache.org/net/license.html
- * Commons Exec - http://commons.apache.org/exec/license.html
- * Ant - http://ant.apache.org/license.html
- * Log4j - http://logging.apache.org/log4j/1.2/license.html
- * Dom4j - http://www.dom4j.org/dom4j-1.6.1/license.html
- * Jaxen - http://fisheye.codehaus.org/browse/~raw,r=1340/trunk/jaxen/jaxen/LICENSE.txt
+BUNDLED DEPENDENCIES:
+ * JSAP (http://www.martiansoftware.com/jsap/)
+ * Classworlds (http://classworlds.codehaus.org/)
+ * Commons Logging (http://commons.apache.org/logging/)
+ * Commons IO (http://commons.apache.org/io/)
+ * Commons Codec (http://commons.apache.org/codec/)
+ * Commons VFS (http://commons.apache.org/vfs/)
+ * Commons HttpClient (http://hc.apache.org/httpclient-3.x/)
+ * Commons Net (http://commons.apache.org/net/)
+ * Commons Exec (http://commons.apache.org/exec/)
+ * Ant (http://ant.apache.org/)
+ * Log4j (http://logging.apache.org/log4j/1.2/)
+ * Dom4j (http://www.dom4j.org/dom4j-1.6.1/)
+ * Jaxen (http://jaxen.codehaus.org/)
+
+Please see LICENSE.txt for the licenses that apply to these dependencies.
 
 NOTE IF USING WITH ECLIPSE:
 There is a known defect with m2eclipse (https://issues.sonatype.org/browse/MNGECLIPSE-1091)

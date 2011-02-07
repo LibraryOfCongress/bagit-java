@@ -11,8 +11,8 @@
 	<url>http://loc-xferutils.sourceforge.net</url>
 	<licenses>
 		<license>
-			<name>New BSD License</name>
-			<url>http://www.opensource.org/licenses/bsd-license.php</url>
+			<name>Public Domain</name>
+			<comments>See LICENSE.txt</comments>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
