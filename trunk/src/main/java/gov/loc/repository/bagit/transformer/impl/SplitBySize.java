@@ -16,6 +16,7 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.transformer.Splitter;
 import gov.loc.repository.bagit.utilities.SizeHelper;
+import gov.loc.repository.bagit.utilities.namevalue.NameValueReader.NameValue;
 
 public class SplitBySize implements Splitter{
 
@@ -47,8 +48,11 @@ public class SplitBySize implements Splitter{
 	    	Bag subBag = bagFactory.createBag(srcBag.getVersion());	    	
 	    	BagInfoTxt bagInfoTxt = subBag.getBagPartFactory().createBagInfoTxt();
 	    	subBag.putBagFile(bagInfoTxt);
-	    	//Add bag info from the source bag to the new bag
-	    	subBag.getBagInfoTxt().putAll(srcBag.getBagInfoTxt());
+	    	//Add bag info from the source bag to the split bag
+	    	List<NameValue> list = srcBag.getBagInfoTxt().asList();
+	    	for(NameValue nameValue: list){
+		    	subBag.getBagInfoTxt().put(nameValue);	    		
+	    	}
 	    	for(BagFile bagFile : groupBagFiles){
 	    		if(bagFile instanceof LowestLevelBagDir){
 	    			subBag.putBagFiles(((LowestLevelBagDir) bagFile).getBagFiles());
