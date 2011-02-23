@@ -30,6 +30,10 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.9:
+1. Change to licensing terms.
+2. Minor modifications to support for splitting bags.
+
 Changes in 3.8:
 1. Added support for splitting bags.
 2. Added support for resuming fetches of bags.
