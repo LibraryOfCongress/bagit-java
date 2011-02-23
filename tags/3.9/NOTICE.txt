@@ -1,0 +1,88 @@
+Acknowledgements
+----------------
+This software uses code from the following projects:
+ * JSAP (http://www.martiansoftware.com/jsap/)
+ * Classworlds (http://classworlds.codehaus.org/)
+ * Commons Logging (http://commons.apache.org/logging/)
+ * Commons IO (http://commons.apache.org/io/)
+ * Commons Codec (http://commons.apache.org/codec/)
+ * Commons VFS (http://commons.apache.org/vfs/)
+ * Commons HttpClient (http://hc.apache.org/httpclient-3.x/)
+ * Commons Net (http://commons.apache.org/net/)
+ * Commons Exec (http://commons.apache.org/exec/)
+ * Ant (http://ant.apache.org/)
+ * Log4j (http://logging.apache.org/log4j/1.2/)
+ * Dom4j (http://www.dom4j.org/dom4j-1.6.1/)
+ * Jaxen (http://jaxen.codehaus.org/)
+
+Please see LICENSE.txt for the licenses that apply to these dependencies.
+
+
+Copyright notices for software licensed under Apache 2.0
+--------------------------------------------------------
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+
+
+Apache Commons Logging
+Copyright 2003-2007 The Apache Software Foundation
+
+
+Apache Commons Exec
+Copyright 2005-2010 The Apache Software Foundation
+
+
+Apache Commons IO
+Copyright 2002-2010 The Apache Software Foundation
+
+
+Apache Commons Net
+Copyright 2001-2010 The Apache Software Foundation
+
+
+Apache Jakarta Commons VFS
+Copyright 2002-2006 The Apache Software Foundation
+
+
+Apache log4j
+Copyright 2007 The Apache Software Foundation
+
+
+Apache HttpComponents Client
+Copyright 1999-2011 The Apache Software Foundation
+
+This project contains annotations derived from JCIP-ANNOTATIONS
+Copyright (c) 2005 Brian Goetz and Tim Peierls. See http://www.jcip.net
+
+
+Apache Commons Codec
+Copyright 2002-2009 The Apache Software Foundation
+
+src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java contains 
+test data from http://aspell.sourceforge.net/test/batch0.tab.
+
+Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org). Verbatim copying
+and distribution of this entire article is permitted in any medium,
+provided this notice is preserved.
+
+
+Apache Ant
+Copyright 1999-2008 The Apache Software Foundation
+
+This product includes also software developed by :
+  - the W3C consortium (http://www.w3c.org) ,
+  - the SAX project (http://www.saxproject.org)
+
+The <sync> task is based on code Copyright (c) 2002, Landmark
+Graphics Corp that has been kindly donated to the Apache Software
+Foundation.
+
+Portions of this software were originally based on the following:
+  - software copyright (c) 1999, IBM Corporation., http://www.ibm.com.
+  - software copyright (c) 1999, Sun Microsystems., http://www.sun.com.
+  - voluntary contributions made by Paul Eng on behalf of the 
+    Apache Software Foundation that were originally developed at iClick, Inc.,
+    software copyright (c) 1999.
+
+
+

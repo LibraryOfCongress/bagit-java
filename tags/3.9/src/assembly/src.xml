@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+  <id>src</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+        <directory>${project.basedir}</directory>
+        <filtered>true</filtered>
+        <outputDirectory>/</outputDirectory>
+        <includes>
+            <include>README.txt</include>
+            <include>LICENSE.txt</include>
+            <include>NOTICE.txt</include>
+            <include>pom.xml</include>
+        </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/src</directory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
+  </fileSets>
+</assembly>
