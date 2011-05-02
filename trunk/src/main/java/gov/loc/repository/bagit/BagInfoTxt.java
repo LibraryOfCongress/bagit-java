@@ -32,15 +32,27 @@ public interface BagInfoTxt extends BagFile, NameValueMapList {
 	
 	void setSourceOrganization(String sourceOrganization);
 	
+	void addSourceOrganization(String sourceOrganization);
+	
 	void setOrganizationAddress(String organizationAddress);
+	
+	void addOrganizationAddress(String organizationAddress);
 	
 	void setContactName(String contactName);
 	
+	void addContactName(String contactName);
+	
 	void setContactPhone(String contactPhone);
+	
+	void addContactPhone(String contactPhone);
 	
 	void setContactEmail(String contactEmail);
 	
+	void addContactEmail(String contactEmail);
+	
 	void setExternalDescription(String externalDescription);
+	
+	void addExternalDescription(String externalDescription);
 	
 	void setBaggingDate(String baggingDate);
 	
@@ -49,6 +61,8 @@ public interface BagInfoTxt extends BagFile, NameValueMapList {
 	void setBaggingDate(Date date);
 	
 	void setExternalIdentifier(String externalIdentifier);
+	
+	void addExternalIdentifier(String externalIdentifier);
 	
 	void setBagSize(String bagSize);
 	
@@ -62,31 +76,51 @@ public interface BagInfoTxt extends BagFile, NameValueMapList {
 	
 	void setBagGroupIdentifier(String bagGroupIdentifier);
 	
+	void addBagGroupIdentifier(String bagGroupIdentifier);
+	
 	void setBagCount(String bagCount);
 	
 	void setBagCount(int bagInGroup, int totalBagsInGroup);
 	
 	void setInternalSenderIdentifier(String internalSenderIdentifier);
 	
+	void addInternalSenderIdentifier(String internalSenderIdentifier);
+	
 	void setInternalSenderDescription(String internalSenderDescription);
+	
+	void addInternalSenderDescription(String internalSenderDescription);
 	
 	String getSourceOrganization();
 	
+	List<String> getSourceOrganizationList();
+	
 	String getOrganizationAddress();
+	
+	List<String> getOrganizationAddressList();
 	
 	String getContactName();
 	
+	List<String> getContactNameList();
+	
 	String getContactPhone();
+	
+	List<String> getContactPhoneList();
 	
 	String getContactEmail();
 	
+	List<String> getContactEmailList();
+	
 	String getExternalDescription();
+	
+	List<String> getExternalDescriptionList();
 	
 	String getBaggingDate();
 	
 	Date getBaggingDateObj() throws ParseException;
 	
 	String getExternalIdentifier();
+	
+	List<String> getExternalIdentifierList();
 	
 	String getBagSize();
 	
@@ -98,6 +132,8 @@ public interface BagInfoTxt extends BagFile, NameValueMapList {
 	
 	String getBagGroupIdentifier();
 	
+	List<String> getBagGroupIdentifierList();
+	
 	String getBagCount();
 	
 	Integer getBagInGroup() throws ParseException;
@@ -106,7 +142,11 @@ public interface BagInfoTxt extends BagFile, NameValueMapList {
 	
 	String getInternalSenderIdentifier();
 	
+	List<String> getInternalSenderIdentifierList();
+	
 	String getInternalSenderDescription();
+	
+	List<String> getInternalSenderDescriptionList();
 	
 	List<String> getStandardFields();
 	

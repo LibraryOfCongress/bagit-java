@@ -397,5 +397,106 @@ public class BagInfoTxtImpl extends AbstractNameValueMapListBagFile implements B
 		}		
 		return nonstandardFields;
 	}
+
+	@Override
+	public void addBagGroupIdentifier(String bagGroupIdentifier) {
+		this.putList(FIELD_BAG_GROUP_IDENTIFIER, bagGroupIdentifier);
+		
+	}
+
+	@Override
+	public void addContactEmail(String contactEmail) {
+		this.putList(FIELD_CONTACT_EMAIL, contactEmail);		
+	}
+
+	@Override
+	public void addContactName(String contactName) {
+		this.putList(FIELD_CONTACT_NAME, contactName);
+	}
+
+	@Override
+	public void addContactPhone(String contactPhone) {
+		this.putList(FIELD_CONTACT_PHONE, contactPhone);		
+	}
+
+	@Override
+	public void addExternalDescription(String externalDescription) {
+		this.putList(FIELD_EXTERNAL_DESCRIPTION, externalDescription);
+	}
+
+	@Override
+	public void addExternalIdentifier(String externalIdentifier) {
+		this.putList(FIELD_EXTERNAL_IDENTIFIER, externalIdentifier);		
+	}
+
+	@Override
+	public void addInternalSenderDescription(String internalSenderDescription) {
+		this.putList(FIELD_INTERNAL_SENDER_DESCRIPTION, internalSenderDescription);		
+	}
+
+	@Override
+	public void addInternalSenderIdentifier(String internalSenderIdentifier) {
+		this.putList(FIELD_INTERNAL_SENDER_IDENTIFIER, internalSenderIdentifier);		
+	}
+
+	@Override
+	public void addOrganizationAddress(String organizationAddress) {
+		this.putList(FIELD_ORGANIZATION_ADDRESS, organizationAddress);		
+	}
+
+	@Override
+	public void addSourceOrganization(String sourceOrganization) {
+		this.putList(FIELD_SOURCE_ORGANIZATION, sourceOrganization);
+	}
+
+	@Override
+	public List<String> getBagGroupIdentifierList() {
+		return this.getListCaseInsensitive(FIELD_BAG_GROUP_IDENTIFIER);
+	}
+
+	@Override
+	public List<String> getContactEmailList() {
+		return this.getListCaseInsensitive(FIELD_CONTACT_EMAIL);
+	}
+
+	@Override
+	public List<String> getContactNameList() {
+		return this.getListCaseInsensitive(FIELD_CONTACT_NAME);
+	}
+
+	@Override
+	public List<String> getContactPhoneList() {
+		return this.getListCaseInsensitive(FIELD_CONTACT_PHONE);
+	}
+
+	@Override
+	public List<String> getExternalDescriptionList() {
+		return this.getListCaseInsensitive(FIELD_EXTERNAL_DESCRIPTION);
+	}
+
+	@Override
+	public List<String> getExternalIdentifierList() {
+		return this.getListCaseInsensitive(FIELD_EXTERNAL_IDENTIFIER);
+	}
+
+	@Override
+	public List<String> getInternalSenderDescriptionList() {
+		return this.getListCaseInsensitive(FIELD_INTERNAL_SENDER_DESCRIPTION);
+	}
+
+	@Override
+	public List<String> getInternalSenderIdentifierList() {
+		return this.getListCaseInsensitive(FIELD_INTERNAL_SENDER_IDENTIFIER);
+	}
+
+	@Override
+	public List<String> getOrganizationAddressList() {
+		return this.getListCaseInsensitive(FIELD_ORGANIZATION_ADDRESS);
+	}
+
+	@Override
+	public List<String> getSourceOrganizationList() {
+		return this.getListCaseInsensitive(FIELD_SOURCE_ORGANIZATION);
+	}
 	
 }

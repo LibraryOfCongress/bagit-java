@@ -227,6 +227,12 @@ public abstract class AbstractBagInfoTxtImplTest {
 		assertEquals(2, values.size());
 		assertEquals("Spengler University", values.get(0));
 		assertEquals("Mangler University", values.get(1));
+		
+		values = bagInfo.getSourceOrganizationList();
+		assertEquals(2, values.size());
+		assertEquals("Spengler University", values.get(0));
+		assertEquals("Mangler University", values.get(1));
+		
 		bagInfo.putList("Source-Organization", "Fangler University");
 		values = bagInfo.getList("Source-Organization");
 		assertEquals(3, values.size());
@@ -235,13 +241,14 @@ public abstract class AbstractBagInfoTxtImplTest {
 		bagInfo.removeList("Source-Organization", "Mangler University");
 		values = bagInfo.getList("Source-Organization");
 		assertEquals(2, values.size());
+
+		bagInfo.addSourceOrganization("Wangler University");
+		values = bagInfo.getList("Source-Organization");
+		assertEquals(3, values.size());
 		
 		bagInfo.removeAllList("Source-Organization");
 		values = bagInfo.getList("Source-Organization");
-		assertEquals(0, values.size());
-		
-		
-		
+		assertEquals(0, values.size());		
 	}
 
 	

@@ -30,6 +30,10 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.10:
+1. Added additional list methods to BagInfoTxt.
+2. Added chaining completer.
+
 Changes in 3.9:
 1. Change to licensing terms.
 2. Minor modifications to support for splitting bags.
@@ -130,4 +134,5 @@ Changes in 2.1:
 6. Added version-aware handling of filepath delimiters. 
 
 
-For questions or problems, contact Justin Littman (jlit@loc.gov).
+For questions or problems, please post to the loc-xferutils mailing list at https://lists.sourceforge.net/lists/listinfo/loc-xferutils-mail.
+For further assistance, contact Justin Littman (jlit@loc.gov).
