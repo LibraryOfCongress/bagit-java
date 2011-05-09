@@ -164,7 +164,7 @@ public class CompleterHelper extends LongRunningOperationBase {
         	threadPool.shutdown();
         	log.debug("Thread pool shut down.");
         }
-		bag.putBagFile(manifest);
+    	if (! manifest.isEmpty()) bag.putBagFile(manifest);
 	}
 
 	public void regenerateManifest(final Bag bag, final Manifest manifest) {
