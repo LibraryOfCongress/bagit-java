@@ -17,11 +17,13 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 
 	File bagDir;
 
+	private static int testCounter = 0;
 	
 	@Before
     @Override
 	public void setUp() throws Exception {
-		bagDir = new File(ResourceHelper.getFile("bags"), "foo");
+		testCounter++;
+		bagDir = new File(ResourceHelper.getFile("bags"), "writer_test" + testCounter);
 	}
 
 	@Override
@@ -70,5 +72,34 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 		assertFalse(removeFile.exists());
 	}
 
+	@Test
+	public void testWriteTagsOnly() throws Exception {
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Writer writer = this.getBagWriter();
+		
+		Bag newBag = writer.write(bag, this.getBagFile());
+		assertTrue(newBag.verifyValid().isSuccess());
 
+		//Add a new file on disk
+		File newFile = new File(this.getBagFile(), "data/test3.txt");
+		FileWriter fileWriter = new FileWriter(newFile);
+		fileWriter.write("test");
+		fileWriter.close();		
+		assertTrue(newFile.exists());
+		
+		//Add a new directory on disk
+		File newDir = new File(this.getBagFile(), "data/dir3");
+		FileUtils.forceMkdir(newDir);
+		assertTrue(newDir.exists());
+							
+		//OK, now write the bag again
+		//Bag newBag2 = newBag.makeComplete();
+		((FileSystemWriter)writer).setTagFilesOnly(true);
+		Bag newBag2 = writer.write(newBag, this.getBagFile());
+		assertFalse(newBag2.verifyValid().isSuccess());
+		assertTrue(newFile.exists());
+		assertTrue(newDir.exists());
+	}
+
+	
 }

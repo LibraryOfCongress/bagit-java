@@ -28,9 +28,14 @@ public class FileSystemWriter extends AbstractWriter {
 	private String newBagURI;
 	private int fileTotal = 0;
 	private int fileCount = 0;
+	private boolean tagFilesOnly = false;
 	
 	public FileSystemWriter(BagFactory bagFactory) {
 		super(bagFactory);
+	}
+	
+	public void setTagFilesOnly(boolean tagFilesOnly) {
+		this.tagFilesOnly = tagFilesOnly;
 	}
 	
 	public void setIgnoreNfsTmpFiles(boolean ignore) {
@@ -67,10 +72,10 @@ public class FileSystemWriter extends AbstractWriter {
 	
 	@Override
 	public void visitPayload(BagFile bagFile) {
-		this.fileCount++;
-		this.progress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 		File file = new File(this.newBagDir, bagFile.getFilepath());
-		if (! this.skipIfPayloadFileExists || ! file.exists()) {
+		if (! this.tagFilesOnly && (! this.skipIfPayloadFileExists || ! file.exists())) {
+			this.fileCount++;
+			this.progress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 			log.debug(MessageFormat.format("Writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
 			FileSystemHelper.write(bagFile, file);	
 		} else {
@@ -95,15 +100,19 @@ public class FileSystemWriter extends AbstractWriter {
 		this.newBagDir = file;
 		bag.accept(this);
 		if (this.newBagDir.equals(bag.getFile())) {
-			log.debug("Removing any extra files or directories");
-			this.removeExtraFiles(this.newBagDir);
+			log.debug("Removing any extra files or directories");			
+			this.removeExtraFiles(this.newBagDir, false);
+			if (! this.tagFilesOnly) {
+				//Data directory
+				this.removeExtraFiles(new File(this.newBagDir, bag.getBagConstants().getDataDirectory()), true);				
+			}
 		}
 		if (this.isCancelled()) return null;
 		return this.newBag;		
 
 	}
-	
-	private void removeExtraFiles(File dir) {
+
+	private void removeExtraFiles(File dir, boolean recurse) {
 		log.trace(MessageFormat.format("Checking children of {0} for removal", dir));
 		for(File file : dir.listFiles()) {
 			if (this.isCancelled()) return;
@@ -111,20 +120,12 @@ public class FileSystemWriter extends AbstractWriter {
 				if (log.isTraceEnabled()) {
 					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, file.listFiles().length));
 				}
-				this.removeExtraFiles(file);
-				if (log.isTraceEnabled()) {
-					log.trace(MessageFormat.format("{0} now has {1} children", file, file.listFiles().length));
-				}
-				/*
-				if (file.listFiles().length == 0) {					
-					try {
-						log.trace("Deleting " + file);
-						FileUtils.forceDelete(file);
-					} catch (IOException e) {
-						throw new RuntimeException(e);
+				if (recurse) {
+					this.removeExtraFiles(file, recurse);
+					if (log.isTraceEnabled()) {
+						log.trace(MessageFormat.format("{0} now has {1} children", file, file.listFiles().length));
 					}
 				}
-				*/
 			} else {
 				String filepath = FilenameHelper.removeBasePath(this.newBagDir.toString(), file.toString());
 				log.trace(MessageFormat.format("{0} is a file whose filepath is {1}", file, filepath));
@@ -142,7 +143,6 @@ public class FileSystemWriter extends AbstractWriter {
 				}				
 			}
 		}
-		
 	}
 	
 }

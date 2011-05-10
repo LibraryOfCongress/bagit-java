@@ -34,6 +34,7 @@ Changes in 3.10:
 1. Added additional list methods to BagInfoTxt.
 2. Added chaining completer.
 3. Changed completers to not create empty payload manifests.
+4. Added support to FileSystemWriter to only write tag files.
 
 Changes in 3.9:
 1. Change to licensing terms.
