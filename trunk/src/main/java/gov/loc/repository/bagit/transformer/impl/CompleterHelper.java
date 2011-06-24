@@ -176,7 +176,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 	}
 	
 	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests, final List<String> limitUpdateFilepaths, final List<String> limitUpdateDirectories) {
-		
+		log.debug("Regenerating " + manifest.getFilepath());
 		final int total = manifest.size();
     	final AtomicInteger count = new AtomicInteger();
 		ExecutorService threadPool = Executors.newCachedThreadPool();

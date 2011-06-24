@@ -30,6 +30,10 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.11:
+1. Added support to FileSystemWriter to only write files that had mismatch between
+	manifest and files on disk.
+
 Changes in 3.10:
 1. Added additional list methods to BagInfoTxt.
 2. Added chaining completer.

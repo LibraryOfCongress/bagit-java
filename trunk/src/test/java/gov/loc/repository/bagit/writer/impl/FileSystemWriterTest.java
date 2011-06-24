@@ -2,12 +2,15 @@ package gov.loc.repository.bagit.writer.impl;
 
 import static org.junit.Assert.*;
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -99,6 +102,42 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 		assertFalse(newBag2.verifyValid().isSuccess());
 		assertTrue(newFile.exists());
 		assertTrue(newDir.exists());
+	}
+	
+	@Test
+	public void testWriteFilesThatDoNotMatchManifestOnly() throws Exception {
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		Writer writer = this.getBagWriter();
+		
+		Bag newBag = writer.write(bag, this.getBagFile());
+		assertTrue(newBag.verifyValid().isSuccess());
+		
+		Long manifestLastModified = (new File(this.getBagFile(), "manifest-md5.txt")).lastModified();
+		File changedFile = new File(this.getBagFile(), "data/test1.txt");
+		Long changedFileLastModified = (new File(this.getBagFile(), "data/test1.txt")).lastModified();
+		Long unchangedFileLastModified = (new File(this.getBagFile(), "data/test2.txt")).lastModified();
+		
+		Thread.sleep(1000);
+		FileUtils.writeStringToFile(changedFile, "changing this file");
+		assertTrue(changedFileLastModified != (new File(changedFile.getCanonicalPath())).lastModified());
+		assertTrue(unchangedFileLastModified == (new File(this.getBagFile(), "data/test2.txt")).lastModified());
+		
+		UpdateCompleter completer = new UpdateCompleter(this.bagFactory);
+		List<String> updatedFiles = new ArrayList<String>();
+		updatedFiles.add("data/test1.txt");
+		completer.setLimitUpdatePayloadFilepaths(updatedFiles);
+		Bag newBag2 = completer.complete(newBag);
+		assertTrue(newBag2.verifyValid().isSuccess());
+		
+		FileSystemWriter writer2 = new FileSystemWriter(this.bagFactory);
+		writer2.setFilesThatDoNotMatchManifestOnly(true);
+		Bag newBag3 = writer2.write(newBag2, this.getBagFile());
+		assertTrue(newBag3.verifyValid().isSuccess());
+		
+		assertTrue(changedFileLastModified != (new File(this.getBagFile(), "data/test1.txt")).lastModified());
+		assertTrue(unchangedFileLastModified == (new File(this.getBagFile(), "data/test2.txt")).lastModified());
+		assertTrue(manifestLastModified != (new File(this.getBagFile(), "manifest-md5.txt")).lastModified());
+		
 	}
 
 	
