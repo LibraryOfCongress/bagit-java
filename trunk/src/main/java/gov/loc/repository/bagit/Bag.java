@@ -163,6 +163,8 @@ public interface Bag {
 	 */
 	void loadFromPayloadFiles();
 
+	void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories);
+	
 	/**
 	 * Invokes a BagVisitor.
 	 */

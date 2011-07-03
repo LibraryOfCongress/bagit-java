@@ -13,7 +13,6 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.PreBag;
-import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
@@ -26,6 +25,7 @@ public class PreBagImpl implements PreBag {
 	BagFactory bagFactory;
 	File dir;
 	List<File> tagFiles = new ArrayList<File>();
+	List<String> ignoreDirs = new ArrayList<String>();
 	
 	public PreBagImpl(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
@@ -36,6 +36,11 @@ public class PreBagImpl implements PreBag {
 		return this.dir;
 	}
 
+	@Override
+	public void setIgnoreAdditionalDirectories(List<String> dirs) {
+		this.ignoreDirs = dirs;
+	}
+	
 	@Override
 	public Bag makeBagInPlace(Version version, boolean retainBaseDirectory) {
 		return this.makeBagInPlace(version, retainBaseDirectory, new DefaultCompleter(this.bagFactory));
@@ -60,7 +65,7 @@ public class PreBagImpl implements PreBag {
 				}
 				log.trace("Move to dir is " + moveToDir);
 				for(File file : this.dir.listFiles()) {
-					if (! file.equals(dataDir)) {
+					if (! (file.equals(dataDir) || (file.isDirectory() && this.ignoreDirs.contains(file.getName())))) {
 						FileUtils.moveToDirectory(file, moveToDir, true);
 					}
 				}
@@ -82,7 +87,7 @@ public class PreBagImpl implements PreBag {
 		}
 		
 		//Create a bag
-		Bag bag = this.bagFactory.createBag(this.dir, version, LoadOption.BY_PAYLOAD_FILES);
+		Bag bag = this.bagFactory.createBagByPayloadFiles(this.dir, version, this.ignoreDirs);
 		//Complete the bag
 		bag = bag.makeComplete(completer);
 		//Write the bag

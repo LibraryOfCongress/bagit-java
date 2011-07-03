@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs.AllFileSelector;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.provider.UriParser;
@@ -35,6 +34,7 @@ import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.FormatHelper;
+import gov.loc.repository.bagit.utilities.IgnoringFileSelector;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
@@ -116,20 +116,22 @@ public abstract class AbstractBag implements Bag {
 
 	@Override
 	public void loadFromPayloadFiles() {
+		this.loadFromPayloadFiles(new ArrayList<String>());
+	}
+	
+	@Override
+	public void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories) {
 		this.tagMap.clear();
 		this.payloadMap.clear();
 		
 		FileObject bagFileObject = VFSHelper.getFileObjectForBag(this.fileForBag);
 		try {													
 			//Load tag map
-			for(FileObject fileObject : bagFileObject.findFiles(new AllFileSelector())) {
-				if (fileObject.getType() == FileType.FILE) {
-					
-					String filepath = UriParser.decode(bagFileObject.getName().getRelativeName(fileObject.getName()));
-					log.trace("Reading " + filepath);
-					BagFile bagFile = new VFSBagFile(filepath, fileObject);
-					this.putBagFile(bagFile);
-				}
+			for(FileObject fileObject : bagFileObject.findFiles(new IgnoringFileSelector(ignoreAdditionalDirectories))) {
+				String filepath = UriParser.decode(bagFileObject.getName().getRelativeName(fileObject.getName()));
+				log.trace("Reading " + filepath);
+				BagFile bagFile = new VFSBagFile(filepath, fileObject);
+				this.putBagFile(bagFile);
 			}
 		}
 		catch(Exception ex) {

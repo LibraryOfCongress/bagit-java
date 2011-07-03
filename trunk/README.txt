@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.12:
+1. Added support to CompleteVerifier, PreBag, and BagFactory to ignore specified directories (e.g., lost+found).
+
 Changes in 3.11:
 1. Added support to FileSystemWriter to only write files that had mismatch between
 	manifest and files on disk.

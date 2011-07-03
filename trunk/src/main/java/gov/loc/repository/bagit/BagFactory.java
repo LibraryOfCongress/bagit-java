@@ -5,6 +5,7 @@ import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.impl.PreBagImpl;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * <p>Provides all methods for instantiating new {@link Bag} objects, as well
@@ -153,6 +154,26 @@ public class BagFactory {
 
 	}
 
+	/**
+	 * Creates a Bag from an existing bag loading from the actual files.
+	 * The version of the bag is determined by examining the bag.
+	 * If it cannot be determined, the latest version is assumed.
+	 * If the version of the bag is not supported by this library,
+	 * the latest version is used.
+	 * 
+	 * @param bagFile The {@link File} containing the bag to load.
+	 * @param version The version to load the bag as.   
+	 * @param ignoreAdditionalDirecories A set of directories to ignore when
+	 * loading from the actual files.
+	 */
+	public Bag createBagByPayloadFiles(File bagFile, Version version, List<String> ignoreAdditionalDirectories) {
+		Bag bag = this.createBag(version);
+		bag.setFile(bagFile);
+		bag.loadFromPayloadFiles(ignoreAdditionalDirectories);
+		return bag;
+	}
+
+	
 	
 	/**
 	 * Creates a Bag from an existing bag using the specified version.

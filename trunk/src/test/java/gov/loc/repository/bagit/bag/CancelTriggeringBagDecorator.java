@@ -166,6 +166,12 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 		realBag.loadFromPayloadFiles();
 	}
 
+	public void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories)
+	{
+		this.increment();
+		realBag.loadFromPayloadFiles(ignoreAdditionalDirectories);
+	}
+	
 	public void loadFromPayloadManifests()
 	{
 		this.increment();

@@ -320,6 +320,34 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		assertTrue(bag.verify(verifier).isSuccess());		
 
 	}
+
+	@Test
+	public void testBagWithIgnoredExtraDirectory() throws Exception {
+		File testBagDir = this.createTestBag();
+		File extraDir = new File(testBagDir, "extra");
+		assertFalse(extraDir.exists());
+		FileUtils.forceMkdir(extraDir);
+		assertTrue(extraDir.exists());
+		File extraFile = new File(extraDir, "extra.txt");
+		FileWriter writer = new FileWriter(extraFile);
+		writer.write("extra");
+		writer.close();
+		assertTrue(extraFile.exists());
+		
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		assertFalse(bag.verifyComplete().isSuccess());
+		assertFalse(bag.verifyValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
+		CompleteVerifier verifier = new CompleteVerifierImpl();
+		List<String> ignoreDirs = new ArrayList<String>();
+		ignoreDirs.add("extra");
+		verifier.setIgnoreAdditionalDirectories(ignoreDirs);
+		assertTrue(bag.verify(verifier).isSuccess());		
+
+	}
 	
 	@Test
 	public void testBagWithSpecialCharacters() throws Exception {

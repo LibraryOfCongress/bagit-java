@@ -11,6 +11,7 @@ public interface PreBag {
 	File getFile();
 	void setTagFiles(List<File> tagFiles);
 	List<File> getTagFiles();
+	void setIgnoreAdditionalDirectories(List<String> dirs);
 	Bag makeBagInPlace(Version version, boolean retainBaseDirectory);
 	Bag makeBagInPlace(Version version, boolean retainBaseDirectory, Completer completer);
 }

@@ -2,13 +2,14 @@ package gov.loc.repository.bagit.verify.impl;
 
 import static java.text.MessageFormat.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.FileTypeSelector;
 import org.apache.commons.vfs.provider.UriParser;
 
 import gov.loc.repository.bagit.Bag;
@@ -16,6 +17,7 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
+import gov.loc.repository.bagit.utilities.IgnoringFileSelector;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.VFSHelper;
@@ -29,6 +31,8 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 
 	private boolean additionalDirectoriesInBagDirTolerant = false;
 	
+	private List<String> ignoreAdditionalDirectories = new ArrayList<String>();
+	
 	@Override
 	public void setMissingBagItTolerant(boolean missingBagItTolerant) {
 		this.missingBagItTolerant = missingBagItTolerant;
@@ -41,6 +45,10 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		
 	}
 	
+	@Override
+	public void setIgnoreAdditionalDirectories(List<String> dirs) {
+		this.ignoreAdditionalDirectories = dirs;
+	}
 	
 	@Override
 	public SimpleResult verify(Bag bag) {
@@ -169,7 +177,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 						if (this.isCancelled()) return null;
 						if (fileObject.getType() == FileType.FOLDER) {
 							String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
-							if (! folderName.equals(bag.getBagConstants().getDataDirectory())) {
+							if (! (folderName.equals(bag.getBagConstants().getDataDirectory()) || this.ignoreAdditionalDirectories.contains(folderName))) {
 								result.setSuccess(false);
 								result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir.", folderName));
 							}
@@ -181,7 +189,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				log.debug("Checking that all payload files on disk included in bag");
 				FileObject dataFileObject = bagFileObject.getChild(bag.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
-					FileObject[] fileObjects = dataFileObject.findFiles(new FileTypeSelector(FileType.FILE));
+					FileObject[] fileObjects = dataFileObject.findFiles(new IgnoringFileSelector(this.ignoreAdditionalDirectories));
 					total = fileObjects.length;
 					count = 0;
 					for(FileObject fileObject : fileObjects) {
@@ -234,6 +242,5 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		}				
 		
 	}
-
 	
 }
