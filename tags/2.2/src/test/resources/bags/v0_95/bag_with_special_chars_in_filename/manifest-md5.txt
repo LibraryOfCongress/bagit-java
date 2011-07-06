@@ -1,2 +1,0 @@
-befd20c1b77e89c3593f152436875bbc  data/Duerer_rhino_full.png
-befd20c1b77e89c3593f152436875bbc  data/Dürer_rhino_full.png

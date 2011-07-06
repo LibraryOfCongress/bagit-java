@@ -1,5 +1,0 @@
-http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt - data/dir1/test3.txt
-http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt - data/dir2/dir3/test5.txt
-http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt - data/dir2/test4.txt
-http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt - data/test 1.txt
-http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt - data/test2.txt
