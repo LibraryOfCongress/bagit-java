@@ -813,11 +813,13 @@ public class CommandLineBagDriver {
 						ret = RETURN_ERROR;
 					} else {
 						if (checkOxum.equals(genOxum)) {
-							System.out.println("Payload-Oxum matches.");
-							log.info("Payload-Oxum matches.");
+							String oxumMsg = "Payload-Oxum matches.";
+							System.out.println(oxumMsg);
+							log.info(oxumMsg);
 						} else {
-							System.out.println("Payload-Oxum does not match.");
-							log.info("Payload-Oxum does not match.");
+							String oxumMsg = MessageFormat.format("Payload-Oxum does not match. Expected {0} according to bag-info.txt but found {1}.", checkOxum, genOxum);
+							System.out.println(oxumMsg);
+							log.info(oxumMsg);
 							ret = RETURN_FAILURE;
 						}
 					}
