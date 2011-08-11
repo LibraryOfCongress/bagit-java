@@ -1,5 +1,5 @@
 @echo off
-set MAXMEM=512m
+set MAXMEM=1024m
 set APP_HOME=%CD:\bin=%
 
 set START=%CD%

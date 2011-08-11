@@ -1,6 +1,6 @@
 #! /bin/bash
 
-MAXMEM=512m
+MAXMEM=1024m
 #JAVA_HOME=/usr/lib/jvm/java-6-sun
 
 

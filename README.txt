@@ -31,7 +31,8 @@ a bad thing.
 
 RELEASE NOTES:
 Changes in 3.13:
-1. Addes support for keeping empty directories when bagging in place.
+1. Adds support for keeping empty directories when bagging in place.
+2. Increased default MAXMEM to 1024m.
 
 Changes in 3.12:
 1. Added support to CompleteVerifier, PreBag, and BagFactory to ignore specified directories (e.g., lost+found).
