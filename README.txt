@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.13:
+1. Addes support for keeping empty directories when bagging in place.
+
 Changes in 3.12:
 1. Added support to CompleteVerifier, PreBag, and BagFactory to ignore specified directories (e.g., lost+found).
 

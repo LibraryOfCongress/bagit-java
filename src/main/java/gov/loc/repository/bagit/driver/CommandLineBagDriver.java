@@ -133,7 +133,8 @@ public class CommandLineBagDriver {
 	public static final String PARAM_KEEP_LOWEST_LEVEL_DIR = "keeplowestleveldir";
 	public static final String PARAM_FILE_EXTENSIONS = "fileextensions";
 	public static final String PARAM_EXCLUDE_DIRS = "excludedirs";
-	public static final String PARAM_KEEP_SOURCE_BAG = "keepsourcebag";	
+	public static final String PARAM_KEEP_SOURCE_BAG = "keepsourcebag";
+	public static final String PARAM_KEEP_EMPTY_DIRS = "keepemptydirs";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -197,6 +198,7 @@ public class CommandLineBagDriver {
 		//Parameter keepSourceBagParam = new Switch(PARAM_KEEP_SOURCE_BAG, JSAP.NO_SHORTFLAG, PARAM_KEEP_SOURCE_BAG, "Does not delete the source bag.");
 		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File types delimited by a comma will be grouped into different bags; file types delimited by a colon will be grouped into one single bag.");
 		Parameter excludeDirsParam = new FlaggedOption(PARAM_EXCLUDE_DIRS, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_DIRS, "Directories in the bag to be ignored in the split operation; they will be kept in the source bag; they should be relative to the base path of the bag. ");
+		Parameter keepEmptyDirsParam = new Switch(PARAM_KEEP_EMPTY_DIRS, JSAP.NO_SHORTFLAG, PARAM_KEEP_EMPTY_DIRS, "Retains empty directories by placing .keep files in them.");
 
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -271,6 +273,7 @@ public class CommandLineBagDriver {
 		bagInPlaceParams.add(retainBaseDirParam);
 		bagInPlaceParams.addAll(completeParams);
 		bagInPlaceParams.add(bagInfoTxtParam);
+		bagInPlaceParams.add(keepEmptyDirsParam);
 		this.addOperation(OPERATION_BAG_IN_PLACE,
 				"Creates a bag-in-place.  The source must be a directory on a filesystem and may already have a data directory.",
 				bagInPlaceParams,
@@ -752,7 +755,7 @@ public class CommandLineBagDriver {
 					tagFiles.add(bagInfoTxtFile);
 					preBag.setTagFiles(tagFiles);
 				}				
-				preBag.makeBagInPlace(version != null ? version : BagFactory.LATEST, config.getBoolean(PARAM_RETAIN_BASE_DIR, false), completer);
+				preBag.makeBagInPlace(version != null ? version : BagFactory.LATEST, config.getBoolean(PARAM_RETAIN_BASE_DIR, false), config.getBoolean(PARAM_KEEP_EMPTY_DIRS, false), completer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, null);
 				for(String filepath : config.getStringArray(PARAM_PAYLOAD)) {

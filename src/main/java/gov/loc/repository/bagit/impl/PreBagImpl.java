@@ -43,12 +43,23 @@ public class PreBagImpl implements PreBag {
 	
 	@Override
 	public Bag makeBagInPlace(Version version, boolean retainBaseDirectory) {
-		return this.makeBagInPlace(version, retainBaseDirectory, new DefaultCompleter(this.bagFactory));
+		return this.makeBagInPlace(version, retainBaseDirectory, false, new DefaultCompleter(this.bagFactory));
 
 	}
 
 	@Override
 	public Bag makeBagInPlace(Version version, boolean retainBaseDirectory, Completer completer) {
+		return this.makeBagInPlace(version, retainBaseDirectory, false, completer);
+	}
+	
+	@Override
+	public Bag makeBagInPlace(Version version, boolean retainBaseDirectory,
+			boolean keepEmptyDirectories) {
+		return this.makeBagInPlace(version, retainBaseDirectory, keepEmptyDirectories, new DefaultCompleter(this.bagFactory));
+	}
+	
+	@Override
+	public Bag makeBagInPlace(Version version, boolean retainBaseDirectory, boolean keepEmptyDirectories, Completer completer) {
 		log.info(MessageFormat.format("Making a bag in place at {0}", this.dir));
 		File dataDir = new File(this.dir, this.bagFactory.getBagConstants(version).getDataDirectory());
 		log.trace("Data directory is " + dataDir);
@@ -76,6 +87,12 @@ public class PreBagImpl implements PreBag {
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
+		
+		//Handle empty directories
+		if (keepEmptyDirectories) {
+			this.addKeep(dataDir);
+		}
+		
 		//Copy the tags
 		for(File tagFile : this.tagFiles) {
 			log.trace(MessageFormat.format("Copying tag file {0} to {1}", tagFile, this.dir));
@@ -85,7 +102,7 @@ public class PreBagImpl implements PreBag {
 				throw new RuntimeException(ex);
 			}
 		}
-		
+						
 		//Create a bag
 		Bag bag = this.bagFactory.createBagByPayloadFiles(this.dir, version, this.ignoreDirs);
 		//Complete the bag
@@ -113,6 +130,27 @@ public class PreBagImpl implements PreBag {
 	@Override
 	public void setTagFiles(List<File> tagFiles) {
 		this.tagFiles = tagFiles;		
+	}
+	
+	private void addKeep(File file) {
+		if (file.isDirectory() && ! this.ignoreDirs.contains(file.getName())) {
+			//If file is empty, add .keep
+			File[] children = file.listFiles();
+			if (children.length == 0) {
+				log.info("Adding .keep file to " + file.toString());
+				try {
+					FileUtils.touch(new File(file, ".keep"));
+				} catch (IOException e) {
+					throw new RuntimeException("Error adding .keep file to " + file.toString(), e);
+				}
+			} else {
+				//Otherwise, recurse over children
+				for(File childFile : children) {
+					addKeep(childFile);
+				}
+			}
+		}
+		//Otherwise do nothing
 	}
 
 }

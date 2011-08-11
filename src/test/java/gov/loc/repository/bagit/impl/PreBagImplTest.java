@@ -121,6 +121,28 @@ public class PreBagImplTest {
 		
 	}
 
+	@Test
+	public void testBagInPlaceKeepEmptyDirectories() throws Exception {
+		File testDir = createTestBag(false);
+		assertTrue(testDir.exists());
+		File testDataDir = new File(testDir, "data");
+		assertFalse(testDataDir.exists());
+		File emptyDir = new File(testDir, "empty_dir");
+		FileUtils.forceMkdir(emptyDir);
+		assertTrue(emptyDir.exists());
+		
+		PreBag preBag = bagFactory.createPreBag(testDir);
+		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, true, true);
+		assertTrue(testDataDir.exists());
+		File baseDir = new File(testDataDir, "test_bag");
+		assertTrue(baseDir.exists());
+		File newEmptyDir = new File(baseDir, "empty_dir");
+		assertTrue(newEmptyDir.exists());
+		assertTrue((new File(newEmptyDir, ".keep").exists()));
+		assertTrue(bag.verifyValid().isSuccess());
+		
+	}
+
 	
 	private File createTestBag(boolean includeDataDirectory) throws Exception {		
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag", BagFactory.LATEST.toString().toLowerCase()));
