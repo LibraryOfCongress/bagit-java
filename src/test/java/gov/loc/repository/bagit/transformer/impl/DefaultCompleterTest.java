@@ -13,7 +13,7 @@ import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
-import gov.loc.repository.bagit.bag.LoggingProgressListener;
+import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
 import java.text.MessageFormat;

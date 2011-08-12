@@ -19,6 +19,7 @@ public class MessageDigestHelper {
     
     public static String generateFixity(File file, Algorithm algorithm) {
     	try {
+    		log.debug("Generating fixity for " + file.toString());
     		return generateFixity(new FileInputStream(file), algorithm);
     	}
     	catch(Exception ex) {

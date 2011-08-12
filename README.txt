@@ -33,6 +33,7 @@ RELEASE NOTES:
 Changes in 3.13:
 1. Adds support for keeping empty directories when bagging in place.
 2. Increased default MAXMEM to 1024m.
+3. Added verbose console and log progress reporting to CommandLineBagDriver.
 
 Changes in 3.12:
 1. Added support to CompleteVerifier, PreBag, and BagFactory to ignore specified directories (e.g., lost+found).

@@ -6,7 +6,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
-import gov.loc.repository.bagit.bag.PrintingProgressListener;
+import gov.loc.repository.bagit.progresslistener.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
 

@@ -6,12 +6,15 @@ import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.PreBag;
+import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.progresslistener.CompositeProgressListener;
+import gov.loc.repository.bagit.progresslistener.ConsoleProgressListener;
+import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
 import gov.loc.repository.bagit.transformer.Completer;
-import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.Splitter;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
@@ -32,8 +35,6 @@ import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.SizeHelper;
-import gov.loc.repository.bagit.verify.CompleteVerifier;
-import gov.loc.repository.bagit.verify.ValidVerifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
@@ -96,7 +97,6 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_SPLIT_BAG_BY_FILE_TYPE = "splitbagbyfiletype";
 	public static final String OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE = "splitbagbysizeandfiletype";
 	
-	public static final String PARAM_PROGRESS = "show-progress";
 	public static final String PARAM_SOURCE = "source";
 	public static final String PARAM_DESTINATION = "dest";
 	//public static final String PARAM_BAG_DIR = "bagdir";
@@ -135,6 +135,8 @@ public class CommandLineBagDriver {
 	public static final String PARAM_EXCLUDE_DIRS = "excludedirs";
 	public static final String PARAM_KEEP_SOURCE_BAG = "keepsourcebag";
 	public static final String PARAM_KEEP_EMPTY_DIRS = "keepemptydirs";
+	public static final String PARAM_VERBOSE = "verbose";
+	public static final String PARAM_LOG_VERBOSE = "log-verbose";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -158,7 +160,6 @@ public class CommandLineBagDriver {
 	
 	public CommandLineBagDriver() throws Exception {
 		//Initialize
-		Parameter showProgressParam = new Switch(PARAM_PROGRESS, JSAP.NO_SHORTFLAG, PARAM_PROGRESS, "Reports progress of the operation to the console.");
 		Parameter sourceParam = new UnflaggedOption(PARAM_SOURCE, FileStringParser.getParser().setMustExist(true), null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the source bag.");
 		Parameter destParam = new UnflaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The location of the destination bag.");
 		Parameter optionalDestParam = new FlaggedOption(PARAM_DESTINATION, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_DESTINATION, "The location of the destination bag (if different than the source bag).");
@@ -318,12 +319,12 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_RETRIEVE, 
 				"Retrieves a bag exposed by a web server. A local holey bag is not required.", 
-				new Parameter[] {destParam, retrieveUrlParam, showProgressParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
+				new Parameter[] {destParam, retrieveUrlParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
 				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
 				"Retrieves any missing pieces of a local bag.", 
-				new Parameter[] {sourceParam, showProgressParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
+				new Parameter[] {sourceParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_FILL_HOLEY, this.getBag("mybag"))});
 		
 		List<Parameter> senderParams = new ArrayList<Parameter>();
@@ -369,6 +370,9 @@ public class CommandLineBagDriver {
 			jsap.registerParameter(param);
 		}
 		jsap.registerParameter(new Switch( PARAM_HELP, JSAP.NO_SHORTFLAG, PARAM_HELP, "Prints help." ));
+		jsap.registerParameter(new Switch(PARAM_VERBOSE, JSAP.NO_SHORTFLAG, PARAM_VERBOSE, "Reports progress of the operation to the console."));
+		jsap.registerParameter(new Switch(PARAM_LOG_VERBOSE, JSAP.NO_SHORTFLAG, PARAM_LOG_VERBOSE, "Reports progress of the operation to the log."));
+
 		this.operationMap.put(name, new Operation(name, jsap, help, examples));
 	}
 	
@@ -564,6 +568,15 @@ public class CommandLineBagDriver {
 		String msg = "Performing operation: " + operation.name;
 		log.info(msg);
 		try {
+			
+			CompositeProgressListener listener = new CompositeProgressListener();
+			if (config.getBoolean(PARAM_VERBOSE)) {
+				listener.addProgressListener(new ConsoleProgressListener());
+			}
+			if (config.getBoolean(PARAM_LOG_VERBOSE)) {
+				listener.addProgressListener(new LoggingProgressListener());
+			}
+			
 			File sourceFile = null;
 			if (config.contains(PARAM_SOURCE)) {
 				sourceFile = config.getFile(PARAM_SOURCE);					
@@ -593,6 +606,7 @@ public class CommandLineBagDriver {
 					writer = new ZipWriter(bagFactory);
 				}
 			}
+			if (writer instanceof ProgressListenable) ((ProgressListenable)writer).addProgressListener(listener);
 
 			String manifestSeparator = null;
 			int ret = RETURN_SUCCESS;
@@ -610,8 +624,10 @@ public class CommandLineBagDriver {
 			completer.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 			completer.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 			completer.setNonDefaultManifestSeparator(manifestSeparator);
+			completer.addProgressListener(listener);
 			
 		    BagFetcher fetcher = new BagFetcher(bagFactory);
+		    fetcher.addProgressListener(listener);
 
 		    boolean writeResultFile = ! config.getBoolean(PARAM_NO_RESULTFILE, false);
 		    
@@ -670,19 +686,19 @@ public class CommandLineBagDriver {
 							
 				fetcher.setFetchFailStrategy(failStrategy);
 								
-				if (config.getBoolean(PARAM_PROGRESS, false))
-				{
-					fetcher.addProgressListener(new ConsoleProgressListener());
-				}
 			}
 			
 //			int ret = RETURN_SUCCESS;
 			
 			if (OPERATION_VERIFYVALID.equals(operation.name)) {				
-				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
+				CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
 				completeVerifier.setAdditionalDirectoriesInBagDirTolerant(config.getBoolean(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, false));
-				ValidVerifier verifier = new ValidVerifierImpl(completeVerifier, new ParallelManifestChecksumVerifier());
+				completeVerifier.addProgressListener(listener);
+				ParallelManifestChecksumVerifier checksumVerifier = new ParallelManifestChecksumVerifier();
+				checksumVerifier.addProgressListener(listener);
+				ValidVerifierImpl verifier = new ValidVerifierImpl(completeVerifier, checksumVerifier);
+				verifier.addProgressListener(listener);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = verifier.verify(bag);
 				log.info(result.toString());
@@ -692,9 +708,10 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
-				CompleteVerifier completeVerifier = new CompleteVerifierImpl();
+				CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
 				completeVerifier.setAdditionalDirectoriesInBagDirTolerant(config.getBoolean(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, false));
+				completeVerifier.addProgressListener(listener);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				SimpleResult result = completeVerifier.verify(bag);
 				log.info(result.toString());
@@ -705,7 +722,10 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = bag.verifyTagManifests();
+				ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+				verifier.addProgressListener(listener);
+				SimpleResult result = verifier.verify(bag.getTagManifests(), bag);
+
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
@@ -714,7 +734,9 @@ public class CommandLineBagDriver {
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = bag.verifyPayloadManifests();
+				ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+				verifier.addProgressListener(listener);
+				SimpleResult result = verifier.verify(bag.getPayloadManifests(), bag);
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
@@ -729,6 +751,7 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
 				UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
 				completer.setNonDefaultManifestSeparator(manifestSeparator);
+				completer.addProgressListener(listener);
 				Bag newBag = updateCompleter.complete(bag);
 				newBag.write(writer, destFile != null?destFile:sourceFile);
 			}
@@ -754,7 +777,7 @@ public class CommandLineBagDriver {
 					List<File> tagFiles = new ArrayList<File>();
 					tagFiles.add(bagInfoTxtFile);
 					preBag.setTagFiles(tagFiles);
-				}				
+				}
 				preBag.makeBagInPlace(version != null ? version : BagFactory.LATEST, config.getBoolean(PARAM_RETAIN_BASE_DIR, false), config.getBoolean(PARAM_KEEP_EMPTY_DIRS, false), completer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, null);
@@ -788,7 +811,7 @@ public class CommandLineBagDriver {
 				newBag.write(writer, destFile);
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
-				HolePuncher puncher = new HolePuncherImpl(bagFactory);
+				HolePuncherImpl puncher = new HolePuncherImpl(bagFactory);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false, config.getBoolean(PARAM_RESUME));
 				newBag.write(writer, destFile);

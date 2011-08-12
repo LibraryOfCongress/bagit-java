@@ -10,7 +10,7 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
-import gov.loc.repository.bagit.bag.PrintingProgressListener;
+import gov.loc.repository.bagit.progresslistener.PrintingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;

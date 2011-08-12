@@ -10,7 +10,7 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
-import gov.loc.repository.bagit.bag.LoggingProgressListener;
+import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 
