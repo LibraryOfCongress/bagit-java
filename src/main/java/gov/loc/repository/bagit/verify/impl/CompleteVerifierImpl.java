@@ -28,10 +28,14 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
 	private boolean missingBagItTolerant = false;
-
-	private boolean additionalDirectoriesInBagDirTolerant = false;
-	
+	private boolean additionalDirectoriesInBagDirTolerant = false;	
 	private List<String> ignoreAdditionalDirectories = new ArrayList<String>();
+	private boolean ignoreSymlinks = false;
+	
+	@Override
+	public void setIgnoreSymlinks(boolean ignore) {
+		this.ignoreSymlinks = ignore;
+	}
 	
 	@Override
 	public void setMissingBagItTolerant(boolean missingBagItTolerant) {
@@ -189,7 +193,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				log.debug("Checking that all payload files on disk included in bag");
 				FileObject dataFileObject = bagFileObject.getChild(bag.getBagConstants().getDataDirectory());
 				if (dataFileObject != null) {
-					FileObject[] fileObjects = dataFileObject.findFiles(new IgnoringFileSelector(this.ignoreAdditionalDirectories));
+					FileObject[] fileObjects = dataFileObject.findFiles(new IgnoringFileSelector(this.ignoreAdditionalDirectories, this.ignoreSymlinks));
 					total = fileObjects.length;
 					count = 0;
 					for(FileObject fileObject : fileObjects) {

@@ -31,9 +31,11 @@ a bad thing.
 
 RELEASE NOTES:
 Changes in 3.13:
-1. Adds support for keeping empty directories when bagging in place.
+1. Added support for keeping empty directories when bagging in place.
 2. Increased default MAXMEM to 1024m.
 3. Added verbose console and log progress reporting to CommandLineBagDriver.
+4. Added support for ignoring symbolic links when verifying a bag on a file system.
+5. Upgraded to Commons IO 2.0.1.
 
 Changes in 3.12:
 1. Added support to CompleteVerifier, PreBag, and BagFactory to ignore specified directories (e.g., lost+found).

@@ -127,7 +127,7 @@ public abstract class AbstractBag implements Bag {
 		FileObject bagFileObject = VFSHelper.getFileObjectForBag(this.fileForBag);
 		try {													
 			//Load tag map
-			for(FileObject fileObject : bagFileObject.findFiles(new IgnoringFileSelector(ignoreAdditionalDirectories))) {
+			for(FileObject fileObject : bagFileObject.findFiles(new IgnoringFileSelector(ignoreAdditionalDirectories, false))) {
 				String filepath = UriParser.decode(bagFileObject.getName().getRelativeName(fileObject.getName()));
 				log.trace("Reading " + filepath);
 				BagFile bagFile = new VFSBagFile(filepath, fileObject);
