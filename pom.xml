@@ -4,7 +4,7 @@
 	<artifactId>bagit</artifactId>
 	<packaging>jar</packaging>
 	<name>BagIt Implementation</name>
-	<version>3.13-SNAPSHOT</version>
+	<version>3.13</version>
 	<description>A software library that supports the creation,
 		manipulation, and validation of bags according to the BagIt
 		specification.</description>
