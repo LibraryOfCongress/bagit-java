@@ -219,8 +219,9 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		catch(FileSystemException ex) {
 			throw new RuntimeException(ex);
 		}
-		log.info("Completed");
-		log.info("Result is: " + result.toString());
+		log.info("Completed verification that bag is complete.");
+		log.info("Note that this a verification of completeness, not validity. A bag may be complete without being valid, though a valid bag must be complete.");
+		log.info("Result of verification that complete: " + result.toString());
 		return result;
 
 	}

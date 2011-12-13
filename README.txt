@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 3.14:
+1. Clarified logging messages for CompleteVerifier and ValidVerifier.
+
 Changes in 3.13:
 1. Added support for keeping empty directories when bagging in place.
 2. Increased default MAXMEM to 1024m.

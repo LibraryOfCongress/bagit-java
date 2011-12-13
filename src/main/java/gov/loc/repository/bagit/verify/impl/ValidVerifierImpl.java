@@ -71,6 +71,7 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 			return result;
 		}
 		
+		log.info("Completed verification that bag is valid.");
 		log.info("Validity check: " + result.toString());				
 		return result;
 
@@ -95,7 +96,8 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 
 		result.merge((BagVerifyResult)this.manifestVerifier.verify(bag.getPayloadManifests(), bag));
 		if (this.isCancelled()) return null;
-		
+
+		log.info("Completed verification that bag is valid.");
 		log.info("Validity check: " + result.toString());				
 		return result;
 
