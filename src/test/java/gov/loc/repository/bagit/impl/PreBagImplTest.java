@@ -3,7 +3,6 @@ package gov.loc.repository.bagit.impl;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,9 +90,7 @@ public class PreBagImplTest {
 		FileUtils.forceMkdir(extraDir);
 		assertTrue(extraDir.exists());
 		File extraFile = new File(extraDir, "extra.txt");
-		FileWriter writer = new FileWriter(extraFile);
-		writer.write("extra");
-		writer.close();
+		FileUtils.write(extraFile, "extra");
 		assertTrue(extraFile.exists());
 
 		PreBag preBag = bagFactory.createPreBag(testDir);
@@ -115,6 +112,24 @@ public class PreBagImplTest {
 		} finally {
 			bag.close();
 		}
+	}
+
+	@Test(expected=RuntimeException.class)
+	public void testBagInPlaceWithDataDirAndNotIgnoredExtraDir() throws Exception {
+		File testDir = createTestBag(true);
+		assertTrue(testDir.exists());
+		File testDataDir = new File(testDir, "data");
+		assertTrue(testDataDir.exists());
+		File extraDir = new File(testDir, "extra");
+		assertFalse(extraDir.exists());
+		FileUtils.forceMkdir(extraDir);
+		assertTrue(extraDir.exists());
+		File extraFile = new File(extraDir, "extra.txt");
+		FileUtils.write(extraFile, "extra");
+		assertTrue(extraFile.exists());
+
+		PreBag preBag = bagFactory.createPreBag(testDir);
+		preBag.makeBagInPlace(BagFactory.LATEST, false);
 	}
 
 	

@@ -81,8 +81,16 @@ public class PreBagImpl implements PreBag {
 					}
 				}
 				
-			} else if (! dataDir.isDirectory()) {
-				throw new RuntimeException(MessageFormat.format("{0} is not a directory", dataDir));
+			} else {
+				if (! dataDir.isDirectory()) throw new RuntimeException(MessageFormat.format("{0} is not a directory", dataDir));
+				//Look for additional, non-ignored files
+				for(File file : this.dir.listFiles()) {
+					//If there is a directory that isn't the data dir and isn't ignored then exception
+					if (file.isDirectory() && (! file.equals(dataDir)) && ! this.ignoreDirs.contains(file.getName())) {
+						throw new RuntimeException("Found additional directories in addition to existing data directory.");
+					}
+				}
+				
 			}
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
