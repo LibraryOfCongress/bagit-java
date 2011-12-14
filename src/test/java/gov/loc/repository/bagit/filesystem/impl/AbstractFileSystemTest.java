@@ -1,12 +1,22 @@
 package gov.loc.repository.bagit.filesystem.impl;
 
 import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import gov.loc.repository.bagit.filesystem.DirNode;
 import gov.loc.repository.bagit.filesystem.FileNode;
 import gov.loc.repository.bagit.filesystem.FileSystem;
+import gov.loc.repository.bagit.filesystem.FileSystemNode;
 import gov.loc.repository.bagit.filesystem.filter.FalseFileSystemNodeFilter;
 import gov.loc.repository.bagit.filesystem.filter.FileNodeFileSystemNodeFilter;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 public abstract class AbstractFileSystemTest {
@@ -59,6 +69,72 @@ public abstract class AbstractFileSystemTest {
 		} finally {		
 			fs.closeQuietly();
 		}
+	}
+	
+	@Test
+	public void testMultithreading() throws Exception {
+		
+		FileSystem fs = this.getFileSystem();
+		try {
+			TestUncaughtExceptionHandler exHandler = new TestUncaughtExceptionHandler();
+			List<Thread> threads = new ArrayList<Thread>();
+			for(int i=0; i < 10; i++) {
+				Thread t = new Thread(new TestRunnable(fs, 5));
+				threads.add(t);
+				t.setUncaughtExceptionHandler(exHandler);
+				t.start();
+			}
+			
+			for(Thread t : threads) {
+				t.join();
+			}
+			assertFalse(exHandler.exceptionCaught);
+			
+		} finally {
+			fs.closeQuietly();
+		}
+	}
+	
+	private class TestUncaughtExceptionHandler implements UncaughtExceptionHandler {
+
+		public boolean exceptionCaught = false;
+		
+		@Override
+		public void uncaughtException(Thread t, Throwable e) {
+			exceptionCaught = true;
+		}
+		
+	}
+	
+	private class TestRunnable implements Runnable {
+
+		private FileSystem fileSystem;
+		private int iterations;
+		
+		public TestRunnable(FileSystem fileSystem, int iterations) {
+			this.fileSystem = fileSystem;
+			this.iterations = iterations;
+		}
+		
+		@Override
+		public void run() {
+			for(int i=0; i < iterations; i++) {
+				Collection<FileSystemNode> nodes = fileSystem.getRoot().listDescendants(new FileNodeFileSystemNodeFilter(), null);
+				for(FileSystemNode node : nodes) {
+					FileNode fileNode = (FileNode)node;
+					InputStream in = fileNode.newInputStream();
+					try {
+						IOUtils.toByteArray(in);
+					} catch(IOException e) {
+						throw new RuntimeException();
+					} finally {
+						IOUtils.closeQuietly(in);
+					}
+				}
+				
+			}
+		}
+		
 	}
 	
 }
