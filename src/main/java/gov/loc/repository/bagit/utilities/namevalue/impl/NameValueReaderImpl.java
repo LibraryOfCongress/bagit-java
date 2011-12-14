@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,15 +43,8 @@ public class NameValueReaderImpl implements NameValueReader {
 			throw new RuntimeException(ex);
 		}
 		finally {
-			try {
-				if (fr != null) {
-					fr.close();
-				}
-				if (reader != null) {
-					reader.close();
-				}
-			} catch (Exception ex) {				
-			}
+			IOUtils.closeQuietly(fr);
+			IOUtils.closeQuietly(reader);
 		}
 	}
 		

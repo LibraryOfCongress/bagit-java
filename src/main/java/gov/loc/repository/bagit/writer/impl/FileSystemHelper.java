@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.utilities.TempFileHelper;
@@ -22,14 +23,17 @@ public class FileSystemHelper {
 			
 			FileOutputStream out = new FileOutputStream(TempFileHelper.getTempFile(file));
 			InputStream in = bagFile.newInputStream();
-			byte[] dataBytes = new byte[BUFFERSIZE];
-			int nread = in.read(dataBytes);
-			while (nread > 0) {
-				out.write(dataBytes, 0, nread);
-			    nread = in.read(dataBytes);
+			try {
+				byte[] dataBytes = new byte[BUFFERSIZE];
+				int nread = in.read(dataBytes);
+				while (nread > 0) {
+					out.write(dataBytes, 0, nread);
+				    nread = in.read(dataBytes);
+				}
+			} finally {
+				IOUtils.closeQuietly(in);
+				IOUtils.closeQuietly(out);
 			}
-			in.close();
-			out.close();
 			TempFileHelper.switchTemp(file);
 		}
 		catch (Exception ex) {

@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,13 +40,14 @@ public class MessageDigestHelper {
 				md.update(dataBytes, 0, nread);
 			    nread = in.read(dataBytes);
 			}
-			in.close();
 			return new String(Hex.encodeHex(md.digest()));
 			
 		}
 		catch(Exception ex)
 		{
 			throw new RuntimeException(ex);
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
     
 	}	

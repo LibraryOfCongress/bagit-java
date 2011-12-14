@@ -29,7 +29,7 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 			this.reader = new BufferedReader(fr);
 			this.setNext();
 		}
-		catch(Exception ex)
+		catch(IOException ex)
 		{
 			throw new RuntimeException(ex);
 		}
