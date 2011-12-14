@@ -78,7 +78,7 @@ public class FormatHelper {
 		}
 	}
 	
-	public static Format getFormat(File file) {
+	public static Format getFormat(File file) throws UnknownFormatException {
 		if (file == null) {
 			throw new RuntimeException("Cannot determine format");
 		}
@@ -88,18 +88,15 @@ public class FormatHelper {
 		else if (isZip(file)) {
 			return Format.ZIP;
 		}
-		else if (isTar(file)) {
-			return Format.TAR;
-		}
-		else if (isTarGz(file)) {
-			return Format.TAR_GZ;
-		}
-		else if (isTarBz2(file)) {
-			return Format.TAR_BZ2;
-		}
-		throw new RuntimeException("Unknown format");
+		throw new UnknownFormatException();
 	}
 
-	
+	public static class UnknownFormatException extends Exception {
+		private static final long serialVersionUID = 1L;
+
+		public UnknownFormatException() {
+			super("Unknown format");
+		}
+	}
 	
 }

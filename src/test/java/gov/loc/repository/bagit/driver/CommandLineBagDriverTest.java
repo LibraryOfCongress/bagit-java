@@ -134,16 +134,6 @@ public class CommandLineBagDriverTest {
         assertTrue(fetch.get(0).getUrl().startsWith(BASE_URL));
 	}
 	
-//	@Test
-//	public void testMakeHoleyIncludeDelimiter() throws Exception {
-//		final String BASE_URL = "http://foo.com/bag";
-//        assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_MAKE_HOLEY, ResourceHelper.getFile("bags/v0_96/bag").getAbsolutePath(), destFile.getAbsolutePath(), BASE_URL, "--" + PARAM_WRITER, VALUE_WRITER_ZIP, "--" + PARAM_MANIFEST_DELIMITER, "    \t\t" }));
-//        assertTrue(destFile.exists());
-//        Bag bag = this.bagFactory.createBag(destFile);
-//        FetchTxt fetch = bag.getFetchTxt();
-//        assertNotNull(fetch);
-//        assertTrue(fetch.get(0).getUrl().startsWith(BASE_URL));
-//	}
 	
 	@Test
 	public void testUpdateIncludeDelimiter() throws Exception {
@@ -159,20 +149,5 @@ public class CommandLineBagDriverTest {
         assertNotNull(bagInfo.getPayloadOxum());
         assertEquals(1, bag.getTagManifests().size());
 	}
-
-//	@Test
-//	public void testUpdateTagManifestsIncludeDelimiter() throws Exception {
-//	    assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_CREATE, destFile.getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir1").getAbsolutePath(), ResourceHelper.getFile("bags/v0_95/bag/data/dir2").getAbsolutePath()}));
-//	    assertEquals(RETURN_SUCCESS, driver.execute(new String[] {OPERATION_UPDATE_TAGMANIFESTS, destFile.getAbsolutePath(), "--" + PARAM_MANIFEST_DELIMITER, "\t" }));
-//        Bag bag = this.bagFactory.createBag(destFile);
-//        assertEquals(3, bag.getPayload().size());
-//        assertTrue(bag.verifyValid().isSuccess());
-//        BagInfoTxt bagInfo = bag.getBagInfoTxt();
-//        assertNotNull(bagInfo);
-//        assertNotNull(bagInfo.getBaggingDate());
-//        assertNotNull(bagInfo.getBagSize());
-//        assertNotNull(bagInfo.getPayloadOxum());
-//        assertEquals(1, bag.getTagManifests().size());
-//	}
 
 }

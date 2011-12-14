@@ -4,15 +4,16 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.provider.UriParser;
 
 
 import gov.loc.repository.bagit.Bag;
@@ -22,21 +23,29 @@ import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
+import gov.loc.repository.bagit.DeclareCloseable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.filesystem.DirNode;
+import gov.loc.repository.bagit.filesystem.FileNode;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory.UnsupportedFormatException;
+import gov.loc.repository.bagit.filesystem.FileSystemNode;
+import gov.loc.repository.bagit.filesystem.filter.FileNodeFileSystemNodeFilter;
+import gov.loc.repository.bagit.filesystem.filter.IgnoringFileSystemNodeFilter;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.CancelUtil;
+import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
-import gov.loc.repository.bagit.utilities.IgnoringFileSelector;
+import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
@@ -55,6 +64,7 @@ public abstract class AbstractBag implements Bag {
 	private BagPartFactory bagPartFactory = null;
 	private BagConstants bagConstants = null;
 	private BagFactory bagFactory = null;
+	private Set<Closeable> closeables = new HashSet<Closeable>();
 	
 	/**
 	 * Constructor for a new bag.
@@ -85,32 +95,40 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void loadFromPayloadManifests() {
+		log.debug(MessageFormat.format("Loading from {0} using payload manifests", this.fileForBag));
 		this.tagMap.clear();
 		this.payloadMap.clear();
 		
-		FileObject bagFileObject = VFSHelper.getFileObjectForBag(this.fileForBag);
-		try {													
-			//Load tag map
-			for(FileObject tagFileObject : bagFileObject.getChildren()) {
-				if (tagFileObject.getType() == FileType.FILE) {
-					
-					String filepath = bagFileObject.getName().getRelativeName(tagFileObject.getName());
-					BagFile bagFile = new VFSBagFile(filepath, tagFileObject);
-					this.putBagFile(bagFile);
-				}
-			}
-			//Find manifests to load payload map
-			List<Manifest> payloadManifests = this.getPayloadManifests();
-			for(Manifest manifest : payloadManifests) {
-				for(String filepath : manifest.keySet()) {
-					//Encode % in filepath
-					BagFile bagFile = new VFSBagFile(filepath, bagFileObject.resolveFile(UriParser.encode(filepath)));
-					this.putBagFile(bagFile);
-				}
+		DirNode bagFileDirNode;
+		try {
+			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag);
+		} catch (UnknownFormatException e) {
+			throw new RuntimeException(e);
+		} catch (UnsupportedFormatException e) {
+			throw new RuntimeException(e);
+		}
+		log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
+		
+		//Load tag map
+		for(FileSystemNode node : bagFileDirNode.listChildren()) {
+			if (node instanceof FileNode) {
+				FileNode tagFileNode = (FileNode)node;
+				String filepath = FilenameHelper.removeBasePath(bagFileDirNode.getFilepath(), tagFileNode.getFilepath());
+				log.trace(MessageFormat.format("Loading tag {0} using filepath {1}", tagFileNode.getFilepath(), filepath));
+				BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
+				this.putBagFile(bagFile);
 			}
 		}
-		catch(Exception ex) {
-			throw new RuntimeException(ex);
+		//Find manifests to load payload map
+		List<Manifest> payloadManifests = this.getPayloadManifests();
+		for(Manifest manifest : payloadManifests) {
+			for(String filepath : manifest.keySet()) {
+				String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
+				FileNode payloadFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
+				BagFile bagFile = new FileSystemBagFile(filepath, payloadFileNode);
+				log.trace(MessageFormat.format("Loading payload {0} using filepath {1}", payloadFileNode.getFilepath(), filepath));
+				this.putBagFile(bagFile);
+			}
 		}
 	}
 
@@ -121,22 +139,33 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories) {
+		log.debug(MessageFormat.format("Loading from {0} using payload files", this.fileForBag));
+
 		this.tagMap.clear();
 		this.payloadMap.clear();
 		
-		FileObject bagFileObject = VFSHelper.getFileObjectForBag(this.fileForBag);
-		try {													
-			//Load tag map
-			for(FileObject fileObject : bagFileObject.findFiles(new IgnoringFileSelector(ignoreAdditionalDirectories, false))) {
-				String filepath = UriParser.decode(bagFileObject.getName().getRelativeName(fileObject.getName()));
-				log.trace("Reading " + filepath);
-				BagFile bagFile = new VFSBagFile(filepath, fileObject);
-				this.putBagFile(bagFile);
-			}
+		DirNode bagFileDirNode;
+		try {
+			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag);
+		} catch (UnknownFormatException e) {
+			throw new RuntimeException(e);
+		} catch (UnsupportedFormatException e) {
+			throw new RuntimeException(e);
 		}
-		catch(Exception ex) {
-			throw new RuntimeException(ex);
-		}
+		log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
+		
+		IgnoringFileSystemNodeFilter descentFilter = new IgnoringFileSystemNodeFilter(ignoreAdditionalDirectories, false);
+		descentFilter.setRelativeFilepath(bagFileDirNode.getFilepath());
+		Collection<FileSystemNode> nodes = bagFileDirNode.listDescendants(new FileNodeFileSystemNodeFilter(), descentFilter);
+		log.trace(MessageFormat.format("{0} files found", nodes.size()));
+		
+		for(FileSystemNode node : nodes) {
+			log.trace("Reading " + node.getFilepath());
+			String filepath = FilenameHelper.removeBasePath(bagFileDirNode.getFilepath(), node.getFilepath());
+			BagFile bagFile = new FileSystemBagFile(filepath, (FileNode)node);
+			log.trace(MessageFormat.format("Loading {0} using filepath {1}", node.getFilepath(), filepath));
+			this.putBagFile(bagFile);			
+		}			
 	}
 
 	
@@ -177,6 +206,10 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void putBagFile(BagFile bagFile) {
+		if (bagFile instanceof DeclareCloseable) {
+			this.closeables.add(((DeclareCloseable)bagFile).declareCloseable());
+		}
+		
 		if (BagHelper.isPayload(bagFile.getFilepath(), this.getBagConstants())) {
 			this.payloadMap.put(bagFile.getFilepath(), bagFile);
 		} else {
@@ -357,7 +390,11 @@ public abstract class AbstractBag implements Bag {
 		if (this.fileForBag == null) {
 			return null;
 		}
-		return FormatHelper.getFormat(this.fileForBag);
+		try {
+			return FormatHelper.getFormat(this.fileForBag);
+		} catch (UnknownFormatException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override
@@ -464,5 +501,18 @@ public abstract class AbstractBag implements Bag {
 	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume) {
 		HolePuncher holePuncher = new HolePuncherImpl(this.bagFactory);
 		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags, resume);
+	}
+	
+	@Override
+	public void close() {
+		for(Closeable closeable : this.closeables) {
+			try {
+				closeable.close();
+			} catch (IOException e) {
+				//Ignore the closing
+				log.warn("Error closing", e);
+			}
+		}
+		
 	}
 }

@@ -32,7 +32,11 @@ public class PreBagImplTest {
 		
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
-		assertTrue(bag.verifyValid().isSuccess());
+		try {
+			assertTrue(bag.verifyValid().isSuccess());
+		} finally {
+			bag.close();
+		}
 		
 	}
 	
@@ -45,10 +49,14 @@ public class PreBagImplTest {
 		
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, true);
-		assertTrue(testDataDir.exists());
-		File baseDir = new File(testDataDir, "test_bag");
-		assertTrue(baseDir.exists());
-		assertTrue(bag.verifyValid().isSuccess());
+		try {
+			assertTrue(testDataDir.exists());
+			File baseDir = new File(testDataDir, "test_bag");
+			assertTrue(baseDir.exists());
+			assertTrue(bag.verifyValid().isSuccess());
+		} finally {
+			bag.close();
+		}
 		
 	}
 	
@@ -61,10 +69,14 @@ public class PreBagImplTest {
 		
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
-		assertTrue(testDataDir.exists());
-		File baseDir = new File(testDataDir, "test_bag");
-		assertFalse(baseDir.exists());
-		assertTrue(bag.verifyValid().isSuccess());
+		try {
+			assertTrue(testDataDir.exists());
+			File baseDir = new File(testDataDir, "test_bag");
+			assertFalse(baseDir.exists());
+			assertTrue(bag.verifyValid().isSuccess());
+		} finally {
+			bag.close();
+		}
 		
 	}
 
@@ -89,16 +101,20 @@ public class PreBagImplTest {
 		ignoreDirs.add("extra");
 		preBag.setIgnoreAdditionalDirectories(ignoreDirs);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
-		assertTrue(testDataDir.exists());
-		File baseDir = new File(testDataDir, "test_bag");
-		assertFalse(baseDir.exists());
-		
-		CompleteVerifier verifier = new CompleteVerifierImpl();
-		verifier.setIgnoreAdditionalDirectories(ignoreDirs);
-		assertTrue(bag.verify(verifier).isSuccess());		
-
-		assertTrue(extraDir.exists());
-		assertTrue(extraFile.exists());
+		try {
+			assertTrue(testDataDir.exists());
+			File baseDir = new File(testDataDir, "test_bag");
+			assertFalse(baseDir.exists());
+			
+			CompleteVerifier verifier = new CompleteVerifierImpl();
+			verifier.setIgnoreAdditionalDirectories(ignoreDirs);
+			assertTrue(bag.verify(verifier).isSuccess());		
+	
+			assertTrue(extraDir.exists());
+			assertTrue(extraFile.exists());
+		} finally {
+			bag.close();
+		}
 	}
 
 	
@@ -114,10 +130,14 @@ public class PreBagImplTest {
 		
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
-		assertTrue(testDataDir.exists());
-		File movedEmptyDir = new File(testDataDir, "empty");
-		assertTrue(movedEmptyDir.exists());
-		assertTrue(bag.verifyValid().isSuccess());
+		try {
+			assertTrue(testDataDir.exists());
+			File movedEmptyDir = new File(testDataDir, "empty");
+			assertTrue(movedEmptyDir.exists());
+			assertTrue(bag.verifyValid().isSuccess());
+		} finally {
+			bag.close();
+		}
 		
 	}
 
@@ -133,13 +153,17 @@ public class PreBagImplTest {
 		
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, true, true);
-		assertTrue(testDataDir.exists());
-		File baseDir = new File(testDataDir, "test_bag");
-		assertTrue(baseDir.exists());
-		File newEmptyDir = new File(baseDir, "empty_dir");
-		assertTrue(newEmptyDir.exists());
-		assertTrue((new File(newEmptyDir, ".keep").exists()));
-		assertTrue(bag.verifyValid().isSuccess());
+		try {
+			assertTrue(testDataDir.exists());
+			File baseDir = new File(testDataDir, "test_bag");
+			assertTrue(baseDir.exists());
+			File newEmptyDir = new File(baseDir, "empty_dir");
+			assertTrue(newEmptyDir.exists());
+			assertTrue((new File(newEmptyDir, ".keep").exists()));
+			assertTrue(bag.verifyValid().isSuccess());
+		} finally {
+			bag.close();
+		}
 		
 	}
 

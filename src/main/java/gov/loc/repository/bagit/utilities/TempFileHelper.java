@@ -3,7 +3,6 @@ package gov.loc.repository.bagit.utilities;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import gov.loc.repository.bagit.Bag.Format;
 
 import org.apache.commons.io.FileUtils;
 
@@ -12,14 +11,13 @@ public class TempFileHelper {
 		return new File(file.getPath() + ".biltemp");
 	}
 
-	public static void switchTemp(File file, Format format) {
+	public static void switchTemp(File file) {
 		File tempFile = getTempFile(file);
 		if (! tempFile.exists()) {
-			throw new RuntimeException(MessageFormat.format("Temp file {0} for {1} doesn't exist.", tempFile, file));
+			throw new RuntimeException(MessageFormat.format("Temp file {0} for {1} does not exist.", tempFile, file));
 		}
 		try {
 			if (file.exists()) {
-				VFSHelper.getFileObject(VFSHelper.getUri(file, format), true).close();
 				FileUtils.forceDelete(file);
 			}
 			FileUtils.moveFile(tempFile, file);

@@ -25,7 +25,6 @@ import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 
 public class CompleterHelper extends LongRunningOperationBase {
 	
@@ -140,7 +139,6 @@ public class CompleterHelper extends LongRunningOperationBase {
 			        			}
 		        			}
 		        		}
-		        		VFSHelper.closeFileSystemManager();
 		        		return manifestEntries;
 		            }
 	            });
@@ -207,7 +205,6 @@ public class CompleterHelper extends LongRunningOperationBase {
 	        				manifestEntries.put(filepath, checksum);
 		        			
 		        		}
-		        		VFSHelper.closeFileSystemManager();
 		        		return manifestEntries;
 		            }
 	            });

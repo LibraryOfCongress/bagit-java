@@ -24,7 +24,6 @@ import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
 
@@ -140,8 +139,6 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                     result.setSuccess(false);
                                 }
                             }
-                            //Close the FileSystemManager on this thread
-                            VFSHelper.closeFileSystemManager();
                             return result;
                         }
                     });

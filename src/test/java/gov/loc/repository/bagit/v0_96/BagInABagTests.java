@@ -29,21 +29,24 @@ public class BagInABagTests extends AbstractBagImplTest {
 	public void testRemoveDirectory() throws Exception
 	{
 		Bag bag = this.getBagByPayloadManifests(Format.FILESYSTEM);
-		
-		assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
-		assertNotNull(bag.getBagFile("data/bag/data/dir2/test4.txt"));
-		assertNotNull(bag.getBagFile("data/bag/data/dir2/dir3/test5.txt"));
-		
-		bag.removePayloadDirectory("data/bag/data/dir2");
-		assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
-		assertNull(bag.getBagFile("data/bag/data/dir2/test4.txt"));
-		assertNull(bag.getBagFile("data/bag/data/dir2/dir3/test5.txt"));
-
-		bag.removePayloadDirectory("data/bag/data/test1.txt");
-		assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
-
-		bag.removePayloadDirectory("data");
-		assertNotNull(bag.getBagFile("data/bag/manifest-md5.txt"));
+		try {
+			assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
+			assertNotNull(bag.getBagFile("data/bag/data/dir2/test4.txt"));
+			assertNotNull(bag.getBagFile("data/bag/data/dir2/dir3/test5.txt"));
+			
+			bag.removePayloadDirectory("data/bag/data/dir2");
+			assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
+			assertNull(bag.getBagFile("data/bag/data/dir2/test4.txt"));
+			assertNull(bag.getBagFile("data/bag/data/dir2/dir3/test5.txt"));
+	
+			bag.removePayloadDirectory("data/bag/data/test1.txt");
+			assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
+	
+			bag.removePayloadDirectory("data");
+			assertNotNull(bag.getBagFile("data/bag/manifest-md5.txt"));
+		} finally {
+			bag.close();
+		}
 	}
 	
 	@Override

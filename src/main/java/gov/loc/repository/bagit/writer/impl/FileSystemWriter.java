@@ -17,10 +17,10 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.impl.VFSBagFile;
+import gov.loc.repository.bagit.filesystem.impl.FileFileSystem;
+import gov.loc.repository.bagit.impl.FileSystemBagFile;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 
 public class FileSystemWriter extends AbstractWriter {
 
@@ -31,7 +31,7 @@ public class FileSystemWriter extends AbstractWriter {
 	private boolean ignoreNfsTmpFiles = true;
 	private Bag origBag;
 	private Bag newBag;
-	private String newBagURI;
+	private FileFileSystem fileSystem;
 	private int fileTotal = 0;
 	private int fileCount = 0;
 	private boolean tagFilesOnly = false;
@@ -39,6 +39,11 @@ public class FileSystemWriter extends AbstractWriter {
 	
 	public FileSystemWriter(BagFactory bagFactory) {
 		super(bagFactory);
+	}
+	
+	@Override
+	protected Format getFormat() {
+		return Format.FILESYSTEM;
 	}
 	
 	public void setFilesThatDoNotMatchManifestOnly(boolean filesThatDoNotMatchManifestOnly) {
@@ -58,11 +63,6 @@ public class FileSystemWriter extends AbstractWriter {
 	}
 
 	@Override
-	protected Format getFormat(File file) {
-		return Format.FILESYSTEM;
-	}
-	
-	@Override
 	public void startBag(Bag bag) {
 		try {
 			if (newBagDir.exists()) {
@@ -76,7 +76,7 @@ public class FileSystemWriter extends AbstractWriter {
 			throw new RuntimeException(ex);
 		}
 		this.newBag = this.bagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), LoadOption.NO_LOAD);
-		this.newBagURI = VFSHelper.getUri(this.newBagDir, Format.FILESYSTEM);
+		this.fileSystem = new FileFileSystem(this.newBagDir);
 		this.fileCount = 0;
 		this.fileTotal = bag.getTags().size() + bag.getPayload().size();
 		this.origBag = bag;
@@ -93,7 +93,7 @@ public class FileSystemWriter extends AbstractWriter {
 		} else {
 			log.debug(MessageFormat.format("Skipping writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
 		}
-		this.newBag.putBagFile(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, bagFile.getFilepath())));
+		this.newBag.putBagFile(new FileSystemBagFile(bagFile.getFilepath(), this.fileSystem.resolve(bagFile.getFilepath())));
 	}
 	
 	@Override
@@ -107,7 +107,7 @@ public class FileSystemWriter extends AbstractWriter {
 		} else {
 			log.debug(MessageFormat.format("Skipping writing tag file {0} to {1}.", bagFile.getFilepath(), file.toString()));
 		}			
-		this.newBag.putBagFile(new VFSBagFile(bagFile.getFilepath(), VFSHelper.concatUri(this.newBagURI, bagFile.getFilepath())));
+		this.newBag.putBagFile(new FileSystemBagFile(bagFile.getFilepath(), this.fileSystem.resolve(bagFile.getFilepath())));
 	}
 	
 	@Override

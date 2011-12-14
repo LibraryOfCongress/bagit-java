@@ -2,21 +2,24 @@ package gov.loc.repository.bagit.verify.impl;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Collection;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileType;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.filesystem.DirNode;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory.UnsupportedFormatException;
+import gov.loc.repository.bagit.filesystem.FileSystemNode;
+import gov.loc.repository.bagit.filesystem.filter.DirNodeFileSystemNodeFilter;
+import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.verify.Verifier;
 
 /**
@@ -37,50 +40,49 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 		this.bag = bag;
 		this.result = new SimpleResult(true);
 		
-		try
+		log.trace("Checking for bag declaration.");
+		if (bag.getBagItTxt() == null)
+			this.fail("Bag does not have {0}.", bag.getBagConstants().getBagItTxt());				
+
+		log.trace("Checking for at least one payload manifest.");
+		if (bag.getPayloadManifests().isEmpty())
+			this.fail("Bag does not have any payload manifests.");
+		
+		log.trace("Confirming version specified matches version in declaration.");
+		if (bag.getBagItTxt() != null && !bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion()))
+			this.fail("Version is not {0}.", bag.getBagConstants().getVersion());				
+
+		log.trace("Checking for fetch.txt.");
+		if (bag.getFetchTxt() == null)
+			this.fail("Bag does not have {0}.", bag.getBagConstants().getFetchTxt());				
+
+		
+		//Additional checks if an existing Bag
+		if (bag.getFile() != null)
 		{
-			log.trace("Checking for bag declaration.");
-			if (bag.getBagItTxt() == null)
-				this.fail("Bag does not have {0}.", bag.getBagConstants().getBagItTxt());				
-
-			log.trace("Checking for at least one payload manifest.");
-			if (bag.getPayloadManifests().isEmpty())
-				this.fail("Bag does not have any payload manifests.");
-			
-			log.trace("Confirming version specified matches version in declaration.");
-			if (bag.getBagItTxt() != null && !bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion()))
-				this.fail("Version is not {0}.", bag.getBagConstants().getVersion());				
-	
-			log.trace("Checking for fetch.txt.");
-			if (bag.getFetchTxt() == null)
-				this.fail("Bag does not have {0}.", bag.getBagConstants().getFetchTxt());				
-
-			
-			//Additional checks if an existing Bag
-			if (bag.getFile() != null)
-			{
-				FileObject bagFileObject = VFSHelper.getFileObjectForBag(bag.getFile());
-				
+			DirNode bagFileDirNode;
+			try {
+				bagFileDirNode = FileSystemFactory.getDirNodeForBag(bag.getFile());
+			} catch (UnknownFormatException e) {
+				throw new RuntimeException(e);
+			} catch (UnsupportedFormatException e) {
+				throw new RuntimeException(e);
+			}
+			try {
 				log.trace("Checking that no disallowed directories are present.");
-				for(FileObject fileObject : bagFileObject.getChildren())
-				{
+				Collection<FileSystemNode> dirNodes = bagFileDirNode.listChildren(new DirNodeFileSystemNodeFilter());
+				
+				for(FileSystemNode dirNode : dirNodes) {
 					if(this.isCancelled()) return null;
-					
-					if (fileObject.getType() == FileType.FOLDER)
+					if (! bag.getBagConstants().getDataDirectory().equals(dirNode.getName()))
 					{
-						String folderName = bagFileObject.getName().getRelativeName(fileObject.getName());
-						
-						if (!folderName.equals(bag.getBagConstants().getDataDirectory()))
-						{
-							this.fail("Directory {0} not allowed in bag_dir.", folderName);
-						}
+						this.fail("Directory {0} not allowed in bag_dir.", dirNode.getName());
 					}
 				}
+				
+			} finally {
+				bagFileDirNode.getFileSystem().closeQuietly();
 			}
-		}
-		catch(FileSystemException ex)
-		{
-			throw new RuntimeException(ex);
 		}
 		
 		log.info("Completion check: " + result.toString());

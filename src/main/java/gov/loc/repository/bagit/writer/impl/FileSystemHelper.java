@@ -8,7 +8,6 @@ import org.apache.commons.io.FileUtils;
 
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.utilities.TempFileHelper;
-import gov.loc.repository.bagit.Bag.Format;
 
 public class FileSystemHelper {
 
@@ -31,7 +30,7 @@ public class FileSystemHelper {
 			}
 			in.close();
 			out.close();
-			TempFileHelper.switchTemp(file, Format.FILESYSTEM);
+			TempFileHelper.switchTemp(file);
 		}
 		catch (Exception ex) {
 			throw new RuntimeException(ex);

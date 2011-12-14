@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.transformer.impl;
 
 import static org.junit.Assert.*;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,55 +46,68 @@ public class DefaultCompleterTest {
 		assertNotNull(bag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
 	}
 
+	@After
+	public void cleanup() {
+		bag.close();
+	}
+	
 	@Test
 	public void testComplete() throws Exception {
 		Bag newBag = completer.complete(bag);
-		assertTrue(newBag.verifyComplete().isSuccess());
-		assertTrue(newBag.verifyValid().isSuccess());
-		assertNotNull(newBag.getPayloadManifest(Algorithm.SHA1));
-		assertNull(newBag.getTagManifest(Algorithm.SHA1));
-		assertNotNull(newBag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
-		assertNull(newBag.getChecksums("data/test1.txt").get(Algorithm.MD5));
-		
-		//Make sure that has BagIt.txt, tag manifest, payload manifest
-		BagItTxt bagIt = newBag.getBagItTxt();
-		assertEquals("UTF-8", bagIt.getCharacterEncoding());
-		assertEquals(BagFactory.LATEST.versionString, bagIt.getVersion());
-		
-		assertEquals(1, newBag.getTagManifests().size());
-		assertEquals(2, newBag.getPayloadManifests().size());
-		
-		BagInfoTxt bagInfo = newBag.getBagInfoTxt();
-		assertNotNull(bagInfo);
-		assertEquals("25.5", bagInfo.getPayloadOxum());
-		assertEquals((new SimpleDateFormat("yyyy-MM-dd")).format(Calendar.getInstance().getTime()), bagInfo.getBaggingDate());
-		assertEquals("0.2 KB", bagInfo.getBagSize());
+		try {
+			assertTrue(newBag.verifyComplete().isSuccess());
+			assertTrue(newBag.verifyValid().isSuccess());
+			assertNotNull(newBag.getPayloadManifest(Algorithm.SHA1));
+			assertNull(newBag.getTagManifest(Algorithm.SHA1));
+			assertNotNull(newBag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
+			assertNull(newBag.getChecksums("data/test1.txt").get(Algorithm.MD5));
+			
+			//Make sure that has BagIt.txt, tag manifest, payload manifest
+			BagItTxt bagIt = newBag.getBagItTxt();
+			assertEquals("UTF-8", bagIt.getCharacterEncoding());
+			assertEquals(BagFactory.LATEST.versionString, bagIt.getVersion());
+			
+			assertEquals(1, newBag.getTagManifests().size());
+			assertEquals(2, newBag.getPayloadManifests().size());
+			
+			BagInfoTxt bagInfo = newBag.getBagInfoTxt();
+			assertNotNull(bagInfo);
+			assertEquals("25.5", bagInfo.getPayloadOxum());
+			assertEquals((new SimpleDateFormat("yyyy-MM-dd")).format(Calendar.getInstance().getTime()), bagInfo.getBaggingDate());
+			assertEquals("0.2 KB", bagInfo.getBagSize());
+		} finally {
+			newBag.close();
+		}
 	}
 	
 	@Test
 	public void testCompleteWithClear() throws Exception {
 		completer.setClearExistingPayloadManifests(true);
 		Bag newBag = completer.complete(bag);
-		assertTrue(newBag.verifyComplete().isSuccess());
-		assertTrue(newBag.verifyValid().isSuccess());
-		assertNull(newBag.getPayloadManifest(Algorithm.SHA1));
-		assertNull(newBag.getTagManifest(Algorithm.SHA1));
-		assertNull(newBag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
-		assertNotNull(newBag.getChecksums("data/test1.txt").get(Algorithm.MD5));
-		
-		//Make sure that has BagIt.txt, tag manifest, payload manifest
-		BagItTxt bagIt = newBag.getBagItTxt();
-		assertEquals("UTF-8", bagIt.getCharacterEncoding());
-		assertEquals(BagFactory.LATEST.versionString, bagIt.getVersion());
-		
-		assertEquals(1, newBag.getTagManifests().size());
-		assertEquals(1, newBag.getPayloadManifests().size());
-		
-		BagInfoTxt bagInfo = newBag.getBagInfoTxt();
-		assertNotNull(bagInfo);
-		assertEquals("25.5", bagInfo.getPayloadOxum());
-		assertEquals((new SimpleDateFormat("yyyy-MM-dd")).format(Calendar.getInstance().getTime()), bagInfo.getBaggingDate());
-		assertEquals("0.2 KB", bagInfo.getBagSize());
+		try {
+			assertTrue(newBag.verifyComplete().isSuccess());
+			assertTrue(newBag.verifyValid().isSuccess());
+			assertNull(newBag.getPayloadManifest(Algorithm.SHA1));
+			assertNull(newBag.getTagManifest(Algorithm.SHA1));
+			assertNull(newBag.getChecksums("data/test1.txt").get(Algorithm.SHA1));
+			assertNotNull(newBag.getChecksums("data/test1.txt").get(Algorithm.MD5));
+			
+			//Make sure that has BagIt.txt, tag manifest, payload manifest
+			BagItTxt bagIt = newBag.getBagItTxt();
+			assertEquals("UTF-8", bagIt.getCharacterEncoding());
+			assertEquals(BagFactory.LATEST.versionString, bagIt.getVersion());
+			
+			assertEquals(1, newBag.getTagManifests().size());
+			assertEquals(1, newBag.getPayloadManifests().size());
+			
+			BagInfoTxt bagInfo = newBag.getBagInfoTxt();
+			assertNotNull(bagInfo);
+			assertEquals("25.5", bagInfo.getPayloadOxum());
+			assertEquals((new SimpleDateFormat("yyyy-MM-dd")).format(Calendar.getInstance().getTime()), bagInfo.getBaggingDate());
+			assertEquals("0.2 KB", bagInfo.getBagSize());
+		} finally {
+			newBag.close();
+		}
 	}
 
 	@Test

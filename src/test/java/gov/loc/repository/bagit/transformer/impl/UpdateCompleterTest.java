@@ -36,15 +36,8 @@ public class UpdateCompleterTest {
 			FileUtils.forceDelete(testBagDir);
 		}
 		FileUtils.copyDirectory(sourceBagDir, testBagDir);
-		/*
-		if (deleteTagManifest) {
-			File tagManifestFile = new File(testBagDir, ManifestHelper.getTagManifestFilename(Algorithm.MD5, bagFactory.getBagConstants()));
-			FileUtils.forceDelete(tagManifestFile);
-		}
-		*/
 		return testBagDir;
 	}
-
 	
 	@Before
 	public void setup() throws Exception {
@@ -66,24 +59,26 @@ public class UpdateCompleterTest {
 		File file3 = new File(bagFile, "newtag.txt");
 		FileWriter writer2 = new FileWriter(file3);
 		writer2.append("newtag");
-		writer2.close();
-				
+		writer2.close();				
 		
 	}
-
+	
 	@Test
 	public void testComplete() throws Exception {
 		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_PAYLOAD_FILES);
-		assertFalse(bag.verifyValid().isSuccess());
-		Bag newBag = completer.complete(bag);
-		SimpleResult result = newBag.verifyValid();
-		System.out.println("X:" + result);
-		assertTrue(result.isSuccess());
-		BagInfoTxt bagInfoTxt = newBag.getBagInfoTxt();
-		//Original doesn't have payload-oxum, so neither should completed
-		assertNull(bagInfoTxt.getPayloadOxum());
-		assertEquals(this.dateFormat.format(new Date()), bagInfoTxt.getBaggingDate());
-//		assertEquals("1 KB", bagInfoTxt.getBagSize());
+		try {
+			assertFalse(bag.verifyValid().isSuccess());
+			Bag newBag = completer.complete(bag);
+			SimpleResult result = newBag.verifyValid();
+			System.out.println("X:" + result);
+			assertTrue(result.isSuccess());
+			BagInfoTxt bagInfoTxt = newBag.getBagInfoTxt();
+			//Original doesn't have payload-oxum, so neither should completed
+			assertNull(bagInfoTxt.getPayloadOxum());
+			assertEquals(this.dateFormat.format(new Date()), bagInfoTxt.getBaggingDate());
+		} finally {
+			bag.close();
+		}
 	}
 
 	@Test
@@ -92,11 +87,19 @@ public class UpdateCompleterTest {
 		FileUtils.forceDelete(bagInfoTxtFile);
 
 		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_PAYLOAD_FILES);
-		assertFalse(bag.verifyValid().isSuccess());
-		Bag newBag = completer.complete(bag);
-		SimpleResult result = newBag.verifyValid();
-		assertTrue(result.isSuccess());
-		assertNull(newBag.getBagInfoTxt());
+		try {
+			assertFalse(bag.verifyValid().isSuccess());
+			Bag newBag = completer.complete(bag);
+			try {
+				SimpleResult result = newBag.verifyValid();
+				assertTrue(result.isSuccess());
+				assertNull(newBag.getBagInfoTxt());
+			} finally {
+				newBag.close();
+			}
+		} finally {
+			bag.close();
+		}
 	}
 
 }

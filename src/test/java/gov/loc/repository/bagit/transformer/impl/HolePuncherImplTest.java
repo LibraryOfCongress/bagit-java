@@ -26,51 +26,67 @@ public class HolePuncherImplTest {
 	@Test
 	public void testMakeHoley() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag-with-space"));
-		assertEquals(5, bag.getPayload().size());
-		assertNull(bag.getFetchTxt());
-		
-		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag", true, false, false);
-		FetchTxt fetch = newBag.getFetchTxt();
-		assertNotNull(fetch);
-		assertEquals(5, fetch.size());
-		boolean foundNoSpace = false;
-		boolean foundSpace = false;
-		for(int i=0; i < fetch.size(); i++) {
-			FilenameSizeUrl filenameSizeUrl = fetch.get(i);
-			if ("data/dir2/dir3/test5.txt".equals(filenameSizeUrl.getFilename())) {
-				assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-				assertEquals("http://foo.com/bag/data/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
-				foundNoSpace = true;
-			}
-			System.out.println(filenameSizeUrl.getFilename());
-			if ("data/test 1.txt".equals(filenameSizeUrl.getFilename())) {
-				assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-				assertEquals("http://foo.com/bag/data/test%201.txt", filenameSizeUrl.getUrl());
-				foundSpace = true;
-			}
+		try {
+			assertEquals(5, bag.getPayload().size());
+			assertNull(bag.getFetchTxt());
 			
+			Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag", true, false, false);
+			try {
+				FetchTxt fetch = newBag.getFetchTxt();
+				assertNotNull(fetch);
+				assertEquals(5, fetch.size());
+				boolean foundNoSpace = false;
+				boolean foundSpace = false;
+				for(int i=0; i < fetch.size(); i++) {
+					FilenameSizeUrl filenameSizeUrl = fetch.get(i);
+					if ("data/dir2/dir3/test5.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/data/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
+						foundNoSpace = true;
+					}
+					System.out.println(filenameSizeUrl.getFilename());
+					if ("data/test 1.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/data/test%201.txt", filenameSizeUrl.getUrl());
+						foundSpace = true;
+					}
+					
+				}
+				assertTrue(foundNoSpace);
+				assertTrue(foundSpace);
+				assertEquals(0, newBag.getPayload().size());
+			} finally {
+				bag.close();
+			}
+		} finally {
+			bag.close();
 		}
-		assertTrue(foundNoSpace);
-		assertTrue(foundSpace);
-		assertEquals(0, newBag.getPayload().size());
 		
 	}
 	
 	@Test
 	public void testMakeHoleyWithSlash() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag"));
-		assertEquals(5, bag.getPayload().size());
-		assertNull(bag.getFetchTxt());
-				
-		//Now test with a slash after the url
-		bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag"));
-		Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag/", false, false, false);
-		FetchTxt fetch = newBag.getFetchTxt();
-		assertNotNull(fetch);
-		FilenameSizeUrl filenameSizeUrl = fetch.get(0);
-		assertEquals("data/dir2/dir3/test5.txt", filenameSizeUrl.getFilename());
-		assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-		assertEquals("http://foo.com/bag/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
+		try {
+			assertEquals(5, bag.getPayload().size());
+			assertNull(bag.getFetchTxt());
+					
+			//Now test with a slash after the url
+			bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_96/bag"));
+			Bag newBag = puncher.makeHoley(bag, "http://foo.com/bag/", false, false, false);
+			try {
+				FetchTxt fetch = newBag.getFetchTxt();
+				assertNotNull(fetch);
+				FilenameSizeUrl filenameSizeUrl = fetch.get(0);
+				assertEquals("data/dir2/dir3/test5.txt", filenameSizeUrl.getFilename());
+				assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+				assertEquals("http://foo.com/bag/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
+			} finally {
+				bag.close();
+			}
+		} finally {
+			bag.close();
+		}
 		
 	}
 	

@@ -7,7 +7,6 @@ import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.impl.AbstractBagVisitor;
-import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.TempFileHelper;
 import gov.loc.repository.bagit.writer.Writer;
 
@@ -41,17 +40,11 @@ public abstract class AbstractWriter extends AbstractBagVisitor implements Write
 	protected File getTempFile(File file) {
 		return TempFileHelper.getTempFile(file);
 	}
-	
-	protected Format getFormat(File file) {
-		return FormatHelper.getFormat(file);
-	}
+
+	protected abstract Format getFormat();
 	
 	protected void switchTemp(File file) {
-		Format format = null;
-		if (file.exists()) {
-			format = this.getFormat(file);
-		}
-		TempFileHelper.switchTemp(file, format);
+		TempFileHelper.switchTemp(file);
 
 	}
 }

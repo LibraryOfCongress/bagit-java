@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.impl;
 
 import gov.loc.repository.bagit.BagFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -19,7 +20,7 @@ public class FileBagFile implements BagFile {
 	public InputStream newInputStream() {
 		
 		try {
-			return new FileInputStream(this.file);
+			return new BufferedInputStream(new FileInputStream(this.file));
 		}
 		catch(Exception ex)
 		{

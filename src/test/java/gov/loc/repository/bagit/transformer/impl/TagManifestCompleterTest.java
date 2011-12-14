@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.transformer.impl;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,36 +39,52 @@ public class TagManifestCompleterTest {
 		this.bag = this.bagFactory.createBag(testBagFile);
 		assertTrue(this.bag.verifyValid().isSuccess());
 	}
+	
+	@After
+	public void cleanup() {
+		bag.close();
+	}
 
 	@Test
 	public void testComplete() throws Exception {
 		Bag newBag = completer.complete(bag);
-		assertTrue(newBag.verifyValid().isSuccess());
-		//Add a tag
-		File test1File = new File(this.testBagFile, "tag.txt");
-		assertFalse(test1File.exists());
-		FileWriter writer = new FileWriter(test1File);
-		writer.write("tag");
-		writer.close();
-		newBag.addFileAsTag(test1File);
+		Bag newBag2 = null;
+		Bag newBag3 = null;
+		Bag newBag4 = null;
 		
-		Bag newBag2 = completer.complete(newBag);
-		assertTrue(newBag2.verifyValid().isSuccess());
-		
-		//Change a tag
-		writer = new FileWriter(test1File);
-		writer.write("xtag");
-		writer.close();
-		
-		Bag newBag3 = completer.complete(newBag2);
-		assertTrue(newBag3.verifyValid().isSuccess());
-
-		//Remove a tag
-		test1File.delete();
-		newBag3.removeBagFile("tag.txt");
-		
-		Bag newBag4 = completer.complete(newBag3);
-		assertTrue(newBag4.verifyValid().isSuccess());
+		try {
+			assertTrue(newBag.verifyValid().isSuccess());
+			//Add a tag
+			File test1File = new File(this.testBagFile, "tag.txt");
+			assertFalse(test1File.exists());
+			FileWriter writer = new FileWriter(test1File);
+			writer.write("tag");
+			writer.close();
+			newBag.addFileAsTag(test1File);
+			
+			newBag2 = completer.complete(newBag);
+			assertTrue(newBag2.verifyValid().isSuccess());
+			
+			//Change a tag
+			writer = new FileWriter(test1File);
+			writer.write("xtag");
+			writer.close();
+			
+			newBag3 = completer.complete(newBag2);
+			assertTrue(newBag3.verifyValid().isSuccess());
+	
+			//Remove a tag
+			test1File.delete();
+			newBag3.removeBagFile("tag.txt");
+			
+			newBag4 = completer.complete(newBag3);
+			assertTrue(newBag4.verifyValid().isSuccess());
+		} finally {
+			newBag.close();
+			if (newBag2 != null) newBag2.close();
+			if (newBag3 != null) newBag3.close();
+			if (newBag4 != null) newBag4.close();
+		}
 
 	}
 	

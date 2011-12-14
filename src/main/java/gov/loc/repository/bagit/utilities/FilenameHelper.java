@@ -26,7 +26,7 @@ public class FilenameHelper {
 		String normBasePath = normalizePathSeparators(basePath);
 		String normFilename = normalizePathSeparators(filename);
 		String filenameWithoutBasePath = null;
-		if (basePath == null) {
+		if (basePath == null || basePath.length() == 0) {
 			filenameWithoutBasePath = normFilename;
 		}
 		else {
@@ -85,6 +85,14 @@ public class FilenameHelper {
 			endPos = filepath.indexOf("\\..\\");
 		}
 		return filepath;
+	}
+	
+	public static String getName(String filepath) {
+		return FilenameUtils.getName(filepath);
+	}
+	
+	public static String concatFilepath(String basepath, String filenameToAdd) {
+		return FilenameUtils.concat(basepath, filenameToAdd);
 	}
 
 }

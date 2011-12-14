@@ -6,14 +6,16 @@ import java.text.MessageFormat;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs.FileObject;
 
 import gov.loc.repository.bagit.Bag.BagConstants;
+import gov.loc.repository.bagit.filesystem.DirNode;
+import gov.loc.repository.bagit.filesystem.FileNode;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory.UnsupportedFormatException;
 import gov.loc.repository.bagit.impl.BagItTxtImpl;
-import gov.loc.repository.bagit.impl.VFSBagFile;
-import gov.loc.repository.bagit.utilities.FormatHelper;
+import gov.loc.repository.bagit.impl.FileSystemBagFile;
+import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.SizeHelper;
-import gov.loc.repository.bagit.utilities.VFSHelper;
 import gov.loc.repository.bagit.v0_95.impl.BagConstantsImpl;
 
 public class BagHelper {
@@ -22,35 +24,30 @@ public class BagHelper {
 	
 	private static final String BAGIT = "bagit.txt";
 	
+	/*
+	 * Returns format or null if unable to determine format.
+	 */
 	public static String getVersion(File bagFile) {
-		FileObject fileObject = VFSHelper.getFileObject(bagFile);
+		DirNode bagFileDirNode = null;
 		try {
-		
-			if (fileObject == null || ! fileObject.exists()) {
-				log.debug(MessageFormat.format("Unable to determine version for {0}.", bagFile.toString()));
-				return null;
-			}
-		
-			//If a serialized bag, then need to get bag directory from within		
-			if (FormatHelper.getFormat(bagFile).isSerialized) {
-				if (fileObject.getChildren().length != 1) {
-					throw new RuntimeException("Unable to find bag_dir in serialized bag");
-				}
-				fileObject = fileObject.getChildren()[0];
-			}
-			//Look for BagInfo.txt
-			FileObject bagItFileObject = fileObject.getChild(BAGIT);
-			if (bagItFileObject == null || ! bagItFileObject.exists()) {
-				log.debug(MessageFormat.format("Unable to determine version for {0}.", bagFile.toString()));
-				return null;
-			}
-			BagItTxt bagItTxt = new BagItTxtImpl(new VFSBagFile(BAGIT, bagItFileObject), new BagConstantsImpl());
-			log.debug(MessageFormat.format("Determined that version for {0} is {1}.", bagFile.toString(), bagItTxt.getVersion()));
-			return bagItTxt.getVersion();
+			bagFileDirNode = FileSystemFactory.getDirNodeForBag(bagFile);
+		} catch (UnknownFormatException e) {
+			log.debug(MessageFormat.format("Unable to determine version for {0} because unknown format.", bagFile.toString()));
+			return null;
+		} catch (UnsupportedFormatException e) {
+			log.debug(MessageFormat.format("Unable to determine version for {0} because unsupported format.", bagFile.toString()));
 		}
-		catch(Exception ex) {
-			throw new RuntimeException(ex);
+		log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
+		
+		FileNode bagItNode = bagFileDirNode.childFile(BAGIT);
+		if (bagItNode == null || ! bagItNode.exists()) {
+			log.debug(MessageFormat.format("Unable to determine version for {0}.", bagFile.toString()));
+			return null;
 		}
+		BagItTxt bagItTxt = new BagItTxtImpl(new FileSystemBagFile(BAGIT, bagItNode), new BagConstantsImpl());
+		log.debug(MessageFormat.format("Determined that version for {0} is {1}.", bagFile.toString(), bagItTxt.getVersion()));
+		return bagItTxt.getVersion();
+		
 	}
 	
 	public static long generatePayloadOctetCount(Bag bag) {
@@ -82,4 +79,6 @@ public class BagHelper {
 		filepath = FilenameUtils.normalize(filepath);
 		return filepath.startsWith(bagConstants.getDataDirectory()); 
 	}
+	
+	
 }

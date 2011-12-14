@@ -35,49 +35,72 @@ public abstract class AbstractWriterTest {
 	@Test
 	public void testWriter() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.verifyValid().isSuccess());
-		Writer writer = this.getBagWriter();
-		writer.addProgressListener(new PrintingProgressListener());
-		
-		Bag newBag = writer.write(bag, this.getBagFile());
-		assertNotNull(newBag);
-		assertTrue(this.getBagFile().exists());
-		assertTrue(newBag.verifyValid().isSuccess());
-		
-		List<Manifest> payloadManifests = newBag.getPayloadManifests();
-		assertEquals(1, payloadManifests.size());
-		assertEquals("manifest-md5.txt", payloadManifests.get(0).getFilepath());
-		assertEquals(4, newBag.getTags().size());
-		assertNotNull(newBag.getBagFile("bagit.txt"));
-		
-		assertEquals(5, newBag.getPayload().size());
-		assertNotNull(newBag.getBagFile("data/dir1/test3.txt"));
+		try {
+			assertTrue(bag.verifyValid().isSuccess());
+			Writer writer = this.getBagWriter();
+			writer.addProgressListener(new PrintingProgressListener());
+			
+			Bag newBag = writer.write(bag, this.getBagFile());
+			try {
+				assertNotNull(newBag);
+				assertTrue(this.getBagFile().exists());
+				assertTrue(newBag.verifyValid().isSuccess());
+				
+				List<Manifest> payloadManifests = newBag.getPayloadManifests();
+				assertEquals(1, payloadManifests.size());
+				assertEquals("manifest-md5.txt", payloadManifests.get(0).getFilepath());
+				assertEquals(4, newBag.getTags().size());
+				assertNotNull(newBag.getBagFile("bagit.txt"));
+				
+				assertEquals(5, newBag.getPayload().size());
+				assertNotNull(newBag.getBagFile("data/dir1/test3.txt"));
+			} finally {
+				newBag.close();
+			}
+		} finally {
+			bag.close();
+		}
 		
 	}
 
 	@Test
 	public void testCancel() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		assertTrue(bag.verifyValid().isSuccess());
-		
-		Writer writer = this.getBagWriter();
-		
-		
-		Bag newBag = writer.write(new CancelTriggeringBagDecorator(bag, 10, writer), this.getBagFile());
-		assertNull(newBag);
+		try {
+			assertTrue(bag.verifyValid().isSuccess());
+			
+			Writer writer = this.getBagWriter();
+					
+			Bag newBag = writer.write(new CancelTriggeringBagDecorator(bag, 10, writer), this.getBagFile());
+			try {
+				assertNull(newBag);
+			} finally {
+				bag.close();
+			}
+		} finally {
+			bag.close();
+		}
 	}
 	
 	@Test
 	public void testOverwrite() throws Exception {
 		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
-		Writer writer = this.getBagWriter();
-		
-		Bag newBag = writer.write(bag, this.getBagFile());
-		assertTrue(newBag.verifyValid().isSuccess());
-
-		//OK, now write the bag again
-		Bag newestBag = writer.write(newBag, this.getBagFile());
-		assertTrue(newestBag.verifyValid().isSuccess());
+		Bag newBag = null;
+		Bag newestBag = null;
+		try {
+			Writer writer = this.getBagWriter();
+			
+			newBag = writer.write(bag, this.getBagFile());
+			assertTrue(newBag.verifyValid().isSuccess());
+	
+			//OK, now write the bag again
+			newestBag = writer.write(newBag, this.getBagFile());
+			assertTrue(newestBag.verifyValid().isSuccess());
+		} finally { 
+			bag.close();
+			if (newBag != null) newBag.close();
+			if (newestBag != null) newestBag.close();
+		}
 		
 	}
 

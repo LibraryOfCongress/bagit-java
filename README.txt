@@ -30,7 +30,11 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
-Changes in 3.14:
+Changes in 4.9:
+1. Removes Commons VFS.
+2. Deprecates support for reading/writing tar, tar bz2, and tar gz.
+3. Deprecates support for transferring SWORD and BOB.
+4. Adds close() method to Bag for closing IO resources. 
 1. Clarified logging messages for CompleteVerifier and ValidVerifier.
 
 Changes in 3.13:

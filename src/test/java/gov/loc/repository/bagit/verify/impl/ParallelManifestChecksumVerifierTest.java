@@ -48,9 +48,13 @@ public class ParallelManifestChecksumVerifierTest
 	public void testVerifyCorrect() throws Exception
 	{
 	    Bag testBag = this.getBag(Version.V0_96, Format.FILESYSTEM);
-	    this.unit.addProgressListener(new PrintingProgressListener());
-	    SimpleResult result = this.unit.verify(testBag.getPayloadManifests(), testBag);
-	    assertEquals(true, result.isSuccess());
+	    try {
+		    this.unit.addProgressListener(new PrintingProgressListener());
+		    SimpleResult result = this.unit.verify(testBag.getPayloadManifests(), testBag);
+		    assertEquals(true, result.isSuccess());
+	    } finally {
+	    	testBag.close();
+	    }
 	}
 
     private Bag getBag(Version version, Bag.Format format) throws Exception

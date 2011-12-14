@@ -41,26 +41,33 @@ public class AddFilesToPayloadOperationTest {
 		File srcAddFilesDir = new File(ResourceHelper.PROJECT_DIR+"/target/test-classes/srcFiles");
 		//Read Bag from disk
 		Bag bag = this.bagFactory.createBag(sourceBagDir);
-
-		bag.addFilesToPayload(Arrays.asList(srcAddFilesDir.listFiles()));
-		
-//		AddFilesToPayloadOperation driver = new AddFilesToPayloadOperation(bag);
-//		if (srcAddFilesDir.isDirectory()) {
-//				bag = driver.addFilesToPayload(Arrays.asList(srcAddFilesDir.listFiles()));
-//		}
-
-		DefaultCompleter completer = new DefaultCompleter(bagFactory);
-		bag = completer.complete(bag);
-		
-        assertTrue(bag.verifyValid().isSuccess());
-        assertEquals(7, bag.getPayload().size());
-        assertTrue(bag.verifyValid().isSuccess());
-        BagInfoTxt bagInfo = bag.getBagInfoTxt();
-        assertNotNull(bagInfo);
-        assertNotNull(bagInfo.getBaggingDate());
-        assertNotNull(bagInfo.getBagSize());
-        assertNotNull(bagInfo.getPayloadOxum());
-        assertEquals(1, bag.getTagManifests().size());
+		try {
+			bag.addFilesToPayload(Arrays.asList(srcAddFilesDir.listFiles()));
+			
+	//		AddFilesToPayloadOperation driver = new AddFilesToPayloadOperation(bag);
+	//		if (srcAddFilesDir.isDirectory()) {
+	//				bag = driver.addFilesToPayload(Arrays.asList(srcAddFilesDir.listFiles()));
+	//		}
+	
+			DefaultCompleter completer = new DefaultCompleter(bagFactory);
+			Bag bag2 = completer.complete(bag);
+			try {
+			
+		        assertTrue(bag2.verifyValid().isSuccess());
+		        assertEquals(7, bag2.getPayload().size());
+		        assertTrue(bag2.verifyValid().isSuccess());
+		        BagInfoTxt bagInfo = bag2.getBagInfoTxt();
+		        assertNotNull(bagInfo);
+		        assertNotNull(bagInfo.getBaggingDate());
+		        assertNotNull(bagInfo.getBagSize());
+		        assertNotNull(bagInfo.getPayloadOxum());
+		        assertEquals(1, bag2.getTagManifests().size());
+			} finally {
+				bag2.close();
+			}
+		} finally {
+			bag.close();
+		}
 		
 	}
 	

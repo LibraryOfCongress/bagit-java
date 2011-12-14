@@ -68,6 +68,7 @@ public class ResourceHelper {
 					FileUtils.deleteQuietly(TEST_DATA_DIR);
 				
 				FileUtils.copyDirectory(new File(PROJECT_DIR, "src/test/resources/bags"), new File(TEST_DATA_DIR, "bags"), REAL_FILE_FILTER, true);
+				FileUtils.copyDirectory(new File(PROJECT_DIR, "src/test/resources/file_systems"), new File(TEST_DATA_DIR, "file_systems"), REAL_FILE_FILTER, true);
 				
 				initialCopyCompleted = true;
 			}

@@ -23,10 +23,8 @@ import gov.loc.repository.bagit.transformer.impl.SplitBySize;
 import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.transfer.BagFetcher;
-import gov.loc.repository.bagit.transfer.BobSender;
 import gov.loc.repository.bagit.transfer.FetchFailStrategy;
 import gov.loc.repository.bagit.transfer.StandardFailStrategies;
-import gov.loc.repository.bagit.transfer.SwordSender;
 import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
@@ -41,9 +39,6 @@ import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
 import gov.loc.repository.bagit.writer.Writer;
 import gov.loc.repository.bagit.writer.impl.FileSystemHelper;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-import gov.loc.repository.bagit.writer.impl.TarBz2Writer;
-import gov.loc.repository.bagit.writer.impl.TarGzWriter;
-import gov.loc.repository.bagit.writer.impl.TarWriter;
 import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 import java.io.File;
@@ -90,8 +85,6 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_VERIFY_TAGMANIFESTS = "verifytagmanifests";
 	public static final String OPERATION_RETRIEVE = "retrieve";
 	public static final String OPERATION_FILL_HOLEY = "fillholey";	
-	public static final String OPERATION_SEND_BOB = "bob";
-	public static final String OPERATION_SEND_SWORD = "sword";
 	public static final String OPERATION_BAG_IN_PLACE = "baginplace";
 	public static final String OPERATION_SPLIT_BAG_BY_SIZE = "splitbagbysize";
 	public static final String OPERATION_SPLIT_BAG_BY_FILE_TYPE = "splitbagbyfiletype";
@@ -141,9 +134,6 @@ public class CommandLineBagDriver {
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
-	public static final String VALUE_WRITER_TAR = Format.TAR.name().toLowerCase();
-	public static final String VALUE_WRITER_TAR_GZ = Format.TAR_GZ.name().toLowerCase();
-	public static final String VALUE_WRITER_TAR_BZ2 = Format.TAR_BZ2.name().toLowerCase();
 	
 	private static final Log log = LogFactory.getLog(CommandLineBagDriver.class);
 
@@ -168,17 +158,15 @@ public class CommandLineBagDriver {
 		Parameter missingBagItTolerantParam = new Switch(PARAM_MISSING_BAGIT_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_MISSING_BAGIT_TOLERANT, "Tolerant of a missing bag-it.txt.");
 		Parameter additionalDirectoryTolerantParam = new Switch(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, JSAP.NO_SHORTFLAG, PARAM_ADDITIONAL_DIRECTORY_TOLERANT, "Tolerant of additional directories in the bag_dir.");
 		Parameter manifestSeparatorParam = new FlaggedOption(PARAM_MANIFEST_SEPARATOR, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MANIFEST_SEPARATOR, "Delimiter used in Payload and Tag Manifest files.  Place within quotes for whitespace.");
-		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP + ";" + VALUE_WRITER_TAR + ";" + VALUE_WRITER_TAR_GZ + ";" + VALUE_WRITER_TAR_BZ2), VALUE_WRITER_FILESYSTEM, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0}, {1}, {2}, {3}, and {4}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_TAR, VALUE_WRITER_TAR_GZ, VALUE_WRITER_TAR_BZ2, VALUE_WRITER_ZIP));
+		Parameter writerParam = new FlaggedOption(PARAM_WRITER, EnumeratedStringParser.getParser(VALUE_WRITER_FILESYSTEM + ";" + VALUE_WRITER_ZIP), VALUE_WRITER_FILESYSTEM, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_WRITER, MessageFormat.format("The writer to use to write the bag. Valid values are {0} and {1}.", VALUE_WRITER_FILESYSTEM, VALUE_WRITER_ZIP));
 		Parameter payloadParam = new UnflaggedOption(PARAM_PAYLOAD, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.GREEDY, "List of files/directories to include in payload. To add the children of a directory, but not the directory itself append with " + File.separator + "*.");
 		Parameter excludePayloadDirParam = new Switch(PARAM_EXCLUDE_PAYLOAD_DIR, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_PAYLOAD_DIR, "Exclude the payload directory when constructing the url.");
 		Parameter baseUrlParam = new UnflaggedOption(PARAM_BASE_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The base url to be prepended in creating the fetch.txt.");
-		Parameter bobSwordUrlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to be used in creating a resource using SWORD/BOB.");
 		Parameter retrieveUrlParam = new UnflaggedOption(PARAM_URL, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "The url to retrieve the bag from.");
 		Parameter threadsParam = new FlaggedOption(PARAM_THREADS, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THREADS, "The number of threads to use.  Default is equal to the number of processors.");
 		Parameter fetchRetryParam = new FlaggedOption(PARAM_FETCH_RETRY, EnumeratedStringParser.getParser("none;next;retry;threshold"), "threshold", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_RETRY, "How to handle fetch failures.  Must be one of none, next, retry, or threshold.");
 		Parameter fetchFailThreshold = new FlaggedOption(PARAM_FETCH_FAILURE_THRESHOLD, JSAP.INTEGER_PARSER, "200", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_FAILURE_THRESHOLD, "The number of total fetch failures to tolerate before giving up.");
 		Parameter fetchFileFailThreshold = new FlaggedOption(PARAM_FETCH_FILE_FAILURE_THRESHOLD, JSAP.INTEGER_PARSER, "3", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FETCH_FILE_FAILURE_THRESHOLD, "The number times to retry a file before giving up on that file.");
-		//Parameter bagDirParam = new FlaggedOption(PARAM_BAG_DIR, JSAP.STRING_PARSER, "bag", JSAP.REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAG_DIR, "The name of the directory within the serialized bag when creating a resource using SWORD.");
 		Parameter excludeBagInfoParam = new Switch(PARAM_EXCLUDE_BAG_INFO, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_BAG_INFO, "Excludes creating bag-info.txt, if necessary, when completing a bag.");
 		Parameter noUpdatePayloadOxumParam = new Switch(PARAM_NO_UPDATE_PAYLOAD_OXUM, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_PAYLOAD_OXUM, "Does not update Payload-Oxum in bag-info.txt when completing a bag.");
 		Parameter noUpdateBaggingDateParam = new Switch(PARAM_NO_UPDATE_BAGGING_DATE, JSAP.NO_SHORTFLAG, PARAM_NO_UPDATE_BAGGING_DATE, "Does not update Bagging-Date in bag-info.txt when completing a bag.");
@@ -190,14 +178,12 @@ public class CommandLineBagDriver {
 		Parameter relaxSSLParam = new Switch(PARAM_RELAX_SSL, JSAP.NO_SHORTFLAG, PARAM_RELAX_SSL, "Tolerant of self-signed SSL certificates.");
 		Parameter usernameParam = new FlaggedOption(PARAM_USERNAME, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_USERNAME, "The username for basic authentication.");
 		Parameter passwordParam = new FlaggedOption(PARAM_PASSWORD, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_PASSWORD, "The password for basic authentication.");
-		Parameter throttleParam = new FlaggedOption(PARAM_THROTTLE, JSAP.INTEGER_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_THROTTLE, "A pause between HTTP posts in milliseconds for BOB.");
 		Parameter retainBaseDirParam = new Switch(PARAM_RETAIN_BASE_DIR, JSAP.NO_SHORTFLAG, PARAM_RETAIN_BASE_DIR, "Indicates that the base directory (not just the contents of the base directory) should be placed in the data directory of the bag.");
 		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
 		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
 		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
 		Parameter keepLowestLevelDirParam = new Switch(PARAM_KEEP_LOWEST_LEVEL_DIR, JSAP.NO_SHORTFLAG, PARAM_KEEP_LOWEST_LEVEL_DIR, "Does not split the lowest level directory.");
-		//Parameter keepSourceBagParam = new Switch(PARAM_KEEP_SOURCE_BAG, JSAP.NO_SHORTFLAG, PARAM_KEEP_SOURCE_BAG, "Does not delete the source bag.");
 		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File types delimited by a comma will be grouped into different bags; file types delimited by a colon will be grouped into one single bag.");
 		Parameter excludeDirsParam = new FlaggedOption(PARAM_EXCLUDE_DIRS, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_DIRS, "Directories in the bag to be ignored in the split operation; they will be kept in the source bag; they should be relative to the base path of the bag. ");
 		Parameter keepEmptyDirsParam = new Switch(PARAM_KEEP_EMPTY_DIRS, JSAP.NO_SHORTFLAG, PARAM_KEEP_EMPTY_DIRS, "Retains empty directories by placing .keep files in them.");
@@ -329,25 +315,6 @@ public class CommandLineBagDriver {
 				new Parameter[] {sourceParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_FILL_HOLEY, this.getBag("mybag"))});
 		
-		List<Parameter> senderParams = new ArrayList<Parameter>();
-		senderParams.add(sourceParam);
-		senderParams.add(bobSwordUrlParam);
-		senderParams.add(relaxSSLParam);
-		senderParams.add(usernameParam);
-		senderParams.add(passwordParam);
-		this.addOperation(OPERATION_SEND_SWORD, 
-				"Sends a bag using SWORD.",
-				senderParams,
-				new String[] {MessageFormat.format("bag {0} {1} http://locdrop.loc.gov/sword", OPERATION_SEND_SWORD, this.getBag("mybag"))});
-
-		List<Parameter> bobParams = new ArrayList<Parameter>();
-		bobParams.addAll(senderParams);
-		bobParams.add(throttleParam);
-		bobParams.add(threadsParam);
-		this.addOperation(OPERATION_SEND_BOB, 
-				"Sends a bag using BOB.", 
-				bobParams, 
-				new String[] {MessageFormat.format("bag {0} {1} http://locdrop.loc.gov/bob", OPERATION_SEND_BOB, this.getBag("mybag"))});
 	}
 
 	private String getBag(String bagName) {
@@ -598,12 +565,6 @@ public class CommandLineBagDriver {
 				Format format = Format.valueOf(config.getString(PARAM_WRITER).toUpperCase());
 				if (Format.FILESYSTEM.equals(format)) {
 					writer = new FileSystemWriter(bagFactory);
-				} else if (Format.TAR.equals(format)) {
-					writer = new TarWriter(bagFactory);
-				} else if (Format.TAR_BZ2.equals(format)) {
-					writer = new TarBz2Writer(bagFactory);
-				} else if (Format.TAR_GZ.equals(format)) {
-					writer = new TarGzWriter(bagFactory);
 				} else if (Format.ZIP.equals(format)) {
 					writer = new ZipWriter(bagFactory);
 				}
@@ -702,71 +663,110 @@ public class CommandLineBagDriver {
 				checksumVerifier.addProgressListener(listener);
 				ValidVerifierImpl verifier = new ValidVerifierImpl(completeVerifier, checksumVerifier);
 				verifier.addProgressListener(listener);
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = verifier.verify(bag);
-				log.info(result.toString());
-				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
-				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
-					ret = RETURN_FAILURE;
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);				
+				try {
+					SimpleResult result = verifier.verify(bag);
+					log.info(result.toString());
+					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+					if (! result.isSuccess()) {
+						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						ret = RETURN_FAILURE;
+					}
+				} finally {
+					bag.close();
 				}
 			} else if (OPERATION_VERIFYCOMPLETE.equals(operation.name)) {				
 				CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));				
 				completeVerifier.setAdditionalDirectoriesInBagDirTolerant(config.getBoolean(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, false));
 				completeVerifier.setIgnoreSymlinks(config.getBoolean(PARAM_EXCLUDE_SYMLINKS));
-				completeVerifier.addProgressListener(listener);
+				completeVerifier.addProgressListener(listener);				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				SimpleResult result = completeVerifier.verify(bag);
-				log.info(result.toString());
-				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
-				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
-					ret = RETURN_FAILURE;
+				try {
+					SimpleResult result = completeVerifier.verify(bag);
+					log.info(result.toString());
+					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+					if (! result.isSuccess()) {
+						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						ret = RETURN_FAILURE;
+					}
+				} finally {
+					bag.close();
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
-				verifier.addProgressListener(listener);
-				SimpleResult result = verifier.verify(bag.getTagManifests(), bag);
-
-				log.info(result.toString());
-				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
-				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
-					ret = RETURN_FAILURE;
+				try {
+					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+					verifier.addProgressListener(listener);
+					SimpleResult result = verifier.verify(bag.getTagManifests(), bag);
+					log.info(result.toString());
+					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+					if (! result.isSuccess()) {
+						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						ret = RETURN_FAILURE;
+					}
+				} finally {
+					bag.close();
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
-				verifier.addProgressListener(listener);
-				SimpleResult result = verifier.verify(bag.getPayloadManifests(), bag);
-				log.info(result.toString());
-				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
-				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
-					ret = RETURN_FAILURE;
+				try {
+					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+					verifier.addProgressListener(listener);
+					SimpleResult result = verifier.verify(bag.getPayloadManifests(), bag);
+					log.info(result.toString());
+					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+					if (! result.isSuccess()) {
+						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						ret = RETURN_FAILURE;
+					}
+				} finally {
+					bag.close();
 				}
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
-				Bag newBag = completer.complete(bag);
-				newBag.write(writer, destFile);				
+				try {
+					Bag newBag = completer.complete(bag);
+					try {
+						newBag.write(writer, destFile);
+					} finally {
+						newBag.close();
+					}
+				} finally {
+					bag.close();
+				}
 			}  else if (OPERATION_UPDATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
-				UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
-				completer.setNonDefaultManifestSeparator(manifestSeparator);
-				completer.addProgressListener(listener);
-				Bag newBag = updateCompleter.complete(bag);
-				newBag.write(writer, destFile != null?destFile:sourceFile);
+				try {
+					UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
+					completer.setNonDefaultManifestSeparator(manifestSeparator);
+					completer.addProgressListener(listener);
+					Bag newBag = updateCompleter.complete(bag);
+					try {
+						newBag.write(writer, destFile != null?destFile:sourceFile);
+					} finally {
+						newBag.close();
+					}
+				} finally {
+					bag.close();
+				}
 			}
 			else if (OPERATION_UPDATE_TAGMANIFESTS.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
-				TagManifestCompleter tagManifestCompleter = new TagManifestCompleter(bagFactory);
-				tagManifestCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
-				tagManifestCompleter.setNonDefaultManifestSeparator(manifestSeparator);
-				Bag newBag = tagManifestCompleter.complete(bag);
-				for(Manifest manifest : newBag.getTagManifests()) {
-					FileSystemHelper.write(manifest, new File(sourceFile, manifest.getFilepath()));
+				try {
+					TagManifestCompleter tagManifestCompleter = new TagManifestCompleter(bagFactory);
+					tagManifestCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
+					tagManifestCompleter.setNonDefaultManifestSeparator(manifestSeparator);
+					Bag newBag = tagManifestCompleter.complete(bag);
+					try {
+						for(Manifest manifest : newBag.getTagManifests()) {
+							FileSystemHelper.write(manifest, new File(sourceFile, manifest.getFilepath()));
+						}
+					} finally {
+						bag.close();
+					}
+				} finally {
+					bag.close();
 				}
 			} else if (OPERATION_BAG_IN_PLACE.equals(operation.name)) {
 				PreBag preBag = this.bagFactory.createPreBag(sourceFile);
@@ -785,82 +785,110 @@ public class CommandLineBagDriver {
 				preBag.makeBagInPlace(version != null ? version : BagFactory.LATEST, config.getBoolean(PARAM_RETAIN_BASE_DIR, false), config.getBoolean(PARAM_KEEP_EMPTY_DIRS, false), completer);
 			} else if (OPERATION_CREATE.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, null);
-				for(String filepath : config.getStringArray(PARAM_PAYLOAD)) {
-					if (filepath.endsWith(File.separator + "*")) {
-						File parentDir = new File(filepath.substring(0, filepath.length()-2));
-						if (! parentDir.exists()) {
-							throw new RuntimeException(MessageFormat.format("{0} does not exist.", parentDir));
+				try {
+					for(String filepath : config.getStringArray(PARAM_PAYLOAD)) {
+						if (filepath.endsWith(File.separator + "*")) {
+							File parentDir = new File(filepath.substring(0, filepath.length()-2));
+							if (! parentDir.exists()) {
+								throw new RuntimeException(MessageFormat.format("{0} does not exist.", parentDir));
+							}
+							if (! parentDir.isDirectory()) {
+								throw new RuntimeException(MessageFormat.format("{0} is not a directory.", parentDir));
+							}
+							for(File childFile : parentDir.listFiles()) {
+								bag.addFileToPayload(childFile);
+							}
+						} else {						
+							bag.addFileToPayload(new File(filepath));
 						}
-						if (! parentDir.isDirectory()) {
-							throw new RuntimeException(MessageFormat.format("{0} is not a directory.", parentDir));
-						}
-						for(File childFile : parentDir.listFiles()) {
-							bag.addFileToPayload(childFile);
-						}
-					} else {						
-						bag.addFileToPayload(new File(filepath));
 					}
-				}
-				if (config.contains(PARAM_BAGINFOTXT)) {
-					File bagInfoTxtFile = config.getFile(PARAM_BAGINFOTXT);
-					if (! bagInfoTxtFile.getName().equals(bag.getBagConstants().getBagInfoTxt())) {
-						msg = MessageFormat.format("External bag-info.txt must be named {0}.", bag.getBagConstants().getBagInfoTxt());
-						System.err.println(msg);
-						log.error(msg);
-						ret = RETURN_ERROR;
+					if (config.contains(PARAM_BAGINFOTXT)) {
+						File bagInfoTxtFile = config.getFile(PARAM_BAGINFOTXT);
+						if (! bagInfoTxtFile.getName().equals(bag.getBagConstants().getBagInfoTxt())) {
+							msg = MessageFormat.format("External bag-info.txt must be named {0}.", bag.getBagConstants().getBagInfoTxt());
+							System.err.println(msg);
+							log.error(msg);
+							ret = RETURN_ERROR;
+						}
+						bag.addFileAsTag(bagInfoTxtFile);
 					}
-					bag.addFileAsTag(bagInfoTxtFile);
+					Bag newBag = completer.complete(bag);
+					try {
+						newBag.write(writer, destFile);
+					} finally {
+						newBag.close();
+					}
+				} finally {
+					bag.close();
 				}
-				Bag newBag = completer.complete(bag);
-				newBag.write(writer, destFile);
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncherImpl puncher = new HolePuncherImpl(bagFactory);
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false, config.getBoolean(PARAM_RESUME));
-				newBag.write(writer, destFile);
+				try {
+					Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false, config.getBoolean(PARAM_RESUME));
+					try {
+						newBag.write(writer, destFile);
+					} finally {
+						bag.close();
+					}
+				} finally {
+					bag.close();
+				}
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				String oxum = BagHelper.generatePayloadOxum(bag);				
-				log.info("Payload-Oxum is " + oxum);
-				System.out.println("Payload-Oxum is " + oxum);
+				try {
+					String oxum = BagHelper.generatePayloadOxum(bag);				
+					log.info("Payload-Oxum is " + oxum);
+					System.out.println("Payload-Oxum is " + oxum);
+				} finally {
+					bag.close();
+				}
 			} else if (OPERATION_CHECK_PAYLOAD_OXUM.equals(operation.name)) {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				String genOxum = BagHelper.generatePayloadOxum(bag);
-				BagInfoTxt bagInfo = bag.getBagInfoTxt();
-				if (bagInfo == null) {
-					System.err.println("Bag does not contain bag-info.txt.");
-					log.error("Bag does not contain bag-info.txt.");
-					ret = RETURN_ERROR;
-				} else {
-					String checkOxum = bagInfo.getPayloadOxum();
-					if (checkOxum == null) {
-						System.err.println("bag-info.txt does not contain Payload-Oxum.");
-						log.error("bag-info.txt does not contain Payload-Oxum.");
+				try {
+					String genOxum = BagHelper.generatePayloadOxum(bag);
+					BagInfoTxt bagInfo = bag.getBagInfoTxt();
+					if (bagInfo == null) {
+						System.err.println("Bag does not contain bag-info.txt.");
+						log.error("Bag does not contain bag-info.txt.");
 						ret = RETURN_ERROR;
 					} else {
-						if (checkOxum.equals(genOxum)) {
-							String oxumMsg = "Payload-Oxum matches.";
-							System.out.println(oxumMsg);
-							log.info(oxumMsg);
+						String checkOxum = bagInfo.getPayloadOxum();
+						if (checkOxum == null) {
+							System.err.println("bag-info.txt does not contain Payload-Oxum.");
+							log.error("bag-info.txt does not contain Payload-Oxum.");
+							ret = RETURN_ERROR;
 						} else {
-							String oxumMsg = MessageFormat.format("Payload-Oxum does not match. Expected {0} according to bag-info.txt but found {1}.", checkOxum, genOxum);
-							System.out.println(oxumMsg);
-							log.info(oxumMsg);
-							ret = RETURN_FAILURE;
+							if (checkOxum.equals(genOxum)) {
+								String oxumMsg = "Payload-Oxum matches.";
+								System.out.println(oxumMsg);
+								log.info(oxumMsg);
+							} else {
+								String oxumMsg = MessageFormat.format("Payload-Oxum does not match. Expected {0} according to bag-info.txt but found {1}.", checkOxum, genOxum);
+								System.out.println(oxumMsg);
+								log.info(oxumMsg);
+								ret = RETURN_FAILURE;
+							}
 						}
 					}
+				} finally {
+					bag.close();
 				}
 			} else if (OPERATION_FILL_HOLEY.equals(operation.name)) {
 			    FileSystemFileDestination dest = new FileSystemFileDestination(sourceFile);
 				Bag bag = this.getBag(sourceFile, version, null);			    
-			    SimpleResult result = fetcher.fetch(bag, dest, config.getBoolean(PARAM_RESUME));
-				log.info(result.toString());
-				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
-				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
-					ret = RETURN_FAILURE;
-				}
+			    try {
+				    SimpleResult result = fetcher.fetch(bag, dest, config.getBoolean(PARAM_RESUME));
+					log.info(result.toString());
+					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
+					if (! result.isSuccess()) {
+						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						ret = RETURN_FAILURE;
+					}
+			    } finally {
+			    	bag.close();
+			    }
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
 				SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL), config.getBoolean(PARAM_RESUME));
 				log.info(result.toString());
@@ -870,108 +898,96 @@ public class CommandLineBagDriver {
 					ret = RETURN_FAILURE;
 				}
 
-			} else if (OPERATION_SEND_BOB.equals(operation.name)) {
-				BobSender sender = new BobSender();
-				String username = config.getString(PARAM_USERNAME);
-				if (username != null) {
-					sender.setUsername(username);
-				}
-				String password = config.getString(PARAM_PASSWORD);
-				if (password != null) {
-					sender.setPassword(password);
-				}
-				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
-				int throttle = config.getInt(PARAM_THROTTLE, 0);
-				if (throttle != 0) {
-					sender.setThrottle(throttle);
-				}
-				int threads = config.getInt(PARAM_THREADS, 0);
-				if (threads != 0) {
-					sender.setThreads(threads);
-				}
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				sender.send(bag, config.getString(PARAM_URL));
-			} else if (OPERATION_SEND_SWORD.equals(operation.name)) {
-				SwordSender sender = new SwordSender(new ZipWriter(bagFactory));
-				String username = config.getString(PARAM_USERNAME);
-				if (username != null) {
-					sender.setUsername(username);
-				}
-				String password = config.getString(PARAM_PASSWORD);
-				if (password != null) {
-					sender.setPassword(password);
-				}
-				sender.setRelaxedSSL(config.getBoolean(PARAM_RELAX_SSL, false));
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
-				sender.send(bag, config.getString(PARAM_URL));				
 			} else if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)
 					|| OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)
 					|| OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)) {
 				
 				Bag srcBag = this.bagFactory.createBag(sourceFile, BagFactory.LoadOption.BY_PAYLOAD_FILES);
-				Double sourceBagSize = null;
-				if(srcBag.getBagInfoTxt() != null && srcBag.getBagInfoTxt().getPayloadOxum() != null){
-					sourceBagSize = new Double(srcBag.getBagInfoTxt().getPayloadOxum());					
-				}
-
-				//The default dest of split bags is parentDirOfSourceBag/SourceBagName_split
-		    	File destBagFile = destFile == null ? new File(srcBag.getFile() + "_split") : destFile;
-
-		    	//The default max bag size is 300 GB. 
-		    	Double maxBagSizeInGB = config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : 300;
-			    Double maxBagSize =  maxBagSizeInGB != null ? maxBagSizeInGB * SizeHelper.GB : 300 * SizeHelper.GB;			
-				
-				String[] fileExtensions = config.contains(PARAM_FILE_EXTENSIONS) ? config.getString(PARAM_FILE_EXTENSIONS).split(",") : null;
-				String[][] fileExtensionsIn = null;
-				if(fileExtensions != null && fileExtensions.length > 0){
-					fileExtensionsIn = new String[fileExtensions.length][];
-					for(int i = 0 ; i < fileExtensions.length ; i++){
-						fileExtensionsIn[i] = fileExtensions[i].split(":");
+				try {
+					Double sourceBagSize = null;
+					if(srcBag.getBagInfoTxt() != null && srcBag.getBagInfoTxt().getPayloadOxum() != null){
+						sourceBagSize = new Double(srcBag.getBagInfoTxt().getPayloadOxum());					
 					}
-				}
-
-				String[] excludeDirs = config.contains(PARAM_EXCLUDE_DIRS) ? config.getString(PARAM_EXCLUDE_DIRS).split(",") : null;
-
-				boolean keepLowestLevelDir = config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR, false);
-				//boolean keepSourceBag = config.getBoolean(PARAM_KEEP_SOURCE_BAG, false);
-				
-				if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)){
-					if(sourceBagSize != null && sourceBagSize <= maxBagSizeInGB * SizeHelper.GB){
-						System.out.println("Max bag size should not be greater than the source bag size.");
-						return RETURN_FAILURE;
-					}
-
-					Splitter splitter = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir, excludeDirs);
-					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, true);
-
-				} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)){
-					if(fileExtensionsIn == null){
-						System.out.println("File extensions should not be null or empty.");
-						return RETURN_FAILURE;
-			    	}
-			    	
-					Splitter splitter = new SplitByFileType(this.bagFactory, fileExtensionsIn, excludeDirs);
-					this.completeAndWriteBagToDisk(splitter.split(srcBag), completer, writer, srcBag, destBagFile, false);
+	
+					//The default dest of split bags is parentDirOfSourceBag/SourceBagName_split
+			    	File destBagFile = destFile == null ? new File(srcBag.getFile() + "_split") : destFile;
+	
+			    	//The default max bag size is 300 GB. 
+			    	Double maxBagSizeInGB = config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : 300;
+				    Double maxBagSize =  maxBagSizeInGB != null ? maxBagSizeInGB * SizeHelper.GB : 300 * SizeHelper.GB;			
 					
-				} else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)){
-					if(fileExtensionsIn == null){
-						System.out.println("File extensions should not be null or empty.");
-						return RETURN_FAILURE;
-			    	}
-
-					Splitter splitter1 = new SplitByFileType(this.bagFactory, fileExtensionsIn, excludeDirs);
-					List<Bag> bags = splitter1.split(srcBag);
-					Splitter splitter2 = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir, excludeDirs);
-					
-					for(Bag bag : bags) {
-						List<Bag> bagsUnderMaxSize = new ArrayList<Bag>();
-						if(new Double(bag.getBagInfoTxt().getPayloadOxum()) <= maxBagSizeInGB * SizeHelper.GB){
-							bagsUnderMaxSize.add(bag);
-						}else{
-							this.completeAndWriteBagToDisk(splitter2.split(bag), completer, writer, srcBag, destBagFile, true);							
+					String[] fileExtensions = config.contains(PARAM_FILE_EXTENSIONS) ? config.getString(PARAM_FILE_EXTENSIONS).split(",") : null;
+					String[][] fileExtensionsIn = null;
+					if(fileExtensions != null && fileExtensions.length > 0){
+						fileExtensionsIn = new String[fileExtensions.length][];
+						for(int i = 0 ; i < fileExtensions.length ; i++){
+							fileExtensionsIn[i] = fileExtensions[i].split(":");
 						}
-						this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true);							
 					}
+	
+					String[] excludeDirs = config.contains(PARAM_EXCLUDE_DIRS) ? config.getString(PARAM_EXCLUDE_DIRS).split(",") : null;
+	
+					boolean keepLowestLevelDir = config.getBoolean(PARAM_KEEP_LOWEST_LEVEL_DIR, false);
+					//boolean keepSourceBag = config.getBoolean(PARAM_KEEP_SOURCE_BAG, false);
+					
+					if(OPERATION_SPLIT_BAG_BY_SIZE.equals(operation.name)){
+						if(sourceBagSize != null && sourceBagSize <= maxBagSizeInGB * SizeHelper.GB){
+							System.out.println("Max bag size should not be greater than the source bag size.");
+							return RETURN_FAILURE;
+						}
+	
+						Splitter splitter = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir, excludeDirs);
+						List<Bag> splitBags = splitter.split(srcBag);
+						try {
+							this.completeAndWriteBagToDisk(splitBags, completer, writer, srcBag, destBagFile, true);
+						} finally {
+							for(Bag bag : splitBags) bag.close();
+						}
+	
+					} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)){
+						if(fileExtensionsIn == null){
+							System.out.println("File extensions should not be null or empty.");
+							return RETURN_FAILURE;
+				    	}
+				    	
+						Splitter splitter = new SplitByFileType(this.bagFactory, fileExtensionsIn, excludeDirs);
+						List<Bag> splitBags = splitter.split(srcBag);
+						try {
+							this.completeAndWriteBagToDisk(splitBags, completer, writer, srcBag, destBagFile, false);
+						} finally {
+							for(Bag bag : splitBags) bag.close();
+						}
+						
+					} else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)){
+						if(fileExtensionsIn == null){
+							System.out.println("File extensions should not be null or empty.");
+							return RETURN_FAILURE;
+				    	}
+	
+						Splitter splitter1 = new SplitByFileType(this.bagFactory, fileExtensionsIn, excludeDirs);
+						List<Bag> bags = splitter1.split(srcBag);
+						Splitter splitter2 = new SplitBySize(this.bagFactory, maxBagSize, keepLowestLevelDir, excludeDirs);
+						try {
+							for(Bag bag : bags) {							
+								List<Bag> bagsUnderMaxSize = new ArrayList<Bag>();
+								if(new Double(bag.getBagInfoTxt().getPayloadOxum()) <= maxBagSizeInGB * SizeHelper.GB){
+									bagsUnderMaxSize.add(bag);
+								}else{
+									List<Bag> bags2 = splitter2.split(bag);
+									try {
+										this.completeAndWriteBagToDisk(bags2, completer, writer, srcBag, destBagFile, true);
+									} finally {
+										for(Bag bag2 : bags2) bag2.close();
+									}
+								}
+								this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true);							
+							}
+						} finally {
+							for(Bag bag : bags) bag.close();
+						}
+					}
+				} finally {
+					srcBag.close();
 				}
 			} 
 			
@@ -1003,40 +1019,8 @@ public class CommandLineBagDriver {
 	    	i++;	    	
 		}
 		
-		/*
-		if(! keepSourceBag){
-			//Delete the source bag except excluded directories
-			this.deleteDir(srcBag.getFile(), excludeDirs);
-		}
-		*/
 	}
-	
-	/*
-	private boolean deleteDir(File dir, String[] excludeDirs) {
-		if(excludeDirs != null){
-    		for(String excludeDir : excludeDirs){
-        		if(dir.getAbsolutePath().toLowerCase().endsWith(excludeDir.toLowerCase())){
-        			log.debug(dir.getAbsolutePath() + " is kept in the source bag. ");
-        			return true;
-        		}
-        	}	
-    	}
 		
-		if (dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i=0; i<children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]), excludeDirs);
-                if (!success) {
-                	log.debug("Cannot delete " + new File(dir, children[i]).getAbsolutePath());
-                    return false;
-                }
-            }
-        }
-    
-        return dir.delete();        	
-    } 
-	*/
-	
 	private void writeResultFile(String operation, SimpleResult result, File bagFile) {
 		if (result.isSuccess()) return;
 		String filename = MessageFormat.format("{0}-{1}.txt", operation, System.getProperty("log.timestamp"));

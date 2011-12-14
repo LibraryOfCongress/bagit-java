@@ -277,4 +277,9 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 		this.increment();
 		return realBag.write(writer, file);
 	}
+	
+	@Override
+	public void close() {
+		realBag.close();		
+	}
 }
