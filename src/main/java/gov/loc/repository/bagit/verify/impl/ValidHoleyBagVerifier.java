@@ -2,7 +2,6 @@ package gov.loc.repository.bagit.verify.impl;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.Collection;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -11,12 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.filesystem.DirNode;
-import gov.loc.repository.bagit.filesystem.FileSystemFactory;
-import gov.loc.repository.bagit.filesystem.FileSystemFactory.UnsupportedFormatException;
-import gov.loc.repository.bagit.filesystem.FileSystemNode;
-import gov.loc.repository.bagit.filesystem.filter.DirNodeFileSystemNodeFilter;
-import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -55,35 +48,6 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 		log.trace("Checking for fetch.txt.");
 		if (bag.getFetchTxt() == null)
 			this.fail("Bag does not have {0}.", bag.getBagConstants().getFetchTxt());				
-
-		
-		//Additional checks if an existing Bag
-		if (bag.getFile() != null)
-		{
-			DirNode bagFileDirNode;
-			try {
-				bagFileDirNode = FileSystemFactory.getDirNodeForBag(bag.getFile());
-			} catch (UnknownFormatException e) {
-				throw new RuntimeException(e);
-			} catch (UnsupportedFormatException e) {
-				throw new RuntimeException(e);
-			}
-			try {
-				log.trace("Checking that no disallowed directories are present.");
-				Collection<FileSystemNode> dirNodes = bagFileDirNode.listChildren(new DirNodeFileSystemNodeFilter());
-				
-				for(FileSystemNode dirNode : dirNodes) {
-					if(this.isCancelled()) return null;
-					if (! bag.getBagConstants().getDataDirectory().equals(dirNode.getName()))
-					{
-						this.fail("Directory {0} not allowed in bag_dir.", dirNode.getName());
-					}
-				}
-				
-			} finally {
-				bagFileDirNode.getFileSystem().closeQuietly();
-			}
-		}
 		
 		log.info("Completion check: " + result.toString());
 		

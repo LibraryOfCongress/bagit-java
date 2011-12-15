@@ -40,11 +40,10 @@ The license below applies to the following bundled dependencies:
  * Commons Logging
  * Commons IO
  * Commons Codec
- * Commons VFS
- * Commons HttpClient
  * Commons Net
  * Commons Exec
- * Ant
+ * Commons Compress
+ * Apache HttpComponents
  * Log4j
 
                                  Apache License
@@ -229,7 +228,7 @@ The license below applies to the following bundled dependencies:
 The license below applies to the following bundled dependencies:
  * JSAP
 
-Copyright © 2004, Martian Software, Inc. All rights reserved.
+Copyright ï¿½ 2004, Martian Software, Inc. All rights reserved.
 
 
                   GNU LESSER GENERAL PUBLIC LICENSE

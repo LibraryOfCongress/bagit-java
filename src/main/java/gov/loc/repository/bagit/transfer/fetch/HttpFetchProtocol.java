@@ -6,23 +6,29 @@ import java.io.OutputStream;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+
 import static java.text.MessageFormat.format;
 
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
-import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
 
 import gov.loc.repository.bagit.transfer.BagTransferException;
 import gov.loc.repository.bagit.transfer.FetchContext;
@@ -30,43 +36,45 @@ import gov.loc.repository.bagit.transfer.FetchProtocol;
 import gov.loc.repository.bagit.transfer.FetchedFileDestination;
 import gov.loc.repository.bagit.transfer.FileFetcher;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
-import gov.loc.repository.bagit.utilities.RelaxedSSLProtocolSocketFactory;
 
-@SuppressWarnings("serial")
 public class HttpFetchProtocol implements FetchProtocol
 {
     private static final Log log = LogFactory.getLog(HttpFetchProtocol.class);
     
+	private ThreadSafeClientConnManager connectionManager;
+    private final DefaultHttpClient client;
+    
     public HttpFetchProtocol()
     {
-        this.connectionManager = new MultiThreadedHttpConnectionManager();
-        this.client = new HttpClient(this.connectionManager);
-        this.state = new HttpState();
+        this.connectionManager = new ThreadSafeClientConnManager();
+        this.client = new DefaultHttpClient(this.connectionManager);
+        this.client.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "BagIt Library Parallel Fetcher");
+        //this.state = new HttpState();
 
         // Since we control the threading manually, set the max
         // configuration values to Very Large Numbers.
-    	this.connectionManager.getParams().setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, Integer.MAX_VALUE);
-    	this.connectionManager.getParams().setMaxTotalConnections(Integer.MAX_VALUE);
+        this.connectionManager.setDefaultMaxPerRoute(Integer.MAX_VALUE);
+        this.connectionManager.setMaxTotal(Integer.MAX_VALUE);
 
     	// Set the socket timeout, so that it does not default to infinity.
     	// Otherwise, broken TCP steams can hang threads forever.
-    	this.connectionManager.getParams().setSoTimeout(20 * 1000);
-		log.debug(format("Socket timeout: {0}ms", this.connectionManager.getParams().getSoTimeout()));
-    	
+        client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 20 * 1000);
+		client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 20 * 1000);
+		
         // If there are credentials present, then set up for preemptive authentication.
         PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("remote", null, 80, "http", "", "scheme");
         
         if (auth != null)
         {
         	log.debug(format("Setting premptive authentication using username and password: {0}/xxxxx", auth.getUserName()));
-        	state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(auth.getUserName(), new String(auth.getPassword())));
-        	this.defaultParams.setAuthenticationPreemptive(true);
-        	this.doAuthentication = true;
+        	this.client.getCredentialsProvider().setCredentials(
+        			AuthScope.ANY,
+        			new UsernamePasswordCredentials(auth.getUserName(), new String(auth.getPassword())));
+        	HttpClientParams.setAuthenticating(this.client.getParams(), true);
         }
         else
         {
-        	this.defaultParams.setAuthenticationPreemptive(false);
-        	this.doAuthentication = false;
+        	HttpClientParams.setAuthenticating(this.client.getParams(), false);
         }
         
         // There's no state in this class right now, so just
@@ -76,21 +84,27 @@ public class HttpFetchProtocol implements FetchProtocol
     
 	public void setRelaxedSsl(boolean relaxedSsl)
 	{
-		if (relaxedSsl != this.relaxedSsl)
-		{
-			this.relaxedSsl = relaxedSsl;
-
-			if (this.relaxedSsl)
-			{
-		    	// Set up our own custom HTTPS protocol, so that we can control certificate authentication.
-		    	Protocol.registerProtocol("https", new Protocol("https", new RelaxedSSLProtocolSocketFactory(), 443));
+		SSLSocketFactory sf;
+		if (relaxedSsl) {
+			try {
+				sf = new SSLSocketFactory(
+				        new TrustSelfSignedStrategy(),
+				        SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			} catch (KeyManagementException e) {
+				throw new RuntimeException(e);
+			} catch (UnrecoverableKeyException e) {
+				throw new RuntimeException(e);
+			} catch (KeyStoreException e) {
+				throw new RuntimeException(e);
 			}
-			else
-			{
-		    	// Set up our own custom HTTPS protocol, so that we can control certificate authentication.
-		    	Protocol.registerProtocol("https", new Protocol("https", new DefaultProtocolSocketFactory(), 443));				
-			}
+		} else {
+			sf = SSLSocketFactory.getSocketFactory();
 		}
+		Scheme https = new Scheme("https", 443, sf);
+
+		this.connectionManager.getSchemeRegistry().register(https);
 	}
     
     @Override
@@ -99,18 +113,7 @@ public class HttpFetchProtocol implements FetchProtocol
         return this.instance;
     }
 
-    private final HttpClientParams defaultParams = new HttpClientParams() {{
-        setParameter(USER_AGENT, "BagIt Library Parallel Fetcher ($Id$)");
-    }};
-    
-    private final MultiThreadedHttpConnectionManager connectionManager;
-    private final HttpClient client;
-    private final HttpState state;
     private final HttpFetcher instance;
-    private final boolean doAuthentication;
-
-    // Configured
-    private boolean relaxedSsl = false;
     
     private class HttpFetcher extends LongRunningOperationBase implements FileFetcher
     {
@@ -127,9 +130,7 @@ public class HttpFetchProtocol implements FetchProtocol
         {
             log.trace(format("Fetching {0} to destination {1}", uri, destination.getFilepath()));
             
-            GetMethod method = new GetMethod(uri.toString());
-            method.setParams(defaultParams);
-            method.setDoAuthentication(doAuthentication);
+            HttpGet method = new HttpGet(uri);
             
             InputStream in = null;
             OutputStream out = null;
@@ -137,15 +138,15 @@ public class HttpFetchProtocol implements FetchProtocol
             try
             {
                 log.trace("Executing GET");
-                int responseCode = client.executeMethod(HostConfiguration.ANY_HOST_CONFIGURATION, method, state);
-                log.trace(format("Server said: {0}", method.getStatusLine()));
+                HttpResponse resp = client.execute(method);
+                log.trace(format("Server said: {0}", resp.getStatusLine().toString()));
                 
-                if (responseCode != HttpStatus.SC_OK)
-                    throw new BagTransferException(format("Server returned code {0}: {1}", responseCode, uri));
+                if (resp.getStatusLine() == null || resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
+                    throw new BagTransferException(format("Server returned code {0}: {1}", resp.getStatusLine() != null ? resp.getStatusLine().getStatusCode() : "nothing", uri));
 
                 log.trace("Opening destination.");
                 out = destination.openOutputStream(false);
-                in = method.getResponseBodyAsStream();
+                in = resp.getEntity().getContent();
                 
                 log.trace("Copying from network to destination.");
                 FetchStreamCopier copier = new FetchStreamCopier("Downloading", uri, size);
@@ -153,21 +154,19 @@ public class HttpFetchProtocol implements FetchProtocol
                 long bytesCopied = copier.copy(in, out);
                 log.trace(format("Successfully copied {0} bytes.", bytesCopied));
             }
-            catch (HttpException e)
-            {
-            	log.warn("Caught HttpException.", e);
-                throw new BagTransferException(format("Could not transfer URI: {0}", uri), e);
-            }
             catch (IOException e)
             {
             	log.warn("Caught IOException.", e);
                 throw new BagTransferException(format("Could not transfer URI: {0}", uri), e);
             }
-            finally
+            catch (RuntimeException e)
             {
-            	log.trace("Releasing HTTP connection.");
-                method.releaseConnection();
-                
+            	log.warn("Caught RuntimeException.", e);
+            	method.abort();
+                throw new BagTransferException(format("Could not transfer URI: {0}", uri), e);
+            }            
+            finally
+            {                
                 log.trace("Closing input stream.");
                 IOUtils.closeQuietly(in);
 

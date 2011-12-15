@@ -316,7 +316,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_RETRIEVE, 
 				"Retrieves a bag exposed by a web server. A local holey bag is not required.", 
-				new Parameter[] {destParam, retrieveUrlParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
+				new Parameter[] {destParam, retrieveUrlParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
 				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
@@ -638,7 +638,6 @@ public class CommandLineBagDriver {
 			    	Authenticator.setDefault(new NoCredentialsAuthenticator());
 			    }
 					    
-			    // TODO Make this dynamically register somehow.
 				HttpFetchProtocol http = new HttpFetchProtocol();
 				http.setRelaxedSsl(config.getBoolean(PARAM_RELAX_SSL, false));				
 			    fetcher.registerProtocol("http", http);

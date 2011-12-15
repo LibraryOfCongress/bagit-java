@@ -30,7 +30,7 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
-Changes in 4.9:
+Changes in 4.0:
 1. Added support for BagIt 0.97. The significant change is allowing tag directories. (Note that operations
 	are version aware, meaning pre-0.97 bags do not allow tag directories.)
 2. Removes Commons VFS.
@@ -48,6 +48,7 @@ Changes in 4.9:
 			verification operations. For example, when validating a bag, all of the operations to verify
 			that a bag is complete is a stage.
 9. Added support for compressing zip files.
+10. Replaced Commons Httpclient with Apache HttpComponents.
 
 
 Changes in 3.13:

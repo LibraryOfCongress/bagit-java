@@ -16,8 +16,7 @@ class ChainSorter<T> extends Object implements Comparator<T>
 {
 	private Comparator<T>[] comparators;
 		
-	@SuppressWarnings("unchecked")
-	public ChainSorter(Comparator...sorters)
+	public ChainSorter(Comparator<T>... sorters)
 	{
 		this.comparators = sorters;
 	}
