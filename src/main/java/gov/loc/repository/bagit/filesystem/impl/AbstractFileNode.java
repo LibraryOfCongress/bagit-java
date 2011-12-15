@@ -24,11 +24,8 @@ public abstract class AbstractFileNode implements FileSystemNode {
 			this.filepath = "";
 			this.name = null;
 		} else {		
-			try {
-				this.filepath = FilenameHelper.removeBasePath(fileSystem.getFile().getCanonicalPath(), file.getCanonicalPath());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			//Using absolute instead of canonical so symlinks name are not dereferenced
+			this.filepath = FilenameHelper.removeBasePath(fileSystem.getFile().getAbsolutePath(), file.getAbsolutePath());
 			this.name = file.getName();
 		}
 	}
