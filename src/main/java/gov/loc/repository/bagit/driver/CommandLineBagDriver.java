@@ -134,6 +134,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_LOG_VERBOSE = "log-verbose";
 	public static final String PARAM_EXCLUDE_SYMLINKS = "excludesymlinks";
 	public static final String PARAM_FAIL_MODE = "failmode";
+	public static final String PARAM_COMPRESSION_LEVEL = "compressionlevel";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -192,6 +193,7 @@ public class CommandLineBagDriver {
 		Parameter keepEmptyDirsParam = new Switch(PARAM_KEEP_EMPTY_DIRS, JSAP.NO_SHORTFLAG, PARAM_KEEP_EMPTY_DIRS, "Retains empty directories by placing .keep files in them.");
 		Parameter excludeSymlinksParam = new Switch(PARAM_EXCLUDE_SYMLINKS, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_SYMLINKS, "Ignore symbolic links (for bags on file systems only).");
 		Parameter failModeParam = new FlaggedOption(PARAM_FAIL_MODE, EnumeratedStringParser.getParser(getFailModeList()), FailMode.FAIL_STAGE.name(), JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FAIL_MODE, MessageFormat.format("The fail mode for the verification.  Valid values are {0} (fail on first error), {1} (fail over step of verification), {2} (fail after stage of verification), {3} (complete verification then fail).", FailMode.FAIL_FAST.name(), FailMode.FAIL_STEP.name(), FailMode.FAIL_STAGE.name(), FailMode.FAIL_SLOW.name()));
+		Parameter compressionParam = new FlaggedOption(PARAM_COMPRESSION_LEVEL, JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_COMPRESSION_LEVEL, "The compression level to apply to zip files. Valid values are 1 (least compression, fastest) to 9 (most compression, slowest).");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
@@ -215,17 +217,17 @@ public class CommandLineBagDriver {
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
 				"Splits a bag by size.",
-				new Parameter[] {sourceParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, excludeDirsParam},
+				new Parameter[] {sourceParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, compressionParam, excludeDirsParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_SPLIT_BAG_BY_SIZE, this.getBag("mybag"))});		
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_FILE_TYPE,
 				"Splits a bag by file types.",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, writerParam, excludeDirsParam},
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, writerParam, compressionParam, excludeDirsParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_FILE_TYPE, this.getBag("mybag"), "pdf,gif")});	
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE,
 				"Splits a bag by size and file types.",
-				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, excludeDirsParam},
+				new Parameter[] {sourceParam, fileExtensionsParam, optionalSplitDestParam, maxBagSizeParam, keepLowestLevelDirParam, writerParam, compressionParam, excludeDirsParam},
 				new String[] {MessageFormat.format("bag {0} {1} {2}", OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE, this.getBag("mybag"), "pdf,gif:xml,gif")});	
 		
 		List<Parameter> completeParams = new ArrayList<Parameter>();
@@ -243,6 +245,7 @@ public class CommandLineBagDriver {
 		makeCompleteParams.add(sourceParam);
 		makeCompleteParams.add(destParam);
 		makeCompleteParams.add(writerParam);
+		makeCompleteParams.add(compressionParam);
 		makeCompleteParams.addAll(completeParams);
 		
 		this.addOperation(OPERATION_MAKE_COMPLETE,
@@ -252,7 +255,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_UPDATE,
 				"Updates the manifests and (if it exists) the bag-info.txt for a bag.",
-				new Parameter[] {sourceParam, optionalDestParam, writerParam, manifestSeparatorParam},
+				new Parameter[] {sourceParam, optionalDestParam, writerParam, compressionParam, manifestSeparatorParam},
 				new String[] {MessageFormat.format("bag {0} {1} ", OPERATION_UPDATE, this.getBag("mybag"))});
 
 		
@@ -276,6 +279,7 @@ public class CommandLineBagDriver {
 		createParams.add(destParam);
 		createParams.add(payloadParam);
 		createParams.add(writerParam);
+		createParams.add(compressionParam);
 		createParams.addAll(completeParams);
 		createParams.add(bagInfoTxtParam);
 
@@ -289,6 +293,7 @@ public class CommandLineBagDriver {
 		makeHoleyParam.add(destParam);
 		makeHoleyParam.add(baseUrlParam);
 		makeHoleyParam.add(writerParam);
+		makeHoleyParam.add(compressionParam);
 		makeHoleyParam.add(excludePayloadDirParam);		
 		makeHoleyParam.add(resumeParam);		
 		//TODO
@@ -583,6 +588,8 @@ public class CommandLineBagDriver {
 					writer = new FileSystemWriter(bagFactory);
 				} else if (Format.ZIP.equals(format)) {
 					writer = new ZipWriter(bagFactory);
+					int compressionLevel = config.getInt(PARAM_COMPRESSION_LEVEL);
+					if (compressionLevel >=1 && compressionLevel <= 9) ((ZipWriter)writer).setCompressionLevel(compressionLevel);
 				}
 			}
 			if (writer instanceof ProgressListenable) ((ProgressListenable)writer).addProgressListener(listener);
