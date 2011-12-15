@@ -25,10 +25,10 @@ import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.FailModeSupporting;
 
-public class CompleteVerifierImpl extends LongRunningOperationBase implements CompleteVerifier {
+public class CompleteVerifierImpl extends LongRunningOperationBase implements CompleteVerifier, FailModeSupporting {
 
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
@@ -36,43 +36,53 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	private boolean additionalDirectoriesInBagDirTolerant = false;	
 	private List<String> ignoreAdditionalDirectories = new ArrayList<String>();
 	private boolean ignoreSymlinks = false;
+	private FailMode failMode = FailMode.FAIL_STAGE;
 	
-	@Override
 	public void setIgnoreSymlinks(boolean ignore) {
 		this.ignoreSymlinks = ignore;
 	}
 	
-	@Override
 	public void setMissingBagItTolerant(boolean missingBagItTolerant) {
 		this.missingBagItTolerant = missingBagItTolerant;
 	}
 	
-	@Override
 	public void setAdditionalDirectoriesInBagDirTolerant(
 			boolean additionalDirectoriesInBagDirTolerant) {
 		this.additionalDirectoriesInBagDirTolerant = additionalDirectoriesInBagDirTolerant;
 		
 	}
 	
-	@Override
 	public void setIgnoreAdditionalDirectories(List<String> dirs) {
 		this.ignoreAdditionalDirectories = dirs;
 	}
 	
 	@Override
-	public SimpleResult verify(Bag bag) {
+	public void setFailMode(FailMode failMode) {
+		this.failMode = failMode;
+	}
+	
+	@Override
+	public FailMode getFailMode() {
+		return this.failMode;
+	}
+	
+	@Override
+	public BagVerifyResult verify(Bag bag) {
 		BagVerifyResult result = new BagVerifyResult(true);
 		//Is at least one payload manifest
 		log.debug("Checking that at least one payload manifest");
 		if (bag.getPayloadManifests().isEmpty()) {
 			result.setSuccess(false);
 			result.addMessage("Bag does not have any payload manifests.");
+			if(FailMode.FAIL_FAST == failMode) return result;
+				
 		}
 		//Has bagit file
 		log.debug("Checking that has BagIt.txt");
 		if (! this.missingBagItTolerant && bag.getBagItTxt() == null) {
 			result.setSuccess(false);
 			result.addMessage(MessageFormat.format("Bag does not have {0}.", bag.getBagConstants().getBagItTxt()));				
+			if(FailMode.FAIL_FAST == failMode) return result;
 		}
 		
 		//Bagit is right version
@@ -80,9 +90,11 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		if (! this.missingBagItTolerant && bag.getBagItTxt() != null && ! bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion())) {
 			result.setSuccess(false);
 			result.addMessage(MessageFormat.format("Version is not {0}.", bag.getBagConstants().getVersion()));				
+			if(FailMode.FAIL_FAST == failMode) return result;
 		}
 
 		if (this.isCancelled()) return null;
+		if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 		
 		//All payload files are in data directory
 		log.debug("Checking that all payload files in data directory");
@@ -98,8 +110,10 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				result.setSuccess(false);
 				result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory.", filepath, bag.getBagConstants().getDataDirectory()));
 				log.warn(MessageFormat.format("Payload file {0} not in data directory", filepath));
+				if(FailMode.FAIL_FAST == failMode) return result;				
 			}
 		}
+		if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 		
 		// Ensure no tag files are listed in the payload manifest.
 		log.debug("Checking that no tag files are listed in payload manifests.");
@@ -120,9 +134,11 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				{
 					result.setSuccess(false);
 					result.addMessage(format("Tag file is listed in payload manifest {0}: {1}", manifest.getFilepath(), path));
+					if(FailMode.FAIL_FAST == failMode) return result;				
 				}
 			}
 		}
+		if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 		
 		//Every payload BagFile in at least one manifest
 		log.debug("Checking that every payload file in at least one manifest");
@@ -146,8 +162,10 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				result.setSuccess(false);
 				result.addMessage(MessageFormat.format("Payload file {0} not found in any payload manifest.", filepath));														
 				log.warn(MessageFormat.format("Payload file {0} not found in any payload manifest.", filepath));
+				if(FailMode.FAIL_FAST == failMode) return result;				
 			}
 		}
+		if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 		
 		//Every payload file exists
 		log.debug("Checking that every payload file exists");
@@ -159,7 +177,9 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			this.progress("verifying payload files in manifest exist", manifest.getFilepath(), count, total);
 			this.checkManifest(manifest, bag, result);
 			if (this.isCancelled()) return null;
+			if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;			
 		}
+		if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 
 		//Every tag file exists
 		log.debug("Checking that every tag file exists");
@@ -171,7 +191,9 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			this.progress("verifying tag files in manifest exist", manifest.getFilepath(), count, total);
 			this.checkManifest(manifest, bag, result);
 			if (this.isCancelled()) return null;
+			if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;
 		}
+		if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 		
 		//Additional checks if an existing Bag
 		if (bag.getFile() != null) {
@@ -196,9 +218,11 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 						if (! bag.getBagConstants().getDataDirectory().equals(dirNode.getName())) {
 							result.setSuccess(false);
 							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir.", dirNode.getName()));								
+							if(FailMode.FAIL_FAST == failMode) return result;
 						}
 					}
 				}
+				if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 				
 				log.debug("Checking that all payload files on disk included in bag");
 				DirNode dataDirNode = bagDirNode.childDir(bag.getBagConstants().getDataDirectory());
@@ -218,9 +242,11 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 							String msg = MessageFormat.format("Bag has file {0} not found in manifest file.", filepath);
 							result.addMessage(msg);
 							log.warn(msg);
+							if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;							
 						}
 
 					}
+					if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 					
 				}
 			} finally {
@@ -254,6 +280,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				String message = MessageFormat.format("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
 				log.warn(message);
 				result.addMessage(message);
+				if(FailMode.FAIL_FAST == failMode) return;
 			}
 		}				
 		

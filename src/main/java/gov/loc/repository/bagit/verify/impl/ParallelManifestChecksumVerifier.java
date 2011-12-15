@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
@@ -22,8 +23,8 @@ import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.ThreadSafeIteratorWrapper;
+import gov.loc.repository.bagit.verify.FailModeSupporting;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
 
@@ -35,9 +36,11 @@ import gov.loc.repository.bagit.verify.Verifier;
  * 
  * @version $Id$
  */
-public class ParallelManifestChecksumVerifier extends LongRunningOperationBase implements ManifestChecksumVerifier
+public class ParallelManifestChecksumVerifier extends LongRunningOperationBase implements ManifestChecksumVerifier, FailModeSupporting
 {
     private static final Log log = LogFactory.getLog(ParallelManifestChecksumVerifier.class);
+    
+    private FailMode failMode = FailMode.FAIL_STAGE;
     
     public ParallelManifestChecksumVerifier()
     {
@@ -64,20 +67,31 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
     }
     
     @Override
-    public SimpleResult verify(final Manifest manifest, final Bag bag) {
+    public FailMode getFailMode() {
+    	return this.failMode;
+    }
+    
+    @Override
+    public void setFailMode(FailMode failMode) {
+    	this.failMode = failMode;    	
+    }
+    
+    @Override
+    public BagVerifyResult verify(final Manifest manifest, final Bag bag) {
     	List<Manifest> manifests = new ArrayList<Manifest>();
     	return this.verify(manifests, bag);
     }
     
     @Override
-    public SimpleResult verify(final List<Manifest> manifests, final Bag bag) {
+    public BagVerifyResult verify(final List<Manifest> manifests, final Bag bag) {
         
         log.debug(MessageFormat.format("Verifying manifests on {0} threads.", this.numberOfThreads));
         
-        SimpleResult finalResult = new BagVerifyResult(true);
+        BagVerifyResult finalResult = new BagVerifyResult(true);
                 
         int manifestCount = 0;
         int manifestTotal = manifests.size();
+
         for (final Manifest manifest : manifests)
         {
         	if (this.isCancelled()) return null;
@@ -88,6 +102,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
         	final Manifest.Algorithm alg = manifest.getAlgorithm();
             final Iterator<String> manifestIterator = manifest.keySet().iterator();
             ArrayList<Future<BagVerifyResult>> futures = new ArrayList<Future<BagVerifyResult>>(this.numberOfThreads);
+            final AtomicBoolean failFast = new AtomicBoolean(false);
         	
             ExecutorService threadPool = Executors.newCachedThreadPool();
             try {
@@ -103,6 +118,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                             for (String filePath : safeIterator)
                             {
                             	if (isCancelled()) return null;
+                            	if (FailMode.FAIL_FAST == failMode && failFast.get()) return result;
                             	progress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
                             	if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
@@ -122,7 +138,8 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
 	                                        log.debug(msg);
 	                                        result.addMissingOrInvalidFile(filePath);
 	                                        result.addMessage(msg);
-	                                        result.setSuccess(false); 
+	                                        result.setSuccess(false);
+	                                        failFast.set(true);
 	                                    }
                                     }
                                     finally
@@ -137,6 +154,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                     result.addMissingOrInvalidFile(filePath);
                                     result.addMessage(msg);
                                     result.setSuccess(false);
+                                    failFast.set(true);
                                 }
                             }
                             return result;
@@ -148,7 +166,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
             
                 for (Future<BagVerifyResult> future : futures)
                 {
-                	SimpleResult futureResult;
+                	BagVerifyResult futureResult;
                 	
                 	try
                 	{
@@ -156,12 +174,12 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                 	}
                 	catch (ExecutionException e)
                 	{
-                		futureResult = new SimpleResult(false, e.getCause().getMessage());
+                		futureResult = new BagVerifyResult(false, e.getCause().getMessage());
                 		log.error("An error occurred while processing the manifest.", e.getCause());
                 	}
                     catch (InterruptedException e)
                     {
-                        futureResult = new SimpleResult(false, "Execution was interrupted before completion.");
+                        futureResult = new BagVerifyResult(false, "Execution was interrupted before completion.");
                         log.error("Execution was interrupted before completion.", e);
                     }
 

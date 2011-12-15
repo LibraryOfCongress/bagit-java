@@ -38,7 +38,6 @@ public class BagInfoTxtImpl extends AbstractNameValueMapListBagFile implements B
 	private static final String OCTET_COUNT_PART = "Octet Count";
 	
 	
-	private static final long serialVersionUID = 1L;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	
 	public BagInfoTxtImpl(BagFile bagFile, BagConstants bagConstants) {

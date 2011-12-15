@@ -1,10 +1,10 @@
 package gov.loc.repository.bagit.verify;
 
-import java.util.List;
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 
-public interface CompleteVerifier extends Verifier {
-	public void setMissingBagItTolerant(boolean missingBagItTolerant);
-	public void setAdditionalDirectoriesInBagDirTolerant(boolean additionalDirectoriesInBagDirTolerant);
-	public void setIgnoreAdditionalDirectories(List<String> dirs);
-	public void setIgnoreSymlinks(boolean ignore);
+
+public interface CompleteVerifier {
+	BagVerifyResult verify(Bag bag);
+	
 }

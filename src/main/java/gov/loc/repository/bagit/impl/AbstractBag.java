@@ -46,9 +46,8 @@ import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
-import gov.loc.repository.bagit.verify.ValidVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
@@ -311,34 +310,54 @@ public abstract class AbstractBag implements Bag {
 	}
 
 	@Override
-	public SimpleResult verifyComplete() {
-		return this.verify(new CompleteVerifierImpl());
+	public BagVerifyResult verifyComplete() {
+		return this.verifyComplete(FailMode.FAIL_STAGE);
 	}
 	
 	@Override
-	public SimpleResult verifyTagManifests() {		
-		ManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+	public BagVerifyResult verifyComplete(FailMode failMode) {
+		CompleteVerifierImpl verifier = new CompleteVerifierImpl();
+		verifier.setFailMode(failMode);
+		return verifier.verify(this);
+	}
+	
+	@Override
+	public BagVerifyResult verifyTagManifests() {		
+		return this.verifyTagManifests(FailMode.FAIL_STAGE);
+	}
+	
+	@Override
+	public BagVerifyResult verifyTagManifests(FailMode failMode) {
+		ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+		verifier.setFailMode(failMode);
 		return verifier.verify(this.getTagManifests(), this);
 	}
 	
+	
 	@Override
-	public SimpleResult verifyPayloadManifests() {
-		ManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+	public BagVerifyResult verifyPayloadManifests() {
+		return this.verifyPayloadManifests(FailMode.FAIL_STAGE);
+	}
+
+	@Override
+	public BagVerifyResult verifyPayloadManifests(FailMode failMode) {
+		ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+		verifier.setFailMode(failMode);
 		return verifier.verify(this.getPayloadManifests(), this);
 	}
 	
 	@Override
-	public SimpleResult verifyValid() {
-		ValidVerifier verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
-		return this.verify(verifier);
+	public BagVerifyResult verifyValid() {
+		return this.verifyValid(FailMode.FAIL_STAGE);
 	}
 	
 	@Override
-	public BagVerifyResult verifyValidFailSlow() {
+	public BagVerifyResult verifyValid(FailMode failMode) {
 		ValidVerifierImpl verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
-		return verifier.verifyFailSlow(this);
+		verifier.setFailMode(failMode);
+		return verifier.verify(this);
 	}
-		
+	
 	@Override
 	public void accept(BagVisitor visitor) {
 		if (CancelUtil.isCancelled(visitor)) return;

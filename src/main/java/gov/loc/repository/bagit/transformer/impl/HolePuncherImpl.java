@@ -11,6 +11,7 @@ import gov.loc.repository.bagit.impl.AbstractBagVisitor;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.UrlHelper;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 
 public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	private static final Log log = LogFactory.getLog(HolePuncherImpl.class);
@@ -61,7 +62,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 		this.fetch = this.newBag.getBagPartFactory().createFetchTxt();
 		this.newBag.putBagFile(this.fetch);
 		this.originalBag.putBagFile(this.fetch);
-		this.bagVerifyResult = this.originalBag.verifyValidFailSlow();
+		this.bagVerifyResult = this.originalBag.verifyValid(FailMode.FAIL_SLOW);
 	}
 	
 	@Override

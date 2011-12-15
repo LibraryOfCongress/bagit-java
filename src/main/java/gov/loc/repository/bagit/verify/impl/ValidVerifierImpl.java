@@ -9,17 +9,18 @@ import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.FailModeSupporting;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.ValidVerifier;
 
-public class ValidVerifierImpl extends LongRunningOperationBase implements ValidVerifier {
+public class ValidVerifierImpl extends LongRunningOperationBase implements ValidVerifier, FailModeSupporting {
 
 	private static final Log log = LogFactory.getLog(ValidVerifierImpl.class);
 	
 	private CompleteVerifier completeVerifier;
 	private ManifestChecksumVerifier manifestVerifier;
+	private FailMode failMode = FailMode.FAIL_STAGE;
 	
 	public ValidVerifierImpl(CompleteVerifier completeVerifier, ManifestChecksumVerifier manifestVerifier) {
 		this.completeVerifier = completeVerifier;
@@ -39,6 +40,18 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 	}
 	
 	@Override
+	public FailMode getFailMode() {
+		return this.failMode;
+	}
+	
+	@Override
+	public void setFailMode(FailMode failMode) {
+		this.failMode = failMode;
+		if (completeVerifier instanceof FailModeSupporting) ((FailModeSupporting)completeVerifier).setFailMode(failMode);
+		if (manifestVerifier instanceof FailModeSupporting) ((FailModeSupporting)manifestVerifier).setFailMode(failMode);
+	}
+	
+	@Override
 	public void cancel()
 	{
 		super.cancel();
@@ -47,29 +60,25 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 		CancelUtil.cancel(this.manifestVerifier);
 	}
 	
-	//Return right away if a step fails.
 	@Override
-	public SimpleResult verify(Bag bag) {
+	public BagVerifyResult verify(Bag bag) {
 		//Is complete
-		SimpleResult result = this.completeVerifier.verify(bag);
+		BagVerifyResult result = this.completeVerifier.verify(bag);
 		if (this.isCancelled()) return null;
-		if (! result.isSuccess())
-		{
-			return result;
-		}
+		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
+		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;
+		if(! result.isSuccess() && FailMode.FAIL_STAGE == failMode) return result;
 
 		//Every checksum checks
-		result = this.manifestVerifier.verify(bag.getTagManifests(), bag);
+		result.merge(this.manifestVerifier.verify(bag.getTagManifests(), bag));
 		if (this.isCancelled()) return null;
-		if (! result.isSuccess()) {
-			return result;
-		}
+		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
+		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;
 
-		result = this.manifestVerifier.verify(bag.getPayloadManifests(), bag);
+		result.merge(this.manifestVerifier.verify(bag.getPayloadManifests(), bag));
 		if (this.isCancelled()) return null;
-		if (! result.isSuccess()) {
-			return result;
-		}
+		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
+		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;
 		
 		log.info("Completed verification that bag is valid.");
 		log.info("Validity check: " + result.toString());				
@@ -77,30 +86,4 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 
 	}
 	
-	//Execute all the steps and merge the results, even if an earlier step fails.
-	public BagVerifyResult verifyFailSlow(Bag bag) {
-		
-		if (bag.getPayloadManifests().isEmpty()) {
-			String msg = "Bag does not have any payload manifests.";
-			log.error(msg);
-			throw new IllegalArgumentException(msg);
-		}
-		
-		//Is complete
-		BagVerifyResult result = (BagVerifyResult)this.completeVerifier.verify(bag);
-		if (this.isCancelled()) return null;
-
-		//Every checksum checks
-		result.merge((BagVerifyResult)this.manifestVerifier.verify(bag.getTagManifests(), bag));
-		if (this.isCancelled()) return null;
-
-		result.merge((BagVerifyResult)this.manifestVerifier.verify(bag.getPayloadManifests(), bag));
-		if (this.isCancelled()) return null;
-
-		log.info("Completed verification that bag is valid.");
-		log.info("Validity check: " + result.toString());				
-		return result;
-
-	}
-
 }

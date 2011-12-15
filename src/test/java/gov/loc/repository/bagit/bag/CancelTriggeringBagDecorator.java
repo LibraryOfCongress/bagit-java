@@ -20,6 +20,7 @@ import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.writer.Writer;
 
 /**
@@ -242,36 +243,54 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 		return realBag.verify(verifier);
 	}
 
-	public SimpleResult verifyComplete()
+	public BagVerifyResult verifyComplete()
 	{
 		this.increment();
 		return realBag.verifyComplete();
 	}
 
-	public SimpleResult verifyPayloadManifests()
+	public BagVerifyResult verifyPayloadManifests()
 	{
 		this.increment();
 		return realBag.verifyPayloadManifests();
 	}
 
-	public SimpleResult verifyTagManifests()
+	public BagVerifyResult verifyTagManifests()
 	{
 		this.increment();
 		return realBag.verifyTagManifests();
 	}
 
-	public SimpleResult verifyValid()
+	public BagVerifyResult verifyValid()
 	{
 		this.increment();
 		return realBag.verifyValid();
 	}
 	
-	public BagVerifyResult verifyValidFailSlow()
-	{
+	@Override
+	public BagVerifyResult verifyComplete(FailMode failMode) {
 		this.increment();
-		return realBag.verifyValidFailSlow();
+		return realBag.verifyComplete(failMode);		
 	}
-
+	
+	@Override
+	public BagVerifyResult verifyPayloadManifests(FailMode failMode) {
+		this.increment();
+		return realBag.verifyPayloadManifests(failMode);
+	}
+	
+	@Override
+	public BagVerifyResult verifyTagManifests(FailMode failMode) {
+		this.increment();
+		return realBag.verifyTagManifests(failMode);
+	}
+	
+	@Override
+	public BagVerifyResult verifyValid(FailMode failMode) {
+		this.increment();
+		return realBag.verifyValid(failMode);
+	}
+	
 	public Bag write(Writer writer, File file)
 	{
 		this.increment();

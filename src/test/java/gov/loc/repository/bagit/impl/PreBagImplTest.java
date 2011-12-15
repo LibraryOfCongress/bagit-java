@@ -11,7 +11,6 @@ import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 
 import org.apache.commons.io.FileUtils;
@@ -103,9 +102,9 @@ public class PreBagImplTest {
 			File baseDir = new File(testDataDir, "test_bag");
 			assertFalse(baseDir.exists());
 			
-			CompleteVerifier verifier = new CompleteVerifierImpl();
+			CompleteVerifierImpl verifier = new CompleteVerifierImpl();
 			verifier.setIgnoreAdditionalDirectories(ignoreDirs);
-			assertTrue(bag.verify(verifier).isSuccess());		
+			assertTrue(verifier.verify(bag).isSuccess());		
 	
 			assertTrue(extraDir.exists());
 			assertTrue(extraFile.exists());

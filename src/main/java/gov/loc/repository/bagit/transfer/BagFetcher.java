@@ -19,6 +19,7 @@ import gov.loc.repository.bagit.impl.FileBagFile;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
@@ -313,7 +314,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         // If resume is true, verify the bagToFetch to get a list of missing and corrupted files.
     	BagVerifyResult bagVerifyResult = null;
         if(resume){
-			bagVerifyResult = this.bagToFetch.verifyValidFailSlow();
+			bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
 		}
         
     	// Retrieve the fetch items into a separate list, and then sort the

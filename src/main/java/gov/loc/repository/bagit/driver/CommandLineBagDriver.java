@@ -30,9 +30,11 @@ import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.SizeHelper;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
@@ -131,6 +133,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_VERBOSE = "verbose";
 	public static final String PARAM_LOG_VERBOSE = "log-verbose";
 	public static final String PARAM_EXCLUDE_SYMLINKS = "excludesymlinks";
+	public static final String PARAM_FAIL_MODE = "failmode";
 	
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -188,25 +191,26 @@ public class CommandLineBagDriver {
 		Parameter excludeDirsParam = new FlaggedOption(PARAM_EXCLUDE_DIRS, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_DIRS, "Directories in the bag to be ignored in the split operation; they will be kept in the source bag; they should be relative to the base path of the bag. ");
 		Parameter keepEmptyDirsParam = new Switch(PARAM_KEEP_EMPTY_DIRS, JSAP.NO_SHORTFLAG, PARAM_KEEP_EMPTY_DIRS, "Retains empty directories by placing .keep files in them.");
 		Parameter excludeSymlinksParam = new Switch(PARAM_EXCLUDE_SYMLINKS, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_SYMLINKS, "Ignore symbolic links (for bags on file systems only).");
-
+		Parameter failModeParam = new FlaggedOption(PARAM_FAIL_MODE, EnumeratedStringParser.getParser(getFailModeList()), FailMode.FAIL_STAGE.name(), JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FAIL_MODE, MessageFormat.format("The fail mode for the verification.  Valid values are {0} (fail on first error), {1} (fail over step of verification), {2} (fail after stage of verification), {3} (complete verification then fail).", FailMode.FAIL_FAST.name(), FailMode.FAIL_STEP.name(), FailMode.FAIL_STAGE.name(), FailMode.FAIL_SLOW.name()));
+		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
 				"Verifies the checksums in all tag manifests.",
-				new Parameter[] {sourceParam, versionParam, noResultFileParam},
+				new Parameter[] {sourceParam, versionParam, noResultFileParam, failModeParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFY_TAGMANIFESTS, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFY_PAYLOADMANIFESTS,
 				"Verifies the checksums in all payload manifests.",
-				new Parameter[] {sourceParam, versionParam, noResultFileParam},
+				new Parameter[] {sourceParam, versionParam, noResultFileParam, failModeParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFY_PAYLOADMANIFESTS, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFYVALID,
 				"Verifies the validity of a bag.",
-				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam, excludeSymlinksParam},
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam, excludeSymlinksParam, failModeParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYVALID, this.getBag("mybag"))});
 
 		this.addOperation(OPERATION_VERIFYCOMPLETE,
 				"Verifies the completeness of a bag.",
-				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam, excludeSymlinksParam},
+				new Parameter[] {sourceParam, versionParam, missingBagItTolerantParam, additionalDirectoryTolerantParam, noResultFileParam, excludeSymlinksParam, failModeParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_VERIFYCOMPLETE, this.getBag("mybag"))});
 		
 		this.addOperation(OPERATION_SPLIT_BAG_BY_SIZE,
@@ -400,6 +404,18 @@ public class CommandLineBagDriver {
 			}
 		}
 		return list;
+	}
+
+	private static String getFailModeList() {
+		String list = "";
+		for(int i=0; i < FailMode.values().length; i++) {
+			list += FailMode.values()[i];
+			if (i != FailMode.values().length -1) {
+				list += ";";
+			}
+		}
+		return list;
+		
 	}
 	
 	private static String getAlgorithmListString() {
@@ -651,8 +667,6 @@ public class CommandLineBagDriver {
 								
 			}
 			
-//			int ret = RETURN_SUCCESS;
-			
 			if (OPERATION_VERIFYVALID.equals(operation.name)) {				
 				CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
 				completeVerifier.setMissingBagItTolerant(config.getBoolean(PARAM_MISSING_BAGIT_TOLERANT, false));
@@ -663,6 +677,7 @@ public class CommandLineBagDriver {
 				checksumVerifier.addProgressListener(listener);
 				ValidVerifierImpl verifier = new ValidVerifierImpl(completeVerifier, checksumVerifier);
 				verifier.addProgressListener(listener);
+				verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);				
 				try {
 					SimpleResult result = verifier.verify(bag);
@@ -681,9 +696,10 @@ public class CommandLineBagDriver {
 				completeVerifier.setAdditionalDirectoriesInBagDirTolerant(config.getBoolean(PARAM_ADDITIONAL_DIRECTORY_TOLERANT, false));
 				completeVerifier.setIgnoreSymlinks(config.getBoolean(PARAM_EXCLUDE_SYMLINKS));
 				completeVerifier.addProgressListener(listener);				
+				completeVerifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
 				try {
-					SimpleResult result = completeVerifier.verify(bag);
+					BagVerifyResult result = completeVerifier.verify(bag);
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
@@ -698,7 +714,8 @@ public class CommandLineBagDriver {
 				try {
 					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 					verifier.addProgressListener(listener);
-					SimpleResult result = verifier.verify(bag.getTagManifests(), bag);
+					verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
+					BagVerifyResult result = verifier.verify(bag.getTagManifests(), bag);
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
@@ -713,7 +730,8 @@ public class CommandLineBagDriver {
 				try {
 					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 					verifier.addProgressListener(listener);
-					SimpleResult result = verifier.verify(bag.getPayloadManifests(), bag);
+					verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));					
+					BagVerifyResult result = verifier.verify(bag.getPayloadManifests(), bag);
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {

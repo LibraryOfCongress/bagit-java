@@ -15,8 +15,9 @@ import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-import gov.loc.repository.bagit.verify.CompleteVerifier;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
@@ -118,7 +119,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 			assertFalse(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());				
 			
-			CompleteVerifier completeVerifier = new CompleteVerifierImpl();
+			CompleteVerifierImpl completeVerifier = new CompleteVerifierImpl();
 			completeVerifier.setMissingBagItTolerant(true);
 		
 			assertTrue(completeVerifier.verify(bag).isSuccess());
@@ -321,9 +322,9 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 			assertTrue(bag.verifyTagManifests().isSuccess());
 			assertTrue(bag.verifyPayloadManifests().isSuccess());
 			
-			CompleteVerifier verifier = new CompleteVerifierImpl();
+			CompleteVerifierImpl verifier = new CompleteVerifierImpl();
 			verifier.setAdditionalDirectoriesInBagDirTolerant(true);
-			assertTrue(bag.verify(verifier).isSuccess());
+			assertTrue(verifier.verify(bag).isSuccess());
 		} finally {
 			bag.close();
 		}
@@ -351,11 +352,11 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 			assertTrue(bag.verifyTagManifests().isSuccess());
 			assertTrue(bag.verifyPayloadManifests().isSuccess());
 			
-			CompleteVerifier verifier = new CompleteVerifierImpl();
+			CompleteVerifierImpl verifier = new CompleteVerifierImpl();
 			List<String> ignoreDirs = new ArrayList<String>();
 			ignoreDirs.add("extra");
 			verifier.setIgnoreAdditionalDirectories(ignoreDirs);
-			assertTrue(bag.verify(verifier).isSuccess());
+			assertTrue(verifier.verify(bag).isSuccess());
 		} finally {
 			bag.close();
 		}
@@ -542,5 +543,45 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		
 	}
 
-	
+	@Test
+	public void testFailModes() throws Exception {
+		File testBagDir = this.createTestBag();
+		File test1File = new File(testBagDir, "data/test1.txt");
+		assertTrue(test1File.exists());
+		FileUtils.write(test1File, "xtest1");
+		File extra1File = new File(testBagDir, "data/extra1.txt");
+		assertFalse(extra1File.exists());
+		FileUtils.write(extra1File, "extra1");
+		assertTrue(extra1File.exists());
+		File test2File = new File(testBagDir, "data/test2.txt");
+		assertTrue(test2File.exists());
+		test2File.delete();
+		assertFalse(test2File.exists());
+		File test3File = new File(testBagDir, "data/dir1/test3.txt");
+		assertTrue(test3File.exists());
+		test3File.delete();
+		assertFalse(test3File.exists());
+		
+		
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		try {
+			System.out.println("FAILMODES");
+			BagVerifyResult result = bag.verifyValid(FailMode.FAIL_FAST);
+			assertEquals(1, result.getMessages().size());
+			
+			result = bag.verifyValid(FailMode.FAIL_STEP);
+			assertEquals(2, result.getMessages().size());
+			
+			result = bag.verifyValid(FailMode.FAIL_STAGE);
+			assertEquals(3, result.getMessages().size());
+
+			result = bag.verifyValid(FailMode.FAIL_SLOW);
+			assertEquals(6, result.getMessages().size());
+			
+		} finally {
+			bag.close();
+		}
+		
+	}
+
 }
