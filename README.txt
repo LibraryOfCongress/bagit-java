@@ -31,14 +31,16 @@ a bad thing.
 
 RELEASE NOTES:
 Changes in 4.9:
-1. Removes Commons VFS.
-2. Deprecates support for reading/writing tar, tar bz2, and tar gz.
-3. Deprecates support for transferring SWORD and BOB.
-4. Adds close() method to Bag for closing IO resources. 
-5. Clarified logging messages for CompleteVerifier and ValidVerifier.
-6. Changed so that bagging-in-place throws an exception of a prebag contains a data directory and other
-	additional directories.
-7. Adds support for fail modes when performing verification:
+1. Added support for BagIt 0.97. The significant change is allowing tag directories. (Note that operations
+	are version aware, meaning pre-0.97 bags do not allow tag directories.)
+2. Removes Commons VFS.
+3. Deprecates support for reading/writing tar, tar bz2, and tar gz.
+4. Deprecates support for transferring SWORD and BOB.
+5. Adds close() method to Bag for closing IO resources. 
+6. Clarified logging messages for CompleteVerifier and ValidVerifier.
+7. Changed so that bagging-in-place throws an exception if a prebag contains a data directory and tag directories
+	for pre-0.97 bags.
+8. Adds support for fail modes when performing verification:
     * FAIL_FAST:  Fail on first error.
     * FAIL_SLOW:  Fail at end of verification.
     * FAIL_STEP:  Fail after each step of verification. A step is a set of like verification operations.

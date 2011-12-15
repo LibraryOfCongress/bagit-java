@@ -93,7 +93,7 @@ public abstract class AbstractBag implements Bag {
 	}
 	
 	@Override
-	public void loadFromPayloadManifests() {
+	public void loadFromManifests() {
 		log.debug(MessageFormat.format("Loading from {0} using payload manifests", this.fileForBag));
 		this.tagMap.clear();
 		this.payloadMap.clear();
@@ -108,7 +108,7 @@ public abstract class AbstractBag implements Bag {
 		}
 		log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
 		
-		//Load tag map
+		//Load root tag map
 		for(FileSystemNode node : bagFileDirNode.listChildren()) {
 			if (node instanceof FileNode) {
 				FileNode tagFileNode = (FileNode)node;
@@ -118,6 +118,19 @@ public abstract class AbstractBag implements Bag {
 				this.putBagFile(bagFile);
 			}
 		}
+
+		//Find manifests to load tag map
+		List<Manifest> tagManifests = this.getTagManifests();
+		for(Manifest manifest : tagManifests) {
+			for(String filepath : manifest.keySet()) {
+				String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
+				FileNode tagFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
+				BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
+				log.trace(MessageFormat.format("Loading tag {0} using filepath {1}", tagFileNode.getFilepath(), filepath));
+				this.putBagFile(bagFile);
+			}
+		}
+		
 		//Find manifests to load payload map
 		List<Manifest> payloadManifests = this.getPayloadManifests();
 		for(Manifest manifest : payloadManifests) {
@@ -132,12 +145,12 @@ public abstract class AbstractBag implements Bag {
 	}
 
 	@Override
-	public void loadFromPayloadFiles() {
-		this.loadFromPayloadFiles(new ArrayList<String>());
+	public void loadFromFiles() {
+		this.loadFromFiles(new ArrayList<String>());
 	}
 	
 	@Override
-	public void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories) {
+	public void loadFromFiles(List<String> ignoreAdditionalDirectories) {
 		log.debug(MessageFormat.format("Loading from {0} using payload files", this.fileForBag));
 
 		this.tagMap.clear();
@@ -213,19 +226,19 @@ public abstract class AbstractBag implements Bag {
 			this.payloadMap.put(bagFile.getFilepath(), bagFile);
 		} else {
 			//Is a Manifest
-			if ((! (bagFile instanceof Manifest)) && (ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants()))) {
+			if (bagFile.exists() && (! (bagFile instanceof Manifest)) && (ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants()))) {
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createManifest(bagFile.getFilepath(), bagFile));
 			}
 			//Is a BagItTxt
-			else if ((! (bagFile instanceof BagItTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagItTxt())) {
+			else if (bagFile.exists() && (! (bagFile instanceof BagItTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagItTxt())) {
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createBagItTxt(bagFile));
 			}
 			//Is a BagInfoTxt
-			else if ((! (bagFile instanceof BagInfoTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagInfoTxt())) {
+			else if (bagFile.exists() && (! (bagFile instanceof BagInfoTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagInfoTxt())) {
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createBagInfoTxt(bagFile));
 			}
 			//Is a FetchTxt
-			else if ((! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchTxt())) {
+			else if (bagFile.exists() && (! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchTxt())) {
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchTxt(bagFile));
 			}
 			else {
@@ -292,21 +305,20 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void addFileAsTag(File file) {
-		if (! file.exists()) {
-			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
-		}
-		if (! file.canRead()) {
-			throw new RuntimeException(MessageFormat.format("Can't read {0}.", file));
-		}
-		
-		String filepath = file.getName();
-		log.debug(MessageFormat.format("Adding {0} to payload.", filepath));
-		this.putBagFile(new FileBagFile(filepath, file));
+		new AddFilesToTagsOperation(this).addFileToTags(file);
 	}
-		
+
+	@Override
+	public void addFilesAsTag(List<File> files) {
+		new AddFilesToTagsOperation(this).addFilesToTags(files);
+	}
+
+	
 	@Override
 	public BagItTxt getBagItTxt() {
-		return (BagItTxt)this.getBagFile(this.getBagConstants().getBagItTxt());
+		BagFile bagFile = this.getBagFile(this.getBagConstants().getBagItTxt());
+		if (bagFile != null && bagFile instanceof BagItTxt) return (BagItTxt)bagFile;
+		return null;
 	}
 
 	@Override
@@ -401,7 +413,9 @@ public abstract class AbstractBag implements Bag {
 			
 	@Override
 	public FetchTxt getFetchTxt() {
-		return (FetchTxt)this.getBagFile(this.getBagConstants().getFetchTxt());
+		BagFile bagFile = this.getBagFile(this.getBagConstants().getFetchTxt());
+		if (bagFile != null && bagFile instanceof FetchTxt) return (FetchTxt)bagFile;
+		return null;
 	}
 	
 	@Override
@@ -418,7 +432,9 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public BagInfoTxt getBagInfoTxt() {
-		return (BagInfoTxt)this.getBagFile(this.getBagConstants().getBagInfoTxt());
+		BagFile bagFile = this.getBagFile(this.getBagConstants().getBagInfoTxt());
+		if (bagFile != null && bagFile instanceof BagInfoTxt) return (BagInfoTxt)bagFile;
+		return null;
 	}
 			
 	@Override
@@ -469,6 +485,32 @@ public abstract class AbstractBag implements Bag {
 			this.removeBagFile(deleteFilepath);			
 		}
 	}
+
+	@Override
+	public void removeTagDirectory(String filepath) {
+		if (! filepath.endsWith("/")) {
+			filepath += "/";
+		}
+		if (filepath.startsWith(bagConstants.getDataDirectory())) {
+			throw new RuntimeException("Trying to remove payload");
+		}
+		
+		log.debug("Removing tag directory " + filepath);
+		
+		List<String> deleteFilepaths = new ArrayList<String>();
+		
+		for(BagFile bagFile : this.getTags()) {
+			if (bagFile.getFilepath().startsWith(filepath)) {
+				deleteFilepaths.add(bagFile.getFilepath());
+			}
+		}
+		
+		for(String deleteFilepath : deleteFilepaths) {
+			log.debug("Removing " + deleteFilepath);
+			this.removeBagFile(deleteFilepath);			
+		}
+	}
+
 	
 	@Override
 	public Map<Algorithm, String> getChecksums(String filepath) {
@@ -492,12 +534,16 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public Manifest getPayloadManifest(Algorithm algorithm) {
-		return (Manifest)this.getBagFile(ManifestHelper.getPayloadManifestFilename(algorithm, this.bagConstants));
+		BagFile bagFile = this.getBagFile(ManifestHelper.getPayloadManifestFilename(algorithm, this.bagConstants));
+		if (bagFile != null && bagFile instanceof Manifest) return (Manifest)bagFile;
+		return null;
 	}
 	
 	@Override
 	public Manifest getTagManifest(Algorithm algorithm) {
-		return (Manifest)this.getBagFile(ManifestHelper.getTagManifestFilename(algorithm, this.bagConstants));
+		BagFile bagFile = this.getBagFile(ManifestHelper.getTagManifestFilename(algorithm, this.bagConstants));
+		if (bagFile != null && bagFile instanceof Manifest) return (Manifest)bagFile;
+		return null;
 	}
 	
 	@Override

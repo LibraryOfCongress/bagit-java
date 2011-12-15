@@ -64,7 +64,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.write("data/test1.txt", "b444ac06613fc8d63795be9ad0beaf55011936ac");
 		writer.write("data/test2.txt", "109f4b3c50d7b0df729d299bc6f8e9ef9066971f");
 		writer.close();
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertEquals(2, bag.getPayloadManifests().size());
 	
@@ -90,7 +90,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		md5Writer.write("data/test2.txt", "ad0234829205b9033196ba818f7a872b");
 		md5Writer.close();
 
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertEquals(2, bag.getPayloadManifests().size());
 	
@@ -112,7 +112,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		FileUtils.forceDelete(bagItTxtFile);
 		assertFalse(bagItTxtFile.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertNull(bag.getBagItTxt());
 	
@@ -141,7 +141,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.write("xtest1");
 		writer.close();
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertTrue(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());
@@ -163,7 +163,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.close();
 		assertTrue(bagInfoTxtFile.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertTrue(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());
@@ -185,7 +185,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		FileUtils.forceDelete(test1File);
 		assertFalse(test1File.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertFalse(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());
@@ -206,7 +206,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		FileUtils.forceDelete(bagInfoTxtFile);
 		assertFalse(bagInfoTxtFile.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertFalse(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());
@@ -227,7 +227,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.write("extra");
 		writer.close();
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertFalse(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());
@@ -248,7 +248,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.write("extra");
 		writer.close();
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_FILES);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_FILES);
 		try {
 			bag.makeComplete();
 			
@@ -272,7 +272,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.write("extra");
 		writer.close();
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertTrue(bag.verifyComplete().isSuccess());
 			assertTrue(bag.verifyValid().isSuccess());
@@ -293,7 +293,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		FileUtils.forceDelete(manifestFile);
 		assertFalse(manifestFile.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertFalse(bag.verifyComplete().isSuccess());
 			assertFalse(bag.verifyValid().isSuccess());
@@ -307,61 +307,98 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 	}
 
 	@Test
-	public void testBagWithExtraDirectory() throws Exception {
-		File testBagDir = this.createTestBag();
-		File extraDir = new File(testBagDir, "extra");
-		assertFalse(extraDir.exists());
-		FileUtils.forceMkdir(extraDir);
-		assertTrue(extraDir.exists());
-		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
-		try {
-			assertFalse(bag.verifyComplete().isSuccess());
-			assertFalse(bag.verifyValid().isSuccess());
-			
-			assertTrue(bag.verifyTagManifests().isSuccess());
-			assertTrue(bag.verifyPayloadManifests().isSuccess());
-			
-			CompleteVerifierImpl verifier = new CompleteVerifierImpl();
-			verifier.setAdditionalDirectoriesInBagDirTolerant(true);
-			assertTrue(verifier.verify(bag).isSuccess());
-		} finally {
-			bag.close();
-		}
-
-	}
-
-	@Test
-	public void testBagWithIgnoredExtraDirectory() throws Exception {
+	public void testBagWithTagDirectory() throws Exception {
 		File testBagDir = this.createTestBag();
 		File extraDir = new File(testBagDir, "extra");
 		assertFalse(extraDir.exists());
 		FileUtils.forceMkdir(extraDir);
 		assertTrue(extraDir.exists());
 		File extraFile = new File(extraDir, "extra.txt");
-		FileWriter writer = new FileWriter(extraFile);
-		writer.write("extra");
-		writer.close();
+		FileUtils.write(extraFile, "extra");
 		assertTrue(extraFile.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
-			assertFalse(bag.verifyComplete().isSuccess());
-			assertFalse(bag.verifyValid().isSuccess());
-			
-			assertTrue(bag.verifyTagManifests().isSuccess());
-			assertTrue(bag.verifyPayloadManifests().isSuccess());
-			
-			CompleteVerifierImpl verifier = new CompleteVerifierImpl();
-			List<String> ignoreDirs = new ArrayList<String>();
-			ignoreDirs.add("extra");
-			verifier.setIgnoreAdditionalDirectories(ignoreDirs);
-			assertTrue(verifier.verify(bag).isSuccess());
+			performTestBagWithTagDirectory(bag);
 		} finally {
 			bag.close();
 		}
 
 	}
+
+	public abstract void performTestBagWithTagDirectory(Bag bag);
+	
+	public void performTestBagWithTagDirectoryPrev97(Bag bag) {
+		assertFalse(bag.verifyComplete().isSuccess());
+		assertFalse(bag.verifyValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
+		CompleteVerifierImpl verifier = new CompleteVerifierImpl();
+		verifier.setAdditionalDirectoriesInBagDirTolerant(true);
+		assertTrue(verifier.verify(bag).isSuccess());
+		
+	}
+
+	public void performTestBagWithTagDirectoryPostv97(Bag bag) {
+		assertTrue(bag.verifyComplete().isSuccess());
+		assertTrue(bag.verifyValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());		
+	}
+
+	
+	@Test
+	public void testBagWithIgnoredTagDirectory() throws Exception {
+		File testBagDir = this.createTestBag();
+		File extraDir = new File(testBagDir, "extra");
+		assertFalse(extraDir.exists());
+		FileUtils.forceMkdir(extraDir);
+		assertTrue(extraDir.exists());
+		File extraFile = new File(extraDir, "extra.txt");
+		FileUtils.write(extraFile, "extra");
+		assertTrue(extraFile.exists());
+		
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
+		try {
+			performTestBagWithIgnoredTagDirectory(bag);
+		} finally {
+			bag.close();
+		}
+	}
+	
+	public abstract void performTestBagWithIgnoredTagDirectory(Bag bag);
+	
+	public void performTestBagWithIgnoredTagDirectoryPrev97(Bag bag) {
+		assertFalse(bag.verifyComplete().isSuccess());
+		assertFalse(bag.verifyValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
+		CompleteVerifierImpl verifier = new CompleteVerifierImpl();
+		List<String> ignoreDirs = new ArrayList<String>();
+		ignoreDirs.add("extra");
+		verifier.setIgnoreAdditionalDirectories(ignoreDirs);
+		assertTrue(verifier.verify(bag).isSuccess());		
+	}
+
+	public void performTestBagWithIgnoredTagDirectoryPost97(Bag bag) {
+		assertTrue(bag.verifyComplete().isSuccess());
+		assertTrue(bag.verifyValid().isSuccess());
+		
+		assertTrue(bag.verifyTagManifests().isSuccess());
+		assertTrue(bag.verifyPayloadManifests().isSuccess());
+		
+		CompleteVerifierImpl verifier = new CompleteVerifierImpl();
+		List<String> ignoreDirs = new ArrayList<String>();
+		ignoreDirs.add("extra");
+		verifier.setIgnoreAdditionalDirectories(ignoreDirs);
+		assertTrue(verifier.verify(bag).isSuccess());		
+	}
+
 	
 	@Test
 	public void testBagWithSpecialCharacters() throws Exception {
@@ -376,7 +413,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		manifestWriter.write("data/testü.txt", "b444ac06613fc8d63795be9ad0beaf55011936ac");
 		manifestWriter.close();
 
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertTrue(bag.verifyComplete().isSuccess());
 			assertTrue(bag.verifyValid().isSuccess());
@@ -401,7 +438,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		try {
 			File bagDir = this.getBagDir(otherVersion, Bag.Format.FILESYSTEM); 
 			
-			Bag bag = this.bagFactory.createBag(bagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+			Bag bag = this.bagFactory.createBag(bagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 			try {
 				assertFalse(bag.verifyComplete().isSuccess());
 				assertFalse(bag.verifyValid().isSuccess());
@@ -420,7 +457,8 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 			bag.addFileToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/dir2", this.getVersion().toString().toLowerCase())));
 			bag.addFileToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/test1.txt", this.getVersion().toString().toLowerCase())));
 			bag.addFileToPayload(ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag/data/test2.txt", this.getVersion().toString().toLowerCase())));
-	
+			addlTestCreateBag(bag);
+			
 			BagInfoTxt bagInfo = bag.getBagPartFactory().createBagInfoTxt();
 			bag.putBagFile(bagInfo);
 			final String BAG_COUNT = "1 of 5";
@@ -438,14 +476,16 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 			assertEquals(BAG_COUNT, bag.getBagInfoTxt().getBagCount());
 			assertEquals(BAG_SIZE, bagInfo.getBagSize());
 			assertEquals(BAGGING_DATE, bagInfo.getBaggingDate());
-			this.addlTestCreateBag(bag);
+			this.performAddlTestCreateBag(bag);
 		} finally {
 			bag.close();
 		}
 				
 	}
 	
-	public void addlTestCreateBag(Bag bag){};
+	public void addlTestCreateBag(Bag bag) throws Exception {};
+	
+	public void performAddlTestCreateBag(Bag bag){};
 
 	@Test
 	public void testCompleterCancels() throws Exception
@@ -517,7 +557,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		writer.close();
 		assertTrue(bagInfoTxtFile.exists());
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		BagInfoTxt bagInfoTxt = null;
 		try {
 			bagInfoTxt = bag.getBagInfoTxt();
@@ -533,7 +573,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		}
 		
 		try {
-			bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+			bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 			
 			assertEquals(2, bagInfoTxt.getList("Foo").size());
 			assertEquals(2, bagInfoTxt.getList("Bar").size());
@@ -563,7 +603,7 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		assertFalse(test3File.exists());
 		
 		
-		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			System.out.println("FAILMODES");
 			BagVerifyResult result = bag.verifyValid(FailMode.FAIL_FAST);

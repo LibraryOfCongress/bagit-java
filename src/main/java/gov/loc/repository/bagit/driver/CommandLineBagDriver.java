@@ -678,7 +678,7 @@ public class CommandLineBagDriver {
 				ValidVerifierImpl verifier = new ValidVerifierImpl(completeVerifier, checksumVerifier);
 				verifier.addProgressListener(listener);
 				verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);				
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);				
 				try {
 					SimpleResult result = verifier.verify(bag);
 					log.info(result.toString());
@@ -697,7 +697,7 @@ public class CommandLineBagDriver {
 				completeVerifier.setIgnoreSymlinks(config.getBoolean(PARAM_EXCLUDE_SYMLINKS));
 				completeVerifier.addProgressListener(listener);				
 				completeVerifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
 					BagVerifyResult result = completeVerifier.verify(bag);
 					log.info(result.toString());
@@ -710,7 +710,7 @@ public class CommandLineBagDriver {
 					bag.close();
 				}
 			} else if (OPERATION_VERIFY_TAGMANIFESTS.equals(operation.name)) {				
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
 					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 					verifier.addProgressListener(listener);
@@ -726,7 +726,7 @@ public class CommandLineBagDriver {
 					bag.close();
 				}
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
 					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 					verifier.addProgressListener(listener);
@@ -742,7 +742,7 @@ public class CommandLineBagDriver {
 					bag.close();
 				}
 			} else if (OPERATION_MAKE_COMPLETE.equals(operation.name)) {
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_FILES);
 				try {
 					Bag newBag = completer.complete(bag);
 					try {
@@ -754,7 +754,7 @@ public class CommandLineBagDriver {
 					bag.close();
 				}
 			}  else if (OPERATION_UPDATE.equals(operation.name)) {
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_FILES);
 				try {
 					UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
 					completer.setNonDefaultManifestSeparator(manifestSeparator);
@@ -770,7 +770,7 @@ public class CommandLineBagDriver {
 				}
 			}
 			else if (OPERATION_UPDATE_TAGMANIFESTS.equals(operation.name)) {
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_FILES);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_FILES);
 				try {
 					TagManifestCompleter tagManifestCompleter = new TagManifestCompleter(bagFactory);
 					tagManifestCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
@@ -842,7 +842,7 @@ public class CommandLineBagDriver {
 
 			} else if (OPERATION_MAKE_HOLEY.equals(operation.name)) {
 				HolePuncherImpl puncher = new HolePuncherImpl(bagFactory);
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
 					Bag newBag = puncher.makeHoley(bag, config.getString(PARAM_BASE_URL), ! config.getBoolean(PARAM_EXCLUDE_PAYLOAD_DIR, false), false, config.getBoolean(PARAM_RESUME));
 					try {
@@ -854,7 +854,7 @@ public class CommandLineBagDriver {
 					bag.close();
 				}
 			} else if (OPERATION_GENERATE_PAYLOAD_OXUM.equals(operation.name)) {
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
 					String oxum = BagHelper.generatePayloadOxum(bag);				
 					log.info("Payload-Oxum is " + oxum);
@@ -863,7 +863,7 @@ public class CommandLineBagDriver {
 					bag.close();
 				}
 			} else if (OPERATION_CHECK_PAYLOAD_OXUM.equals(operation.name)) {
-				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_PAYLOAD_MANIFESTS);
+				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
 					String genOxum = BagHelper.generatePayloadOxum(bag);
 					BagInfoTxt bagInfo = bag.getBagInfoTxt();
@@ -920,7 +920,7 @@ public class CommandLineBagDriver {
 					|| OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)
 					|| OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)) {
 				
-				Bag srcBag = this.bagFactory.createBag(sourceFile, BagFactory.LoadOption.BY_PAYLOAD_FILES);
+				Bag srcBag = this.bagFactory.createBag(sourceFile, BagFactory.LoadOption.BY_FILES);
 				try {
 					Double sourceBagSize = null;
 					if(srcBag.getBagInfoTxt() != null && srcBag.getBagInfoTxt().getPayloadOxum() != null){

@@ -9,8 +9,6 @@ public class BagInfoTxtImpl extends gov.loc.repository.bagit.impl.BagInfoTxtImpl
 	public static final String FIELD_PACKING_DATE = "Packing-Date";
 	public static final String FIELD_PACKAGE_SIZE = "Package-Size";
 	
-	private static final long serialVersionUID = 1L;
-
 	public BagInfoTxtImpl(BagFile bagFile, BagConstants bagConstants) {
 		super(bagFile, bagConstants);
 	}

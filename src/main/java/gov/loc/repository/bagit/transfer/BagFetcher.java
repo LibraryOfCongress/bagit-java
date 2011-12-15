@@ -466,7 +466,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		}
 			
 		//Read bag from disk
-		Bag partialBag = bagFactory.createBag(destFile, LoadOption.BY_PAYLOAD_MANIFESTS);
+		Bag partialBag = bagFactory.createBag(destFile, LoadOption.BY_MANIFESTS);
 		//Should be a payload manifest or fetch.txt
 		if (partialBag.getFetchTxt() == null && partialBag.getPayloadManifests().isEmpty()) {
 			return new SimpleResult(false, "Neither fetch.txt or payload manifest found");

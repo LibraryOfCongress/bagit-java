@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.filesystem.DirNode;
@@ -33,7 +34,8 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
 	private boolean missingBagItTolerant = false;
-	private boolean additionalDirectoriesInBagDirTolerant = false;	
+	
+	private boolean additionalDirectoriesInBagDirTolerant = false;
 	private List<String> ignoreAdditionalDirectories = new ArrayList<String>();
 	private boolean ignoreSymlinks = false;
 	private FailMode failMode = FailMode.FAIL_STAGE;
@@ -68,6 +70,9 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	
 	@Override
 	public BagVerifyResult verify(Bag bag) {
+		boolean allowTagDirectories = true;
+		if (! additionalDirectoriesInBagDirTolerant && (Version.V0_93 == bag.getVersion() || Version.V0_94 == bag.getVersion() || Version.V0_95 == bag.getVersion() || Version.V0_96 == bag.getVersion())) allowTagDirectories = false;
+		
 		BagVerifyResult result = new BagVerifyResult(true);
 		//Is at least one payload manifest
 		log.debug("Checking that at least one payload manifest");
@@ -209,7 +214,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				//FileObject bagFileObject = VFSHelper.getFileObjectForBag(bag.getFile());
 				//Only directory is a data directory
 				log.debug("Checking that only directory is data directory");
-				if (! this.additionalDirectoriesInBagDirTolerant) {
+				if (! allowTagDirectories) {
 					Collection<FileSystemNode> dirNodes = bagDirNode.listChildren(
 							new AndFileSystemNodeFilter(
 									new DirNodeFileSystemNodeFilter(),

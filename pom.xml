@@ -17,7 +17,7 @@
 		</license>
 	</licenses>
 	<properties>
-		<bagit.version>0.96</bagit.version>
+		<bagit.version>0.97</bagit.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<developers>

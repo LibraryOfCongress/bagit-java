@@ -65,7 +65,7 @@ public class UpdateCompleterTest {
 	
 	@Test
 	public void testComplete() throws Exception {
-		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_PAYLOAD_FILES);
+		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_FILES);
 		try {
 			assertFalse(bag.verifyValid().isSuccess());
 			Bag newBag = completer.complete(bag);
@@ -86,7 +86,7 @@ public class UpdateCompleterTest {
 		File bagInfoTxtFile = new File(bagFile, bagFactory.getBagConstants().getBagInfoTxt());
 		FileUtils.forceDelete(bagInfoTxtFile);
 
-		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_PAYLOAD_FILES);
+		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_FILES);
 		try {
 			assertFalse(bag.verifyValid().isSuccess());
 			Bag newBag = completer.complete(bag);

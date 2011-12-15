@@ -9,6 +9,7 @@ import java.util.List;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
@@ -114,7 +115,7 @@ public class PreBagImplTest {
 	}
 
 	@Test(expected=RuntimeException.class)
-	public void testBagInPlaceWithDataDirAndNotIgnoredExtraDir() throws Exception {
+	public void testBagInPlaceWithDataDirAndTagDirPrev97() throws Exception {
 		File testDir = createTestBag(true);
 		assertTrue(testDir.exists());
 		File testDataDir = new File(testDir, "data");
@@ -128,7 +129,40 @@ public class PreBagImplTest {
 		assertTrue(extraFile.exists());
 
 		PreBag preBag = bagFactory.createPreBag(testDir);
-		preBag.makeBagInPlace(BagFactory.LATEST, false);
+		preBag.makeBagInPlace(Version.V0_96, false);
+	}
+
+	@Test
+	public void testBagInPlaceWithDataDirAndTagDirPostv97() throws Exception {
+		File testDir = createTestBag(true);
+		assertTrue(testDir.exists());
+		File testDataDir = new File(testDir, "data");
+		assertTrue(testDataDir.exists());
+		File extraDir = new File(testDir, "extra");
+		assertFalse(extraDir.exists());
+		FileUtils.forceMkdir(extraDir);
+		assertTrue(extraDir.exists());
+		File extraFile = new File(extraDir, "extra.txt");
+		FileUtils.write(extraFile, "extra");
+		assertTrue(extraFile.exists());
+
+		PreBag preBag = bagFactory.createPreBag(testDir);
+		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);		
+		try {
+			assertTrue(testDataDir.exists());
+			File baseDir = new File(testDataDir, "test_bag");
+			assertFalse(baseDir.exists());
+			
+			assertTrue(bag.verifyComplete().isSuccess());
+	
+			assertTrue(extraDir.exists());
+			assertTrue(extraFile.exists());
+			
+			assertNotNull(bag.getBagFile("extra/extra.txt"));
+		} finally {
+			bag.close();
+		}
+
 	}
 
 	

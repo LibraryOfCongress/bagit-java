@@ -47,11 +47,11 @@ public abstract class BaseBagImplTest {
 	}
 	
 	protected Bag getBagByPayloadManifests(Version version, Bag.Format format) throws Exception {
-		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_MANIFESTS);  
+		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_MANIFESTS);  
 	}	
 
 	protected Bag getBagByPayloadFiles(Version version, Bag.Format format) throws Exception {
-		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_FILES);  
+		return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_FILES);  
 	}	
 
 	

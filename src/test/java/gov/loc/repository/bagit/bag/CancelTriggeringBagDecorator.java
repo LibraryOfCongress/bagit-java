@@ -161,22 +161,22 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 		return realBag.getVersion();
 	}
 
-	public void loadFromPayloadFiles()
+	public void loadFromFiles()
 	{
 		this.increment();
-		realBag.loadFromPayloadFiles();
+		realBag.loadFromFiles();
 	}
 
-	public void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories)
+	public void loadFromFiles(List<String> ignoreAdditionalDirectories)
 	{
 		this.increment();
-		realBag.loadFromPayloadFiles(ignoreAdditionalDirectories);
+		realBag.loadFromFiles(ignoreAdditionalDirectories);
 	}
 	
-	public void loadFromPayloadManifests()
+	public void loadFromManifests()
 	{
 		this.increment();
-		realBag.loadFromPayloadManifests();
+		realBag.loadFromManifests();
 	}
 
 	public Bag makeComplete()
@@ -300,5 +300,18 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 	@Override
 	public void close() {
 		realBag.close();		
+	}
+	
+	@Override
+	public void addFilesAsTag(List<File> files) {
+		this.increment();
+		this.realBag.addFilesAsTag(files);
+	}
+	
+	@Override
+	public void removeTagDirectory(String filepath) {
+		this.increment();
+		this.realBag.removeTagDirectory(filepath);
+		
 	}
 }

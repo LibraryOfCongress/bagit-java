@@ -59,7 +59,7 @@ public class ParallelManifestChecksumVerifierTest
 
     private Bag getBag(Version version, Bag.Format format) throws Exception
     {
-        return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_PAYLOAD_MANIFESTS);  
+        return this.bagFactory.createBag(this.getBagDir(version, format), version, LoadOption.BY_MANIFESTS);  
     }   
     
     private File getBagDir(Version version, Bag.Format format) throws Exception 

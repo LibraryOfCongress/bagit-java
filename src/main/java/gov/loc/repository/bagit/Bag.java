@@ -93,6 +93,8 @@ public interface Bag {
 	Collection<BagFile> getPayload();
 	
 	void removeBagFile(String filepath);
+
+	void removeTagDirectory(String filepath);
 	
 	void removePayloadDirectory(String filepath);
 	
@@ -108,6 +110,8 @@ public interface Bag {
 	
 	void addFileAsTag(File file);
 
+	void addFilesAsTag(List<File> files);
+	
 	/**
 	 * Finds checksums in all manifests for a file.
 	 */
@@ -163,14 +167,14 @@ public interface Bag {
 	/**
 	 * Loads a bag based on the tag files found on disk and the payload files listed in the payload manifests.
 	 */
-	void loadFromPayloadManifests();
+	void loadFromManifests();
 
 	/**
 	 * Loads a bag based on the tag files and payload files found on disk.
 	 */
-	void loadFromPayloadFiles();
+	void loadFromFiles();
 
-	void loadFromPayloadFiles(List<String> ignoreAdditionalDirectories);
+	void loadFromFiles(List<String> ignoreAdditionalDirectories);
 	
 	/**
 	 * Invokes a BagVisitor.
@@ -347,4 +351,5 @@ public interface Bag {
 		FetchTxt createFetchTxt(BagFile sourceBagFile);
 		Version getVersion();	
 	}
+		
 }

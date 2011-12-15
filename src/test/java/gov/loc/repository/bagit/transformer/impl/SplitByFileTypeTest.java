@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.transformer.impl;
 import static org.junit.Assert.*;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
@@ -31,8 +32,8 @@ public class SplitByFileTypeTest {
 		fileExtensions[0] = new String[]{"txt"};
 		fileExtensions[1] = new String[]{"xml", "html"};
 		splitter = new SplitByFileType(this.bagFactory, fileExtensions, null);
-		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag-split", BagFactory.LATEST.toString().toLowerCase()));
-		bag = bagFactory.createBag(sourceBagDir, BagFactory.LoadOption.BY_PAYLOAD_FILES);
+		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag-split", Version.V0_96.toString().toLowerCase()));
+		bag = bagFactory.createBag(sourceBagDir, BagFactory.LoadOption.BY_FILES);
 		srcBagPayloadFiles = bag.getPayload();
 		for(BagFile bagFile : srcBagPayloadFiles){
 			srcBagPayloadFileDirs.add(bagFile.getFilepath());

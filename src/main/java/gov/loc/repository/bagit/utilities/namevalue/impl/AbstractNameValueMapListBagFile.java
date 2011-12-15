@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
+
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
@@ -20,8 +22,6 @@ import gov.loc.repository.bagit.utilities.namevalue.NameValueWriter;
 import gov.loc.repository.bagit.utilities.namevalue.NameValueReader.NameValue;
 
 public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String, String> implements BagFile, NameValueMapList {
-
-	private static final long serialVersionUID = 1L;
 
 	String filepath;
 	BagFile sourceBagFile = null;
@@ -85,6 +85,8 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
 		return size;
 	}

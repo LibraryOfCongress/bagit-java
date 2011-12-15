@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -25,6 +26,8 @@ import gov.loc.repository.bagit.impl.FileSystemBagFile;
 
 public class ZipWriter extends AbstractWriter {
 
+	public static final int DEFAULT_COMPRESSION_LEVEL = 1;
+	
 	private static final Log log = LogFactory.getLog(ZipWriter.class);
 	
 	private static final int BUFFERSIZE = 65536;
@@ -37,7 +40,7 @@ public class ZipWriter extends AbstractWriter {
 	private int fileTotal = 0;
 	private int fileCount = 0;
 	private File tempFile;
-
+	private Integer compressionLevel = null;
 
 	public ZipWriter(BagFactory bagFactory) {
 		super(bagFactory);
@@ -47,6 +50,12 @@ public class ZipWriter extends AbstractWriter {
 		this.bagDir = bagDir;
 	}
 
+	public void setCompressionLevel(Integer compressionLevel) {
+		if (compressionLevel != null && (compressionLevel < 0 || compressionLevel > 9))
+			throw new RuntimeException("Valid compression levels are 0-9.");
+		this.compressionLevel = compressionLevel;
+	}
+	
 	@Override
 	protected Format getFormat() {
 		return Format.ZIP;
@@ -56,6 +65,11 @@ public class ZipWriter extends AbstractWriter {
 	public void startBag(Bag bag) {
 		try {
 			this.zipOut = new ZipArchiveOutputStream(this.tempFile);
+			this.zipOut.setLevel(ZipArchiveOutputStream.STORED);
+			if (this.compressionLevel != null) {
+				this.zipOut.setLevel(this.compressionLevel * -1);
+				this.zipOut.setMethod(ZipOutputStream.DEFLATED);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

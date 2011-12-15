@@ -28,4 +28,15 @@ public class BagWithTagFilesInPayloadManifestTest extends AbstractBagImplTest {
 	{
 		assertFalse("Bag verified as valid when it shouldn't have.", bag.verifyValid().isSuccess());
 	}
+	
+	@Override
+	public void performTestBagWithTagDirectory(Bag bag) {
+		performTestBagWithTagDirectoryPrev97(bag);		
+	}
+	
+	@Override
+	public void performTestBagWithIgnoredTagDirectory(Bag bag) {
+		performTestBagWithIgnoredTagDirectoryPrev97(bag);		
+	}
+
 }

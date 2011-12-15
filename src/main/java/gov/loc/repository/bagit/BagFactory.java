@@ -30,9 +30,9 @@ public class BagFactory {
 	 * The mechanism used to load the bag will depend on the
 	 * type of operations being performed.  For example, when
 	 * creating a new bag based on an existing data directory,
-	 * the {@link #BY_PAYLOAD_FILES} option would be used;
+	 * the {@link #BY_FILES} option would be used;
 	 * but when loading a bag for simple verification of completeness
-	 * and content, one would use the {@link #BY_PAYLOAD_MANIFESTS} option.
+	 * and content, one would use the {@link #BY_MANIFESTS} option.
 	 */
 	public enum LoadOption {
 		/**
@@ -41,21 +41,21 @@ public class BagFactory {
 		NO_LOAD, 
 		
 		/**
-		 * Loads the bag by reading from the payload manifests.
+		 * Loads the bag by reading from the manifests.
 		 */
-		BY_PAYLOAD_MANIFESTS,
+		BY_MANIFESTS,
 		
 		/**
 		 * Loads the bag by reading from the files on disk.
 		 */
-		BY_PAYLOAD_FILES 
+		BY_FILES 
 	}
 	
 	/**
 	 * The version of the bag to load.  The BagIt Library does not support any
 	 * bag versions other than those listed here.
 	 */
-	public enum Version { V0_93 ("0.93"), V0_94 ("0.94"), V0_95 ("0.95"), V0_96 ("0.96");
+	public enum Version { V0_93 ("0.93"), V0_94 ("0.94"), V0_95 ("0.95"), V0_96 ("0.96"), V0_97 ("0.97");
 	
 	public String versionString;
 	
@@ -76,9 +76,9 @@ public class BagFactory {
 	
 	/**
 	 * The latest version of the BagIt spec.  Currently, this
-	 * is {@link Version#V0_96 0.96}.
+	 * is {@link Version#V0_97 0.97}.
 	 */
-	public static final Version LATEST = Version.V0_96;
+	public static final Version LATEST = Version.V0_97;
 	
 	/**
 	 * Creates an instance of a bag factory.
@@ -112,6 +112,10 @@ public class BagFactory {
 		if (Version.V0_96.equals(version)) {
 			return new gov.loc.repository.bagit.v0_96.impl.BagImpl(this);
 		}
+		if (Version.V0_97.equals(version)) {
+			return new gov.loc.repository.bagit.v0_97.impl.BagImpl(this);
+		}
+		
 		throw new RuntimeException("Not yet supported");
 	}
 	
@@ -127,7 +131,7 @@ public class BagFactory {
 	 * bag.
 	 */
 	public Bag createBag(File bagFile) {
-		return createBag(bagFile, LoadOption.BY_PAYLOAD_MANIFESTS);
+		return createBag(bagFile, LoadOption.BY_MANIFESTS);
 	}
 
 	/**
@@ -169,7 +173,7 @@ public class BagFactory {
 	public Bag createBagByPayloadFiles(File bagFile, Version version, List<String> ignoreAdditionalDirectories) {
 		Bag bag = this.createBag(version);
 		bag.setFile(bagFile);
-		bag.loadFromPayloadFiles(ignoreAdditionalDirectories);
+		bag.loadFromFiles(ignoreAdditionalDirectories);
 		return bag;
 	}
 
@@ -185,10 +189,10 @@ public class BagFactory {
 	public Bag createBag(File bagFile, Version version, LoadOption loadOption) {		
 		Bag bag = this.createBag(version);
 		bag.setFile(bagFile);
-		if (loadOption == null || LoadOption.BY_PAYLOAD_MANIFESTS.equals(loadOption)) {
-			bag.loadFromPayloadManifests();
-		} else if (LoadOption.BY_PAYLOAD_FILES.equals(loadOption)) {
-			bag.loadFromPayloadFiles();
+		if (loadOption == null || LoadOption.BY_MANIFESTS.equals(loadOption)) {
+			bag.loadFromManifests();
+		} else if (LoadOption.BY_FILES.equals(loadOption)) {
+			bag.loadFromFiles();
 		}
 		return bag;
 	}
@@ -233,6 +237,9 @@ public class BagFactory {
 		if (Version.V0_96.equals(version)) {
 			return new gov.loc.repository.bagit.v0_96.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
 		}
+		if (Version.V0_97.equals(version)) {
+			return new gov.loc.repository.bagit.v0_97.impl.BagPartFactoryImpl(this, this.getBagConstants(version));
+		}
 		throw new RuntimeException("Not yet supported");
 	}
 	
@@ -260,6 +267,9 @@ public class BagFactory {
 		}
 		if (Version.V0_96.equals(version)) {
 			return new gov.loc.repository.bagit.v0_96.impl.BagConstantsImpl();
+		}
+		if (Version.V0_97.equals(version)) {
+			return new gov.loc.repository.bagit.v0_97.impl.BagConstantsImpl();
 		}
 		throw new RuntimeException("Not yet supported");
 	}

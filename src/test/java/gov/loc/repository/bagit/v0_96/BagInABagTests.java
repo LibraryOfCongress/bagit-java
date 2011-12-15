@@ -70,4 +70,16 @@ public class BagInABagTests extends AbstractBagImplTest {
 		assertNotNull(bag.getBagFile("data/bag/manifest-md5.txt"));
 		assertNull(bag.getBagFile("data/bag/manifest-sha42.txt"));
 	}
+	
+	@Override
+	public void performTestBagWithTagDirectory(Bag bag) {
+		performTestBagWithTagDirectoryPrev97(bag);		
+	}
+	
+	@Override
+	public void performTestBagWithIgnoredTagDirectory(Bag bag) {
+		performTestBagWithIgnoredTagDirectoryPrev97(bag);		
+	}
+
+
 }

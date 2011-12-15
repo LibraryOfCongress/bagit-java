@@ -15,11 +15,21 @@ public class BagImplTest extends AbstractBagImplTest {
 	}
 
 	@Override
-	public void addlTestCreateBag(Bag bag) {
+	public void performAddlTestCreateBag(Bag bag) {
 		BagInfoTxt bagInfo = bag.getBagInfoTxt();
 		assertEquals(bagInfo.getBagSize(), bagInfo.get(gov.loc.repository.bagit.v0_94.impl.BagInfoTxtImpl.FIELD_PACKAGE_SIZE));
 		assertEquals(bagInfo.getBaggingDate(), bagInfo.get(gov.loc.repository.bagit.v0_94.impl.BagInfoTxtImpl.FIELD_PACKING_DATE));
 
 	}
 	
+	@Override
+	public void performTestBagWithTagDirectory(Bag bag) {
+		performTestBagWithTagDirectoryPrev97(bag);		
+	}
+	
+	@Override
+	public void performTestBagWithIgnoredTagDirectory(Bag bag) {
+		performTestBagWithIgnoredTagDirectoryPrev97(bag);		
+	}
+
 }
