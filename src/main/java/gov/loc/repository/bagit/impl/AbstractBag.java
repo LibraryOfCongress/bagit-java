@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,6 +64,7 @@ public abstract class AbstractBag implements Bag {
 	private BagConstants bagConstants = null;
 	private BagFactory bagFactory = null;
 	private Set<Closeable> closeables = new HashSet<Closeable>();
+	private volatile boolean isClosed = false;
 	
 	/**
 	 * Constructor for a new bag.
@@ -183,6 +184,9 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public List<Manifest> getPayloadManifests() {
+		log.debug("Getting payload manifests");
+		checkClosed();
+		
 		List<Manifest> manifests = new ArrayList<Manifest>();
 		for(BagFile bagFile : this.tagMap.values()) {
 			if (bagFile instanceof Manifest) {
@@ -199,6 +203,8 @@ public abstract class AbstractBag implements Bag {
 	@Override
 	public List<Manifest> getTagManifests() {
 		log.debug("Getting tag manifests");
+		checkClosed();
+
 		List<Manifest> manifests = new ArrayList<Manifest>();
 		for(BagFile bagFile : this.tagMap.values()) {
 			log.trace(MessageFormat.format("Checking if {0} is a tag manifest", bagFile.getFilepath()));
@@ -218,6 +224,8 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void putBagFile(BagFile bagFile) {
+		checkClosed();
+		
 		if (bagFile instanceof DeclareCloseable) {
 			this.closeables.add(((DeclareCloseable)bagFile).declareCloseable());
 		}
@@ -251,6 +259,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void putBagFiles(Collection<BagFile> bagFiles) {
+		checkClosed();
 		for(BagFile bagFile : bagFiles) {
 			this.putBagFile(bagFile);
 		}
@@ -259,6 +268,7 @@ public abstract class AbstractBag implements Bag {
 		
 	@Override
 	public void removeBagFile(String filepath) {
+		checkClosed();
 		if (BagHelper.isPayload(filepath, this.getBagConstants())) {
 			if (! this.payloadMap.containsKey(filepath)) {
 				throw new RuntimeException(MessageFormat.format("Payload file {0} not contained in bag.", filepath));			
@@ -275,27 +285,34 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void addFileToPayload(File file) {
+		checkClosed();
+		
 		new AddFilesToPayloadOperation(this).addFileToPayload(file);
 	}
 	
 	@Override
 	public void addFilesToPayload(List<File> files) {
+		checkClosed();
 		new AddFilesToPayloadOperation(this).addFilesToPayload(files);
 	}
 	
 	
 	@Override
 	public Collection<BagFile> getPayload() {
+		checkClosed();
 		return this.payloadMap.values();
 	}
 	
 	@Override
 	public Collection<BagFile> getTags() {
+		checkClosed();
 		return this.tagMap.values();
 	}
 	
 	@Override
 	public BagFile getBagFile(String filepath) {
+		checkClosed();
+		
 		if (BagHelper.isPayload(filepath, this.getBagConstants())) {
 			return this.payloadMap.get(filepath);
 		} else {
@@ -305,17 +322,20 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void addFileAsTag(File file) {
+		checkClosed();
 		new AddFilesToTagsOperation(this).addFileToTags(file);
 	}
 
 	@Override
 	public void addFilesAsTag(List<File> files) {
+		checkClosed();
 		new AddFilesToTagsOperation(this).addFilesToTags(files);
 	}
 
 	
 	@Override
 	public BagItTxt getBagItTxt() {
+		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getBagItTxt());
 		if (bagFile != null && bagFile instanceof BagItTxt) return (BagItTxt)bagFile;
 		return null;
@@ -328,6 +348,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public BagVerifyResult verifyComplete(FailMode failMode) {
+		checkClosed();
 		CompleteVerifierImpl verifier = new CompleteVerifierImpl();
 		verifier.setFailMode(failMode);
 		return verifier.verify(this);
@@ -340,6 +361,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public BagVerifyResult verifyTagManifests(FailMode failMode) {
+		checkClosed();
 		ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 		verifier.setFailMode(failMode);
 		return verifier.verify(this.getTagManifests(), this);
@@ -353,6 +375,7 @@ public abstract class AbstractBag implements Bag {
 
 	@Override
 	public BagVerifyResult verifyPayloadManifests(FailMode failMode) {
+		checkClosed();
 		ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 		verifier.setFailMode(failMode);
 		return verifier.verify(this.getPayloadManifests(), this);
@@ -365,6 +388,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public BagVerifyResult verifyValid(FailMode failMode) {
+		checkClosed();
 		ValidVerifierImpl verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
 		verifier.setFailMode(failMode);
 		return verifier.verify(this);
@@ -372,6 +396,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void accept(BagVisitor visitor) {
+		checkClosed();
 		if (CancelUtil.isCancelled(visitor)) return;
 		
 		visitor.startBag(this);
@@ -413,6 +438,7 @@ public abstract class AbstractBag implements Bag {
 			
 	@Override
 	public FetchTxt getFetchTxt() {
+		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getFetchTxt());
 		if (bagFile != null && bagFile instanceof FetchTxt) return (FetchTxt)bagFile;
 		return null;
@@ -432,6 +458,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public BagInfoTxt getBagInfoTxt() {
+		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getBagInfoTxt());
 		if (bagFile != null && bagFile instanceof BagInfoTxt) return (BagInfoTxt)bagFile;
 		return null;
@@ -439,6 +466,7 @@ public abstract class AbstractBag implements Bag {
 			
 	@Override
 	public SimpleResult verify(Verifier verifier) {
+		checkClosed();
 		return verifier.verify(this);
 	}
 			
@@ -454,11 +482,13 @@ public abstract class AbstractBag implements Bag {
 		
 	@Override
 	public Bag write(Writer writer, File file) {
+		checkClosed();
 		return writer.write(this, file);
 	}
 		
 	@Override
 	public void removePayloadDirectory(String filepath) {
+		checkClosed();
 		if (! filepath.endsWith("/")) {
 			filepath += "/";
 		}
@@ -488,6 +518,7 @@ public abstract class AbstractBag implements Bag {
 
 	@Override
 	public void removeTagDirectory(String filepath) {
+		checkClosed();
 		if (! filepath.endsWith("/")) {
 			filepath += "/";
 		}
@@ -514,6 +545,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public Map<Algorithm, String> getChecksums(String filepath) {
+		checkClosed();
 		Map<Algorithm, String> checksumMap = new HashMap<Algorithm, String>();
 		if (BagHelper.isPayload(filepath, this.bagConstants)) {
 			for(Manifest manifest : this.getPayloadManifests()) {
@@ -534,6 +566,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public Manifest getPayloadManifest(Algorithm algorithm) {
+		checkClosed();
 		BagFile bagFile = this.getBagFile(ManifestHelper.getPayloadManifestFilename(algorithm, this.bagConstants));
 		if (bagFile != null && bagFile instanceof Manifest) return (Manifest)bagFile;
 		return null;
@@ -541,6 +574,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public Manifest getTagManifest(Algorithm algorithm) {
+		checkClosed();
 		BagFile bagFile = this.getBagFile(ManifestHelper.getTagManifestFilename(algorithm, this.bagConstants));
 		if (bagFile != null && bagFile instanceof Manifest) return (Manifest)bagFile;
 		return null;
@@ -548,6 +582,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public Bag makeComplete(Completer completer) {
+		checkClosed();
 		return completer.complete(this);
 	}
 	
@@ -559,25 +594,28 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume) {
+		checkClosed();
 		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags, resume);
 	}
 	
 	@Override
 	public Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume) {
+		checkClosed();
 		HolePuncher holePuncher = new HolePuncherImpl(this.bagFactory);
 		return holePuncher.makeHoley(this, baseUrl, includePayloadDirectoryInUrl, includeTags, resume);
 	}
 	
 	@Override
-	public void close() {
+	public synchronized void close() {
 		for(Closeable closeable : this.closeables) {
-			try {
-				closeable.close();
-			} catch (IOException e) {
-				//Ignore the closing
-				log.warn("Error closing", e);
-			}
+			IOUtils.closeQuietly(closeable);
 		}
-		
+		isClosed = true;
+	}
+	
+	private void checkClosed() {
+		if (isClosed) {
+			log.warn("Attempting operation on a closed bag. The results may be problematic.");
+		}
 	}
 }
