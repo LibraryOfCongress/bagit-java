@@ -192,7 +192,11 @@ public class CommandLineBagDriver {
 		Parameter excludeDirsParam = new FlaggedOption(PARAM_EXCLUDE_DIRS, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_DIRS, "Directories in the bag to be ignored in the split operation; they will be kept in the source bag; they should be relative to the base path of the bag. ");
 		Parameter keepEmptyDirsParam = new Switch(PARAM_KEEP_EMPTY_DIRS, JSAP.NO_SHORTFLAG, PARAM_KEEP_EMPTY_DIRS, "Retains empty directories by placing .keep files in them.");
 		Parameter excludeSymlinksParam = new Switch(PARAM_EXCLUDE_SYMLINKS, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_SYMLINKS, "Ignore symbolic links (for bags on file systems only).");
-		Parameter failModeParam = new FlaggedOption(PARAM_FAIL_MODE, EnumeratedStringParser.getParser(getFailModeList()), FailMode.FAIL_STAGE.name(), JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FAIL_MODE, MessageFormat.format("The fail mode for the verification.  Valid values are {0} (fail on first error), {1} (fail over step of verification), {2} (fail after stage of verification), {3} (complete verification then fail).", FailMode.FAIL_FAST.name(), FailMode.FAIL_STEP.name(), FailMode.FAIL_STAGE.name(), FailMode.FAIL_SLOW.name()));
+		Parameter failModeParam = new FlaggedOption(PARAM_FAIL_MODE, EnumeratedStringParser.getParser(getFailModeList()), FailMode.FAIL_FAST.name(), JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_FAIL_MODE, MessageFormat.format("The fail mode for the verification.  " + 
+				"Valid values are {0} (fail on first error), " +
+				"{1} (fail over step of verification. A step is a set of like verification operations. For example, check that all payload files are in at least one manifest.), " +
+				"{2} (fail after stage of verification. A stage is a set of logically grouped verification operations. For example, when validating a bag, all of the operations to verify that a bag is complete is a stage. This mode is how previous versions of BIL operated.), " +
+				"{3} (complete verification then fail).", FailMode.FAIL_FAST.name(), FailMode.FAIL_STEP.name(), FailMode.FAIL_STAGE.name(), FailMode.FAIL_SLOW.name()));
 		Parameter compressionParam = new FlaggedOption(PARAM_COMPRESSION_LEVEL, JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_COMPRESSION_LEVEL, "The compression level to apply to zip files. Valid values are 1 (least compression, fastest) to 9 (most compression, slowest).");
 		
 		this.addOperation(OPERATION_VERIFY_TAGMANIFESTS,
