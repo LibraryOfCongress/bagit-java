@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.transformer.impl;
 
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -172,7 +173,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests) {
 		this.regenerateManifest(bag, manifest, useOriginalPayloadManifests, null, null);
 	}
-	
+
 	public void regenerateManifest(final Bag bag, final Manifest manifest, final boolean useOriginalPayloadManifests, final List<String> limitUpdateFilepaths, final List<String> limitUpdateDirectories) {
 		log.debug("Regenerating " + manifest.getFilepath());
 		final int total = manifest.size();
@@ -192,15 +193,17 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        		for(final String filepath : safeIterator) {
 		        			if (isCancelled()) return null;
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
-		        			
+		        			log.trace(MessageFormat.format("Creating manifest entry for {0}", filepath));
 	        				String checksum = manifest.get(filepath);
 	        				if (filepathListcontains(limitUpdateFilepaths, filepath) && dirListContains(limitUpdateDirectories, filepath)) {
-		        				if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
-		        					checksum = MessageDigestHelper.generateFixity(((Manifest)bag.getBagFile(filepath)).originalInputStream(), manifest.getAlgorithm());
-		        				} else {
-		        					checksum = MessageDigestHelper.generateFixity(bag.getBagFile(filepath).newInputStream(), manifest.getAlgorithm());
-		        				}
-		        				log.debug(MessageFormat.format("Generated fixity for {0}.", filepath));
+		        				log.debug(MessageFormat.format("Generating fixity for {0}.", filepath));
+		        				InputStream in = null;
+	        					if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
+	        						//originalInputStream may be null
+	        						in = ((Manifest)bag.getBagFile(filepath)).originalInputStream();
+	        					}
+	        					if (in == null) in = bag.getBagFile(filepath).newInputStream();
+	        					checksum = MessageDigestHelper.generateFixity(in, manifest.getAlgorithm());
 	        				}
 	        				manifestEntries.put(filepath, checksum);
 		        			

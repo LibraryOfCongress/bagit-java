@@ -71,6 +71,9 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 
 	@Override
 	public InputStream originalInputStream() {
+		if (this.sourceBagFile == null) {
+			return null;
+		}
 		return this.sourceBagFile.newInputStream();
 	}
 	
