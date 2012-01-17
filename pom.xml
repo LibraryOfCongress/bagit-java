@@ -16,6 +16,10 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	<scm>
+		<connection>Not public</connection>
+		<url>Not public</url>
+	</scm>
 	<properties>
 		<bagit.version>0.97</bagit.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
