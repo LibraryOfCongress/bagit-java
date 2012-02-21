@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.transformer.impl;
 
 import static org.junit.Assert.*;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class DefaultCompleterTest {
 
 	@After
 	public void cleanup() {
-		bag.close();
+		IOUtils.closeQuietly(bag);
 	}
 	
 	@Test

@@ -10,6 +10,7 @@ import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.Writer;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +29,7 @@ import java.util.Map;
  *
  * @see BagFactory
  */
-public interface Bag {
+public interface Bag extends Closeable {
 	
 	/**
 	 * <p>The format of a bag.  Bags may be serialized (such
@@ -203,12 +204,7 @@ public interface Bag {
 	 * Invokes a Completer to make a bag complete.
 	 */
 	Bag makeComplete(Completer completer);
-	
-	/**
-	 * Releases IO resources held by this bag.
-	 */
-	void close();
-	
+		
 	BagConstants getBagConstants();
 	
 	BagPartFactory getBagPartFactory();

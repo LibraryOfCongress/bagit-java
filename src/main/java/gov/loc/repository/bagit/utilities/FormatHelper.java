@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+import org.apache.commons.io.IOUtils;
+
 public class FormatHelper {
 	
 	public static boolean isZip(File file) {
@@ -32,13 +34,13 @@ public class FormatHelper {
 				if (! filePart.equalsIgnoreCase(magicPart)) {
 					matches = false;
 				}
-			}
-					
-			in.close();
+			}					
 			return matches;
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
 	}
 	

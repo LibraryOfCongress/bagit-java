@@ -1,12 +1,11 @@
 package gov.loc.repository.bagit;
 
+import java.io.Closeable;
 import java.text.MessageFormat;
 import java.util.Iterator;
 
-public interface ManifestReader extends Iterator<ManifestReader.FilenameFixity> {
+public interface ManifestReader extends Iterator<ManifestReader.FilenameFixity>, Closeable {
 
-	void close();
-	
 	public class FilenameFixity {
 		private String filename;
 		private String fixityValue;

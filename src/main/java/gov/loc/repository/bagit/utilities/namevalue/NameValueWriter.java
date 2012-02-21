@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.utilities.namevalue;
 
-public interface NameValueWriter {
-	void close();
+import java.io.Closeable;
+
+public interface NameValueWriter extends Closeable{
 	void write(String name, String value);
 }

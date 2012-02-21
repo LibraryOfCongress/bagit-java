@@ -45,6 +45,7 @@ public class NameValueReaderImpl implements NameValueReader {
 		finally {
 			IOUtils.closeQuietly(fr);
 			IOUtils.closeQuietly(reader);
+			IOUtils.closeQuietly(in);
 		}
 	}
 		

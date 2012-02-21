@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.transformer.impl;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class TagManifestCompleterTest {
 	
 	@After
 	public void cleanup() {
-		bag.close();
+		IOUtils.closeQuietly(bag);
 	}
 
 	@Test

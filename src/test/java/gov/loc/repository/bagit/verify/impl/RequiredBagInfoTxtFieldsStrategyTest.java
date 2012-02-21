@@ -9,6 +9,7 @@ import gov.loc.repository.bagit.impl.BagInfoTxtImpl;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.impl.RequiredBagInfoTxtFieldsVerifier;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 public class RequiredBagInfoTxtFieldsStrategyTest {
@@ -33,7 +34,7 @@ public class RequiredBagInfoTxtFieldsStrategyTest {
 			bagInfo.setBagSize("45 gb");
 			assertTrue(bag.verify(strategy).isSuccess());
 		} finally {
-			bag.close();
+			IOUtils.closeQuietly(bag);
 		}
 		
 	}

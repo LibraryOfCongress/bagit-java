@@ -61,13 +61,16 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 		return this.generatedInputStream();
 	}
 
-	InputStream generatedInputStream() {
+	public InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		NameValueWriter writer = new NameValueWriterImpl(out, this.encoding, this.getType());
-		for(NameValue nameValue : this.nameValueList) {
-			writer.write(nameValue.getName(), nameValue.getValue());
+		try {
+			for(NameValue nameValue : this.nameValueList) {
+				writer.write(nameValue.getName(), nameValue.getValue());
+			}
+		} finally {
+			IOUtils.closeQuietly(writer);
 		}
-		writer.close();
 		return new ByteArrayInputStream(out.toByteArray());					
 	}
 	

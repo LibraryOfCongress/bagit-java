@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,11 +41,13 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 		this.init(bagConstants, bagPartFactory);
 		this.sourceBagFile = sourceBagFile;
 		FetchTxtReader reader = bagPartFactory.createFetchTxtReader(sourceBagFile.newInputStream(), this.bagConstants.getBagEncoding());
-		
-		while(reader.hasNext()) {
-			this.add(reader.next());
+		try {
+			while(reader.hasNext()) {
+				this.add(reader.next());
+			}
+		} finally {
+			IOUtils.closeQuietly(reader);
 		}
-		reader.close();
 		//Generate original fixity
 		this.originalFixity = MessageDigestHelper.generateFixity(this.generatedInputStream(), Manifest.Algorithm.MD5);
 	}
@@ -68,10 +71,13 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 	private InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		FetchTxtWriter writer = this.bagPartFactory.createFetchTxtWriter(out);
-		for(FilenameSizeUrl filenameSizeUrl : this) {
-			writer.write(filenameSizeUrl.getFilename(), filenameSizeUrl.getSize(), filenameSizeUrl.getUrl());
+		try {
+			for(FilenameSizeUrl filenameSizeUrl : this) {
+				writer.write(filenameSizeUrl.getFilename(), filenameSizeUrl.getSize(), filenameSizeUrl.getUrl());
+			}
+		} finally {
+			IOUtils.closeQuietly(writer);
 		}
-		writer.close();
 		return new ByteArrayInputStream(out.toByteArray());					
 	}
 	
@@ -90,6 +96,8 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
 		return size;
 	}

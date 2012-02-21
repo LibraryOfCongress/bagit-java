@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,11 +40,14 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		this.init(name, bagConstants, bagPartFactory);
 		this.sourceBagFile = sourceBagFile;
 		ManifestReader reader = bagPartFactory.createManifestReader(sourceBagFile.newInputStream(), bagConstants.getBagEncoding());
-		while(reader.hasNext()) {
-			FilenameFixity filenameFixity = reader.next();
-			this.put(filenameFixity.getFilename(), filenameFixity.getFixityValue());
+		try {
+			while(reader.hasNext()) {
+				FilenameFixity filenameFixity = reader.next();
+				this.put(filenameFixity.getFilename(), filenameFixity.getFixityValue());
+			}
+		} finally {
+			IOUtils.closeQuietly(reader);
 		}
-		reader.close();
 		//Generate original fixity
 		this.originalFixity = MessageDigestHelper.generateFixity(this.generatedInputStream(), Algorithm.MD5);
 	}
@@ -80,10 +84,13 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 	private InputStream generatedInputStream() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ManifestWriter writer = this.bagPartFactory.createManifestWriter(out, this.nonDefaultManifestSeparator);
-		for(String filename : this.keySet()) {
-			writer.write(filename, this.get(filename));
+		try {
+			for(String filename : this.keySet()) {
+				writer.write(filename, this.get(filename));
+			}
+		} finally {
+			IOUtils.closeQuietly(writer);
 		}
-		writer.close();
 		return new ByteArrayInputStream(out.toByteArray());					
 	}
 	
@@ -123,6 +130,8 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
 		return size;
 	}

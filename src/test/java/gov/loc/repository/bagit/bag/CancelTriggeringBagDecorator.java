@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.bag;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -298,7 +299,7 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 	}
 	
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		realBag.close();		
 	}
 	

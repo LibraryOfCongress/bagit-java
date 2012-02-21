@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class SplitByFileTypeTest {
 	
 	@After
 	public void cleanup() {
-		bag.close();
+		IOUtils.closeQuietly(bag);
 	}
 	
 	@Test
@@ -96,7 +97,7 @@ public class SplitByFileTypeTest {
 			assertEquals(fileSize, this.srcBagPayloadSize);
 			assertEquals(newBags.size(), 2);
 		} finally {
-			for(Bag bag : newBags) bag.close();
+			for(Bag bag : newBags) IOUtils.closeQuietly(bag);
 		}
 	}
 	
@@ -143,7 +144,7 @@ public class SplitByFileTypeTest {
 			assertEquals(fileCount, srcBagPayloadFiles.size() - 3);
 			assertEquals(newBags.size(), 2);
 		} finally {
-			for(Bag bag : newBags) bag.close();
+			for(Bag bag : newBags) IOUtils.closeQuietly(bag);
 		}
 	}
 }

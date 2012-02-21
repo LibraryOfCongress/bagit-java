@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit;
 
-public interface FetchTxtWriter {
-	void close();
+import java.io.Closeable;
+
+public interface FetchTxtWriter extends Closeable {
 	void write(String filename, Long size, String url);
 }
