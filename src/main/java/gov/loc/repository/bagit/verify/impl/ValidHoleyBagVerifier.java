@@ -10,9 +10,9 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
 
 /**
@@ -24,14 +24,14 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 {
 	private static final Log log = LogFactory.getLog(ValidHoleyBagVerifier.class);
 	
-	private SimpleResult result;
+	private BagVerifyResult result;
 	private Bag bag;
 	
 	@Override
-	public SimpleResult verify(Bag bag) 
+	public BagVerifyResult verify(Bag bag) 
 	{
 		this.bag = bag;
-		this.result = new SimpleResult(true);
+		this.result = new BagVerifyResult(true);
 		
 		log.trace("Checking for bag declaration.");
 		if (bag.getBagItTxt() == null)

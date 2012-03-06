@@ -1,8 +1,8 @@
 package gov.loc.repository.bagit.verify;
 
 import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 
 public interface Verifier {	
-	SimpleResult verify(Bag bag);
+	BagVerifyResult verify(Bag bag);
 }

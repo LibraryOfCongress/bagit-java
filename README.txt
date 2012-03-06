@@ -32,6 +32,7 @@ a bad thing.
 RELEASE NOTES:
 Changes in 4.3:
 1. Adds additional granularity to BagVerifyResult.
+2. Changed various interfaces to use BagVerifyResult instead of SimpleResult.
 
 Changes in 4.2:
 1. Changed most interfaces to extends Closeable instead of declaring own close() method.

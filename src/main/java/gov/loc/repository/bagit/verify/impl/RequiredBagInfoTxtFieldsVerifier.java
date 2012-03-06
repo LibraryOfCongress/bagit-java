@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.verify.Verifier;
 
 public class RequiredBagInfoTxtFieldsVerifier implements Verifier {
@@ -15,8 +15,8 @@ public class RequiredBagInfoTxtFieldsVerifier implements Verifier {
 		this.requiredFields = requiredFields;
 	}
 	
-	public SimpleResult verify(Bag bag) {
-		SimpleResult result = new SimpleResult(true);
+	public BagVerifyResult verify(Bag bag) {
+		BagVerifyResult result = new BagVerifyResult(true);
 		
 		BagInfoTxt bagInfo = bag.getBagInfoTxt();
 		if (bagInfo == null) {

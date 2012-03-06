@@ -32,6 +32,10 @@ public class BagVerifyResult extends SimpleResult {
 		super(isSuccess, messages);
 	}
 	
+	public BagVerifyResult(SimpleResult result) {
+		super(result.isSuccess(), result.getMessages());
+	}
+	
 	public void addExtraPayloadFile(String filepath) {
 		extraPayloadFiles.add(filepath);
 	}

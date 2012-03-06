@@ -45,7 +45,6 @@ import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
@@ -465,7 +464,7 @@ public abstract class AbstractBag implements Bag {
 	}
 			
 	@Override
-	public SimpleResult verify(Verifier verifier) {
+	public BagVerifyResult verify(Verifier verifier) {
 		checkClosed();
 		return verifier.verify(this);
 	}

@@ -5,7 +5,6 @@ import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.utilities.BagVerifyResult;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.Writer;
@@ -145,7 +144,7 @@ public interface Bag extends Closeable {
 	/**
 	 * Invokes a Verifier to verify a bag.
 	 */	
-	SimpleResult verify(Verifier verifier);
+	BagVerifyResult verify(Verifier verifier);
 		
 	/**
 	 * Verify that each checksum in every payload manifest can be verified against
