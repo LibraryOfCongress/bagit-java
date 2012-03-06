@@ -10,11 +10,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class BagVerifyResult extends SimpleResult {
-	private Set<String> extraPayloadFiles = new HashSet<String>();
-	private Map<String,Set<String>> invalidPayloadFilesMap = new HashMap<String, Set<String>>();
-	private Map<String,Set<String>> invalidTagFilesMap = new HashMap<String, Set<String>>();
-	private Map<String,Set<String>> missingPayloadFilesMap = new HashMap<String, Set<String>>();
-	private Map<String,Set<String>> missingTagFilesMap = new HashMap<String, Set<String>>();
+	protected Set<String> extraPayloadFiles = new HashSet<String>();
+	protected Map<String,Set<String>> invalidPayloadFilesMap = new HashMap<String, Set<String>>();
+	protected Map<String,Set<String>> invalidTagFilesMap = new HashMap<String, Set<String>>();
+	protected Map<String,Set<String>> missingPayloadFilesMap = new HashMap<String, Set<String>>();
+	protected Map<String,Set<String>> missingTagFilesMap = new HashMap<String, Set<String>>();
 
 	public BagVerifyResult(boolean isSuccess) {
 		super(isSuccess);
@@ -22,6 +22,10 @@ public class BagVerifyResult extends SimpleResult {
 	
 	public BagVerifyResult(boolean isSuccess, String message) {
 		super(isSuccess, message);
+	}
+
+	public BagVerifyResult(boolean isSuccess, Collection<String> messages) {
+		super(isSuccess, messages);
 	}
 	
 	public void addExtraPayloadFile(String filepath) {

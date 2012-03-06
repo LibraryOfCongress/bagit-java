@@ -2,12 +2,13 @@ package gov.loc.repository.bagit.utilities;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SimpleResult {
 	
-	private boolean isSuccess;
-	private List<String> messages = new ArrayList<String>();
+	protected boolean isSuccess;
+	protected List<String> messages = new ArrayList<String>();
 	
 	public static Integer DEFAULT_MAX_MESSAGES = 100;
 	public static String DEFAULT_DELIM = " ";
@@ -21,8 +22,17 @@ public class SimpleResult {
 		this.messages.add(message);
 	}
 
+	public SimpleResult(boolean isSuccess, Collection<String> messages) {
+		this.isSuccess = isSuccess;
+		this.messages.addAll(messages);
+	}
+	
 	public void addMessage(String message) {
 		this.messages.add(message);
+	}
+
+	public void addMessages(Collection<String> messages) {
+		this.messages.addAll(messages);
 	}
 	
 	public boolean isSuccess()
