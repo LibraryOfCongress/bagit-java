@@ -69,7 +69,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	public void visitPayload(BagFile bagFile) {
 		if(resume){
 			//Skip the file if the file is not missing or invalid. 
-			if(! this.bagVerifyResult.getMissingAndInvalidFiles().contains(bagFile.getFilepath())){
+			if(! this.bagVerifyResult.isMissingOrInvalid(bagFile.getFilepath())){
 				return;
 			}
 		}
@@ -87,7 +87,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	public void visitTag(BagFile bagFile) {
 		if(resume){
 			//Skip the file if the file is not missing or invalid. 
-			if(! this.bagVerifyResult.getMissingAndInvalidFiles().contains(bagFile.getFilepath())){
+			if(! this.bagVerifyResult.isMissingOrInvalid(bagFile.getFilepath())){
 				return;
 			}
 		}

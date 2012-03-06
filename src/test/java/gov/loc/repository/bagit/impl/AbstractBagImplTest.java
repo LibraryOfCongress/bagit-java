@@ -144,7 +144,9 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertTrue(bag.verifyComplete().isSuccess());
-			assertFalse(bag.verifyValid().isSuccess());
+			BagVerifyResult result = bag.verifyValid();
+			assertFalse(result.isSuccess());
+			assertTrue(result.getInvalidPayloadFiles().contains("data/test1.txt"));
 			
 			assertTrue(bag.verifyTagManifests().isSuccess());
 			assertFalse(bag.verifyPayloadManifests().isSuccess());
@@ -166,7 +168,9 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
 			assertTrue(bag.verifyComplete().isSuccess());
-			assertFalse(bag.verifyValid().isSuccess());
+			BagVerifyResult result = bag.verifyValid();
+			assertFalse(result.isSuccess());
+			assertTrue(result.getInvalidTagFiles().contains(this.constants.getBagInfoTxt()));
 			
 			assertFalse(bag.verifyTagManifests().isSuccess());
 			assertTrue(bag.verifyPayloadManifests().isSuccess());
@@ -187,7 +191,9 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		
 		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
-			assertFalse(bag.verifyComplete().isSuccess());
+			BagVerifyResult result = bag.verifyComplete();
+			assertFalse(result.isSuccess());			
+			assertTrue(result.getMissingPayloadFiles().contains("data/test1.txt"));
 			assertFalse(bag.verifyValid().isSuccess());
 			
 			assertTrue(bag.verifyTagManifests().isSuccess());
@@ -208,7 +214,9 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		
 		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
-			assertFalse(bag.verifyComplete().isSuccess());
+			BagVerifyResult result = bag.verifyComplete();
+			assertFalse(result.isSuccess());			
+			assertTrue(result.getMissingTagFiles().contains(this.constants.getBagInfoTxt()));			
 			assertFalse(bag.verifyValid().isSuccess());
 			
 			assertFalse(bag.verifyTagManifests().isSuccess());
@@ -229,7 +237,9 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		
 		Bag bag = this.bagFactory.createBag(testBagDir, this.getVersion(), LoadOption.BY_MANIFESTS);
 		try {
-			assertFalse(bag.verifyComplete().isSuccess());
+			BagVerifyResult result = bag.verifyComplete();
+			assertFalse(result.isSuccess());			
+			assertTrue(result.getExtraPayloadFiles().contains("data/extra.txt"));
 			assertFalse(bag.verifyValid().isSuccess());
 			
 			assertTrue(bag.verifyTagManifests().isSuccess());
@@ -607,16 +617,19 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		try {
 			System.out.println("FAILMODES");
 			BagVerifyResult result = bag.verifyValid(FailMode.FAIL_FAST);
-			assertEquals(1, result.getMessages().size());
+			assertEquals(1, result.getMissingPayloadFiles().size());
 			
 			result = bag.verifyValid(FailMode.FAIL_STEP);
-			assertEquals(2, result.getMessages().size());
+			assertEquals(2, result.getMissingPayloadFiles().size());
 			
 			result = bag.verifyValid(FailMode.FAIL_STAGE);
-			assertEquals(3, result.getMessages().size());
+			assertEquals(2, result.getMissingPayloadFiles().size());
+			assertEquals(1, result.getExtraPayloadFiles().size());
 
 			result = bag.verifyValid(FailMode.FAIL_SLOW);
-			assertEquals(6, result.getMessages().size());
+			assertEquals(2, result.getMissingPayloadFiles().size());
+			assertEquals(1, result.getExtraPayloadFiles().size());
+			assertEquals(1, result.getInvalidPayloadFiles().size());
 			
 		} finally {
 			bag.close();

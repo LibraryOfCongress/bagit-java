@@ -334,7 +334,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	for (FetchTxt.FilenameSizeUrl line : sortedFetchLines)
     	{
     		// Do not add a file to the fetch targets if the file is not missing or corrupted.
-    		if(resume && BagHelper.isPayload(line.getFilename(), this.bagFactory.getBagConstants()) && !bagVerifyResult.getMissingAndInvalidFiles().contains(line.getFilename())){
+    		if(resume 
+    				&& BagHelper.isPayload(line.getFilename(), this.bagFactory.getBagConstants()) 
+    				&& ! bagVerifyResult.isMissingOrInvalid(line.getFilename())){
     			continue;
     		}else {
     			if (currentTarget == null || !currentTarget.getFilename().equals(line.getFilename()))

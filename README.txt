@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 4.3:
+1. Adds additional granularity to BagVerifyResult.
+
 Changes in 4.2:
 1. Changed most interfaces to extends Closeable instead of declaring own close() method.
 2. Improved safety of stream closing throughout code.

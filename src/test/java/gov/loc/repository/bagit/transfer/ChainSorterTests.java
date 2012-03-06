@@ -9,6 +9,7 @@ public class ChainSorterTests
 {
 	private ChainSorter<FetchTxt.FilenameSizeUrl> unit;
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testSortsByFirstThenSecond()
 	{

@@ -134,11 +134,14 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                     {
 	                                    if (!MessageDigestHelper.fixityMatches(stream, alg, fixity))
 	                                    {
+	                                    	result.setSuccess(false);
+	                                    	if (manifest.isPayloadManifest()) {
+	                                    		result.addInvalidPayloadFile(manifest.getFilepath(), filePath);
+	                                    	} else {
+	                                    		result.addInvalidTagFile(manifest.getFilepath(), filePath);
+	                                    	}
 	                                        String msg = MessageFormat.format("Fixity failure in manifest {0}: {1}", manifest.getFilepath(), filePath);
-	                                        log.debug(msg);
-	                                        result.addMissingOrInvalidFile(filePath);
-	                                        result.addMessage(msg);
-	                                        result.setSuccess(false);
+	                                        log.debug(msg);	                                        
 	                                        failFast.set(true);
 	                                    }
                                     }
@@ -149,11 +152,14 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                 }
                                 else
                                 {
+                                    result.setSuccess(false);
+                                	if (manifest.isPayloadManifest()) {
+                                		result.addMissingPayloadFile(manifest.getFilepath(), filePath);
+                                	} else {
+                                		result.addMissingTagFile(manifest.getFilepath(), filePath);
+                                	}
                                     String msg = MessageFormat.format("File missing from manifest {0}: {1}", manifest.getFilepath(), filePath);
                                     log.debug(msg);
-                                    result.addMissingOrInvalidFile(filePath);
-                                    result.addMessage(msg);
-                                    result.setSuccess(false);
                                     failFast.set(true);
                                 }
                             }

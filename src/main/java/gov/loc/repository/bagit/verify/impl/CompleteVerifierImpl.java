@@ -244,8 +244,8 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 						log.trace(MessageFormat.format("Checking that payload file {0} is in bag", filepath));
 						if (bag.getBagFile(filepath) == null) {
 							result.setSuccess(false);
+							result.addExtraPayloadFile(filepath);
 							String msg = MessageFormat.format("Bag has file {0} not found in manifest file.", filepath);
-							result.addMessage(msg);
 							log.warn(msg);
 							if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;							
 						}
@@ -281,10 +281,13 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			if (bagFile == null || ! bagFile.exists())
 			{
 				result.setSuccess(false);
-				result.addMissingOrInvalidFile(filepath);
+				if (manifest.isPayloadManifest()) {
+					result.addMissingPayloadFile(manifest.getFilepath(), filepath);
+				} else {
+					result.addMissingTagFile(manifest.getFilepath(), filepath);
+				}
 				String message = MessageFormat.format("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
 				log.warn(message);
-				result.addMessage(message);
 				if(FailMode.FAIL_FAST == failMode) return;
 			}
 		}				
