@@ -16,6 +16,10 @@ public class BagVerifyResult extends SimpleResult {
 	protected Map<String,Set<String>> missingPayloadFilesMap = new HashMap<String, Set<String>>();
 	protected Map<String,Set<String>> missingTagFilesMap = new HashMap<String, Set<String>>();
 
+	public BagVerifyResult() {
+		super();
+	}
+	
 	public BagVerifyResult(boolean isSuccess) {
 		super(isSuccess);
 	}

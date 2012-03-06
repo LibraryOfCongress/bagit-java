@@ -7,11 +7,14 @@ import java.util.List;
 
 public class SimpleResult {
 	
-	protected boolean isSuccess;
+	protected boolean isSuccess = false;
 	protected List<String> messages = new ArrayList<String>();
 	
 	public static Integer DEFAULT_MAX_MESSAGES = 100;
 	public static String DEFAULT_DELIM = " ";
+	
+	public SimpleResult() {
+	}	
 	
 	public SimpleResult(boolean isSuccess) {
 		this.isSuccess = isSuccess;			
