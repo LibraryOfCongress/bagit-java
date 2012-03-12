@@ -49,20 +49,19 @@ public class CompleterHelper extends LongRunningOperationBase {
 			bag.removeBagFile(manifest.getFilepath());
 		}
 	}
-	
-	private boolean filepathListcontains(List<String> filepaths, String filepath) {
+
+	private boolean filepathListContains(List<String> filepaths, String filepath) {
 		boolean res = false;
-		if (filepaths == null || filepaths.contains(filepath)) res = true;
+		if (filepaths != null && filepaths.contains(filepath)) res = true;
 		log.trace(MessageFormat.format("Checking if filepath list contains {0}: {1}", filepath, res));
 		return res;
 	}
-
+	
 	private boolean dirListContains(List<String> dirs, String filepath) {
 		boolean res = false;
-		if (dirs == null) {
-			res = true;
-		} else {
+		if (dirs != null) {
 			for(String dir : dirs) {
+				if (! dir.endsWith("/")) dir += "/";
 				if (filepath.startsWith(dir)) {
 					res = true;
 					break;
@@ -70,6 +69,17 @@ public class CompleterHelper extends LongRunningOperationBase {
 			}
 		}
 		log.trace(MessageFormat.format("Checking if directory list contains {0}: {1}", filepath, res));
+		return res;
+	}
+	
+	private boolean isLimited(String filepath, List<String> filepaths, List<String> dirs) {
+		boolean res = false;
+		if (filepaths == null && dirs == null) {
+			res = true;
+		} else if (dirListContains(dirs, filepath) || filepathListContains(filepaths, filepath)) {
+			res = true;
+		}
+		log.trace(MessageFormat.format("Checking if {0} is limited: {1}", filepath, res));
 		return res;
 	}
 	
@@ -89,7 +99,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 			for(String filepath : manifest.keySet()) {
 				if (this.isCancelled()) return;
 				BagFile bagFile = bag.getBagFile(filepath);
-				if ((bagFile == null || ! bagFile.exists()) && filepathListcontains(limitDeleteFilepaths, filepath) && dirListContains(limitDeleteDirectories, filepath)) {
+				if ((bagFile == null || ! bagFile.exists()) && isLimited(filepath, limitDeleteFilepaths, limitDeleteDirectories)) {
 					deleteFilepaths.add(filepath);
 				}
 			}
@@ -128,7 +138,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        		for(final BagFile bagFile : safeIterator) {
 		        			if (isCancelled()) return null;
 		        			progress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
-		        			if (filepathListcontains(limitAddFilepaths, bagFile.getFilepath()) && dirListContains(limitAddDirectories, bagFile.getFilepath())) {
+		        			if (isLimited(bagFile.getFilepath(), limitAddFilepaths, limitAddDirectories)) {
 			        			if (ManifestHelper.isTagManifest(bagFile.getFilepath(), bag.getBagConstants())) {
 			        				log.debug(MessageFormat.format("Skipping {0} since it is a tag manifest.", bagFile.getFilepath()));
 			        			} else if (! bag.getChecksums(bagFile.getFilepath()).isEmpty()) {
@@ -138,6 +148,8 @@ public class CompleterHelper extends LongRunningOperationBase {
 			        				log.debug(MessageFormat.format("Generated fixity for {0}.", bagFile.getFilepath()));
 			        				manifestEntries.put(bagFile.getFilepath(), checksum);
 			        			}
+		        			} else {
+		        				log.trace(MessageFormat.format("{0} not in limit add filepaths or limit add directories", bagFile.getFilepath()));
 		        			}
 		        		}
 		        		return manifestEntries;
@@ -195,7 +207,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
 		        			log.trace(MessageFormat.format("Creating manifest entry for {0}", filepath));
 	        				String checksum = manifest.get(filepath);
-	        				if (filepathListcontains(limitUpdateFilepaths, filepath) && dirListContains(limitUpdateDirectories, filepath)) {
+	        				if (isLimited(filepath, limitUpdateFilepaths, limitUpdateDirectories)) {
 		        				log.debug(MessageFormat.format("Generating fixity for {0}.", filepath));
 		        				InputStream in = null;
 	        					if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
