@@ -33,6 +33,8 @@ RELEASE NOTES:
 Changes in 4.3:
 1. Adds additional granularity to BagVerifyResult.
 2. Changed various interfaces to use BagVerifyResult instead of SimpleResult.
+3. Fixes defect with zipped bags on Windows.
+4. Fixes NPE when splitting bag by size without a bag-info.txt.
 
 Changes in 4.2:
 1. Changed most interfaces to extends Closeable instead of declaring own close() method.

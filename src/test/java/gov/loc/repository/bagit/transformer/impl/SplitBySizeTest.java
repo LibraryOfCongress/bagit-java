@@ -73,6 +73,34 @@ public class SplitBySizeTest {
 			for(Bag bag : newBags) IOUtils.closeQuietly(bag);
 		}
 	}
+
+	@Test
+	public void testSplitWithoutBagInfoTxt() {
+		bag.removeBagFile(bag.getBagConstants().getBagInfoTxt());
+		List<Bag> newBags = splitter.split(bag);
+		try {
+			int fileCount = 0;
+			long fileSize = 0L;
+			for(Bag newBag : newBags) {
+				long newBagSize = 0L;
+				Collection<BagFile> bagFiles = newBag.getPayload();
+				fileCount += bagFiles.size();
+				for(BagFile bagFile : bagFiles) {
+					newBagSize += bagFile.getSize();				
+					assertTrue(srcBagPayloadFileDirs.contains(bagFile.getFilepath()));
+				}
+				assertTrue(newBagSize <= this.maxPayloadSize);
+				fileSize += newBagSize;
+			}
+			
+			assertEquals(fileCount, srcBagPayloadFiles.size());
+			assertEquals(fileSize, this.srcBagPayloadSize);
+			assertEquals(newBags.size(), 3);
+		} finally {
+			for(Bag bag : newBags) IOUtils.closeQuietly(bag);
+		}
+	}
+
 	
 	@Test
 	public void testSplitKeepLowestLevelDir(){

@@ -46,13 +46,17 @@ public class SplitBySize implements Splitter{
 	    for(BagFileGroup bagFileGroup : bagFileGroups) {
 	    	List<BagFile> groupBagFiles = bagFileGroup.getBagFiles();
 	    	Bag subBag = bagFactory.createBag(srcBag.getVersion());	    	
-	    	BagInfoTxt bagInfoTxt = subBag.getBagPartFactory().createBagInfoTxt();
-	    	subBag.putBagFile(bagInfoTxt);
-	    	//Add bag info from the source bag to the split bag
-	    	List<NameValue> list = srcBag.getBagInfoTxt().asList();
-	    	for(NameValue nameValue: list){
-		    	subBag.getBagInfoTxt().put(nameValue);	    		
+	    	
+	    	if (srcBag.getBagInfoTxt() != null) {
+		    	BagInfoTxt bagInfoTxt = subBag.getBagPartFactory().createBagInfoTxt();
+		    	subBag.putBagFile(bagInfoTxt);
+		    	//Add bag info from the source bag to the split bag
+		    	List<NameValue> list = srcBag.getBagInfoTxt().asList();
+		    	for(NameValue nameValue: list){
+			    	subBag.getBagInfoTxt().put(nameValue);	    		
+		    	}
 	    	}
+	    	
 	    	for(BagFile bagFile : groupBagFiles){
 	    		if(bagFile instanceof LowestLevelBagDir){
 	    			subBag.putBagFiles(((LowestLevelBagDir) bagFile).getBagFiles());
