@@ -15,7 +15,7 @@ public class FilenameHelper {
 			return null;
 		}
 		String newFilename = FilenameUtils.separatorsToUnix(filename);			
-		log.debug(MessageFormat.format("Normalized {0} to {1}", filename, newFilename));
+		log.trace(MessageFormat.format("Normalized {0} to {1}", filename, newFilename));
 		return newFilename;
 	}
 	
@@ -42,7 +42,7 @@ public class FilenameHelper {
 				filenameWithoutBasePath = normFilename.substring(normBasePath.length() + 1);
 			}
 		}
-		log.debug(MessageFormat.format("Removing {0} (normalized to {1}) from {2} (normalized to {3}) resulted in {4}", basePath, normBasePath, filename, normFilename, filenameWithoutBasePath));
+		log.trace(MessageFormat.format("Removing {0} (normalized to {1}) from {2} (normalized to {3}) resulted in {4}", basePath, normBasePath, filename, normFilename, filenameWithoutBasePath));
 		return filenameWithoutBasePath;
 	}
 
@@ -88,11 +88,15 @@ public class FilenameHelper {
 	}
 	
 	public static String getName(String filepath) {
-		return FilenameUtils.getName(filepath);
+		String name = FilenameUtils.getName(filepath);
+		log.trace(MessageFormat.format("Name extracted from {0} is {1}", filepath, name));
+		return name;
 	}
 	
 	public static String concatFilepath(String basepath, String filenameToAdd) {
-		return FilenameUtils.concat(basepath, filenameToAdd);
+		String filepath = normalizePathSeparators(FilenameUtils.concat(basepath, filenameToAdd));
+		log.trace(MessageFormat.format("Concatenation of {0} and {1} is {2}", basepath, filenameToAdd, filepath));
+		return filepath;
 	}
 
 }

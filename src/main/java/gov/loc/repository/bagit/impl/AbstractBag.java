@@ -126,7 +126,7 @@ public abstract class AbstractBag implements Bag {
 				String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
 				FileNode tagFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
 				BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
-				log.trace(MessageFormat.format("Loading tag {0} using filepath {1}", tagFileNode.getFilepath(), filepath));
+				log.trace(MessageFormat.format("Loading tag {0} from {1} using filepath {2}", tagFileNode.getFilepath(), manifest.getFilepath(), filepath));
 				this.putBagFile(bagFile);
 			}
 		}
@@ -138,7 +138,7 @@ public abstract class AbstractBag implements Bag {
 				String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
 				FileNode payloadFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
 				BagFile bagFile = new FileSystemBagFile(filepath, payloadFileNode);
-				log.trace(MessageFormat.format("Loading payload {0} using filepath {1}", payloadFileNode.getFilepath(), filepath));
+				log.trace(MessageFormat.format("Loading payload {0} from {1} using filepath {2}", payloadFileNode.getFilepath(), manifest.getFilepath(), filepath));
 				this.putBagFile(bagFile);
 			}
 		}
@@ -186,11 +186,14 @@ public abstract class AbstractBag implements Bag {
 		log.debug("Getting payload manifests");
 		checkClosed();
 		
-		List<Manifest> manifests = new ArrayList<Manifest>();
+		List<Manifest> manifests = new ArrayList<Manifest>();		
 		for(BagFile bagFile : this.tagMap.values()) {
+			log.trace(MessageFormat.format("Checking if {0} is a payload manifest", bagFile.getFilepath()));
 			if (bagFile instanceof Manifest) {
+				log.trace(MessageFormat.format("{0} is a manifest", bagFile.getFilepath()));
 				Manifest manifest = (Manifest)bagFile;
 				if (manifest.isPayloadManifest()) {
+					log.trace(MessageFormat.format("{0} is a payload manifest", bagFile.getFilepath()));
 					manifests.add(manifest);
 				}
 			}
@@ -224,31 +227,39 @@ public abstract class AbstractBag implements Bag {
 	@Override
 	public void putBagFile(BagFile bagFile) {
 		checkClosed();
+
+		log.trace(MessageFormat.format("Putting bag file {0}", bagFile.getFilepath()));
 		
 		if (bagFile instanceof DeclareCloseable) {
 			this.closeables.add(((DeclareCloseable)bagFile).declareCloseable());
 		}
 		
 		if (BagHelper.isPayload(bagFile.getFilepath(), this.getBagConstants())) {
+			log.trace(MessageFormat.format("Adding bag file {0} to payload map", bagFile.getFilepath()));
 			this.payloadMap.put(bagFile.getFilepath(), bagFile);
 		} else {
 			//Is a Manifest
 			if (bagFile.exists() && (! (bagFile instanceof Manifest)) && (ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants()))) {
+				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a Manifest", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createManifest(bagFile.getFilepath(), bagFile));
 			}
 			//Is a BagItTxt
 			else if (bagFile.exists() && (! (bagFile instanceof BagItTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagItTxt())) {
+				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a BagItTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createBagItTxt(bagFile));
 			}
 			//Is a BagInfoTxt
 			else if (bagFile.exists() && (! (bagFile instanceof BagInfoTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagInfoTxt())) {
+				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a BagInfoTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createBagInfoTxt(bagFile));
 			}
 			//Is a FetchTxt
 			else if (bagFile.exists() && (! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchTxt())) {
+				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a FetchTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchTxt(bagFile));
 			}
 			else {
+				log.trace(MessageFormat.format("Adding bag file {0} to tag map", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), bagFile);	
 			}				
 

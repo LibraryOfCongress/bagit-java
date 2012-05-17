@@ -7,6 +7,7 @@ import gov.loc.repository.bagit.filesystem.FileSystemNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -16,9 +17,13 @@ import java.util.Map;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class ZipFileSystem implements FileSystem {
 
+	private static final Log log = LogFactory.getLog(ZipFileSystem.class);
+	
 	private File file;
 	private ZipFile zipFile;
 	private ZipDirNode root;
@@ -106,6 +111,7 @@ public class ZipFileSystem implements FileSystem {
 	
 	@Override
 	public FileNode resolve(String filepath) {
+		log.trace(MessageFormat.format("Resolving {0}", filepath));
 		return new ZipFileNode(this.zipFile.getEntry(filepath), filepath, this);
 	}
 	
