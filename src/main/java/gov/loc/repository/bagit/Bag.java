@@ -4,7 +4,7 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
+import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.Writer;
@@ -128,40 +128,40 @@ public interface Bag extends Closeable {
 	/**
 	 * Determines whether the bag is valid according to the BagIt Specification.
 	 */		
-	BagVerifyResult verifyValid();
+	SimpleResult verifyValid();
 
-	BagVerifyResult verifyValid(FailMode failMode);
+	SimpleResult verifyValid(FailMode failMode);
 
 	
 	/**
 	 * Determines whether the bag is complete according to the BagIt Specification.
 	 */		
-	BagVerifyResult verifyComplete();
+	SimpleResult verifyComplete();
 
-	BagVerifyResult verifyComplete(FailMode failMode);
+	SimpleResult verifyComplete(FailMode failMode);
 
 	
 	/**
 	 * Invokes a Verifier to verify a bag.
 	 */	
-	BagVerifyResult verify(Verifier verifier);
+	SimpleResult verify(Verifier verifier);
 		
 	/**
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
 	 */
-	BagVerifyResult verifyPayloadManifests();
+	SimpleResult verifyPayloadManifests();
 
-	BagVerifyResult verifyPayloadManifests(FailMode failMode);
+	SimpleResult verifyPayloadManifests(FailMode failMode);
 
 	
 	/**
 	 * Verify that each checksum in every tag manifest can be verified against
 	 * the appropriate contents.
 	 */	
-	BagVerifyResult verifyTagManifests();
+	SimpleResult verifyTagManifests();
 
-	BagVerifyResult verifyTagManifests(FailMode failMode);
+	SimpleResult verifyTagManifests(FailMode failMode);
 
 	
 	/**

@@ -18,7 +18,7 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.HolePuncher;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
+import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.writer.Writer;
@@ -237,56 +237,56 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 		realBag.setFile(file);
 	}
 
-	public BagVerifyResult verify(Verifier verifier)
+	public SimpleResult verify(Verifier verifier)
 	{
 		this.increment();
 		return realBag.verify(verifier);
 	}
 
-	public BagVerifyResult verifyComplete()
+	public SimpleResult verifyComplete()
 	{
 		this.increment();
 		return realBag.verifyComplete();
 	}
 
-	public BagVerifyResult verifyPayloadManifests()
+	public SimpleResult verifyPayloadManifests()
 	{
 		this.increment();
 		return realBag.verifyPayloadManifests();
 	}
 
-	public BagVerifyResult verifyTagManifests()
+	public SimpleResult verifyTagManifests()
 	{
 		this.increment();
 		return realBag.verifyTagManifests();
 	}
 
-	public BagVerifyResult verifyValid()
+	public SimpleResult verifyValid()
 	{
 		this.increment();
 		return realBag.verifyValid();
 	}
 	
 	@Override
-	public BagVerifyResult verifyComplete(FailMode failMode) {
+	public SimpleResult verifyComplete(FailMode failMode) {
 		this.increment();
 		return realBag.verifyComplete(failMode);		
 	}
 	
 	@Override
-	public BagVerifyResult verifyPayloadManifests(FailMode failMode) {
+	public SimpleResult verifyPayloadManifests(FailMode failMode) {
 		this.increment();
 		return realBag.verifyPayloadManifests(failMode);
 	}
 	
 	@Override
-	public BagVerifyResult verifyTagManifests(FailMode failMode) {
+	public SimpleResult verifyTagManifests(FailMode failMode) {
 		this.increment();
 		return realBag.verifyTagManifests(failMode);
 	}
 	
 	@Override
-	public BagVerifyResult verifyValid(FailMode failMode) {
+	public SimpleResult verifyValid(FailMode failMode) {
 		this.increment();
 		return realBag.verifyValid(failMode);
 	}

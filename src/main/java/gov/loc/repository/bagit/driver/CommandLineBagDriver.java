@@ -22,6 +22,7 @@ import gov.loc.repository.bagit.transformer.impl.SplitByFileType;
 import gov.loc.repository.bagit.transformer.impl.SplitBySize;
 import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
 import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
+import gov.loc.repository.bagit.transformer.impl.UpdatePayloadOxumCompleter;
 import gov.loc.repository.bagit.transfer.BagFetcher;
 import gov.loc.repository.bagit.transfer.FetchFailStrategy;
 import gov.loc.repository.bagit.transfer.StandardFailStrategies;
@@ -30,7 +31,6 @@ import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
 import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
 import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.SizeHelper;
@@ -82,6 +82,7 @@ public class CommandLineBagDriver {
 	public static final String OPERATION_CREATE = "create";
 	public static final String OPERATION_MAKE_HOLEY = "makeholey";
 	public static final String OPERATION_GENERATE_PAYLOAD_OXUM = "generatepayloadoxum";
+	public static final String OPERATION_UPDATE_PAYLOAD_OXUM = "updatepayloadoxum";
 	public static final String OPERATION_CHECK_PAYLOAD_OXUM = "checkpayloadoxum";
 	public static final String OPERATION_VERIFY_PAYLOADMANIFESTS = "verifypayloadmanifests";
 	public static final String OPERATION_VERIFY_TAGMANIFESTS = "verifytagmanifests";
@@ -261,13 +262,17 @@ public class CommandLineBagDriver {
 				"Updates the manifests and (if it exists) the bag-info.txt for a bag.",
 				new Parameter[] {sourceParam, optionalDestParam, writerParam, compressionParam, manifestSeparatorParam},
 				new String[] {MessageFormat.format("bag {0} {1} ", OPERATION_UPDATE, this.getBag("mybag"))});
-
 		
 		this.addOperation(OPERATION_UPDATE_TAGMANIFESTS,
 				"Updates the tag manifests for a bag.  The bag must be unserialized.",
 				new Parameter[] {sourceParam, tagManifestAlgorithmParam, manifestSeparatorParam},
 				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_UPDATE_TAGMANIFESTS, this.getBag("mybag"))});
-				
+
+		this.addOperation(OPERATION_UPDATE_PAYLOAD_OXUM,
+				"Generates and updates the Payload-Oxum in the bag-info.txt.  The bag must be unserialized.",
+				new Parameter[] {sourceParam},
+				new String[] {MessageFormat.format("bag {0} {1}", OPERATION_UPDATE_PAYLOAD_OXUM, this.getBag("mybag"))});
+
 		List<Parameter> bagInPlaceParams = new ArrayList<Parameter>();
 		bagInPlaceParams.add(sourceParam);
 		bagInPlaceParams.add(retainBaseDirParam);
@@ -709,7 +714,7 @@ public class CommandLineBagDriver {
 				completeVerifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
-					BagVerifyResult result = completeVerifier.verify(bag);
+					SimpleResult result = completeVerifier.verify(bag);
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
@@ -725,7 +730,7 @@ public class CommandLineBagDriver {
 					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 					verifier.addProgressListener(listener);
 					verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));
-					BagVerifyResult result = verifier.verify(bag.getTagManifests(), bag);
+					SimpleResult result = verifier.verify(bag.getTagManifests(), bag);
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
@@ -741,7 +746,7 @@ public class CommandLineBagDriver {
 					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
 					verifier.addProgressListener(listener);
 					verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));					
-					BagVerifyResult result = verifier.verify(bag.getPayloadManifests(), bag);
+					SimpleResult result = verifier.verify(bag.getPayloadManifests(), bag);
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
@@ -796,6 +801,24 @@ public class CommandLineBagDriver {
 				} finally {
 					bag.close();
 				}
+			} else if (OPERATION_UPDATE_PAYLOAD_OXUM.equals(operation.name)) {
+					Bag bag = this.getBag(sourceFile, version, LoadOption.BY_FILES);
+					try {
+						UpdatePayloadOxumCompleter updatePayloadOxumCompleter = new UpdatePayloadOxumCompleter(bagFactory);
+						Bag newBag = updatePayloadOxumCompleter.complete(bag);
+						try {
+							if (newBag.getBagInfoTxt() != null) {
+								FileSystemHelper.write(newBag.getBagInfoTxt(), new File(sourceFile, newBag.getBagInfoTxt().getFilepath()));
+							}
+							for(Manifest manifest : newBag.getTagManifests()) {
+								FileSystemHelper.write(manifest, new File(sourceFile, manifest.getFilepath()));
+							}
+						} finally {
+							bag.close();
+						}
+					} finally {
+						bag.close();
+					}				
 			} else if (OPERATION_BAG_IN_PLACE.equals(operation.name)) {
 				PreBag preBag = this.bagFactory.createPreBag(sourceFile);
 				if (config.contains(PARAM_BAGINFOTXT)) {

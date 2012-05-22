@@ -9,7 +9,8 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.impl.AbstractBagVisitor;
 import gov.loc.repository.bagit.transformer.HolePuncher;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
+import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.SimpleResultHelper;
 import gov.loc.repository.bagit.utilities.UrlHelper;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 
@@ -24,7 +25,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	private BagFactory bagFactory;
 	private boolean resume = false;
 	private boolean leaveTags = true;
-	private BagVerifyResult bagVerifyResult;
+	private SimpleResult bagVerifyResult;
 	
 	public HolePuncherImpl(BagFactory bagFactory) {
 		this.bagFactory = bagFactory;
@@ -69,7 +70,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	public void visitPayload(BagFile bagFile) {
 		if(resume){
 			//Skip the file if the file is not missing or invalid. 
-			if(! this.bagVerifyResult.isMissingOrInvalid(bagFile.getFilepath())){
+			if(! SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, bagFile.getFilepath())){
 				return;
 			}
 		}
@@ -87,7 +88,7 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	public void visitTag(BagFile bagFile) {
 		if(resume){
 			//Skip the file if the file is not missing or invalid. 
-			if(! this.bagVerifyResult.isMissingOrInvalid(bagFile.getFilepath())){
+			if(! SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, bagFile.getFilepath())){
 				return;
 			}
 		}

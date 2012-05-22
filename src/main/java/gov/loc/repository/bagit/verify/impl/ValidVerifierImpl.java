@@ -6,9 +6,9 @@ import org.apache.commons.logging.LogFactory;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.ProgressListenable;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.CancelUtil;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
+import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.FailModeSupporting;
 import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
@@ -61,9 +61,9 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 	}
 	
 	@Override
-	public BagVerifyResult verify(Bag bag) {
+	public SimpleResult verify(Bag bag) {
 		//Is complete
-		BagVerifyResult result = this.completeVerifier.verify(bag);
+		SimpleResult result = this.completeVerifier.verify(bag);
 		if (this.isCancelled()) return null;
 		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
 		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;

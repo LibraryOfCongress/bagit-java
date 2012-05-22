@@ -17,8 +17,8 @@ import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.impl.FileBagFile;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.SimpleResultHelper;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
@@ -312,7 +312,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     private void buildFetchTargets(boolean resume)
     {
         // If resume is true, verify the bagToFetch to get a list of missing and corrupted files.
-    	BagVerifyResult bagVerifyResult = null;
+    	SimpleResult bagVerifyResult = null;
         if(resume){
 			bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
 		}
@@ -336,7 +336,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     		// Do not add a file to the fetch targets if the file is not missing or corrupted.
     		if(resume 
     				&& BagHelper.isPayload(line.getFilename(), this.bagFactory.getBagConstants()) 
-    				&& ! bagVerifyResult.isMissingOrInvalid(line.getFilename())){
+    				&& ! SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, line.getFilename())){
     			continue;
     		}else {
     			if (currentTarget == null || !currentTarget.getFilename().equals(line.getFilename()))

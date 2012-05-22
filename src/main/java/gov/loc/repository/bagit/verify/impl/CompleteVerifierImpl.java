@@ -22,15 +22,16 @@ import gov.loc.repository.bagit.filesystem.filter.AndFileSystemNodeFilter;
 import gov.loc.repository.bagit.filesystem.filter.DirNodeFileSystemNodeFilter;
 import gov.loc.repository.bagit.filesystem.filter.FileNodeFileSystemNodeFilter;
 import gov.loc.repository.bagit.filesystem.filter.IgnoringFileSystemNodeFilter;
-import gov.loc.repository.bagit.utilities.BagVerifyResult;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
+import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.SimpleResultHelper;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.FailModeSupporting;
 
 public class CompleteVerifierImpl extends LongRunningOperationBase implements CompleteVerifier, FailModeSupporting {
-
+	
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
 	private boolean missingBagItTolerant = false;
@@ -69,16 +70,16 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 	}
 	
 	@Override
-	public BagVerifyResult verify(Bag bag) {
+	public SimpleResult verify(Bag bag) {
 		boolean allowTagDirectories = true;
 		if (! additionalDirectoriesInBagDirTolerant && (Version.V0_93 == bag.getVersion() || Version.V0_94 == bag.getVersion() || Version.V0_95 == bag.getVersion() || Version.V0_96 == bag.getVersion())) allowTagDirectories = false;
 		
-		BagVerifyResult result = new BagVerifyResult(true);
+		SimpleResult result = new SimpleResult(true);
 		//Is at least one payload manifest
 		log.debug("Checking that at least one payload manifest");
 		if (bag.getPayloadManifests().isEmpty()) {
 			result.setSuccess(false);
-			result.addMessage("Bag does not have any payload manifests.");
+			result.addMessage(CODE_NO_PAYLOAD_MANIFEST, "Bag does not have any payload manifests.");
 			if(FailMode.FAIL_FAST == failMode) return result;
 				
 		}
@@ -86,7 +87,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		log.debug("Checking that has BagIt.txt");
 		if (! this.missingBagItTolerant && bag.getBagItTxt() == null) {
 			result.setSuccess(false);
-			result.addMessage(MessageFormat.format("Bag does not have {0}.", bag.getBagConstants().getBagItTxt()));				
+			result.addMessage(CODE_NO_BAGITTXT, MessageFormat.format("Bag does not have {0}.", bag.getBagConstants().getBagItTxt()));				
 			if(FailMode.FAIL_FAST == failMode) return result;
 		}
 		
@@ -94,7 +95,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		log.debug("Checking that BagIt.txt is right version");
 		if (! this.missingBagItTolerant && bag.getBagItTxt() != null && ! bag.getBagConstants().getVersion().versionString.equals(bag.getBagItTxt().getVersion())) {
 			result.setSuccess(false);
-			result.addMessage(MessageFormat.format("Version is not {0}.", bag.getBagConstants().getVersion()));				
+			result.addMessage(CODE_WRONG_VERSION, MessageFormat.format("Version is not {0}.", bag.getBagConstants().getVersion()));				
 			if(FailMode.FAIL_FAST == failMode) return result;
 		}
 
@@ -113,7 +114,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			log.trace(MessageFormat.format("Verifying payload {0} in data directory", filepath));
 			if (! filepath.startsWith(bag.getBagConstants().getDataDirectory() + '/')) {
 				result.setSuccess(false);
-				result.addMessage(MessageFormat.format("Payload file {0} not in the {1} directory.", filepath, bag.getBagConstants().getDataDirectory()));
+				result.addMessage(CODE_PAYLOAD_NOT_IN_PAYLOAD_DIRECTORY, MessageFormat.format("Payload file {0} not in the {1} directory.", filepath, bag.getBagConstants().getDataDirectory()), filepath);
 				log.warn(MessageFormat.format("Payload file {0} not in data directory", filepath));
 				if(FailMode.FAIL_FAST == failMode) return result;				
 			}
@@ -138,7 +139,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 				if (!normalizedPath.startsWith(payloadDirName))
 				{
 					result.setSuccess(false);
-					result.addMessage(format("Tag file is listed in payload manifest {0}: {1}", manifest.getFilepath(), path));
+					result.addMessage(CODE_TAG_IN_PAYLOAD_MANIFEST, "Tag file is listed in payload manifest {0}: {1}", manifest.getFilepath(), path);
 					if(FailMode.FAIL_FAST == failMode) return result;				
 				}
 			}
@@ -165,7 +166,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			}
 			if (! inManifest) {
 				result.setSuccess(false);
-				result.addMessage(MessageFormat.format("Payload file {0} not found in any payload manifest.", filepath));														
+				result.addMessage(CODE_PAYLOAD_FILE_NOT_IN_PAYLOAD_MANIFEST, "Payload file {0} not found in any payload manifest.", filepath);														
 				log.warn(MessageFormat.format("Payload file {0} not found in any payload manifest.", filepath));
 				if(FailMode.FAIL_FAST == failMode) return result;				
 			}
@@ -222,7 +223,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 					for(FileSystemNode dirNode : dirNodes) {
 						if (! bag.getBagConstants().getDataDirectory().equals(dirNode.getName())) {
 							result.setSuccess(false);
-							result.addMessage(MessageFormat.format("Directory {0} not allowed in bag_dir.", dirNode.getName()));								
+							result.addMessage(CODE_DIRECTORY_NOT_ALLOWED_IN_BAG_DIR, "Directory {0} not allowed in bag_dir.", dirNode.getName());								
 							if(FailMode.FAIL_FAST == failMode) return result;
 						}
 					}
@@ -244,7 +245,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 						log.trace(MessageFormat.format("Checking that payload file {0} is in bag", filepath));
 						if (bag.getBagFile(filepath) == null) {
 							result.setSuccess(false);
-							result.addExtraPayloadFile(filepath);
+							result.addMessage(CODE_PAYLOAD_FILE_NOT_IN_PAYLOAD_MANIFEST, "Payload file {0} not found in any payload manifest.", filepath);
 							String msg = MessageFormat.format("Bag has file {0} not found in manifest file.", filepath);
 							log.warn(msg);
 							if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;							
@@ -261,6 +262,8 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		} else {
 			log.debug("Not an existing bag");
 		}
+		
+		//Check payload-oxum
 		log.info("Completed verification that bag is complete.");
 		log.info("Note that this a verification of completeness, not validity. A bag may be complete without being valid, though a valid bag must be complete.");
 		log.info("Result of verification that complete: " + result.toString());
@@ -268,7 +271,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 
 	}
 	
-	protected void checkManifest(Manifest manifest, Bag bag, BagVerifyResult result) {
+	protected void checkManifest(Manifest manifest, Bag bag, SimpleResult result) {
 		log.trace("Checking manifest " + manifest.getFilepath());
 		int manifestTotal = manifest.keySet().size();
 		int manifestCount = 0;
@@ -280,11 +283,10 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			BagFile bagFile = bag.getBagFile(filepath);					
 			if (bagFile == null || ! bagFile.exists())
 			{
-				result.setSuccess(false);
 				if (manifest.isPayloadManifest()) {
-					result.addMissingPayloadFile(manifest.getFilepath(), filepath);
+					SimpleResultHelper.missingPayloadFile(result, manifest.getFilepath(), filepath);
 				} else {
-					result.addMissingTagFile(manifest.getFilepath(), filepath);
+					SimpleResultHelper.missingTagFile(result, manifest.getFilepath(), filepath);
 				}
 				String message = MessageFormat.format("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
 				log.warn(message);

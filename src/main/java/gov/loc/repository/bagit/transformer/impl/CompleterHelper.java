@@ -207,9 +207,9 @@ public class CompleterHelper extends LongRunningOperationBase {
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
 		        			log.trace(MessageFormat.format("Creating manifest entry for {0}", filepath));
 	        				String checksum = manifest.get(filepath);
-	        				if (isLimited(filepath, limitUpdateFilepaths, limitUpdateDirectories)) {
+	        				if (isLimited(filepath, limitUpdateFilepaths, limitUpdateDirectories) && bag.getBagFile(filepath) != null) {
 		        				log.debug(MessageFormat.format("Generating fixity for {0}.", filepath));
-		        				InputStream in = null;
+		        				InputStream in = null;		        				
 	        					if (useOriginalPayloadManifests && ManifestHelper.isPayloadManifest(filepath, bag.getBagConstants())) {
 	        						//originalInputStream may be null
 	        						in = ((Manifest)bag.getBagFile(filepath)).originalInputStream();
