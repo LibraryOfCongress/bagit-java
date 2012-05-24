@@ -39,6 +39,7 @@ Changes in 4.3:
 5. Added support for limiting additions, updates, and deletes from tag manifests
     using TagManifestVerifierCompleter.
 6. Added UpdatePayloadOxumCompleter and added support to commandline driver.
+7. Added PayloadOxumVerifier.
 
 Changes in 4.2:
 1. Changed most interfaces to extends Closeable instead of declaring own close() method.

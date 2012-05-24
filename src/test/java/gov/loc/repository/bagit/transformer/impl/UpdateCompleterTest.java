@@ -19,6 +19,8 @@ import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 public class UpdateCompleterTest {
@@ -59,18 +61,18 @@ public class UpdateCompleterTest {
 		File file3 = new File(bagFile, "newtag.txt");
 		FileWriter writer2 = new FileWriter(file3);
 		writer2.append("newtag");
-		writer2.close();				
-		
+		writer2.close();
+				
 	}
 	
 	@Test
 	public void testComplete() throws Exception {
 		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_FILES);
+		Bag newBag = null;
 		try {
 			assertFalse(bag.verifyValid().isSuccess());
-			Bag newBag = completer.complete(bag);
+			newBag = completer.complete(bag);
 			SimpleResult result = newBag.verifyValid();
-			System.out.println("X:" + result);
 			assertTrue(result.isSuccess());
 			BagInfoTxt bagInfoTxt = newBag.getBagInfoTxt();
 			//Original doesn't have payload-oxum, so neither should completed
@@ -78,6 +80,7 @@ public class UpdateCompleterTest {
 			assertEquals(this.dateFormat.format(new Date()), bagInfoTxt.getBaggingDate());
 		} finally {
 			bag.close();
+			if (newBag != null) newBag.close();
 		}
 	}
 
@@ -87,9 +90,10 @@ public class UpdateCompleterTest {
 		FileUtils.forceDelete(bagInfoTxtFile);
 
 		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_FILES);
+		Bag newBag = null;
 		try {
 			assertFalse(bag.verifyValid().isSuccess());
-			Bag newBag = completer.complete(bag);
+			newBag = completer.complete(bag);
 			try {
 				SimpleResult result = newBag.verifyValid();
 				assertTrue(result.isSuccess());
@@ -99,7 +103,42 @@ public class UpdateCompleterTest {
 			}
 		} finally {
 			bag.close();
+			if (newBag != null) newBag.close();
 		}
 	}
+	
+	@Test
+	public void testCompleteLimit() throws Exception {
+		Bag bag = this.bagFactory.createBag(bagFile, LoadOption.BY_FILES);
+		Bag newBag = null;
+		Bag newBag2 = null;
+		try {
+			assertFalse(bag.verifyValid().isSuccess());
+			completer.setLimitAddPayloadFilepaths(new ArrayList<String>());
+			completer.setLimitUpdatePayloadFilepaths(new ArrayList<String>());
+			completer.setLimitDeletePayloadFilepaths(new ArrayList<String>());
+			completer.setLimitAddTagFilepaths(new ArrayList<String>());
+			completer.setLimitUpdateTagFilepaths(new ArrayList<String>());
+			completer.setLimitDeleteTagFilepaths(new ArrayList<String>());
+			newBag = completer.complete(bag);
+			assertFalse(newBag.verifyValid().isSuccess());
+			assertTrue(newBag.getChecksums("newtag.txt").isEmpty());
+			
+			
+			completer.setLimitAddPayloadFilepaths(Arrays.asList(new String[] {"data/xtest1.txt"}));
+			completer.setLimitUpdatePayloadFilepaths(Arrays.asList(new String[] {"data/test2.txt"}));
+			completer.setLimitDeletePayloadFilepaths(Arrays.asList(new String[] {"data/test1.txt"}));
+			completer.setLimitAddTagFilepaths(Arrays.asList(new String[] {"newtag.txt"}));
+			
+			newBag2 = completer.complete(bag);
+			assertTrue(newBag2.verifyValid().isSuccess());
+			assertFalse(newBag.getChecksums("newtag.txt").isEmpty());
+		} finally {
+			bag.close();
+			if (newBag != null) newBag.close();
+			if (newBag2 != null) newBag2.close();
+		}
+	}
+
 
 }

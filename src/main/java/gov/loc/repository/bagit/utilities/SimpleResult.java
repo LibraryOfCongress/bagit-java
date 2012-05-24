@@ -4,10 +4,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class SimpleResult {
 	
@@ -59,6 +57,67 @@ public class SimpleResult {
 	public void addMessage(String code, String message, String subject, Collection<String> objects) {
 		this.addSimpleMessage(new SimpleMessage(code, message, subject, objects));
 	}
+
+	public void addWarningMessage(String message) {
+		SimpleMessage simpleMessage = new SimpleMessage(message);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
+		this.addSimpleMessage(simpleMessage);
+	}
+	
+	public void addWarningMessage(String code, String message) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
+		this.addSimpleMessage(simpleMessage);
+	}
+	
+	public void addWarningMessage(String code, String message, String subject) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
+		this.addSimpleMessage(simpleMessage);
+	}
+
+	public void addWarningMessage(String code, String message, String subject, String object) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, object);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
+		this.addSimpleMessage(simpleMessage);
+	}
+
+	public void addWarningMessage(String code, String message, String subject, Collection<String> objects) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, objects);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
+		this.addSimpleMessage(simpleMessage);
+	}
+
+	public void addInfoMessage(String message) {
+		SimpleMessage simpleMessage = new SimpleMessage(message);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
+		this.addSimpleMessage(simpleMessage);
+	}
+	
+	public void addInfoMessage(String code, String message) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
+		this.addSimpleMessage(simpleMessage);
+	}
+	
+	public void addInfoMessage(String code, String message, String subject) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
+		this.addSimpleMessage(simpleMessage);
+	}
+
+	public void addInfoMessage(String code, String message, String subject, String object) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, object);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
+		this.addSimpleMessage(simpleMessage);
+	}
+
+	public void addInfoWarningMessage(String code, String message, String subject, Collection<String> objects) {
+		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, objects);
+		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
+		this.addSimpleMessage(simpleMessage);
+	}
+
 	
 	public void addSimpleMessage(SimpleMessage message) {
 		Map<String,SimpleMessage> subjectMap = this.messages.get(message.getCode());
@@ -91,6 +150,10 @@ public class SimpleResult {
 		return this.isSuccess;
 	}
 
+	public String messagesToString() {
+		return this.messagesToString(DEFAULT_MAX_MESSAGES, DEFAULT_DELIM);
+	}
+	
 	public String messagesToString(int maxMessages) {
 		return this.messagesToString(maxMessages, DEFAULT_DELIM);
 	}
@@ -148,6 +211,37 @@ public class SimpleResult {
 		}
 		return messageStrings;
 	}
+
+	public List<String> getErrorMessages() {
+		List<String> messageStrings = new ArrayList<String>();
+		for(SimpleMessage message : getSimpleMessages()) {
+			if (SimpleMessage.MESSAGE_TYPE_ERROR.equals(message.getMessageType())) {
+				messageStrings.add(message.toString());
+			}
+		}
+		return messageStrings;
+	}
+	
+	public List<String> getWarningMessages() {
+		List<String> messageStrings = new ArrayList<String>();
+		for(SimpleMessage message : getSimpleMessages()) {
+			if (SimpleMessage.MESSAGE_TYPE_WARNING.equals(message.getMessageType())) {
+				messageStrings.add(message.toString());
+			}
+		}
+		return messageStrings;
+	}
+
+	public List<String> getInfoMessages() {
+		List<String> messageStrings = new ArrayList<String>();
+		for(SimpleMessage message : getSimpleMessages()) {
+			if (SimpleMessage.MESSAGE_TYPE_INFO.equals(message.getMessageType())) {
+				messageStrings.add(message.toString());
+			}
+		}
+		return messageStrings;
+	}
+
 	
 	public List<SimpleMessage> getSimpleMessages() {
 		List<SimpleMessage> messages = new ArrayList<SimpleMessage>();
@@ -156,8 +250,14 @@ public class SimpleResult {
 		}
 		return messages;
 	}
+
+	public void setSimpleMessages(List<SimpleMessage> simpleMessages) {
+		for(SimpleMessage message : simpleMessages) {
+			addSimpleMessage(message);
+		}
+	}
 	
-	public List<SimpleMessage> getSimpleMessage(String code) {
+	public List<SimpleMessage> getSimpleMessagesByCode(String code) {
 		List<SimpleMessage> messages = new ArrayList<SimpleMessage>();
 		Map<String, SimpleMessage> subjectMap = this.messages.get(code);
 		if (subjectMap != null) {
@@ -166,122 +266,38 @@ public class SimpleResult {
 		return messages;
 	}
 	
-	public SimpleMessage getSimpleMessage(String code, String subject) {
+	public SimpleMessage getSimpleMessagesByCodeAndSubject(String code, String subject) {
 		Map<String, SimpleMessage> subjectMap = this.messages.get(code);
 		if (subjectMap != null) {
 			return subjectMap.get(subject);
 		}
 		return null;
 	}
+
+	public List<SimpleMessage> getSimpleMessagesByMessageType(String messageType) {
+		assert messageType != null;
+		List<SimpleMessage> messages = new ArrayList<SimpleMessage>();
+		for(SimpleMessage message : this.getSimpleMessages()) {
+			if (messageType.equals(message.getMessageType())) messages.add(message);
+		}
+		return messages;
+	}
+
+	
+	public List<SimpleMessage> getSimpleMessagesByMessageTypeAndCode(String messageType, String code) {
+		assert messageType != null;
+		List<SimpleMessage> messages = new ArrayList<SimpleMessage>();
+		for(SimpleMessage message : this.getSimpleMessagesByCode(code)) {
+			if (messageType.equals(message.getMessageType())) messages.add(message);
+		}
+		return messages;
+	}
 	
 	public boolean hasSimpleMessage(String code) {
-		return ! this.getSimpleMessage(code).isEmpty();		
+		return ! this.getSimpleMessagesByCode(code).isEmpty();		
 	}
 
 	public boolean hasSimpleMessage(String code, String object) {
-		return this.getSimpleMessage(code, object) != null;
-	}
-	
-	public class SimpleMessage {
-		private String code = null;
-		private String message = null;
-		private String subject = null;
-		private Set<String> objects = null;
-		
-		public SimpleMessage() {
-		}
-
-		public SimpleMessage(String message) {
-			this.message = message;
-		}
-		
-		public SimpleMessage(String code, String message) {
-			this.code = code;
-			this.message = message;
-		}
-
-		public SimpleMessage(String code, String message, String subject) {
-			this.code = code;
-			this.message = message;
-			this.subject = subject;
-		}
-
-		public SimpleMessage(String code, String message, String subject, String object) {
-			this.code = code;
-			this.message = message;
-			this.subject = subject;
-			this.objects = new HashSet<String>();
-			this.objects.add(object);
-		}
-
-		public SimpleMessage(String code, String message, String subject, Collection<String> objects) {
-			this.code = code;
-			this.message = message;
-			this.subject = subject;
-			this.objects = new HashSet<String>();
-			this.objects.addAll(objects);
-		}
-
-		
-		public String getCode() {
-			return code;
-		}
-		
-		public void setCode(String code) {
-			this.code = code;
-		}
-		
-		public String getMessage() {
-			return message;
-		}
-		
-		public void setMessage(String message) {
-			this.message = message;
-		}
-		
-		public Set<String> getObjects() {
-			return objects;
-		}
-		
-		public void addObject(String object) {
-			if (this.objects == null) {
-				this.objects = new HashSet<String>();				
-			}
-			this.objects.add(object);
-		}
-
-		public void addObjects(Collection<String> objects) {
-			if (this.objects == null) {
-				this.objects = new HashSet<String>();				
-			}
-			this.objects.addAll(objects);
-		}
-
-		
-		public void setObjects(Set<String> objects) {
-			this.objects = objects;
-		}
-
-		public String getSubject() {
-			return subject;
-		}
-		
-		public void setSubject(String subject) {
-			this.subject = subject;
-		}
-		
-		@Override
-		public String toString() {
-			if (this.message != null) {
-				if (this.subject == null) {
-					return this.message;
-				}
-				if (this.objects == null) {
-					return MessageFormat.format(this.message, this.subject);
-				}
-				return MessageFormat.format(this.message, this.subject, this.objects);
-			}				
-			return super.toString();
-		}
+		return this.getSimpleMessagesByCodeAndSubject(code, object) != null;
 	}
 }

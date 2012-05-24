@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import gov.loc.repository.bagit.utilities.SimpleResult.SimpleMessage;
 import gov.loc.repository.bagit.verify.CompleteVerifier;
 import gov.loc.repository.bagit.verify.ManifestVerifier;
 
@@ -44,7 +43,7 @@ public class SimpleResultHelper {
 	}
 	
 	public static boolean containsObject(SimpleResult result, String code, String object) {
-		List<SimpleMessage> messages = result.getSimpleMessage(code);
+		List<SimpleMessage> messages = result.getSimpleMessagesByCode(code);
 		for(SimpleMessage message : messages) {
 			if (message.getObjects().contains(object)) return true;
 		}
@@ -53,7 +52,7 @@ public class SimpleResultHelper {
 
 	public static Set<String> aggregateObjects(SimpleResult result, String code) {
 		Set<String> objects = new HashSet<String>();
-		List<SimpleMessage> messages = result.getSimpleMessage(code);
+		List<SimpleMessage> messages = result.getSimpleMessagesByCode(code);
 		for(SimpleMessage message : messages) {
 			objects.addAll(message.getObjects());
 		}
@@ -62,7 +61,7 @@ public class SimpleResultHelper {
 
 	public static Set<String> aggregateSubjects(SimpleResult result, String code) {
 		Set<String> subjects = new HashSet<String>();
-		List<SimpleMessage> messages = result.getSimpleMessage(code);
+		List<SimpleMessage> messages = result.getSimpleMessagesByCode(code);
 		for(SimpleMessage message : messages) {
 			subjects.add(message.getSubject());
 		}
