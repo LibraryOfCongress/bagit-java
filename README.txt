@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 4.4:
+1. Changes to pom for maven 3.
+
 Changes in 4.3:
 1. To enhance ability to machine-process SimpleResult, refactored to allow the
     recording of codes, with subject and objects.
