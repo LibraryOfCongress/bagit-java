@@ -34,13 +34,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		</developer>
 	</developers>
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-webdav</artifactId>
-				<version>1.0-beta-2</version>
-			</extension>
-		</extensions>
 		<pluginManagement>
 			<plugins>
 			    <plugin>
@@ -117,6 +110,20 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			</plugin>
 		</plugins>
 	</build>
+    <repositories>
+        <repository>
+            <id>rdc-artifactory</id>
+            <name>RDC artifactory repository</name>
+            <url>http://argon.rdc.lctl.gov:8081/artifactory/repo</url>
+        </repository>       
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>rdc-artifactory</id>
+            <name>RDC artifactory repository</name>
+            <url>http://argon.rdc.lctl.gov:8081/artifactory/repo</url>
+        </pluginRepository>     
+    </pluginRepositories>	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -218,16 +225,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		</dependency>
 	</dependencies>
 	<distributionManagement>
-		<repository>
-			<id>rdc-releases</id>
-			<url>dav:http://archiva.rdc.lctl.gov:8080/archiva/repository/rdc-releases/
-			</url>
-		</repository>
-		<snapshotRepository>
-			<id>rdc-snapshots</id>
-			<url>dav:http://archiva.rdc.lctl.gov:8080/archiva/repository/rdc-snapshots/
-			</url>
-		</snapshotRepository>
+        <repository>
+            <id>rdc-releases</id>
+            <url>http://argon.rdc.lctl.gov:8081/artifactory/rdc-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>rdc-snapshots</id>
+            <url>http://argon.rdc.lctl.gov:8081/artifactory/rdc-snapshots</url>
+        </snapshotRepository>
 	</distributionManagement>
 	<profiles>
 		<profile>
