@@ -60,7 +60,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 									<version>1.6</version>
 								</requireJavaVersion>							
 								<requireMavenVersion>
-									<version>[3.0.4,)</version>
+									<version>[3.0.3,)</version>
 								</requireMavenVersion>
 							</rules>
 						</configuration>
