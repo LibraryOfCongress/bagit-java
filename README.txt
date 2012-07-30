@@ -32,6 +32,7 @@ a bad thing.
 RELEASE NOTES:
 Changes in 4.4:
 1. Changes to pom for maven 3.
+2. Fix for NPE in SimpleMessage.
 
 Changes in 4.3:
 1. To enhance ability to machine-process SimpleResult, refactored to allow the
