@@ -128,10 +128,11 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                 if (file != null && file.exists())
                                 {
                                     String fixity = manifest.get(filePath);
-                                    InputStream stream =  file.newInputStream();
+                                    InputStream stream = null;
                                     
                                     try
                                     {
+                                    	stream = file.newInputStream();
 	                                    if (!MessageDigestHelper.fixityMatches(stream, alg, fixity))
 	                                    {
 	                                    	if (manifest.isPayloadManifest()) {
@@ -143,6 +144,8 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
 	                                        log.debug(msg);	                                        
 	                                        failFast.set(true);
 	                                    }
+                                    } catch(RuntimeException ex) {
+                                    	throw new RuntimeException(MessageFormat.format("Error checking fixity of {0}: {1}", filePath, ex.getMessage()), ex);
                                     }
                                     finally
                                     {
