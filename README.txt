@@ -30,7 +30,7 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
-Changes in 4.4:
+Changes in 4.3.1:
 1. Changes to pom for maven 3.
 2. Fix for NPE in SimpleMessage.
 
