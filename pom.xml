@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<artifactId>bagit</artifactId>
 	<packaging>jar</packaging>
 	<name>BagIt Implementation</name>
-	<version>4.3.1</version>
+	<version>4.4-SNAPSHOT</version>
 	<description>A software library that supports the creation,
 		manipulation, and validation of bags according to the BagIt
 		specification.</description>
