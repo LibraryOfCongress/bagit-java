@@ -30,6 +30,15 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 4.4:
+1. Attempt to correct for unicode normalization form in filepaths. Note: Java has
+    problems dealing with differences in unicode normalization form 
+    (http://www.unicode.org/reports/tr15/tr15-23.html) in filepaths.
+    In particular, it is sometimes the case that a java.io.File is that produced
+    by java.io.File.listFiles() will fail java.io.File.exists(). This attempts to
+    correct for this by trying java.io.File.exists() using different normalization
+    forms for the filepath.
+
 Changes in 4.3.1:
 1. Changes to pom for maven 3.
 2. Fix for NPE in SimpleMessage.

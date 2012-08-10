@@ -11,6 +11,7 @@ import gov.loc.repository.bagit.filesystem.DirNode;
 import gov.loc.repository.bagit.filesystem.FileNode;
 import gov.loc.repository.bagit.filesystem.FileSystemNode;
 import gov.loc.repository.bagit.filesystem.FileSystemNodeFilter;
+import gov.loc.repository.bagit.utilities.FileHelper;
 
 public class FileDirNode extends AbstractFileNode implements DirNode {
 
@@ -29,6 +30,7 @@ public class FileDirNode extends AbstractFileNode implements DirNode {
 		this.childrenMap = new HashMap<String, FileSystemNode>();
 		
 		for(File child : this.file.listFiles()) {
+			child = FileHelper.normalizeForm(child);
 			FileSystemNode childNode = null;
 			if (child.isDirectory()) {
 				childNode = new FileDirNode(child, this.fileSystem);

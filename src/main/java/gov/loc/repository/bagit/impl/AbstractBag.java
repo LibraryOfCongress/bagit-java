@@ -41,6 +41,7 @@ import gov.loc.repository.bagit.transformer.HolePuncher;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
 import gov.loc.repository.bagit.utilities.CancelUtil;
+import gov.loc.repository.bagit.utilities.FileHelper;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
@@ -83,7 +84,7 @@ public abstract class AbstractBag implements Bag {
 	
 	@Override
 	public void setFile(File file) {
-		this.fileForBag = file;
+		this.fileForBag = FileHelper.normalizeForm(file);
 		
 	}
 	

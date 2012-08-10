@@ -19,6 +19,7 @@ import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.filesystem.impl.FileFileSystem;
 import gov.loc.repository.bagit.impl.FileSystemBagFile;
+import gov.loc.repository.bagit.utilities.FileHelper;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 
@@ -113,7 +114,7 @@ public class FileSystemWriter extends AbstractWriter {
 	@Override
 	public Bag write(Bag bag, File file) {
 		log.info("Writing bag");
-		this.newBagDir = file;
+		this.newBagDir = FileHelper.normalizeForm(file);
 		bag.accept(this);
 		if (this.newBagDir.equals(bag.getFile())) {
 			log.debug("Removing any extra files or directories");			
@@ -132,6 +133,7 @@ public class FileSystemWriter extends AbstractWriter {
 		log.trace(MessageFormat.format("Checking children of {0} for removal", dir));
 		for(File file : dir.listFiles()) {
 			if (this.isCancelled()) return;
+			file = FileHelper.normalizeForm(file);
 			if (file.isDirectory()) {
 				if (log.isTraceEnabled()) {
 					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, file.listFiles().length));

@@ -16,6 +16,7 @@ import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.transformer.Completer;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
+import gov.loc.repository.bagit.utilities.FileHelper;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
 public class PreBagImpl implements PreBag {
@@ -76,6 +77,7 @@ public class PreBagImpl implements PreBag {
 				}
 				log.trace("Move to dir is " + moveToDir);
 				for(File file : this.dir.listFiles()) {
+					file = FileHelper.normalizeForm(file);
 					if (! (file.equals(dataDir) || (file.isDirectory() && this.ignoreDirs.contains(file.getName())))) {
 						FileUtils.moveToDirectory(file, moveToDir, true);
 					}
@@ -85,6 +87,7 @@ public class PreBagImpl implements PreBag {
 				if (! dataDir.isDirectory()) throw new RuntimeException(MessageFormat.format("{0} is not a directory", dataDir));
 				//Look for additional, non-ignored files
 				for(File file : this.dir.listFiles()) {
+					file = FileHelper.normalizeForm(file);
 					//If there is a directory that isn't the data dir and isn't ignored and pre v0.97 then exception
 					if (file.isDirectory() 
 							&& (! file.equals(dataDir)) 
@@ -124,6 +127,7 @@ public class PreBagImpl implements PreBag {
 
 	@Override
 	public void setFile(File dir) {
+		dir = FileHelper.normalizeForm(dir);
 		if (! dir.exists()) {
 			throw new RuntimeException(MessageFormat.format("{0} does not exist", dir));
 		}
@@ -144,6 +148,7 @@ public class PreBagImpl implements PreBag {
 	}
 	
 	private void addKeep(File file) {
+		file = FileHelper.normalizeForm(file);
 		if (file.isDirectory() && ! this.ignoreDirs.contains(file.getName())) {
 			//If file is empty, add .keep
 			File[] children = file.listFiles();

@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.utilities.FileHelper;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
@@ -30,14 +31,12 @@ public class AddFilesToTagsOperation extends LongRunningOperationBase {
 	}
 
 	public void addFileToTags(File file) {
-		if (! file.exists()) {
-			throw new RuntimeException(MessageFormat.format("{0} does not exist.", file));
-		}
 		this.addTag(file, file.getParentFile(), 0);
 	}
 
 	private int addTag(File file, File rootDir, int count) {
 		if (this.isCancelled()) return 0;
+		file = FileHelper.normalizeForm(file);
 		if (! file.canRead()) {
 			throw new RuntimeException("Can't read " + file.toString());
 		}
