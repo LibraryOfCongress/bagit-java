@@ -76,8 +76,7 @@ public class PreBagImpl implements PreBag {
 					//Move contents of base directory to new base directory
 				}
 				log.trace("Move to dir is " + moveToDir);
-				for(File file : this.dir.listFiles()) {
-					file = FileHelper.normalizeForm(file);
+				for(File file : FileHelper.normalizeForm(this.dir.listFiles())) {
 					if (! (file.equals(dataDir) || (file.isDirectory() && this.ignoreDirs.contains(file.getName())))) {
 						FileUtils.moveToDirectory(file, moveToDir, true);
 					}
@@ -86,8 +85,7 @@ public class PreBagImpl implements PreBag {
 			} else {
 				if (! dataDir.isDirectory()) throw new RuntimeException(MessageFormat.format("{0} is not a directory", dataDir));
 				//Look for additional, non-ignored files
-				for(File file : this.dir.listFiles()) {
-					file = FileHelper.normalizeForm(file);
+				for(File file : FileHelper.normalizeForm(this.dir.listFiles())) {
 					//If there is a directory that isn't the data dir and isn't ignored and pre v0.97 then exception
 					if (file.isDirectory() 
 							&& (! file.equals(dataDir)) 

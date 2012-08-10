@@ -29,8 +29,7 @@ public class FileDirNode extends AbstractFileNode implements DirNode {
 		
 		this.childrenMap = new HashMap<String, FileSystemNode>();
 		
-		for(File child : this.file.listFiles()) {
-			child = FileHelper.normalizeForm(child);
+		for(File child : FileHelper.normalizeForm(this.file.listFiles())) {
 			FileSystemNode childNode = null;
 			if (child.isDirectory()) {
 				childNode = new FileDirNode(child, this.fileSystem);

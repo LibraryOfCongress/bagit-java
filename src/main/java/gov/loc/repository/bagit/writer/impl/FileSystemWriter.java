@@ -131,9 +131,8 @@ public class FileSystemWriter extends AbstractWriter {
 
 	private void removeExtraFiles(File dir, boolean recurse) {
 		log.trace(MessageFormat.format("Checking children of {0} for removal", dir));
-		for(File file : dir.listFiles()) {
+		for(File file : FileHelper.normalizeForm(dir.listFiles())) {
 			if (this.isCancelled()) return;
-			file = FileHelper.normalizeForm(file);
 			if (file.isDirectory()) {
 				if (log.isTraceEnabled()) {
 					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, file.listFiles().length));
