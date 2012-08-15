@@ -1,15 +1,18 @@
 package gov.loc.repository.bagit.transfer.fetch;
 
 import static java.text.MessageFormat.format;
+import gov.loc.repository.bagit.transfer.BagTransferException;
+import gov.loc.repository.bagit.transfer.FetchContext;
+import gov.loc.repository.bagit.transfer.FetchProtocol;
+import gov.loc.repository.bagit.transfer.FetchedFileDestination;
+import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -19,13 +22,6 @@ import org.apache.commons.net.ProtocolCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-
-import gov.loc.repository.bagit.transfer.BagTransferException;
-import gov.loc.repository.bagit.transfer.FetchContext;
-import gov.loc.repository.bagit.transfer.FetchProtocol;
-import gov.loc.repository.bagit.transfer.FetchedFileDestination;
-import gov.loc.repository.bagit.transfer.FileFetcher;
-import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 public class FtpFetchProtocol implements FetchProtocol
 {
@@ -40,7 +36,9 @@ public class FtpFetchProtocol implements FetchProtocol
     private class FtpFetcher extends LongRunningOperationBase implements FileFetcher
     {
         private FTPClient client;
-        
+    	private String username = null;
+    	private String password = null;
+    	
         public FtpFetcher()
         {
         }
@@ -67,7 +65,17 @@ public class FtpFetchProtocol implements FetchProtocol
         		log.warn("An error occurred while disconnecting.  The error will be ignored.", e);
 			}
         }
-        
+
+		@Override
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		@Override
+		public void setUsername(String username) {
+			this.username = username;
+		}
+		
         @Override
         public void fetchFile(URI uri, Long size, FetchedFileDestination destination, FetchContext context) throws BagTransferException
         {
@@ -161,34 +169,19 @@ public class FtpFetchProtocol implements FetchProtocol
         }
         
         private void login() throws IOException, BagTransferException
-        {
-        	log.trace("Obtaining credentials.");
-            PasswordAuthentication credentials = Authenticator.requestPasswordAuthentication(this.client.getRemoteAddress(), this.client.getRemotePort(), "FTP", "Login", "Password");
-            
+        { 
             try
             {
-            	String username;
-            	String password;
-            	
-                if (credentials == null)
-                {
-                    log.trace("No credentials available.  Login will be anonymous.");
-                    username = "anonymous";
-                    password = "bagitlibrary@loc.gov";
-                }
-                else
-                {
-                	username = credentials.getUserName();
-                	
-                	// It's unfortunate, but the FTP Library requires a string,
-                	// which means we cannot clear the credentials from memory when
-                	// we're done.  Oh well.
-                	password = new String(credentials.getPassword());
-                }
-                    
-                log.trace(format("Logging in with credentials: {0}/***hidden***", username));
                 
-                if (!this.client.login(username, password))
+            	if (this.username == null || this.password == null){
+            		log.trace("No credentials available.  Login will be anonymous.");
+                    this.username = "anonymous";
+                    this.password = "bagitlibrary@loc.gov";
+            	}
+                    
+                log.trace(format("Logging in with credentials: {0}/***hidden***", this.username));
+                
+                if (!this.client.login(this.username, this.password))
                 {
                     this.client.disconnect();
                     throw new BagTransferException("Could not log in.");
@@ -196,7 +189,6 @@ public class FtpFetchProtocol implements FetchProtocol
             }
             finally
             {
-            	Arrays.fill(credentials.getPassword(), 'x');
             }
         }
     }

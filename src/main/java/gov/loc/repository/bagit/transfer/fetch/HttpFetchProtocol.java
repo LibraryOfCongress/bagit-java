@@ -1,17 +1,21 @@
 package gov.loc.repository.bagit.transfer.fetch;
 
+import static java.text.MessageFormat.format;
+import gov.loc.repository.bagit.transfer.BagTransferException;
+import gov.loc.repository.bagit.transfer.FetchContext;
+import gov.loc.repository.bagit.transfer.FetchProtocol;
+import gov.loc.repository.bagit.transfer.FetchedFileDestination;
+import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-
-import static java.text.MessageFormat.format;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -30,13 +34,6 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.CoreProtocolPNames;
 
-import gov.loc.repository.bagit.transfer.BagTransferException;
-import gov.loc.repository.bagit.transfer.FetchContext;
-import gov.loc.repository.bagit.transfer.FetchProtocol;
-import gov.loc.repository.bagit.transfer.FetchedFileDestination;
-import gov.loc.repository.bagit.transfer.FileFetcher;
-import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
-
 public class HttpFetchProtocol implements FetchProtocol
 {
     private static final Log log = LogFactory.getLog(HttpFetchProtocol.class);
@@ -49,7 +46,6 @@ public class HttpFetchProtocol implements FetchProtocol
         this.connectionManager = new ThreadSafeClientConnManager();
         this.client = new DefaultHttpClient(this.connectionManager);
         this.client.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "BagIt Library Parallel Fetcher");
-        //this.state = new HttpState();
 
         // Since we control the threading manually, set the max
         // configuration values to Very Large Numbers.
@@ -60,26 +56,6 @@ public class HttpFetchProtocol implements FetchProtocol
     	// Otherwise, broken TCP steams can hang threads forever.
         client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 20 * 1000);
 		client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 20 * 1000);
-		
-        // If there are credentials present, then set up for preemptive authentication.
-        PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("remote", null, 80, "http", "", "scheme");
-        
-        if (auth != null)
-        {
-        	log.debug(format("Setting premptive authentication using username and password: {0}/xxxxx", auth.getUserName()));
-        	this.client.getCredentialsProvider().setCredentials(
-        			AuthScope.ANY,
-        			new UsernamePasswordCredentials(auth.getUserName(), new String(auth.getPassword())));
-        	HttpClientParams.setAuthenticating(this.client.getParams(), true);
-        }
-        else
-        {
-        	HttpClientParams.setAuthenticating(this.client.getParams(), false);
-        }
-        
-        // There's no state in this class right now, so just
-        // return the same one over and over.
-        this.instance = new HttpFetcher();
     }
     
 	public void setRelaxedSsl(boolean relaxedSsl)
@@ -110,13 +86,14 @@ public class HttpFetchProtocol implements FetchProtocol
     @Override
     public FileFetcher createFetcher(URI uri, Long size) throws BagTransferException
     {
-        return this.instance;
+        return new HttpFetcher();
     }
-
-    private final HttpFetcher instance;
     
     private class HttpFetcher extends LongRunningOperationBase implements FileFetcher
     {
+    	private String username = null;
+    	private String password = null;
+    	
     	public void initialize() throws BagTransferException
     	{
     	}
@@ -137,7 +114,18 @@ public class HttpFetchProtocol implements FetchProtocol
             
             try
             {
-                log.trace("Executing GET");
+                //Set credentials on HttpClient if presented
+            	if(this.username != null && this.password != null){
+                	client.getCredentialsProvider().setCredentials(
+                			AuthScope.ANY,
+                			new UsernamePasswordCredentials(this.username, this.password));
+                	HttpClientParams.setAuthenticating(client.getParams(), true);
+                	log.trace("Setting credentials for HttpClient.");
+                } else {
+                	HttpClientParams.setAuthenticating(client.getParams(), false);
+                }
+                
+            	log.trace("Executing GET.");
                 HttpResponse resp = client.execute(method);
                 log.trace(format("Server said: {0}", resp.getStatusLine().toString()));
                 
@@ -176,5 +164,15 @@ public class HttpFetchProtocol implements FetchProtocol
                 log.trace("Exiting finally clause.");
             }
         }
+
+		@Override
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		@Override
+		public void setUsername(String username) {
+			this.username = username;
+		}
     }
 }

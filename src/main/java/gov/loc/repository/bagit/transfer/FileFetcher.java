@@ -54,6 +54,30 @@ public interface FileFetcher extends Cancellable, ProgressListenable
     void close();
 
     /**
+     * Set the username if credentials are required to fetch the remote file.
+     * E.g. if the file to be fetched is secured on a HTTP server, credentials 
+     * are required to connect to the HTTP server.  They are also required is the file
+     * is on a FTP server.
+     * 
+     * If credentials are not applicable, do nothing in the implementation of this method.
+     * 
+     * @param username
+     */
+    void setUsername(String username);
+    
+    /**
+     * Set the password if credentials are required to fetch the remote file.
+     * E.g. if the file to be fetched is secured on a HTTP server, credentials 
+     * are required to connect to the HTTP server.  They are also required is the file
+     * is on a FTP server.
+     * 
+     * If credentials are not applicable, do nothing in the implementation of this method.
+     *
+     * @param password
+     */
+    void setPassword(String password);
+    
+    /**
      * Fetches a single file.  Each call to this method corresponds to
      * the desire to fetch a single line from a fetch.txt.
 	 *

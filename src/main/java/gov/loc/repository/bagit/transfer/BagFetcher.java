@@ -74,7 +74,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     private BagFactory bagFactory;
     private boolean isCancelled = false;
     private List<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
-
+    private String username;
+    private String password;
+    
     // Internal state.
     private Bag bagToFetch;
     private List<FetchTarget> fetchTargets;
@@ -169,6 +171,22 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	this.failStrategy = strategy;
     }
         
+    public void setUsername(String username) {
+		this.username = username;
+	}
+
+	protected String getUsername() {
+		return username;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	protected String getPassword() {
+		return password;
+	}
+
     public void registerProtocol(String scheme, FetchProtocol protocol)
     {
         String normalizedScheme = scheme.toLowerCase();
@@ -580,7 +598,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		}
 	}
     
-    private class Fetcher implements Callable<SimpleResult>
+	private class Fetcher implements Callable<SimpleResult>
     {
     	private SimpleResult result = new SimpleResult(true);
     	private Map<String, FileFetcher> fetchers = new HashMap<String, FileFetcher>();
@@ -758,7 +776,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         private synchronized FileFetcher getFetcher(URI uri, Long size) throws BagTransferException
         {
         	FileFetcher fetcher = this.fetchers.get(uri.getScheme());
-        	
+        		
         	if (fetcher == null)
         	{
         		log.trace(format("Creating new FileFetcher for scheme: {0}", uri.getScheme()));
@@ -768,6 +786,11 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         		fetcher.initialize();
         		
         		this.fetchers.put(uri.getScheme(), fetcher);
+        	}
+        	
+        	if(username != null && password != null){
+        		fetcher.setUsername(username);
+        		fetcher.setPassword(password);
         	}
         	
         	return fetcher;

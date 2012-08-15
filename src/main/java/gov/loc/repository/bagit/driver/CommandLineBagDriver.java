@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -653,7 +654,13 @@ public class CommandLineBagDriver {
 			    fetcher.registerProtocol("https", http);
 			    fetcher.registerProtocol("ftp", new FtpFetchProtocol());
 			    fetcher.registerProtocol("rsync", new ExternalRsyncFetchProtocol());
-					    
+				
+			    PasswordAuthentication auth = Authenticator.requestPasswordAuthentication(null, null, -1, null, null, null);
+			    if(auth != null){
+			    	fetcher.setUsername(auth.getUserName());
+			    	fetcher.setPassword(new String(auth.getPassword()));
+			    }
+			    
 				int threads = config.getInt(PARAM_THREADS, 0);
 				if (threads != 0) {
 					fetcher.setNumberOfThreads(threads);

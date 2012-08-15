@@ -44,6 +44,19 @@ public class LocalFileFetchProtocol implements FetchProtocol
 			// Do nothing.
 		}
 		
+
+		@Override
+		public void setPassword(String password) {
+			//Credentials are not applicable.  
+			//Instead of throwing OperationNotSupportedException which requires exception handling, just do nothing.	
+		}
+
+		@Override
+		public void setUsername(String username) {
+			//Credentials are not applicable.  
+			//Instead of throwing OperationNotSupportedException which requires exception handling, just do nothing.		
+		}
+		
 		@Override
 		public void fetchFile(URI uri, Long size, FetchedFileDestination destination, FetchContext context) throws BagTransferException 
 		{
