@@ -38,6 +38,7 @@ Changes in 4.4:
     by java.io.File.listFiles() will fail java.io.File.exists(). This attempts to
     correct for this by trying java.io.File.exists() using different normalization
     forms for the filepath.
+2. Improves error handling and logging in FileSystemHelper and TempFileHelper.
 
 Changes in 4.3.1:
 1. Changes to pom for maven 3.
