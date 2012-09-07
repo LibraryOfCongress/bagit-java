@@ -6,6 +6,7 @@ import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.writer.Writer;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter.WriteMode;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -171,5 +172,50 @@ public class FileSystemWriterTest extends AbstractWriterTest {
 		
 	}
 
+	@Test
+	public void testWriteMode() throws Exception {
+		Bag bag = this.bagFactory.createBag(ResourceHelper.getFile("bags/v0_95/bag"));
+		File payloadFile = new File(bag.getFile(), "data/test1.txt");
+		System.out.println("XXXXXXXXXXXX" + payloadFile);
+		assertTrue(payloadFile.exists());
+		Bag copyBag = null;
+		Bag streamBag = null;
+		Bag moveBag = null;
+		
+		try {
+			Writer writer = this.getBagWriter();
+			
+			copyBag = writer.write(bag, new File(this.getBagFile().getParentFile(), "copy_bag"));
+			assertTrue(copyBag.verifyValid().isSuccess());
+			File newPayloadFile = new File(copyBag.getFile(), "data/test1.txt");
+			assertTrue(newPayloadFile.exists());
+			assertTrue(Long.valueOf(payloadFile.lastModified()).equals(newPayloadFile.lastModified()));
+
+			((FileSystemWriter)writer).setPayloadWriteMode(WriteMode.STREAM);
+			streamBag = writer.write(bag, new File(this.getBagFile().getParentFile(), "stream_bag"));
+			assertTrue(streamBag.verifyValid().isSuccess());
+			newPayloadFile = new File(streamBag.getFile(), "data/test1.txt");
+			assertTrue(newPayloadFile.exists());
+			//Since this was streamed it should have a new date
+			assertFalse(Long.valueOf(payloadFile.lastModified()).equals(newPayloadFile.lastModified()));
+
+			
+			File movedPayloadFile = new File(copyBag.getFile(), "data/test1.txt");
+			assertTrue(movedPayloadFile.exists());
+			((FileSystemWriter)writer).setPayloadWriteMode(WriteMode.MOVE);
+			moveBag = writer.write(copyBag, new File(this.getBagFile().getParentFile(), "move_bag"));
+			assertTrue(moveBag.verifyValid().isSuccess());
+			newPayloadFile = new File(moveBag.getFile(), "data/test1.txt");
+			assertTrue(newPayloadFile.exists());
+			assertTrue(Long.valueOf(payloadFile.lastModified()).equals(newPayloadFile.lastModified()));
+			assertFalse(movedPayloadFile.exists());
+
+		} finally {
+			bag.close();
+			if (copyBag != null) copyBag.close();
+			if (streamBag != null) streamBag.close();
+		}
+		
+	}
 	
 }

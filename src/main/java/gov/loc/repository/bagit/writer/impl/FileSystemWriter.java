@@ -17,14 +17,49 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.filesystem.FileNode;
+import gov.loc.repository.bagit.filesystem.impl.FileFileNode;
 import gov.loc.repository.bagit.filesystem.impl.FileFileSystem;
+import gov.loc.repository.bagit.impl.FileBagFile;
 import gov.loc.repository.bagit.impl.FileSystemBagFile;
 import gov.loc.repository.bagit.utilities.FileHelper;
 import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
-
+/**
+ *  Writes a bag to the file system.
+ * 
+ *  If the bag is being written to the same location, extra files
+ *  and directories will be deleted. 
+ *  
+ *  By default, payload files will not be written if they already exist on disk.
+ *  
+ *  By default, NFS tmp files will be ignored.
+ *  
+ *  By default, WriteMode is copy.
+ *
+ */
 public class FileSystemWriter extends AbstractWriter {
 
+	public enum WriteMode { 
+		/*
+		 * Write from the OutputStream exposed by BagFile.
+		 */
+		STREAM, 
+		/*
+		 * When BagFile is a FileBagFile or a FileSystemBagFile with a FileFileNode, write by copying
+		 * source file.
+		 * 
+		 * The file date is preserved.
+		 */
+		COPY, 
+		/*
+		 * When BagFile is a FileBagFile or a FileSystemBagFile with a FileFileNode, write by moving
+		 * source file.
+		 * 
+		 * The file date is preserved.
+		 */		
+		MOVE }
+	
 	private static final Log log = LogFactory.getLog(FileSystemWriter.class);
 	
 	private File newBagDir;
@@ -37,6 +72,7 @@ public class FileSystemWriter extends AbstractWriter {
 	private int fileCount = 0;
 	private boolean tagFilesOnly = false;
 	private boolean filesThatDoNotMatchManifestOnly = false;
+	private WriteMode writeMode = WriteMode.COPY;
 	
 	public FileSystemWriter(BagFactory bagFactory) {
 		super(bagFactory);
@@ -47,22 +83,55 @@ public class FileSystemWriter extends AbstractWriter {
 		return Format.FILESYSTEM;
 	}
 	
+	/**
+	 * Whether to only write files where there is an existing file on disk
+	 * and the fixity of the file on disk does not match the fixity recorded in the manifests.
+	 * 
+	 * When there are multiple fixities recorded for a file, only one is checked.
+	 */
 	public void setFilesThatDoNotMatchManifestOnly(boolean filesThatDoNotMatchManifestOnly) {
 		this.filesThatDoNotMatchManifestOnly = filesThatDoNotMatchManifestOnly;
 	}
 	
+	/**
+	 * Whether to only write tag files.
+	 * 
+	 */
 	public void setTagFilesOnly(boolean tagFilesOnly) {
 		this.tagFilesOnly = tagFilesOnly;
 	}
 	
+	
+	/**
+	 * When removing extra files, whether to ignore NFS tmp files.
+	 * 
+	 * NFS tmp files start with .nfs. They cannot be deleted.
+	 */
 	public void setIgnoreNfsTmpFiles(boolean ignore) {
 		this.ignoreNfsTmpFiles = ignore;
 	}
 	
+	/**
+	 * When writing, skip writing a payload file if it already exists.
+	 * 
+	 * This will make writing a bag much faster.
+	 */
 	public void setSkipIfPayloadFileExists(boolean skip) {
 		this.skipIfPayloadFileExists = skip;
 	}
 
+	/**
+	 * Sets the write mode for payload files
+	 * 
+	 * When BagFile is a FileBagFile or a FileSystemBagFile with a FileFileNode 
+	 * (that is, there is a source file), determines the mechanism by which the
+	 * new file is written.
+	 * 
+	 */
+	public void setPayloadWriteMode(WriteMode writeMode) {
+		this.writeMode = writeMode;
+	}
+	
 	@Override
 	public void startBag(Bag bag) {
 		try {
@@ -90,7 +159,33 @@ public class FileSystemWriter extends AbstractWriter {
 			this.fileCount++;
 			this.progress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 			log.debug(MessageFormat.format("Writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
-			FileSystemHelper.write(bagFile, file);	
+			File sourceFile = null;
+			if (bagFile instanceof FileBagFile) {
+				sourceFile = ((FileBagFile)bagFile).getFile();
+			} else if (bagFile instanceof FileSystemBagFile) {
+				FileNode fileNode = ((FileSystemBagFile)bagFile).getFileNode();
+				if (fileNode instanceof FileFileNode) {
+					sourceFile = ((FileFileNode)fileNode).getFile();
+				}
+			}
+			if (sourceFile != null && WriteMode.COPY.equals(this.writeMode)) {
+				if (! file.equals(sourceFile)) {
+					log.debug(MessageFormat.format("Copying {0} to {1}", sourceFile, file));
+					FileSystemHelper.copy(sourceFile, file);
+				} else {
+					log.trace(MessageFormat.format("Not copying {0} because source is the same as destination", file));
+				}
+			} else if (sourceFile != null && WriteMode.MOVE.equals(this.writeMode)) {
+				if (! file.equals(sourceFile)) {
+					log.debug(MessageFormat.format("Moving {0} to {1}", sourceFile, file));
+					FileSystemHelper.move(sourceFile, file);
+				} else {
+					log.trace(MessageFormat.format("Not moving {0} because source is the same as destination", file));
+				}
+				
+			} else {
+				FileSystemHelper.write(bagFile, file);				
+			}
 		} else {
 			log.debug(MessageFormat.format("Skipping writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
 		}

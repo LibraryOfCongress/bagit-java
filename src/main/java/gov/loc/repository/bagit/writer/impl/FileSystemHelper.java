@@ -61,5 +61,27 @@ public class FileSystemHelper {
 		TempFileHelper.switchTemp(file);
 		
 	}
-		
+
+	public static void copy(File sourceFile, File file) {
+		if(sourceFile.equals(file)) {
+			throw new RuntimeException(MessageFormat.format("Cannot copy {0} to itself", sourceFile));
+		}
+		try {
+			FileUtils.copyFile(sourceFile, file, true);
+		} catch (IOException e) {
+			throw new RuntimeException(MessageFormat.format("Error copying {0} to {1}: {2}", sourceFile, file, e.getMessage()), e);
+		}
+	}
+	
+	public static void move(File sourceFile, File file) {
+		if(sourceFile.equals(file)) {
+			throw new RuntimeException(MessageFormat.format("Cannot move {0} to itself", sourceFile));
+		}
+		try {
+			FileUtils.moveFile(sourceFile, file);
+		} catch (IOException e) {
+			throw new RuntimeException(MessageFormat.format("Error copying {0} to {1}: {2}", sourceFile, file, e.getMessage()), e);
+		}
+	}
+
 }

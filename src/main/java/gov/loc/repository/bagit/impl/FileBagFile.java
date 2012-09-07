@@ -45,4 +45,8 @@ public class FileBagFile implements BagFile {
 		}
 		return 0L;
 	}
+	
+	public File getFile() {
+		return file;
+	}
 }

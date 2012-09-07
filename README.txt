@@ -39,6 +39,9 @@ Changes in 4.4:
     correct for this by trying java.io.File.exists() using different normalization
     forms for the filepath.
 2. Improves error handling and logging in FileSystemHelper and TempFileHelper.
+3. Added support for writing by copying and moving to FileSystemHelper.  The default
+	is now to copy (instead of writing the stream exposed by BagFile).  Added support
+	for specifying move in CommandLineBagDriver (--move).
 
 Changes in 4.3.1:
 1. Changes to pom for maven 3.
