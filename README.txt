@@ -42,6 +42,7 @@ Changes in 4.4:
 3. Added support for writing by copying and moving to FileSystemHelper.  The default
 	is now to copy (instead of writing the stream exposed by BagFile).  Added support
 	for specifying move in CommandLineBagDriver (--move).
+4. Adds support for bag-info.txt values that contain line terminators.
 
 Changes in 4.3.1:
 1. Changes to pom for maven 3.
