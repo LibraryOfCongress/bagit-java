@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 4.5:
+1. Adds support for bag-info.txt values that contain line terminators.
+
 Changes in 4.4:
 1. Attempt to correct for unicode normalization form in filepaths. Note: Java has
     problems dealing with differences in unicode normalization form 
@@ -42,7 +45,6 @@ Changes in 4.4:
 3. Added support for writing by copying and moving to FileSystemHelper.  The default
 	is now to copy (instead of writing the stream exposed by BagFile).  Added support
 	for specifying move in CommandLineBagDriver (--move).
-4. Adds support for bag-info.txt values that contain line terminators.
 
 Changes in 4.3.1:
 1. Changes to pom for maven 3.
