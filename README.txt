@@ -30,6 +30,9 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+Changes in 4.5:
+1. Adds support for bag-info.txt values that contain line terminators.
+
 Changes in 4.4:
 1. Attempt to correct for unicode normalization form in filepaths. Note: Java has
     problems dealing with differences in unicode normalization form 

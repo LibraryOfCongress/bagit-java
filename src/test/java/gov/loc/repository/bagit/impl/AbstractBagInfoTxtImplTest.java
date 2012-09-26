@@ -251,5 +251,51 @@ public abstract class AbstractBagInfoTxtImplTest {
 		assertEquals(0, values.size());		
 	}
 
+	@Test
+	public void testNewLines() {
+				
+		String bagInfoTxtStr1 = 
+		"Source-Organization: Spengler University\n" +		
+		"External-Description: This collection consists of six\n" +
+		"   large-scale web crawls run against U.S. city web sites from May 2005\n" +
+		"   to October 2007 as part of the Stanford WebBase project.\n" +
+		"\n" +
+		"   Format:  ARC files\n" +
+		"   generated from WebBase content.\n";
+
+		BagInfoTxt bagInfo1 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr1));
+		assertEquals("Spengler University", bagInfo1.getSourceOrganization());
+		assertEquals("This collection consists of six large-scale web crawls run against U.S. city web sites from May 2005 to October 2007 as part of the Stanford WebBase project.\nFormat:  ARC files generated from WebBase content.", bagInfo1.getExternalDescription());
+
+		
+		String bagInfoTxtStr2 = 
+		"Source-Organization: Spengler University\n" +		
+		"External-Description: This collection consists of six\n" +
+		"   large-scale web crawls run against U.S. city web sites from May 2005\n" +
+		"   to October 2007 as part of the Stanford WebBase project.\n" +
+		"   \n" +
+		"   Format:  ARC files\n" +
+		"   generated from WebBase content.\n";
+		
+		BagInfoTxt bagInfo2 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr2));
+		assertEquals("Spengler University", bagInfo2.getSourceOrganization());
+		assertEquals("This collection consists of six large-scale web crawls run against U.S. city web sites from May 2005 to October 2007 as part of the Stanford WebBase project.\nFormat:  ARC files generated from WebBase content.", bagInfo2.getExternalDescription());
+
+		String bagInfoTxtStr3 = 
+		"Source-Organization: Spengler University\n" +		
+		"External-Description: This collection consists of six\n" +
+		"   large-scale web crawls run against U.S. city web sites from May 2005\n" +
+		"   to October 2007 as part of the Stanford WebBase project.\n" +
+		"   \n" +
+		"   Format:  ARC files\n" +
+		"   generated from WebBase content.\n" +
+		"Contact-Name: Edna Janssen";
+		
+		BagInfoTxt bagInfo3 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr3));
+		assertEquals("Spengler University", bagInfo3.getSourceOrganization());
+		assertEquals("This collection consists of six large-scale web crawls run against U.S. city web sites from May 2005 to October 2007 as part of the Stanford WebBase project.\nFormat:  ARC files generated from WebBase content.", bagInfo3.getExternalDescription());
+		assertEquals("Edna Janssen", bagInfo3.getContactName());
+
+	}
 	
 }

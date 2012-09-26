@@ -6,6 +6,8 @@ import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,6 +22,10 @@ public class NameValueReaderImpl implements NameValueReader {
 	
 	private Deque<String> lines = new ArrayDeque<String>();
 	private String type;
+	
+	private Pattern continueLinePattern = Pattern.compile("^( |\\t)+.+$");
+	private Pattern continueLineReplacePattern = Pattern.compile("^( |\\t)+");
+	private Pattern continueNewlinePattern = Pattern.compile("^( |\\t)*$");
 	
 	public NameValueReaderImpl(String encoding, InputStream in, String type) {
 		this.type = type;
@@ -67,6 +73,25 @@ public class NameValueReaderImpl implements NameValueReader {
 		String value = null;
 		if (splitString.length == 2) {
 			value = splitString[1].trim();
+			String nextLine = this.lines.peekFirst();
+			Matcher continueLineMatcher = nextLine != null ? continueLinePattern.matcher(nextLine) : null;
+			Matcher continueNewlineMatcher = nextLine != null ? continueNewlinePattern.matcher(nextLine) : null;
+			boolean lastLineIsNewLine = false;
+			while (nextLine != null && (continueLineMatcher.matches() || continueNewlineMatcher.matches())) {
+				if (continueLineMatcher.matches() && ! continueNewlineMatcher.matches()) {
+					if (! lastLineIsNewLine) value += " ";
+					value += continueLineReplacePattern.matcher(nextLine).replaceAll("");
+					lastLineIsNewLine = false;					
+				} else {
+					value += "\n";
+					lastLineIsNewLine = true;
+				}
+				
+				this.lines.removeFirst();
+				nextLine = this.lines.peekFirst();
+				continueLineMatcher = nextLine != null ? continueLinePattern.matcher(nextLine) : null;
+				continueNewlineMatcher = nextLine != null ? continueNewlinePattern.matcher(nextLine) : null;				
+			}
 			while(! this.lines.isEmpty() && this.lines.getFirst().matches("^( |\\t)+.+$")) {
 				value += " " + this.lines.removeFirst().replaceAll("^( |\\t)+", "");
 			}			
