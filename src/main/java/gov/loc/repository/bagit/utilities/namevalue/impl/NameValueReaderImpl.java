@@ -96,6 +96,8 @@ public class NameValueReaderImpl implements NameValueReader {
 				value += " " + this.lines.removeFirst().replaceAll("^( |\\t)+", "");
 			}			
 		}
+		//If ends in \n then trim
+		if (value.endsWith("\n")) value = value.substring(0, value.length()-1);
 		NameValue ret = new NameValue(name, value);
 		log.debug(MessageFormat.format("Read from {0}: {1}", this.type, ret.toString()));
 		return ret;

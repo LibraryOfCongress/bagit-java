@@ -296,6 +296,24 @@ public abstract class AbstractBagInfoTxtImplTest {
 		assertEquals("This collection consists of six large-scale web crawls run against U.S. city web sites from May 2005 to October 2007 as part of the Stanford WebBase project.\nFormat:  ARC files generated from WebBase content.", bagInfo3.getExternalDescription());
 		assertEquals("Edna Janssen", bagInfo3.getContactName());
 
+		String bagInfoTxtStr4 = 
+		"Source-Organization: Spengler University\n" +
+		"\n" +
+		"Contact-Name: Edna Janssen";
+		
+		BagInfoTxt bagInfo4 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr4));
+		assertEquals("Spengler University", bagInfo4.getSourceOrganization());
+		assertEquals("Edna Janssen", bagInfo4.getContactName());
+
+		String bagInfoTxtStr5 = 
+		"Source-Organization: Spengler University\n" +
+		"   \n" +
+		"Contact-Name: Edna Janssen";
+		
+		BagInfoTxt bagInfo5 = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr5));
+		assertEquals("Spengler University", bagInfo5.getSourceOrganization());
+		assertEquals("Edna Janssen", bagInfo5.getContactName());
+
 	}
 	
 }
