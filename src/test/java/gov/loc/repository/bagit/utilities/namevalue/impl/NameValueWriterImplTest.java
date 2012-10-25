@@ -23,7 +23,7 @@ public class NameValueWriterImplTest {
 		writer.write("Source-Organization","Spengler University");
 		writer.write("External-Description","This collection consists of six large-scale web crawls run against U.S. city web sites from May 2005 to October 2007 as part of the Stanford WebBase project.\nFormat:  ARC files generated from WebBase content.");
 		writer.write("Organization-Address","1400 Really Tall Elm Street, Suite 1112, Floor 17, Los Angeles, California, 95014");
-		writer.write("Internal-Sender-Description", "Uncompressed greyscale TIFFs.\rThey were created from microfilm.");
+		writer.write("Internal-Sender-Description", "Uncompressed greyscale TIFFs.\r\nThey were created from microfilm.");
 		writer.close();
 		
 		String outString = new String(out.toByteArray(), "utf-8");

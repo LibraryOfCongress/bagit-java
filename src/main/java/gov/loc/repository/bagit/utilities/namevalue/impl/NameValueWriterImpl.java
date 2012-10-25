@@ -21,7 +21,7 @@ public class NameValueWriterImpl implements NameValueWriter {
 	//Default to 4
 	private String indent = "   ";
 	private String type;
-	Pattern lineTerminatorPattern = Pattern.compile("\r|\n|\r\n");
+	Pattern lineTerminatorPattern = Pattern.compile("\r\n|\r|\n");
 	
 	public NameValueWriterImpl(OutputStream out, String encoding, int lineLength, int indentSpaces, String type) {
 		this.init(out, encoding, type);
