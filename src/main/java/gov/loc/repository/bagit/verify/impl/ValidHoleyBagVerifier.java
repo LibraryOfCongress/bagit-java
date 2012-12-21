@@ -28,10 +28,11 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 		SimpleResult result = new SimpleResult(true);
 		
 		log.trace("Checking for bag declaration.");
-		if (bag.getBagItTxt() == null)
+		if (bag.getBagItTxt() == null){
 			result.setSuccess(false);
 			result.addMessage(CODE_NO_BAGITTXT, MessageFormat.format("Bag does not have {0}.", bag.getBagConstants().getBagItTxt()));				
-
+		}
+		
 		log.trace("Checking for at least one payload manifest.");
 		if (bag.getPayloadManifests().isEmpty()) {
 			result.setSuccess(false);
@@ -45,9 +46,10 @@ public class ValidHoleyBagVerifier extends LongRunningOperationBase implements V
 		}
 		
 		log.trace("Checking for fetch.txt.");
-		if (bag.getFetchTxt() == null)
+		if (bag.getFetchTxt() == null){
 			result.setSuccess(false);
 			result.addMessage(CODE_MISSING_FETCHTXT, MessageFormat.format("Bag does not have {0}.", bag.getBagConstants().getFetchTxt()));
+		}
 		
 		log.info("Completion check: " + result.toString());
 		
