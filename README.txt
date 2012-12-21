@@ -30,6 +30,11 @@ backslashes are supported by BIL.  Given platform compatability issues, this is 
 a bad thing.
 
 RELEASE NOTES:
+
+Changes in 4.6:
+1. Added missing braces to conditional blocks in ValidHoleyBagVerifier.  This caused false
+	error message when verifying a holey bag.
+
 Changes in 4.5:
 1. Adds support for bag-info.txt values that contain line terminators.
 
