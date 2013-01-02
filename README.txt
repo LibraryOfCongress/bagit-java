@@ -31,7 +31,7 @@ a bad thing.
 
 RELEASE NOTES:
 
-Changes in 4.6:
+Changes in 4.5.1:
 1. Added missing braces to conditional blocks in ValidHoleyBagVerifier.  This caused false
 	error message when verifying a holey bag.
 
