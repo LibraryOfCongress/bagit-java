@@ -2,6 +2,8 @@ package gov.loc.repository.bagit.transfer;
 
 import static java.text.MessageFormat.*;
 
+import gov.loc.repository.bagit.FetchTxt;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,7 +97,7 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 	}
 
 	@Override
-	public synchronized FetchFailureAction registerFailure(FetchTarget target, Object context)
+	public synchronized FetchFailureAction registerFailure(FetchTxt.FilenameSizeUrl fetchLine, Object context)
 	{
 		FetchFailureAction action;
 		
@@ -105,14 +107,14 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 		}
 		else
 		{
-			Integer fileFailures = this.failures.get(target.getFilename());
+			Integer fileFailures = this.failures.get(fetchLine.getFilename());
 			
 			if (fileFailures == null)
 			{
 				fileFailures = 0;
 			}
 
-			this.failures.put(target.getFilename(), ++fileFailures);
+			this.failures.put(fetchLine.getFilename(), ++fileFailures);
 
 			if (fileFailures >= this.fileFailureThreshold)
 			{

@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.transfer;
 
+import gov.loc.repository.bagit.FetchTxt;
+
 /**
  * A failure strategy that immediately throws a {@link RuntimeException}.
  * This is quite useful for unit testing, and perhaps other things.
@@ -21,7 +23,7 @@ public class ThrowExceptionFailStrategy implements FetchFailStrategy
 	 * @throws RuntimeException Always.
 	 */
 	@Override
-	public FetchFailureAction registerFailure(FetchTarget target, Object context) 
+	public FetchFailureAction registerFailure(FetchTxt.FilenameSizeUrl target, Object context) 
 	{
 		if (context instanceof Throwable)
 			throw new RuntimeException("Could not fetch: " + target.getFilename(), (Throwable)context);

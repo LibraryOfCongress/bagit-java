@@ -42,6 +42,14 @@ public class SimpleResultHelper {
 		
 	}
 	
+	public static boolean isMissingPayloadFile(SimpleResult result, String filepath) {
+		return containsObject(result, CompleteVerifier.CODE_PAYLOAD_MANIFEST_CONTAINS_MISSING_FILE, filepath);
+	}
+	
+	public static boolean isInvalidPayloadFile(SimpleResult result, String filepath) {
+		return containsObject(result, ManifestVerifier.CODE_PAYLOAD_MANIFEST_CONTAINS_INVALID_FILE, filepath);
+	}
+	
 	public static boolean containsObject(SimpleResult result, String code, String object) {
 		List<SimpleMessage> messages = result.getSimpleMessagesByCode(code);
 		for(SimpleMessage message : messages) {

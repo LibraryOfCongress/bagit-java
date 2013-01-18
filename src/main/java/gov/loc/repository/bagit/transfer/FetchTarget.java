@@ -9,11 +9,14 @@ import gov.loc.repository.bagit.FetchTxt;
  * Represents the target of a fetch.
  * @author Brian Vargas
  */
-public class FetchTarget
+public class FetchTarget implements Comparable<FetchTarget>
 {
+	public enum FetchResult {NOT_FETCHED, FETCH_FAILED, VERIFY_FAILED, VERIFY_SUCCEEDED}
+	
 	private ArrayList<FetchTxt.FilenameSizeUrl> fetchLines;
 	private String path;
 	private Long size;
+	private FetchResult fetchResult = FetchResult.NOT_FETCHED;
 	
 	public String getFilename()
 	{
@@ -25,16 +28,27 @@ public class FetchTarget
 		return this.size;
 	}
 	
+	public FetchResult getFetchResult()
+	{
+		return this.fetchResult;
+	}
+	
+	public void setFetchResult(FetchResult fetchResult)
+	{
+		this.fetchResult = fetchResult;
+	}
+	
 	public List<FetchTxt.FilenameSizeUrl> getLines()
 	{
 		return Collections.unmodifiableList(this.fetchLines);
 	}
 	
-	public FetchTarget(FetchTxt.FilenameSizeUrl target, FetchTxt.FilenameSizeUrl ... targets)
+	public FetchTarget(FetchTxt.FilenameSizeUrl target, FetchResult fetchResult, FetchTxt.FilenameSizeUrl ... targets)
 	{
 		this.fetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>(targets.length + 1);
 		this.path = target.getFilename();
 		this.size = target.getSize();
+		this.fetchResult = fetchResult;
 
 		this.addLine(target);
 		
@@ -58,5 +72,35 @@ public class FetchTarget
 		{
 			throw new IllegalArgumentException("All given fetch targets must have the same file name and size.");
 		}
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FetchTarget other = (FetchTarget) obj;
+		if (path == null) {
+			if (other.path != null)
+				return false;
+		} else if (!path.equals(other.path))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int compareTo(FetchTarget fetchTarget) {
+		return this.path.compareTo(fetchTarget.path);
 	}
 }

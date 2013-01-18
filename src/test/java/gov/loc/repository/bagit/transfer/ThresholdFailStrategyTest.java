@@ -41,7 +41,7 @@ public class ThresholdFailStrategyTest
 	
 	private void check(String filename, FetchFailureAction expectedAction)
 	{
-		FetchTarget target = new FetchTarget(new FetchTxt.FilenameSizeUrl(filename, null, null));
+		FetchTxt.FilenameSizeUrl target = new FetchTxt.FilenameSizeUrl(filename, null, null);
 		assertEquals(expectedAction, this.unit.registerFailure(target, null));
 	}
 }

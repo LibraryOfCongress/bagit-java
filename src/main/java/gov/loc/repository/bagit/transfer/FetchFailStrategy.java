@@ -1,5 +1,7 @@
 package gov.loc.repository.bagit.transfer;
 
+import gov.loc.repository.bagit.FetchTxt;
+
 /**
  * Represents a strategy for failing a fetch, based on some
  * implementation-defined criteria.  Implementors must
@@ -27,5 +29,5 @@ package gov.loc.repository.bagit.transfer;
  */
 public interface FetchFailStrategy
 {
-	FetchFailureAction registerFailure(FetchTarget target, Object context);
+	FetchFailureAction registerFailure(FetchTxt.FilenameSizeUrl fetchLine, Object context);
 }

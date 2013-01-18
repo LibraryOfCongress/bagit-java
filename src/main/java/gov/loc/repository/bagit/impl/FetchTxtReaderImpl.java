@@ -87,9 +87,24 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 						if (! FetchTxt.NO_SIZE_MARKER.equals(splitString[1])) {
 							Long.parseLong(splitString[1]);
 						}
-						this.next = new FilenameSizeUrl(splitString[2], size, splitString[0]);
+						
+						String statusString = null;
+						String filename = null;
+								
+						int lastIndexOfStatusPrefix = splitString[2].lastIndexOf("[");
+						int lastIndexOfStatusSuffix = splitString[2].lastIndexOf("]");
+						if(lastIndexOfStatusSuffix == splitString[2].length() - 1 && lastIndexOfStatusPrefix > 0 && lastIndexOfStatusSuffix > 0 && lastIndexOfStatusPrefix < lastIndexOfStatusSuffix){
+							statusString = splitString[2].substring(lastIndexOfStatusPrefix + "[".length(), lastIndexOfStatusSuffix);
+							filename =  splitString[2].substring(0, lastIndexOfStatusPrefix).trim();
+							this.next = new FilenameSizeUrl(filename, size, splitString[0], FetchTxt.FetchStatus.fromString(statusString));
+							
+						}else{
+							filename = splitString[2].trim();
+							this.next = new FilenameSizeUrl(filename, size, splitString[0]);
+						}
+						
 						return;
-					}
+					} 
 					else
 					{
 						log.warn(format("Invalid fetch line: {0}", line));

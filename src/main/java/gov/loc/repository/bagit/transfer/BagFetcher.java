@@ -1,36 +1,41 @@
 package gov.loc.repository.bagit.transfer;
 
+import static java.text.MessageFormat.format;
 import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
+import gov.loc.repository.bagit.FetchTxt.FetchStatus;
+import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.ProgressListener;
-import gov.loc.repository.bagit.Bag.BagConstants;
-import gov.loc.repository.bagit.BagFactory.LoadOption;
-import gov.loc.repository.bagit.BagFactory.Version;
-import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import gov.loc.repository.bagit.impl.FileBagFile;
+import gov.loc.repository.bagit.transfer.FetchTarget.FetchResult;
 import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
+import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 import gov.loc.repository.bagit.utilities.SimpleResultHelper;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
-import static java.text.MessageFormat.format;
-
 import java.io.File;
+import java.io.InputStream;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -45,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -79,13 +85,13 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     
     // Internal state.
     private Bag bagToFetch;
-    private List<FetchTarget> fetchTargets;
-    private List<FetchTarget> failedFetchTargets;
+    private List<FetchTxt.FilenameSizeUrl> fetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>();
+    //private List<FetchTarget> failedFetchTargets;
     private AtomicInteger nextFetchTargetIndex;
     private List<BagFile> newBagFiles;
     private List<Fetcher> runningFetchers = Collections.synchronizedList(new ArrayList<Fetcher>());
     private String baseUrl;
-    
+        
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
     	this.numberOfThreads = Runtime.getRuntime().availableProcessors();
@@ -193,26 +199,32 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         this.protocolFactories.put(normalizedScheme, protocol);
     }
 
-    public BagFetchResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory) throws BagTransferException
+    public SimpleResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory) throws BagTransferException
     {
-        return this.fetch(bag, destinationFactory, false);
+        return this.fetch(bag, destinationFactory, false, false);
     }
 
-    public BagFetchResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory, boolean resume) throws BagTransferException
+    public SimpleResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory, boolean resume) throws BagTransferException
+    {
+        return this.fetch(bag, destinationFactory, resume, false);
+    }
+    
+    public SimpleResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory, boolean resume, boolean verify) throws BagTransferException
     {
         this.bagToFetch = bag;
         this.destinationFactory = destinationFactory;
         
         this.checkBagSanity();
         
-        this.buildFetchTargets(resume);
+        this.buildFetchTargets(resume, verify);
         this.nextFetchTargetIndex = new AtomicInteger(0);
         
         // Parts of the new bag.
-        this.newBagFiles = Collections.synchronizedList(new ArrayList<BagFile>(this.fetchTargets.size()));
-        this.failedFetchTargets = Collections.synchronizedList(new ArrayList<FetchTarget>());
+        this.newBagFiles = Collections.synchronizedList(new ArrayList<BagFile>(this.fetchLines.size()));
+        //this.failedFetchTargets = Collections.synchronizedList(new ArrayList<FetchTarget>());
 
-        BagFetchResult finalResult = new BagFetchResult(true);
+        //BagFetchResult finalResult = new BagFetchResult(true);
+        SimpleResult finalResult = new SimpleResult(true);
         
         if (this.numberOfThreads > 1)
         {
@@ -287,13 +299,14 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         }
         
         // Clone the existing bag, and set it to be returned.
-        log.trace("Creating new bag to return.");
-        Bag resultBag = this.bagFactory.createBag(bag);
-        finalResult.setResultingBag(resultBag);
+        //log.trace("Creating new bag to return.");
+        //Bag resultBag = this.bagFactory.createBag(bag);
+        //finalResult.setResultingBag(resultBag);
 
         // Add in the new bag files.
-        resultBag.putBagFiles(this.newBagFiles);
+        //resultBag.putBagFiles(this.newBagFiles);
         
+        /*
         // And reset the fetch.txt, and add back any that failed.
         log.trace(format("Adding {0} files that failed to fetch to the new bag.", this.failedFetchTargets.size()));
         if (this.failedFetchTargets.size() > 0)
@@ -310,9 +323,53 @@ public final class BagFetcher implements Cancellable, ProgressListenable
             	resultBag.getFetchTxt().addAll(failedTarget.getLines());
             }
         }
-              
+        */
+        
+        this.writeStatusToFetchTxt();
+        
         log.debug(format("Fetch completed with result: {0}", finalResult.isSuccess()));
         return finalResult;
+    }
+    
+    private void writeStatusToFetchTxt(){
+    	FetchTxt fetchTxt = this.bagToFetch.getFetchTxt();
+    	for(FilenameSizeUrl fetchLine : this.fetchLines){
+        	int index = fetchTxt.indexOf(fetchLine);
+        	fetchTxt.get(index).setFetchStatus(fetchLine.getFetchStatus());
+        	log.trace("===============update states:" + fetchLine);
+        }
+        //this.bagToFetch.getFetchTxt().clear();
+        //this.bagToFetch.getFetchTxt().addAll(this.fetchLines);
+        //this.bagToFetch.getBagPartFactory().createFetchTxtWriter(this.bagToFetch.getFetchTxt().)
+        
+        BagFactory bagFactory = new gov.loc.repository.bagit.BagFactory();
+        UpdateCompleter completer = new UpdateCompleter(bagFactory);	
+		
+		//Payload files will not be updated by passing an empty lists to the following 
+		completer.setLimitAddPayloadDirectories(new ArrayList<String>());
+		completer.setLimitAddPayloadFilepaths(new ArrayList<String>());
+		completer.setLimitDeletePayloadDirectories(new ArrayList<String>());
+		completer.setLimitDeletePayloadFilepaths(new ArrayList<String>());
+		completer.setLimitUpdatePayloadDirectories(new ArrayList<String>());
+		completer.setLimitUpdatePayloadFilepaths(new ArrayList<String>());
+		
+		completer.setLimitAddTagDirectories(new ArrayList<String>());
+		completer.setLimitAddTagFilepaths(new ArrayList<String>());
+		completer.setLimitDeleteTagDirectories(new ArrayList<String>());
+		completer.setLimitDeleteTagFilepaths(new ArrayList<String>());
+		completer.setLimitUpdateTagDirectories(new ArrayList<String>());
+		
+		List<String> toUpdatedTagFilepaths = new ArrayList<String>();
+		toUpdatedTagFilepaths.add(this.bagToFetch.getBagConstants().getFetchTxt());
+		completer.setLimitUpdateTagFilepaths(toUpdatedTagFilepaths);
+		
+		completer.complete(this.bagToFetch);
+		
+		//Write the updated tag files on disk
+		FileSystemWriter writer = new FileSystemWriter(bagFactory);
+		writer.setTagFilesOnly(true);
+		writer.setFilesThatDoNotMatchManifestOnly(true);
+		this.bagToFetch.write(writer, this.bagToFetch.getFile());
     }
     
     private void checkBagSanity() throws BagTransferException
@@ -327,28 +384,63 @@ public final class BagFetcher implements Cancellable, ProgressListenable
     	}
     }
     
-    private void buildFetchTargets(boolean resume)
+    private void buildFetchTargets(boolean resume, boolean verify)
     {
-        // If resume is true, verify the bagToFetch to get a list of missing and corrupted files.
-    	SimpleResult bagVerifyResult = null;
-        if(resume){
-			bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
-		}
-        
+   
     	// Retrieve the fetch items into a separate list, and then sort the
         // list by file name.  We want to group all the lines for the same file
     	// together.
-    	log.trace("Sorting fetch lines by file name.");
-    	ArrayList<FetchTxt.FilenameSizeUrl> sortedFetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>(this.bagToFetch.getFetchTxt());
-    	Collections.sort(sortedFetchLines, new FetchFilenameSorter());
+    	log.trace("Getting fetch lines.");
+    	List<FetchTxt.FilenameSizeUrl> allFetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>(this.bagToFetch.getFetchTxt());        		        	
+    	SimpleResult bagVerifyResult = null;
+        if(verify){
+        	bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
+        	for(FetchTxt.FilenameSizeUrl fetchLine : allFetchLines){
+        		if(BagHelper.isPayload(fetchLine.getFilename(), this.bagFactory.getBagConstants())){
+        			if(SimpleResultHelper.isMissingPayloadFile(bagVerifyResult, fetchLine.getFilename())){
+        				fetchLine.setFetchStatus(FetchTxt.FetchStatus.NOT_FETCHED);
+        			}else if(SimpleResultHelper.isInvalidPayloadFile(bagVerifyResult, fetchLine.getFilename())){
+        				fetchLine.setFetchStatus(FetchTxt.FetchStatus.VERIFY_FAILED);
+        			}else{
+        				fetchLine.setFetchStatus(FetchTxt.FetchStatus.SUCCEEDED);        				
+        			}
+    				this.fetchLines.add(fetchLine);				         			
+        		}			      
+        	}      
+        	
+        	this.writeStatusToFetchTxt();
+        }
+        
+        allFetchLines.clear();
+    	allFetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>(this.bagToFetch.getFetchTxt());        		        	
+        if(resume){
+        	this.fetchLines.clear();
+        	for(FetchTxt.FilenameSizeUrl fetchLine : allFetchLines){
+        		if(fetchLine.getFetchStatus() == null || 
+        		   ! fetchLine.getFetchStatus().equals(FetchTxt.FetchStatus.SUCCEEDED)){
+        			this.fetchLines.add(fetchLine);
+        		}
+        	}        	
+        }else{
+        	this.fetchLines.addAll(allFetchLines);        		        	
+        }
+    	//Collections.sort(this.fetchLines, new FetchFilenameSorter());
+        //Collections.sort(this.fetchLines, new FetchTxt.FilenameSizeUrl.SizeSorter()); 
 
-    	this.fetchTargets = new ArrayList<FetchTarget>(sortedFetchLines.size());
     	
         // Now reduce our fetch lines into FetchTarget instances.  This should be easy,
     	// since they're grouped already.
-    	log.trace("Converting fetch lines into fetch targets.");
-    	FetchTarget currentTarget = null;
+    	//log.trace("Converting fetch lines into fetch targets.");
+    	//FetchTarget currentTarget = null;
     	
+    	/*
+    	// If resume is true, verify the bagToFetch to get a list of missing and corrupted files.
+    	SimpleResult bagVerifyResult = null;
+        if(resume && fetch_failure_file_nonexists){
+			bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);            		
+		}
+    	*/
+    	/*
     	for (FetchTxt.FilenameSizeUrl line : sortedFetchLines)
     	{
     		// Do not add a file to the fetch targets if the file is not missing or corrupted.
@@ -368,13 +460,15 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         		}
     		}
     	}
+    	*/
     	
     	// Now sort the targets by descending size.  We want to transfer the big, hard
         // stuff first.  Also, this will help make sure that threads get
         // evenly loaded. 
-        log.trace(format("Sorting fetch target list with {0} items by size.", this.fetchTargets.size()));
+        /*
+    	//log.trace(format("Sorting fetch target list with {0} items by size.", this.fetchTargets.size()));
         
-        Collections.sort(fetchTargets, new Comparator<FetchTarget>() {
+        //Collections.sort(fetchLines, new Comparator<FetchTarget>() {
         	@Override
         	public int compare(FetchTarget left, FetchTarget right)
         	{
@@ -402,19 +496,20 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         });
         
         log.trace("Sort complete.");
+        */
     }
     
-    private FetchTarget getNextFetchTarget()
+    private FilenameSizeUrl getNextFetchLine()
     {
-        FetchTarget nextItem;
+        FilenameSizeUrl nextItem;
         
         int next = this.nextFetchTargetIndex.getAndIncrement();
-        int size = this.fetchTargets.size();
+        int size = this.fetchLines.size();
         
         
         if (next < size)
         {
-            nextItem = this.fetchTargets.get(next);
+            nextItem = this.fetchLines.get(next);
             log.trace(format("Fetching {0}/{1}: {2}", next + 1, size, nextItem.getFilename()));
             this.progress("starting fetch", nextItem.getFilename(), (long)next + 1, (long)size);
         }
@@ -510,7 +605,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 		
 		FileSystemFileDestination dest = new FileSystemFileDestination(destFile);	    
 
-		BagFetchResult fetchResult = this.fetch(partialBag, dest, resume);
+		SimpleResult fetchResult = this.fetch(partialBag, dest, resume);
 
 		if (! fetchResult.isSuccess()) {
 	    	return fetchResult;
@@ -618,14 +713,14 @@ public final class BagFetcher implements Cancellable, ProgressListenable
         	
         	try
         	{
-        		FetchTarget fetchTarget = getNextFetchTarget();
+        		FilenameSizeUrl fetchLine = getNextFetchLine();
         		
-	            while (fetchTarget != null && !isCancelled())
+	            while (fetchLine != null && !isCancelled())
 	            {
 	            	try
 					{
-						this.fetchSingleTarget(fetchTarget);
-						fetchTarget = getNextFetchTarget();
+						this.fetchSingleLine(fetchLine);
+						fetchLine = getNextFetchLine();
 					}
 	            	catch (BagTransferCancelledException e)
 	            	{
@@ -636,8 +731,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 	            	}
 	            	catch (BagTransferException e)
 					{
-	                    FetchFailureAction failureAction = failStrategy.registerFailure(fetchTarget, e);
-	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", fetchTarget.getFilename(), fetchTarget.getSize(), failureAction));
+	                    FetchFailureAction failureAction = failStrategy.registerFailure(fetchLine, e);
+	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", fetchLine.getFilename(), fetchLine.getSize(), failureAction));
 	    	                	
 	                	if (failureAction == FetchFailureAction.RETRY_CURRENT)
 	                	{
@@ -646,10 +741,10 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 	                	}
 	                	else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT)
 	                	{
-		                    failedFetchTargets.add(fetchTarget);		                    
-		                    result.addMessage(format("An error occurred while fetching target: {0}", fetchTarget.getFilename()));
+		                    //failedFetchTargets.add(fetchTarget);		                    
+		                    result.addMessage(format("An error occurred while fetching target: {0}", fetchLine.getFilename()));
 		                    result.setSuccess(false);
-	                		fetchTarget = getNextFetchTarget();
+		                    fetchLine = getNextFetchLine();
 	                	}
 	                	else // Default to STOP
 	                	{
@@ -657,8 +752,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 	                		// Make them finish up, too.
 	                		BagFetcher.this.cancel();
 	                		
-		                    failedFetchTargets.add(fetchTarget);		                    
-		                    result.addMessage(format("An error occurred while fetching target: {0}", fetchTarget.getFilename()));
+		                    //failedFetchTargets.add(fetchLine);		                    
+		                    result.addMessage(format("An error occurred while fetching target: {0}", fetchLine.getFilename()));
 		                    result.setSuccess(false);
 		                    break;
 	                	}
@@ -674,59 +769,10 @@ public final class BagFetcher implements Cancellable, ProgressListenable
             return result;
         }
         
-        private void fetchSingleTarget(FetchTarget target) throws BagTransferException
-        {
-        	List<FetchTxt.FilenameSizeUrl> lines = target.getLines();
-        	
-        	// If there is more than one possible URL to pull from,
-        	// then loop over them until they all fail.
-        	if (lines.size() == 1)
-        	{
-        		FetchTxt.FilenameSizeUrl line = lines.get(0);
-        		log.debug(format("Fetching single line: {0}", line));
-        		this.fetchSingleLine(line);
-        	}
-        	else
-        	{
-        		for (int i = 0; i < lines.size() && !isCancelled(); i++)
-        		{
-        			try
-        			{
-        				FetchTxt.FilenameSizeUrl line = lines.get(i);
-        				this.fetchSingleLine(line);
-        				
-            			// If we successfully fetch from that single line,
-            			// then just break out of the loop.  We don't need
-            			// to try transferring from somewhere else.
-        				break;
-        			}
-        			catch (BagTransferCancelledException e)
-        			{
-                    	failedFetchTargets.add(target);
-                    	throw new BagTransferCancelledException(e);
-        			}
-        			catch (BagTransferException e)
-        			{
-        				// If there are more URL lines to try, then keep going without
-        				// error.  Otherwise, add this target to the list of failed targets
-        				// and give up.
-        				if (i + 1 < lines.size())
-        				{
-        					continue;
-        				}
-        				else
-        				{
-                        	failedFetchTargets.add(target);
-                        	throw new BagTransferException(e);
-        				}
-        			}
-        		}
-        	}
-        }
-        
         private void fetchSingleLine(FetchTxt.FilenameSizeUrl fetchLine) throws BagTransferException
         {
         	FetchedFileDestination destination = null;
+        	BagFile committedFile = null;
         	
         	try
         	{        				 
@@ -748,11 +794,11 @@ public final class BagFetcher implements Cancellable, ProgressListenable
 
                 // Finally, commit the file.
                 log.trace("Committing destination.");
-                BagFile committedFile = destination.commit();
-
+                committedFile = destination.commit();
+                  
                 newBagFiles.add(committedFile); // synchronized
 
-                log.trace(format("Fetched: {0} -> {1}", uri, destinationPath));
+                log.trace(format("Fetched: {0} -> {1}", uri, destinationPath));                
         	}
         	catch (BagTransferCancelledException e)
         	{
@@ -763,6 +809,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable
                 String msg = format("An error occurred while fetching target: {0}", fetchLine);
                 log.warn(msg, e);
                 
+                fetchLine.setFetchStatus(FetchStatus.FETCH_FAILED);
+                
                 if (destination != null)
                 {
                 	destination.abandon();
@@ -770,6 +818,30 @@ public final class BagFetcher implements Cancellable, ProgressListenable
                 }
 
                 throw new BagTransferException(e);
+        	}
+        	
+        	if(committedFile != null && committedFile.exists()){
+        		InputStream stream = null;
+        		try{
+        			stream = committedFile.newInputStream();
+                    boolean fixityMatches = false;
+        			for(Manifest manifest : bagToFetch.getPayloadManifests()){
+                    	if(MessageDigestHelper.fixityMatches(stream, manifest.getAlgorithm(), manifest.get(fetchLine.getFilename()))){
+                            fetchLine.setFetchStatus(FetchStatus.SUCCEEDED);
+                            fixityMatches = true;
+                            break;
+                    	}
+                    }
+        			if(!fixityMatches){
+                        fetchLine.setFetchStatus(FetchStatus.VERIFY_FAILED);
+                        String msg = format("The checksum of the fetched target {0} does not match that in the manifest.", fetchLine);
+                        log.warn(msg);
+                        throw new BagTransferException(msg);
+        			}
+        		}finally
+                {
+                	IOUtils.closeQuietly(stream);
+                }        		
         	}
         }
         

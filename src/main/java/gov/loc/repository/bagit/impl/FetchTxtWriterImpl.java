@@ -22,20 +22,30 @@ public class FetchTxtWriterImpl implements FetchTxtWriter {
 	}
 	
 	@Override
-	public void write(String filename, Long size, String url) {
+	public void write(String filename, Long size, String url, FetchTxt.FetchStatus fetchStatus) {
 		String sizeString = FetchTxt.NO_SIZE_MARKER;
 		if (size != null) {
 			sizeString = size.toString();
 		}
 		try {
 			String newUrl = url.replaceAll(" ", "%20");
-			this.writer.println(newUrl + SEPARATOR + sizeString + SEPARATOR + filename);
-			log.debug(MessageFormat.format("Wrote to fetch.txt:  Filename is {0}.  Size is {1}. Url is {2}.", filename, size, newUrl));
+			StringBuilder sb = new StringBuilder();
+			sb.append(newUrl)
+			  .append(SEPARATOR)
+			  .append(sizeString)
+			  .append(SEPARATOR)
+			  .append(filename);
+			if(fetchStatus != null){
+				sb.append(SEPARATOR)
+				  .append("[").append(fetchStatus.toString()).append("]");
+			}
+			  
+			this.writer.println(sb.toString());
+			log.debug(MessageFormat.format("Wrote to fetch.txt:  Filename is {0}.  Size is {1}. Url is {2}.  Fetch status is {3}.", filename, size, newUrl, fetchStatus));
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
-		
 	}
 		
 	public void close() {

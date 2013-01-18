@@ -73,7 +73,7 @@ public class FetchTxtImpl extends ArrayList<FilenameSizeUrl> implements FetchTxt
 		FetchTxtWriter writer = this.bagPartFactory.createFetchTxtWriter(out);
 		try {
 			for(FilenameSizeUrl filenameSizeUrl : this) {
-				writer.write(filenameSizeUrl.getFilename(), filenameSizeUrl.getSize(), filenameSizeUrl.getUrl());
+				writer.write(filenameSizeUrl.getFilename(), filenameSizeUrl.getSize(), filenameSizeUrl.getUrl(), filenameSizeUrl.getFetchStatus());
 			}
 		} finally {
 			IOUtils.closeQuietly(writer);
