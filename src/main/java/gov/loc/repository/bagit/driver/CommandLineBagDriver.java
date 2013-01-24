@@ -334,7 +334,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_RETRIEVE, 
 				"Retrieves a bag exposed by a web server. A local holey bag is not required.", 
-				new Parameter[] {destParam, retrieveUrlParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam},
+				new Parameter[] {destParam, retrieveUrlParam, relaxSSLParam, threadsParam, fetchRetryParam, fetchFileFailThreshold, fetchFailThreshold, usernameParam, passwordParam, resumeParam, verifyParam},
 				new String[] {MessageFormat.format("bag {0} {1} http://www.loc.gov/bags/mybag", OPERATION_RETRIEVE, this.getBag("myDestBag"))});
 		
 		this.addOperation(OPERATION_FILL_HOLEY, 
@@ -959,7 +959,7 @@ public class CommandLineBagDriver {
 			    	bag.close();
 			    }
 			} else if (OPERATION_RETRIEVE.equals(operation.name)) {
-				SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL), config.getBoolean(PARAM_RESUME));
+				SimpleResult result = fetcher.fetchRemoteBag(destFile, config.getString(PARAM_URL), config.getBoolean(PARAM_RESUME), config.getBoolean(PARAM_VERIFY));
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
