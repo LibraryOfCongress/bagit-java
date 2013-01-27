@@ -12,6 +12,7 @@ public abstract class AbstractBagConstants implements BagConstants {
 	public static final String DATA_DIRECTORY = "data";
 	public static final String BAGINFO_TXT = "bag-info.txt";
 	public static final String FETCH_TXT = "fetch.txt";
+	public static final String FETCH_PROGRESS_TXT = "fetch-progress.txt";
 	
 	public String getPayloadManifestPrefix() {
 		return PAYLOAD_MANIFEST_PREFIX;
@@ -41,5 +42,9 @@ public abstract class AbstractBagConstants implements BagConstants {
 	
 	public String getFetchTxt() {
 		return FETCH_TXT;
+	}
+	
+	public String getFetchProgressTxt() {
+		return FETCH_PROGRESS_TXT;
 	}
 }

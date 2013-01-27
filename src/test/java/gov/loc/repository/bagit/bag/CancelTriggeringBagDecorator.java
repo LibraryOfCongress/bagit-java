@@ -106,6 +106,12 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 		this.increment();
 		return realBag.getFetchTxt();
 	}
+	
+	public FetchTxt getFetchProgressTxt()
+	{
+		this.increment();
+		return realBag.getFetchProgressTxt();
+	}
 
 	public File getFile()
 	{

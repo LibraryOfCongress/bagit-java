@@ -4,20 +4,20 @@ import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFile;
 
-public class FetchTxtImpl extends AbstractFetchTxtImpl {
+public class FetchProgressTxtImpl extends AbstractFetchTxtImpl {
 
 	private static final long serialVersionUID = 1L;
-	
-	public FetchTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory) {
+
+	public FetchProgressTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory) {
 		super(bagConstants, bagPartFactory);
 	}
 	
-	public FetchTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory, BagFile sourceBagFile) {
+	public FetchProgressTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory, BagFile sourceBagFile) {
 		super(bagConstants, bagPartFactory, sourceBagFile);
 	}
-	
+
 	public String getName(){
-		this.name = this.bagConstants.getFetchTxt();
+		this.name = this.bagConstants.getFetchProgressTxt();
 		return this.name;
 	}
 }

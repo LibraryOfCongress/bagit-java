@@ -4,10 +4,12 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URI;
 
 import org.apache.commons.io.FileUtils;
@@ -21,18 +23,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(JMock.class)
-public class BagFetcherTest
-{
+public class BagFetcherTest{
 	private static File tempDir = new File("target/unittestdata/BagFetcherTest");
 	private Mockery context = new Mockery();
 	private BagFactory bagFactory = new BagFactory();
 	private BagFetcher unit;
 	
 	@Before
-	public void setUp() throws Exception 
-	{
-		if (tempDir.exists())
-			FileUtils.forceDelete(tempDir);
+	public void setUp() throws Exception {
+		if (tempDir.exists()){
+			FileUtils.forceDelete(tempDir);			
+		}
 		
 		tempDir.mkdirs();
 		
@@ -44,15 +45,14 @@ public class BagFetcherTest
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
-		if (tempDir.exists())
-			FileUtils.deleteQuietly(tempDir);
+	public void tearDown() throws Exception {
+		if (tempDir.exists()){
+			FileUtils.deleteQuietly(tempDir);			
+		}
 	}
 
 	@Test
-	public void testFetchSingleThread() throws Exception
-	{
+	public void testFetchSingleThread() throws Exception{
 		this.unit.setNumberOfThreads(1);
 
 		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);		
@@ -91,8 +91,7 @@ public class BagFetcherTest
 	}
 	
 	@Test
-	public void testFailsFast() throws Exception
-	{
+	public void testFailsFast() throws Exception{
 		this.unit.setNumberOfThreads(1);
 		this.unit.setFetchFailStrategy(StandardFailStrategies.FAIL_FAST);
 
@@ -128,8 +127,7 @@ public class BagFetcherTest
 	}
 	
 	@Test
-	public void testRetriesFile() throws Exception
-	{
+	public void testRetriesFile() throws Exception{
 		this.unit.setNumberOfThreads(1);
 		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_RETRY);
 
@@ -175,8 +173,7 @@ public class BagFetcherTest
 	}
 
 	@Test
-	public void testRetriesNextFile() throws Exception
-	{
+	public void testRetriesNextFile() throws Exception{
 		this.unit.setNumberOfThreads(1);
 		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_CONTINUE);
 
@@ -219,10 +216,97 @@ public class BagFetcherTest
 		
 		assertFalse("Bag failed transfer.", result.isSuccess());
 	}
+
+	@Test
+	public void testResume() throws Exception{
+		this.copyPartialBag();
+		
+		this.unit.setNumberOfThreads(1);
+		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_CONTINUE);
+
+		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
+		final FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class);
+		final FetchProtocol mockProtocol = this.context.mock(FetchProtocol.class);
+		final FileFetcher mockFetcher = this.context.mock(FileFetcher.class);
+		
+		final Bag bag = this.bagFactory.createBag(tempDir);
+
+		context.checking(new Expectations() {{
+			// Destination - first file
+			one(mockDestinationFactory).createDestination("data/dir1/test3.txt", null); will(returnValue(mockDestination));
+			allowing(mockDestination).getFilepath(); will(returnValue("data/dir1/test3.txt"));
+			never(mockDestination).commit();
+			one(mockDestination).abandon();
+						
+			// Destination - second file
+			expectDest(this, mockDestinationFactory, "data/dir2/dir3/test5.txt");
+			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"), null);	will(returnValue(mockFetcher));
+			
+			allowing(mockFetcher).initialize(); 
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));  will(throwException(new BagTransferException("Unit test failure.")));
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); 
+			never(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));
+			never(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));
+			never(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));
+			allowing(mockFetcher).close(); 
+			
+		}});
+
+		this.unit.registerProtocol("http", mockProtocol);
+		SimpleResult result = this.unit.fetch(bag, mockDestinationFactory, true, false);
+		assertFalse(result.isSuccess());
+		
+		this.deletePartialBag();
+	}
+	
+	@Test
+	public void testVerify() throws Exception
+	{
+		this.copyPartialBag();
+		
+		this.unit.setNumberOfThreads(1);
+		this.unit.setFetchFailStrategy(StandardFailStrategies.ALWAYS_CONTINUE);
+
+		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
+		//final FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class);
+		final FetchProtocol mockProtocol = this.context.mock(FetchProtocol.class);
+		final FileFetcher mockFetcher = this.context.mock(FileFetcher.class);
+		
+		final Bag bag = this.bagFactory.createBag(tempDir);
+
+		context.checking(new Expectations() {{
+			// Destination - fourth file
+			expectDest(this, mockDestinationFactory, "data/test 1.txt");
+				
+			// Destination - fifth file
+			expectDest(this, mockDestinationFactory, "data/test2.txt");			
+			
+			one(mockProtocol).createFetcher(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"), null);	will(returnValue(mockFetcher));
+			
+			allowing(mockFetcher).initialize(); 
+			//The first file is fetched and valid despite the status in fetch-progress.txt
+			never(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir1/test3.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));  will(throwException(new BagTransferException("Unit test failure.")));
+			//The second file is fetched and valid despite the status in fetch-progress.txt
+			never(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/dir3/test5.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class))); 
+			never(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/dir2/test4.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));
+			//The fourth file is missing in the partially fetched bag
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test%201.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));
+			//The fifth file is corrupted
+			one(mockFetcher).fetchFile(with(equal(new URI("http://localhost:8989/bags/v0_96/holey-bag/data/test2.txt"))), with(any(Long.class)), with(aNonNull(FetchedFileDestination.class)), with(aNonNull(FetchContext.class)));
+			allowing(mockFetcher).close(); 
+			
+		}});
+
+		this.unit.registerProtocol("http", mockProtocol);
+		SimpleResult result = this.unit.fetch(bag, mockDestinationFactory, true, true);
+		assertTrue(result.isSuccess());
+		assertTrue(bag.getFetchProgressTxt() == null);
+
+		this.deletePartialBag();		
+	}
 	
 	@Test(expected=BagTransferException.class)
-	public void testMissingFetchTxt() throws Exception
-	{
+	public void testMissingFetchTxt() throws Exception{
 		final FetchedFileDestinationFactory mockDestinationFactory = this.context.mock(FetchedFileDestinationFactory.class);
 		File fetchTxtFile = new File(tempDir, this.bagFactory.getBagConstants().getFetchTxt());
 		assertTrue(fetchTxtFile.exists());
@@ -234,10 +318,9 @@ public class BagFetcherTest
 		
 	}
 
-	
-	private void expectDest(Expectations e, FetchedFileDestinationFactory destFactory, String path) throws Exception
-	{
+	private void expectDest(Expectations e, FetchedFileDestinationFactory destFactory, String path) throws Exception{
 		FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class, "FetchedFileDestination:" + path);
+		BagFile mockCommittedFile = this.context.mock(BagFile.class, "BagFile:" + path);
 		
 		// Make the factory return a new destination.
 		e.one(destFactory).createDestination(path, null);
@@ -255,9 +338,35 @@ public class BagFetcherTest
 		// e.will(Expectations.returnValue(new NullOutputStream()));
 		
 		// 3) Be committed once.		
-		e.one(mockDestination).commit();
+		e.one(mockDestination).commit(); 
+		e.will(Expectations.returnValue(mockCommittedFile));
+
+		e.one(mockCommittedFile).exists();
+		e.will(Expectations.returnValue(true));
+
+		e.one(mockCommittedFile).newInputStream();
+		e.will(Expectations.returnValue(new FileInputStream(ResourceHelper.getFile("bags/v0_96/holey-bag/" + path))));
 		
 		// 4) Will not be abandoned.
 		e.never(mockDestination).abandon();
+	}
+	
+	private void copyPartialBag() throws Exception{
+		if (tempDir.exists()){
+			FileUtils.forceDelete(tempDir);			
+		}
+		
+		tempDir.mkdirs();
+		
+		this.unit = new BagFetcher(this.bagFactory);
+		this.unit.setFetchFailStrategy(new ThrowExceptionFailStrategy());
+
+		FileUtils.copyDirectory(ResourceHelper.getFile("bags/v0_96/holey-bag-partially-fetched"), tempDir);
+	}
+	
+	private void deletePartialBag() throws Exception{
+		if (tempDir.exists()){
+			FileUtils.deleteQuietly(tempDir);			
+		}	
 	}
 }

@@ -259,6 +259,11 @@ public abstract class AbstractBag implements Bag {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a FetchTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchTxt(bagFile));
 			}
+			//Is a FetchProgressTxt
+			else if (bagFile.exists() && (! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchProgressTxt())) {
+				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a FetchProgressTxt", bagFile.getFilepath()));
+				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchProgressTxt(bagFile));
+			}
 			else {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), bagFile);	
@@ -451,6 +456,14 @@ public abstract class AbstractBag implements Bag {
 	public FetchTxt getFetchTxt() {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getFetchTxt());
+		if (bagFile != null && bagFile instanceof FetchTxt) return (FetchTxt)bagFile;
+		return null;
+	}
+	
+	@Override
+	public FetchTxt getFetchProgressTxt() {
+		checkClosed();
+		BagFile bagFile = this.getBagFile(this.getBagConstants().getFetchProgressTxt());
 		if (bagFile != null && bagFile instanceof FetchTxt) return (FetchTxt)bagFile;
 		return null;
 	}

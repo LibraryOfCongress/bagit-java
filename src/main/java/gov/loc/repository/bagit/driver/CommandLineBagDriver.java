@@ -191,7 +191,7 @@ public class CommandLineBagDriver {
 		Parameter bagInfoTxtParam = new FlaggedOption(PARAM_BAGINFOTXT, FileStringParser.getParser().setMustExist(true), null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_BAGINFOTXT, "An external bag-info.txt file to include in the bag.");
 		Parameter noResultFileParam = new Switch(PARAM_NO_RESULTFILE, JSAP.NO_SHORTFLAG, PARAM_NO_RESULTFILE, "Suppress creating a result file.");
 		Parameter resumeParam = new Switch(PARAM_RESUME, JSAP.NO_SHORTFLAG, PARAM_RESUME, "Resume from where the fetch left off.");
-		Parameter verifyParam = new Switch(PARAM_VERIFY, JSAP.NO_SHORTFLAG, PARAM_VERIFY, "Verify the bag before resume fetch.");
+		Parameter verifyParam = new Switch(PARAM_VERIFY, JSAP.NO_SHORTFLAG, PARAM_VERIFY, "Verify the bag before fetch is resumed.");
 		Parameter maxBagSizeParam = new FlaggedOption(PARAM_MAX_BAG_SIZE, JSAP.DOUBLE_PARSER, null, JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PARAM_MAX_BAG_SIZE, "The max size of a split bag in GB. Default is 300GB.");
 		Parameter keepLowestLevelDirParam = new Switch(PARAM_KEEP_LOWEST_LEVEL_DIR, JSAP.NO_SHORTFLAG, PARAM_KEEP_LOWEST_LEVEL_DIR, "Does not split the lowest level directory.");
 		Parameter fileExtensionsParam = new UnflaggedOption(PARAM_FILE_EXTENSIONS, JSAP.STRING_PARSER, null, JSAP.REQUIRED, JSAP.NOT_GREEDY, "File types delimited by a comma will be grouped into different bags; file types delimited by a colon will be grouped into one single bag.");

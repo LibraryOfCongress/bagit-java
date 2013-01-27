@@ -32,13 +32,13 @@ public class FetchTxtWriterImpl implements FetchTxtWriter {
 			StringBuilder sb = new StringBuilder();
 			sb.append(newUrl)
 			  .append(SEPARATOR)
-			  .append(sizeString)
-			  .append(SEPARATOR)
-			  .append(filename);
+			  .append(sizeString);
 			if(fetchStatus != null){
 				sb.append(SEPARATOR)
-				  .append("[").append(fetchStatus.toString()).append("]");
+				  .append(fetchStatus.toString());
 			}
+			sb.append(SEPARATOR)
+			  .append(filename);
 			  
 			this.writer.println(sb.toString());
 			log.debug(MessageFormat.format("Wrote to fetch.txt:  Filename is {0}.  Size is {1}. Url is {2}.  Fetch status is {3}.", filename, size, newUrl, fetchStatus));

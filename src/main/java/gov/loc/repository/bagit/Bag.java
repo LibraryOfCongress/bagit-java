@@ -122,7 +122,9 @@ public interface Bag extends Closeable {
 	BagInfoTxt getBagInfoTxt();
 	
 	FetchTxt getFetchTxt();
-		
+	
+	FetchTxt getFetchProgressTxt();
+	
 	Format getFormat();
 
 	/**
@@ -300,6 +302,13 @@ public interface Bag extends Closeable {
 		 * @return The constant.
 		 */
 		String getFetchTxt();
+		
+		/**
+		 * Get the name of the fetch progress file, "fetch-progress.txt"
+		 * in the latest version.
+		 * @return The constant.
+		 */
+		String getFetchProgressTxt();
 
 		/**
 		 * Get the version of the spec these constants are for.
@@ -344,6 +353,10 @@ public interface Bag extends Closeable {
 		FetchTxtWriter createFetchTxtWriter(OutputStream out);
 		FetchTxt createFetchTxt();
 		FetchTxt createFetchTxt(BagFile sourceBagFile);
+		FetchTxtReader createFetchProgressTxtReader(InputStream in, String encoding);
+		FetchTxtWriter createFetchProgressTxtWriter(OutputStream out);
+		FetchTxt createFetchProgressTxt();
+		FetchTxt createFetchProgressTxt(BagFile sourceBagFile);
 		Version getVersion();	
 	}
 		

@@ -1,7 +1,6 @@
 package gov.loc.repository.bagit;
 
 import java.text.MessageFormat;
-import java.util.Comparator;
 import java.util.List;
 
 public interface FetchTxt extends List<FetchTxt.FilenameSizeUrl>, BagFile {
@@ -9,22 +8,10 @@ public interface FetchTxt extends List<FetchTxt.FilenameSizeUrl>, BagFile {
 	static final String NO_SIZE_MARKER = "-";
 
 	public enum FetchStatus {
-		NOT_FETCHED("NOT_FETCHED"), 
-		FETCH_FAILED("FETCH_FAILED"), 
-		VERIFY_FAILED("VERIFY_FAILED"), 
-		SUCCEEDED("SUCCEEDED");
-		
-		private final String name; 
-	
-		FetchStatus(String name){
-			this.name = name;
-	    }
-		
-		public static FetchStatus fromString(String name) throws IllegalArgumentException
-		{
-			return FetchStatus.valueOf(name.toUpperCase());
-			
-		}
+		NOT_FETCHED, 
+		FETCH_FAILED, 
+		VERIFY_FAILED, 
+		SUCCEEDED;
 	}
 
 	public class FilenameSizeUrl {
@@ -73,13 +60,11 @@ public interface FetchTxt extends List<FetchTxt.FilenameSizeUrl>, BagFile {
 			return url;
 		}
 
-		public FetchStatus getFetchStatus()
-		{
+		public FetchStatus getFetchStatus(){
 			return this.fetchStatus;
 		}
 		
-		public void setFetchStatus(FetchStatus fetchStatus)
-		{
+		public void setFetchStatus(FetchStatus fetchStatus){
 			this.fetchStatus = fetchStatus;
 		}
 		
@@ -123,36 +108,5 @@ public interface FetchTxt extends List<FetchTxt.FilenameSizeUrl>, BagFile {
 				return false;
 			return true;
 		}
-		
-		
-		/*
-		public class SizeSorter implements Comparator<FilenameSizeUrl>{
-	    	@Override
-			public int compare(FilenameSizeUrl left, FilenameSizeUrl right) {
-	    	{
-	            Long leftSize = left.getSize();
-	            Long rightSize = right.getSize();
-	            int result;
-	            
-	            if (leftSize == null)
-	            {
-	                if (rightSize == null)
-	                    result = 0;
-	                else
-	                    result = -1;
-	            }
-	            else
-	            {
-	                if (rightSize == null)
-	                    result = 1;
-	                else
-	                    result = leftSize.compareTo(rightSize);
-	            }
-	            
-	            return result;
-	    	}
-	     }
-	  }
-	  */
 	}
 }

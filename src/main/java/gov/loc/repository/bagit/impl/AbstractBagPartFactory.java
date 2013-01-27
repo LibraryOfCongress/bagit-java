@@ -122,5 +122,24 @@ public abstract class AbstractBagPartFactory implements BagPartFactory {
 	public FetchTxtWriter createFetchTxtWriter(OutputStream out) {
 		return new FetchTxtWriterImpl(out);
 	}
-			
+	
+	@Override
+	public FetchTxt createFetchProgressTxt() {
+		return new FetchProgressTxtImpl(this.bagConstants, this);
+	}
+
+	@Override
+	public FetchTxt createFetchProgressTxt(BagFile sourceBagFile) {
+		return new FetchProgressTxtImpl(this.bagConstants, this, sourceBagFile);
+	}
+
+	@Override
+	public FetchTxtReader createFetchProgressTxtReader(InputStream in, String encoding) {
+		return new FetchTxtReaderImpl(in, encoding);
+	}
+
+	@Override
+	public FetchTxtWriter createFetchProgressTxtWriter(OutputStream out) {
+		return new FetchTxtWriterImpl(out);
+	}
 }

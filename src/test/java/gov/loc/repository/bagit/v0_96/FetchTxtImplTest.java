@@ -34,7 +34,7 @@ public class FetchTxtImplTest
     @Test
     public void testLeavesWhitespaceInFilename()
     {
-        ByteArrayInputStream in = new ByteArrayInputStream("http://example.org - data/this is a [filename] with spaces [FETCH_FAILED] ".getBytes());
+        ByteArrayInputStream in = new ByteArrayInputStream("http://example.org - FETCH_FAILED data/this is a [filename] with spaces".getBytes());
         FetchTxtReaderImpl reader = new FetchTxtReaderImpl(in, "UTF-8");
         
         assertTrue(reader.hasNext());
@@ -45,7 +45,7 @@ public class FetchTxtImplTest
         assertNull(line.getSize());
         assertEquals("data/this is a [filename] with spaces", line.getFilename());
 
-        assertEquals("FETCH_FAILED", line.getFetchStatus().toString());
+        assertEquals(FetchTxt.FetchStatus.FETCH_FAILED, line.getFetchStatus());
 
     }
 }

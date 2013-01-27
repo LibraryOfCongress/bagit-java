@@ -31,6 +31,14 @@ a bad thing.
 
 RELEASE NOTES:
 
+
+Changes in 4.6:
+1. Added tag file fetch-progress.txt to support progressive fetch and verification.  The file 
+	will be removed once the bag is successfully fetched.  In BagFetcher, added verification
+	of a fetched file against the checksum in the manifest file.  Added switch verify to fill 
+	holey bag and fetch remote bag command-line operations.  This option enables bag verification 
+	before the fetch is resumed.
+	
 Changes in 4.5.1:
 1. Added missing braces to conditional blocks in ValidHoleyBagVerifier.  This caused false
 	error message when verifying a holey bag.
