@@ -268,15 +268,21 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         	}
         }
         
+        log.debug(format("Fetch completed with result: {0}", finalResult.isSuccess()));
+
         if(finalResult.isSuccess()){
-        	//Remove fetch-progress.txt when fetch is successful.
+        	//Remove fetch-progress.txt when fetch is successful. 
         	this.deleteFetchProgressTxtOnDisk();
+
+        	//Verify the bag to make sure that the return of success means the fetched bag is valid.
+        	this.bagToFetch.loadFromManifests();
+        	SimpleResult bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
+            log.debug(format("Verify valid completed with result: {0}", bagVerifyResult.isSuccess()));
+            return bagVerifyResult;
         }else{
             this.updateFetchProgressTxtOnDisk();        	
-        }
-        
-        log.debug(format("Fetch completed with result: {0}", finalResult.isSuccess()));
-        return finalResult;
+            return finalResult;
+        }        
     }
     
     private void updateFetchProgressTxtOnDisk(){
