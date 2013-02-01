@@ -26,7 +26,6 @@ public abstract class AbstractFetchTxtImpl extends ArrayList<FilenameSizeUrl> im
 	
 	private static final long serialVersionUID = 1L;
 	
-	protected String name;
 	protected BagConstants bagConstants;
 	protected BagPartFactory bagPartFactory;
 	protected BagFile sourceBagFile = null;
@@ -36,12 +35,12 @@ public abstract class AbstractFetchTxtImpl extends ArrayList<FilenameSizeUrl> im
 	
 	public AbstractFetchTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory) {
 		this.init(bagConstants, bagPartFactory);
-		log.info(MessageFormat.format("Creating new {0}.", this.name));
+		log.info(MessageFormat.format("Creating new {0}.", this.getName()));
 	}
 	
 	public AbstractFetchTxtImpl(BagConstants bagConstants, BagPartFactory bagPartFactory, BagFile sourceBagFile) {
 		this.init(bagConstants, bagPartFactory);
-		log.info(MessageFormat.format("Creating {0}.", this.name));
+		log.info(MessageFormat.format("Creating {0}.", this.getName()));
 		this.sourceBagFile = sourceBagFile;
 		FetchTxtReader reader = bagPartFactory.createFetchTxtReader(sourceBagFile.newInputStream(), this.bagConstants.getBagEncoding());
 		try {
@@ -58,7 +57,6 @@ public abstract class AbstractFetchTxtImpl extends ArrayList<FilenameSizeUrl> im
 	private void init(BagConstants bagConstants, BagPartFactory bagPartFactory) {
 		this.bagConstants = bagConstants;
 		this.bagPartFactory = bagPartFactory;
-		this.name = this.getName();
 	}
 	
 	public InputStream newInputStream() {
@@ -86,7 +84,7 @@ public abstract class AbstractFetchTxtImpl extends ArrayList<FilenameSizeUrl> im
 	
 	
 	public String getFilepath() {
-		return this.name;
+		return this.getName();
 	}
 	
 	public long getSize() {

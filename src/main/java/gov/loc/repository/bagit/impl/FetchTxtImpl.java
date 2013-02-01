@@ -17,7 +17,6 @@ public class FetchTxtImpl extends AbstractFetchTxtImpl {
 	}
 	
 	public String getName(){
-		this.name = this.bagConstants.getFetchTxt();
-		return this.name;
+		return this.bagConstants.getFetchTxt();
 	}
 }

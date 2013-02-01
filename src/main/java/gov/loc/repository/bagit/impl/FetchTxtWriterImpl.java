@@ -41,7 +41,7 @@ public class FetchTxtWriterImpl implements FetchTxtWriter {
 			  .append(filename);
 			  
 			this.writer.println(sb.toString());
-			log.debug(MessageFormat.format("Wrote to fetch.txt:  Filename is {0}.  Size is {1}. Url is {2}.  Fetch status is {3}.", filename, size, newUrl, fetchStatus));
+			log.debug(MessageFormat.format("Filename is {0}.  Size is {1}. Url is {2}.  Fetch status is {3}.", filename, size, newUrl, fetchStatus));
 		}
 		catch(Exception ex) {
 			throw new RuntimeException(ex);
