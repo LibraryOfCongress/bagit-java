@@ -84,7 +84,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     private List<FetchTxt.FilenameSizeUrl> fetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>();
     private AtomicInteger nextFetchTargetIndex;
     private List<Fetcher> runningFetchers = Collections.synchronizedList(new ArrayList<Fetcher>());
-        
+    
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
     	this.numberOfThreads = Runtime.getRuntime().availableProcessors();
@@ -436,11 +436,11 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         
         int next = this.nextFetchTargetIndex.getAndIncrement();
         int size = this.fetchLines.size();
-        
+
         if (next < size){
             nextItem = this.fetchLines.get(next);
-            log.trace(format("Fetching {0}/{1}: {2}", next + 1, size, nextItem.getFilename()));
             this.progress("starting fetch", nextItem.getFilename(), (long)next + 1, (long)size);
+            log.trace(format("Fetching {0}/{1}: {2}", next + 1, size, nextItem.getFilename()));
         }else{
             nextItem = null;
             log.trace("Nothing left to fetch.  Returning null.");
@@ -657,10 +657,12 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                		String errorMsg = null;
 		                    if(fetchLine.getFetchStatus().equals(FetchStatus.FETCH_FAILED)){
 		                    	errorMsg = format("An error occurred while fetching target: {0}", fetchLine.getFilename());
-		                		result.addMessage(errorMsg);
+		                    	log.trace(errorMsg);
+		                		result.addMessage(FetchStatus.FETCH_FAILED.toString(), "{0}: {1}", "fetch failed", fetchLine.getFilename());
 		                    } else if(fetchLine.getFetchStatus().equals(FetchStatus.VERIFY_FAILED)){
 		                    	errorMsg = format("The checksum of the fetched target {0} does not match that in the manifest.", fetchLine.getFilename());
-		                		result.addMessage(errorMsg);
+		                    	log.trace(errorMsg);
+		                		result.addMessage(FetchStatus.VERIFY_FAILED.toString(), "{0}: {1}", "verify failed", fetchLine.getFilename());
 		                    }
 		                    result.setSuccess(false);
 		                    fetchLine = getNextFetchLine();
