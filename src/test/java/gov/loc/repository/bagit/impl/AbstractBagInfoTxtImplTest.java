@@ -171,6 +171,20 @@ public abstract class AbstractBagInfoTxtImplTest {
 		bagInfo.getBagInGroup();
 	}
 	
+	@Test(expected=RuntimeException.class)
+	public void testImproperlyFormatted() {
+		String bagInfoTxtStr = 
+			"Source-Organization: Spengler University\n" +
+			"Organization-Address: 1400 Elm St., Cupertino, California, 95014\n" +
+			"External-Description: This collection consists of six\n" +
+			"large-scale web crawls run against U.S. city web sites from May 2005\n" +
+			"to October 2007 as part of the Stanford WebBase project. Format:  ARC files\n" +
+			"generated from WebBase content.\n";
+
+		this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), bagInfoTxtStr));
+	}
+	
+	
 	@Test
 	public void testGetStandardFields() throws Exception {		
 		BagInfoTxt bagInfo = this.factory.createBagInfoTxt(new StringBagFile(this.constants.getBagInfoTxt(), this.getTestBagInfoTxtBagInfoTxtString()));

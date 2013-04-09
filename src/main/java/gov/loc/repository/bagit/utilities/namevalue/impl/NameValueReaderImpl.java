@@ -95,6 +95,8 @@ public class NameValueReaderImpl implements NameValueReader {
 			while(! this.lines.isEmpty() && this.lines.getFirst().matches("^( |\\t)+.+$")) {
 				value += " " + this.lines.removeFirst().replaceAll("^( |\\t)+", "");
 			}			
+		} else {
+			throw new RuntimeException("Improperly formatted line: " + line);
 		}
 		//If ends in \n then trim
 		if (value.endsWith("\n")) value = value.substring(0, value.length()-1);
