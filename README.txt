@@ -33,6 +33,7 @@ RELEASE NOTES:
 
 Changes in 4.7:
 1. Handle NPE when encountering improperly formatted bag-info.txt.
+2. Added progress reports to bag fetch. 
 
 Changes in 4.6:
 1. Added tag file fetch-progress.txt to support progressive fetch and verification.  The file 

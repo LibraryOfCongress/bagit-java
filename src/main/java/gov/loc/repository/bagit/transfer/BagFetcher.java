@@ -84,6 +84,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     private List<FetchTxt.FilenameSizeUrl> fetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>();
     private AtomicInteger nextFetchTargetIndex;
     private List<Fetcher> runningFetchers = Collections.synchronizedList(new ArrayList<Fetcher>());
+    private int fetchSuccessCounter = 0;
     
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
@@ -269,15 +270,18 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         }
         
         log.debug(format("Fetch completed with result: {0}", finalResult.isSuccess()));
-
+        progress(format("Fetch completed with result: {0}", finalResult.isSuccess()), "", null, null);
+        
         if(finalResult.isSuccess()){
         	//Remove fetch-progress.txt when fetch is successful. 
         	this.deleteFetchProgressTxtOnDisk();
 
         	//Verify the bag to make sure that the return of success means the fetched bag is valid.
+            progress("Verifing the fetched bag", "", null, null);
         	this.bagToFetch.loadFromManifests();
-        	SimpleResult bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
+        	SimpleResult bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW, this.progressListeners);
             log.debug(format("Verify valid completed with result: {0}", bagVerifyResult.isSuccess()));
+            progress(format("Verification result of the fetched bag: {0}", bagVerifyResult.isSuccess()), "", null, null);
             return bagVerifyResult;
         }else{
             this.updateFetchProgressTxtOnDisk();        	
@@ -300,7 +304,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     		//Update the status of files in fetch-progress.txt
         	for(FilenameSizeUrl fetchLine : this.fetchLines){
             	int index = fetchProgressTxt.indexOf(fetchLine);
-            	fetchProgressTxt.get(index).setFetchStatus(fetchLine.getFetchStatus());        	
+            	if(index >= 0){
+                	fetchProgressTxt.get(index).setFetchStatus(fetchLine.getFetchStatus());        	            		
+            	}
             }	
     	}    	
     	
@@ -386,7 +392,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     	}
     	
     	List<FetchTxt.FilenameSizeUrl> allFetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>(this.bagToFetch.getFetchTxt());        		        	
-    	SimpleResult bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW);
+        progress("Verifying the holey bag before fetching", "", null, null);
+    	SimpleResult bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW, this.progressListeners);
     	for(FetchTxt.FilenameSizeUrl fetchLine : allFetchLines){
     		if(BagHelper.isPayload(fetchLine.getFilename(), this.bagFactory.getBagConstants())){
     			if(SimpleResultHelper.isMissingPayloadFile(bagVerifyResult, fetchLine.getFilename())){
@@ -404,6 +411,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     }
     
     public void buildFetchTargets(boolean resume, boolean verify){
+        progress("Building fetch targets", "", null, null);
+    	
     	log.trace("Getting fetch lines.");
         //Verify the bag to get the status of payload files. 
     	if(verify){
@@ -619,6 +628,14 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 		}
 	}
     
+    private int getFetchSuccessCounter(){
+    	return this.fetchSuccessCounter;
+    }
+    
+    private synchronized void addFetchSuccessCounter(){
+    	this.fetchSuccessCounter++;
+    }
+    
 	private class Fetcher implements Callable<SimpleResult> {
     	private SimpleResult result = new SimpleResult(true);
     	private Map<String, FileFetcher> fetchers = new HashMap<String, FileFetcher>();
@@ -640,9 +657,12 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	            while (fetchLine != null && !isCancelled()){
 	            	try{
 						this.fetchFile(fetchLine);
+						addFetchSuccessCounter();
+                		progress("Fetch succeeded", fetchLine.getFilename(), new Long(getFetchSuccessCounter()), new Long(fetchLines.size()));
 						fetchLine = getNextFetchLine();
 					}catch (BagTransferCancelledException e){
-	                	log.info("Transfer cancelled.");
+                		progress("Fetch cancelled", "", null, null);
+						log.info("Transfer cancelled.");
 	                	result.addMessage("Transfer cancelled.");
 	                	result.setSuccess(false);
 	            		break;
@@ -653,16 +673,31 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                	if (failureAction == FetchFailureAction.RETRY_CURRENT){
 	                		// Do nothing.  The target variable will
 	                		// remain the same, and we'll loop back around.
+	                		progress("Fetch failed", fetchLine.getFilename(), null, null);
 	                	}else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
 	                		String errorMsg = null;
 		                    if(fetchLine.getFetchStatus().equals(FetchStatus.FETCH_FAILED)){
 		                    	errorMsg = format("An error occurred while fetching target: {0}", fetchLine.getFilename());
 		                    	log.trace(errorMsg);
 		                		result.addMessage(FetchStatus.FETCH_FAILED.toString(), "{0}: {1}", "fetch failed", fetchLine.getFilename());
-		                    } else if(fetchLine.getFetchStatus().equals(FetchStatus.VERIFY_FAILED)){
+		                		if(failStrategy instanceof ThresholdFailStrategy){
+			                		progress("Fetch failed", fetchLine.getFilename(), 
+			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailures()), 
+			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailureThreshold()));		                					                			
+		                		}else{
+			                		progress("Fetch failed", fetchLine.getFilename(), null, null);		                			
+		                		}
+		                	} else if(fetchLine.getFetchStatus().equals(FetchStatus.VERIFY_FAILED)){
 		                    	errorMsg = format("The checksum of the fetched target {0} does not match that in the manifest.", fetchLine.getFilename());
 		                    	log.trace(errorMsg);
 		                		result.addMessage(FetchStatus.VERIFY_FAILED.toString(), "{0}: {1}", "verify failed", fetchLine.getFilename());
+		                		if(failStrategy instanceof ThresholdFailStrategy){
+			                		progress("Verify failed", fetchLine.getFilename(), 
+			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailures()), 
+			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailureThreshold()));		                					                			
+		                		}else{
+			                		progress("Verify failed", fetchLine.getFilename(), null, null);		                			
+		                		}
 		                    }
 		                    result.setSuccess(false);
 		                    fetchLine = getNextFetchLine();
@@ -671,7 +706,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                		// Make them finish up, too.
 	                		BagFetcher.this.cancel();
 	                		
-		                    result.addMessage(format("An error occurred while fetching target: {0}", fetchLine.getFilename()));
+	                		progress("Fetch completed with errors", "", null, null);
+
+	                		result.addMessage(format("An error occurred while fetching target: {0}", fetchLine.getFilename()));
 		                    result.setSuccess(false);
 		                    break;
 	                	}

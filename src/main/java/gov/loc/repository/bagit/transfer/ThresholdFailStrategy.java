@@ -53,6 +53,10 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 		return totalFailureThreshold;
 	}
 
+	public int getTotalFailures() {
+		return totalFailures;
+	}
+
 	public void setTotalFailureThreshold(int totalFailureThreshold) 
 	{
 		if (totalFailureThreshold < 0)
@@ -128,4 +132,6 @@ public class ThresholdFailStrategy implements FetchFailStrategy
 		
 		return action;
 	}
+	
+	
 }

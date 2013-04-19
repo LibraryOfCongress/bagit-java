@@ -156,6 +156,7 @@ public interface Bag extends Closeable {
 
 	SimpleResult verifyPayloadManifests(FailMode failMode);
 
+	SimpleResult verifyValid(FailMode failMode, List<ProgressListener> progressListeners);
 	
 	/**
 	 * Verify that each checksum in every tag manifest can be verified against

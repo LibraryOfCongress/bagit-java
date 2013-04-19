@@ -27,6 +27,7 @@ import gov.loc.repository.bagit.DeclareCloseable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.filesystem.DirNode;
@@ -407,6 +408,17 @@ public abstract class AbstractBag implements Bag {
 		checkClosed();
 		ValidVerifierImpl verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
 		verifier.setFailMode(failMode);
+		return verifier.verify(this);
+	}
+	
+	@Override
+	public SimpleResult verifyValid(FailMode failMode, List<ProgressListener> progressListeners) {
+		checkClosed();
+		ValidVerifierImpl verifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+		verifier.setFailMode(failMode);
+		for(ProgressListener progressListener : progressListeners){
+			verifier.addProgressListener(progressListener);			
+		}
 		return verifier.verify(this);
 	}
 	

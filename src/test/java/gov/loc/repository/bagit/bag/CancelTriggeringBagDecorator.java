@@ -14,6 +14,7 @@ import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.Cancellable;
 import gov.loc.repository.bagit.FetchTxt;
 import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
@@ -295,6 +296,12 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 	public SimpleResult verifyValid(FailMode failMode) {
 		this.increment();
 		return realBag.verifyValid(failMode);
+	}
+	
+	@Override
+	public SimpleResult verifyValid(FailMode failMode, List<ProgressListener> progressListeners) {
+		this.increment();
+		return realBag.verifyValid(failMode, progressListeners);
 	}
 	
 	public Bag write(Writer writer, File file)
