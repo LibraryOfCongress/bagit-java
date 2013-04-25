@@ -83,8 +83,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     private Bag bagToFetch;
     private List<FetchTxt.FilenameSizeUrl> fetchLines = new ArrayList<FetchTxt.FilenameSizeUrl>();
     private AtomicInteger nextFetchTargetIndex;
+    private AtomicInteger fetchSuccessCounter = new AtomicInteger(0);
     private List<Fetcher> runningFetchers = Collections.synchronizedList(new ArrayList<Fetcher>());
-    private int fetchSuccessCounter = 0;
     
     public BagFetcher(BagFactory bagFactory) {
     	this.bagFactory = bagFactory;
@@ -270,7 +270,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         }
         
         log.debug(format("Fetch completed with result: {0}", finalResult.isSuccess()));
-        progress(format("Fetch completed with result: {0}", finalResult.isSuccess()), "", null, null);
+        progress("Fetch completed", "", null, null);
         
         if(finalResult.isSuccess()){
         	//Remove fetch-progress.txt when fetch is successful. 
@@ -281,7 +281,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         	this.bagToFetch.loadFromManifests();
         	SimpleResult bagVerifyResult = this.bagToFetch.verifyValid(FailMode.FAIL_SLOW, this.progressListeners);
             log.debug(format("Verify valid completed with result: {0}", bagVerifyResult.isSuccess()));
-            progress(format("Verification result of the fetched bag: {0}", bagVerifyResult.isSuccess()), "", null, null);
+            progress("Verify valid completed", "", null, null);
             return bagVerifyResult;
         }else{
             this.updateFetchProgressTxtOnDisk();        	
@@ -312,6 +312,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     	
         BagFactory bagFactory = new gov.loc.repository.bagit.BagFactory();
         UpdateCompleter completer = new UpdateCompleter(bagFactory);	
+ 		this.addProgressListeners(completer);
 		
 		//Payload files will not be updated by passing an empty lists to the following 
 		completer.setLimitAddPayloadDirectories(new ArrayList<String>());
@@ -334,6 +335,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 		
 		//Write the updated tag files on disk
 		FileSystemWriter writer = new FileSystemWriter(bagFactory);
+ 		this.addProgressListeners(writer);		
 		writer.setTagFilesOnly(true);
 		this.bagToFetch.write(writer, this.bagToFetch.getFile());
     }
@@ -348,7 +350,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     	
     	BagFactory bagFactory = new gov.loc.repository.bagit.BagFactory();
         UpdateCompleter completer = new UpdateCompleter(bagFactory);	
- 		
+ 		this.addProgressListeners(completer);
+
  		//Payload files will not be updated by passing an empty lists to the following 
  		completer.setLimitAddPayloadDirectories(new ArrayList<String>());
  		completer.setLimitAddPayloadFilepaths(new ArrayList<String>());
@@ -370,15 +373,24 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
  		
  		//Write the updated tag files on disk
  		FileSystemWriter writer = new FileSystemWriter(bagFactory);
+ 		this.addProgressListeners(writer);
  		writer.setTagFilesOnly(true);
  		writer.setFilesThatDoNotMatchManifestOnly(true);
  		this.bagToFetch.write(writer, this.bagToFetch.getFile());
     }
     
+    private void addProgressListeners(ProgressListenable progressListenable){
+    	for(ProgressListener progressListener : this.progressListeners){
+    		progressListenable.addProgressListener(progressListener);
+        }
+    }
+    
     private void checkBagSanity() throws BagTransferException{
     	log.debug("Checking sanity of bag prior to fetch.");
-    	
-    	SimpleResult verifyResult = this.bagToFetch.verify(new ValidHoleyBagVerifier());
+        progress("Checking sanity of bag prior to fetch", "", null, null);
+        ValidHoleyBagVerifier verifier = new ValidHoleyBagVerifier();
+        this.addProgressListeners(verifier);
+    	SimpleResult verifyResult = this.bagToFetch.verify(verifier);
     	
     	if (!verifyResult.isSuccess()){
     		throw new BagTransferException(format("Bag is not valid: {0}", verifyResult.toString()));
@@ -628,14 +640,6 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 		}
 	}
     
-    private int getFetchSuccessCounter(){
-    	return this.fetchSuccessCounter;
-    }
-    
-    private synchronized void addFetchSuccessCounter(){
-    	this.fetchSuccessCounter++;
-    }
-    
 	private class Fetcher implements Callable<SimpleResult> {
     	private SimpleResult result = new SimpleResult(true);
     	private Map<String, FileFetcher> fetchers = new HashMap<String, FileFetcher>();
@@ -657,8 +661,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	            while (fetchLine != null && !isCancelled()){
 	            	try{
 						this.fetchFile(fetchLine);
-						addFetchSuccessCounter();
-                		progress("Fetch succeeded", fetchLine.getFilename(), new Long(getFetchSuccessCounter()), new Long(fetchLines.size()));
+						int index = fetchSuccessCounter.incrementAndGet();
+                		progress("Fetched", fetchLine.getFilename(), new Long(index), new Long(fetchLines.size()));
 						fetchLine = getNextFetchLine();
 					}catch (BagTransferCancelledException e){
                 		progress("Fetch cancelled", "", null, null);
@@ -673,31 +677,16 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                	if (failureAction == FetchFailureAction.RETRY_CURRENT){
 	                		// Do nothing.  The target variable will
 	                		// remain the same, and we'll loop back around.
-	                		progress("Fetch failed", fetchLine.getFilename(), null, null);
 	                	}else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
 	                		String errorMsg = null;
 		                    if(fetchLine.getFetchStatus().equals(FetchStatus.FETCH_FAILED)){
 		                    	errorMsg = format("An error occurred while fetching target: {0}", fetchLine.getFilename());
 		                    	log.trace(errorMsg);
 		                		result.addMessage(FetchStatus.FETCH_FAILED.toString(), "{0}: {1}", "fetch failed", fetchLine.getFilename());
-		                		if(failStrategy instanceof ThresholdFailStrategy){
-			                		progress("Fetch failed", fetchLine.getFilename(), 
-			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailures()), 
-			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailureThreshold()));		                					                			
-		                		}else{
-			                		progress("Fetch failed", fetchLine.getFilename(), null, null);		                			
-		                		}
 		                	} else if(fetchLine.getFetchStatus().equals(FetchStatus.VERIFY_FAILED)){
 		                    	errorMsg = format("The checksum of the fetched target {0} does not match that in the manifest.", fetchLine.getFilename());
 		                    	log.trace(errorMsg);
 		                		result.addMessage(FetchStatus.VERIFY_FAILED.toString(), "{0}: {1}", "verify failed", fetchLine.getFilename());
-		                		if(failStrategy instanceof ThresholdFailStrategy){
-			                		progress("Verify failed", fetchLine.getFilename(), 
-			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailures()), 
-			                				new Long(((ThresholdFailStrategy)failStrategy).getTotalFailureThreshold()));		                					                			
-		                		}else{
-			                		progress("Verify failed", fetchLine.getFilename(), null, null);		                			
-		                		}
 		                    }
 		                    result.setSuccess(false);
 		                    fetchLine = getNextFetchLine();
@@ -705,9 +694,6 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                		// Stopping includes stopping all other thread
 	                		// Make them finish up, too.
 	                		BagFetcher.this.cancel();
-	                		
-	                		progress("Fetch completed with errors", "", null, null);
-
 	                		result.addMessage(format("An error occurred while fetching target: {0}", fetchLine.getFilename()));
 		                    result.setSuccess(false);
 		                    break;
@@ -740,12 +726,15 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
                 FileFetcher fetcher = this.getFetcher(uri, size);
                 
                 // Now do the fetch.
+        		progress("Fetching", filenameSizeUrl.getFilename(), null, null);		                			
                 log.trace(format("Fetching: {0} {1} {2}", uri, size == null ? "-" : size, destinationPath));
                 fetcher.fetchFile(uri, size, destination, new MyContext());
 
                 // Finally, commit the file.
                 log.trace("Committing destination.");
                 committedFile = destination.commit();
+
+                progress("Fetched", filenameSizeUrl.getFilename(), null, null);		                			
                   
                 log.trace(format("Fetched: {0} -> {1}", uri, destinationPath));                
         	}catch (BagTransferCancelledException e){
@@ -766,6 +755,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         	
         	//After a file is fetched successfully, verify the checksum of the file against that in the manifest files.
         	if(bagToFetch != null && committedFile != null && committedFile.exists()){
+        		progress("Verifying", filenameSizeUrl.getFilename(), null, null);		                			
         		InputStream stream = null;
         		try{
         			stream = committedFile.newInputStream();
@@ -783,6 +773,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
                         log.warn(msg);
                         throw new BagTransferException(msg);
         			}
+            		progress("Verification completed", filenameSizeUrl.getFilename(), null, null);		                			
         		}finally {
                 	IOUtils.closeQuietly(stream);
                 }        		
