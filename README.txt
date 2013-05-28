@@ -31,6 +31,9 @@ a bad thing.
 
 RELEASE NOTES:
 
+Changes in 4.8:
+1. Added additional convenience method to FileHelper.
+
 Changes in 4.7:
 1. Handle NPE when encountering improperly formatted bag-info.txt.
 2. Added progress reports to bag fetch. 

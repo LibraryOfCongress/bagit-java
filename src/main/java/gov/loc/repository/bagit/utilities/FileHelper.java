@@ -4,6 +4,8 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,4 +39,13 @@ public class FileHelper {
 		}
 		return files;
 	}
+	
+	public static Collection<File> normalizeForm(Collection<File> files) {
+		Collection<File> newFiles = new ArrayList<File>(files.size());
+		for(File file : files) {
+			newFiles.add(normalizeForm(file));
+		}		
+		return newFiles;
+	}
+
 }
