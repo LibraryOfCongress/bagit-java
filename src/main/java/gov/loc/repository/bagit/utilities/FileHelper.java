@@ -34,6 +34,7 @@ public class FileHelper {
 	}
 	
 	public static File[] normalizeForm(File[] files) {
+		if (files == null) return null;
 		for(int i=0; i < files.length; i++) {
 			files[i] = normalizeForm(files[i]);
 		}
@@ -41,6 +42,7 @@ public class FileHelper {
 	}
 	
 	public static Collection<File> normalizeForm(Collection<File> files) {
+		if (files == null) return null;
 		Collection<File> newFiles = new ArrayList<File>(files.size());
 		for(File file : files) {
 			newFiles.add(normalizeForm(file));
