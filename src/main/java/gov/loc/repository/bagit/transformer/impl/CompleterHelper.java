@@ -216,6 +216,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 	        					}
 	        					if (in == null) in = bag.getBagFile(filepath).newInputStream();
 	        					checksum = MessageDigestHelper.generateFixity(in, manifest.getAlgorithm());
+	        					log.trace(MessageFormat.format("Fixity for {0} is {1}.", filepath, checksum));
 	        				}
 	        				manifestEntries.put(filepath, checksum);
 		        			

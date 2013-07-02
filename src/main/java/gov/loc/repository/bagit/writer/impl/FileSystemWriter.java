@@ -260,7 +260,7 @@ public class FileSystemWriter extends AbstractWriter {
 	private boolean fileMatchesManifest(BagFile bagFile, File file) {
 		Map<Algorithm, String> checksumMap = this.origBag.getChecksums(bagFile.getFilepath());
 		boolean res = false;
-		if (! checksumMap.isEmpty()) {
+		if (file.exists() && ! checksumMap.isEmpty()) {
 			//Pick an algorithm and check
 			java.util.Map.Entry<Algorithm, String> entry = checksumMap.entrySet().iterator().next();
 			try {

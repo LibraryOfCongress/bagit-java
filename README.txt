@@ -31,6 +31,9 @@ a bad thing.
 
 RELEASE NOTES:
 
+Changes in 4.8.1:
+1. Bug fix to FileSystemWriter to handle files that did do not already exist.
+
 Changes in 4.8:
 1. Added additional convenience method to FileHelper.
 
