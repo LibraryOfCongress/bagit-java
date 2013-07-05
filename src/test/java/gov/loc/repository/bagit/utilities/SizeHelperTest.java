@@ -17,7 +17,7 @@ public class SizeHelperTest {
 		assertEquals("1.1 MB", SizeHelper.getSize(1148576L));
 		assertEquals("1 GB", SizeHelper.getSize(1073741824L));
 		assertEquals("1 TB", SizeHelper.getSize(1099511627776L));
-		
+		assertEquals("300 KB", SizeHelper.getSize(307200L));
 	}
 
 }

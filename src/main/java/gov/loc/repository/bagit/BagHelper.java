@@ -51,9 +51,11 @@ public class BagHelper {
 	}
 	
 	public static long generatePayloadOctetCount(Bag bag) {
+		log.debug("Generating payload octet count");
 		long count = 0;
 		for(BagFile bagFile : bag.getPayload()) {
 			count = count + bagFile.getSize();
+			log.trace(MessageFormat.format("Octet count after adding {0} is {1}", bagFile.getFilepath(), count));
 		}
 		return count;
 	}
@@ -63,16 +65,21 @@ public class BagHelper {
 	}
 	
 	public static long generateTagOctetCount(Bag bag) {
+		log.debug("Generating tag octet count");
 		long count = 0;
-		for(BagFile bagFile : bag.getTags()) {
+		for(BagFile bagFile : bag.getTags()) {			
 			count = count + bagFile.getSize();
+			log.trace(MessageFormat.format("Octet count after adding {0} is {1}", bagFile.getFilepath(), count));
 		}
 		return count;
 	}
 	
 	public static String generateBagSize(Bag bag) {
 		long count = generateTagOctetCount(bag) + generatePayloadOctetCount(bag);
-		return SizeHelper.getSize(count);
+		log.trace(MessageFormat.format("Total octet count is {0}", count));
+		String size = SizeHelper.getSize(count);
+		log.trace(MessageFormat.format("Size is {0}", size));
+		return size;
 	}
 	
 	public static boolean isPayload(String filepath, BagConstants bagConstants) {

@@ -71,14 +71,18 @@ public class PreBagImpl implements PreBag {
 				//If retainBaseDirectory
 				File moveToDir = dataDir;
 				if (retainBaseDirectory) {
+					log.trace("Retaining base directory");
 					//Create new base directory in data directory
 					moveToDir = new File(dataDir, this.dir.getName());
 					//Move contents of base directory to new base directory
 				}
-				log.trace("Move to dir is " + moveToDir);
+				log.debug(MessageFormat.format("Data directory does not exist so moving files to {0}", moveToDir));
 				for(File file : FileHelper.normalizeForm(this.dir.listFiles())) {
 					if (! (file.equals(dataDir) || (file.isDirectory() && this.ignoreDirs.contains(file.getName())))) {
+						log.trace(MessageFormat.format("Moving {0} to {1}", file, moveToDir));
 						FileUtils.moveToDirectory(file, moveToDir, true);
+					} else {
+						log.trace(MessageFormat.format("Not moving {0}", file));
 					}
 				}
 				
@@ -102,10 +106,14 @@ public class PreBagImpl implements PreBag {
 		
 		//Handle empty directories
 		if (keepEmptyDirectories) {
+			log.debug("Adding .keep files to empty directories");
 			this.addKeep(dataDir);
+		} else {
+			log.trace("Not adding .keep files to empty directories");
 		}
 		
 		//Copy the tags
+		log.debug("Copying tag files");
 		for(File tagFile : this.tagFiles) {
 			log.trace(MessageFormat.format("Copying tag file {0} to {1}", tagFile, this.dir));
 			try {
@@ -116,10 +124,13 @@ public class PreBagImpl implements PreBag {
 		}
 						
 		//Create a bag
+		log.debug(MessageFormat.format("Creating bag by payload files at {0}", this.dir));
 		Bag bag = this.bagFactory.createBagByPayloadFiles(this.dir, version, this.ignoreDirs);
 		//Complete the bag
+		log.debug("Making complete");
 		bag = bag.makeComplete(completer);
 		//Write the bag
+		log.debug("Writing");
 		return bag.write(new FileSystemWriter(this.bagFactory), this.dir);
 	}
 

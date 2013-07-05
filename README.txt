@@ -33,6 +33,7 @@ RELEASE NOTES:
 
 Changes in 4.8.1:
 1. Bug fix to FileSystemWriter to handle files that did do not already exist.
+2. Bug fix to SizeHelper.
 
 Changes in 4.8:
 1. Added additional convenience method to FileHelper.
