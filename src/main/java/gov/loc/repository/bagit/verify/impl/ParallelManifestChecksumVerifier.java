@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.verify.impl;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +39,7 @@ import gov.loc.repository.bagit.verify.Verifier;
  */
 public class ParallelManifestChecksumVerifier extends LongRunningOperationBase implements ManifestChecksumVerifier, FailModeSupporting
 {
+	private Normalizer.Form[] formArray = new Normalizer.Form[] { Normalizer.Form.NFC, Normalizer.Form.NFD };
     private static final Log log = LogFactory.getLog(ParallelManifestChecksumVerifier.class);
     
     private FailMode failMode = FailMode.FAIL_STAGE;
@@ -123,24 +125,36 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                             	if (log.isDebugEnabled())
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
                             	
-                                BagFile file = bag.getBagFile(filePath);
-                                
-                                if (file != null && file.exists())
+                            	boolean file_exists = false;
+                            	String normalizedPath = null;
+                            	BagFile file = null;
+                            	for (Normalizer.Form form : formArray) {
+                            		normalizedPath = Normalizer.normalize(filePath, form);
+                            		file = bag.getBagFile(normalizedPath);
+                            		if( file != null && file.exists()) {
+                            			file_exists = true;
+                            			break;
+                            		}
+                            	}
+                            
+                                if (file_exists)
                                 {
-                                    String fixity = manifest.get(filePath);
+                                	log.trace("Found file with path " + normalizedPath);
+                                	String fixity = manifest.get(normalizedPath);
                                     InputStream stream = null;
                                     
                                     try
                                     {
+                                    	log.trace("Getting input stream from " + file.getFilepath());
                                     	stream = file.newInputStream();
 	                                    if (!MessageDigestHelper.fixityMatches(stream, alg, fixity))
 	                                    {
 	                                    	if (manifest.isPayloadManifest()) {
-	                                    		SimpleResultHelper.invalidPayloadFile(result, manifest.getFilepath(), filePath);
+	                                    		SimpleResultHelper.invalidPayloadFile(result, manifest.getFilepath(), normalizedPath);
 	                                    	} else {
-	                                    		SimpleResultHelper.invalidTagFile(result, manifest.getFilepath(), filePath);
+	                                    		SimpleResultHelper.invalidTagFile(result, manifest.getFilepath(), normalizedPath);
 	                                    	}
-	                                        String msg = MessageFormat.format("Fixity failure in manifest {0}: {1}", manifest.getFilepath(), filePath);
+	                                        String msg = MessageFormat.format("Fixity failure in manifest {0}: {1}", manifest.getFilepath(), normalizedPath);
 	                                        log.debug(msg);	                                        
 	                                        failFast.set(true);
 	                                    }
@@ -155,11 +169,11 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                                 else
                                 {
                                 	if (manifest.isPayloadManifest()) {
-                                		SimpleResultHelper.missingPayloadFile(result, manifest.getFilepath(), filePath);
+                                		SimpleResultHelper.missingPayloadFile(result, manifest.getFilepath(), normalizedPath);
                                 	} else {
-                                		SimpleResultHelper.missingTagFile(result, manifest.getFilepath(), filePath);
+                                		SimpleResultHelper.missingTagFile(result, manifest.getFilepath(), normalizedPath);
                             		}
-                                    String msg = MessageFormat.format("File missing from manifest {0}: {1}", manifest.getFilepath(), filePath);
+                                    String msg = MessageFormat.format("File missing from manifest {0}: {1}", manifest.getFilepath(), normalizedPath);
                                     log.debug(msg);
                                     failFast.set(true);
                                 }
