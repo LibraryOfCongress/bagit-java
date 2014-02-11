@@ -67,7 +67,7 @@ public class ZipWriter extends AbstractWriter {
 			this.zipOut = new ZipArchiveOutputStream(this.tempFile);
 			this.zipOut.setLevel(ZipArchiveOutputStream.STORED);
 			if (this.compressionLevel != null) {
-				this.zipOut.setLevel(this.compressionLevel * -1);
+				this.zipOut.setLevel(this.compressionLevel);
 				this.zipOut.setMethod(ZipOutputStream.DEFLATED);
 			}
 		} catch (IOException e) {
