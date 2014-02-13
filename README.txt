@@ -36,6 +36,7 @@ Changes in 4.9.0:
 2. Fixed bug in zip compression.
 3. Upgraded numerous dependencies.
 4. Removed all LC-specific configuration from pom.
+5. Added .travis.yml for integration with travis-ci (http://travis-ci.com/).
 
 Changes in 4.8.1:
 1. Bug fix to FileSystemWriter to handle files that did do not already exist.
