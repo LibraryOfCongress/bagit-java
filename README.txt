@@ -31,6 +31,9 @@ a bad thing.
 
 RELEASE NOTES:
 
+Changes in 4.9.0:
+1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
+
 Changes in 4.8.1:
 1. Bug fix to FileSystemWriter to handle files that did do not already exist.
 2. Bug fix to SizeHelper.
