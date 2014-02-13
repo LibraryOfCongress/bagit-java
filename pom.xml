@@ -2,6 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
 	<groupId>gov.loc</groupId>
 	<artifactId>bagit</artifactId>
 	<packaging>jar</packaging>
@@ -19,8 +26,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		</license>
 	</licenses>
 	<scm>
-		<connection>Not public</connection>
-		<url>Not public</url>
+		<connection>scm:git:git@github.com:LibraryOfCongress/bagit-java.git</connection>
+		<developerConnection>scm:git:git@github.com:LibraryOfCongress/bagit-java.git</developerConnection>
+		<url>git@github.com:LibraryOfCongress/bagit-java.git</url>
 	</scm>
 	<properties>
 		<bagit.version>0.97</bagit.version>
@@ -33,6 +41,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			<email>jlit@loc.gov</email>
 		</developer>
 	</developers>
+	<prerequisites>
+		<maven>3.0.4</maven>
+	</prerequisites>
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -41,13 +52,62 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			        <artifactId>maven-clean-plugin</artifactId>
 			        <version>2.5</version>
 			    </plugin>
+			    <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>  
+			        <artifactId>maven-install-plugin</artifactId>
+			        <version>2.5.1</version>
+			    </plugin>
+			    <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>  
+			        <artifactId>maven-deploy-plugin</artifactId>
+			        <version>2.8.1</version>
+			    </plugin>
+			    <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>  
+			        <artifactId>maven-jar-plugin</artifactId>
+			        <version>2.4</version>
+			    </plugin>
+			    <plugin>
+			        <groupId>org.apache.maven.plugins</groupId>  
+			        <artifactId>maven-resources-plugin</artifactId>
+			        <version>2.6</version>
+			    </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.16</version>
+			    </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>				
+			    </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.3.1</version>				
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.8.1</version>
+				</plugin>
 		    </plugins>
 		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-        		<version>1.1</version>				
 				<executions>
 					<execution>
 						<id>enforce-versions</id>
@@ -68,8 +128,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.5.1</version>				
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -77,8 +137,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.4.3</version>
 				<configuration>
 					<includes>
 						<include>**/*Test.java</include>
@@ -90,8 +150,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
 				<configuration>
 					<descriptors>
 						<descriptor>src/assembly/bin.xml</descriptor>
@@ -108,27 +168,54 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-source</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>attach-test-sources</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-    <repositories>
-        <repository>
-            <id>rdc-artifactory</id>
-            <name>RDC artifactory repository</name>
-            <url>http://argon.rdc.lctl.gov:8081/artifactory/repo</url>
-        </repository>       
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>rdc-artifactory</id>
-            <name>RDC artifactory repository</name>
-            <url>http://argon.rdc.lctl.gov:8081/artifactory/repo</url>
-        </pluginRepository>     
-    </pluginRepositories>	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
-			<version>1.3</version>
+			<version>1.7</version>
 		</dependency>		
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -138,27 +225,27 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
+			<version>1.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.0.1</version>
+			<version>2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.3</version>
+			<version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.1.2</version>
+			<version>4.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.1.2</version>
+			<version>4.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.martiansoftware</groupId>
@@ -174,7 +261,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>1.1.1</version>
+			<version>1.1.4</version>
 			<scope>runtime</scope>
 			<exclusions>
 				<exclusion>
@@ -192,19 +279,19 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.14</version>
+			<version>1.2.17</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.4</version>
+			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jetty</artifactId>
-			<version>6.1.15</version>
+			<version>6.1.26</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -216,50 +303,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>2.0</version>
+			<version>3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-exec</artifactId>
-			<version>1.0</version>
+			<version>1.2</version>
 		</dependency>
 	</dependencies>
-	<distributionManagement>
-        <repository>
-            <id>rdc-releases</id>
-            <url>http://argon.rdc.lctl.gov:8081/artifactory/rdc-releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>rdc-snapshots</id>
-            <url>http://argon.rdc.lctl.gov:8081/artifactory/rdc-snapshots</url>
-        </snapshotRepository>
-	</distributionManagement>
-	<profiles>
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
