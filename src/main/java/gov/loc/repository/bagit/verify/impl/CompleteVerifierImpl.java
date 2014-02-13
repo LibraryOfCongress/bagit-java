@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.verify.impl;
 
 import static java.text.MessageFormat.*;
 import java.text.MessageFormat;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,7 @@ import gov.loc.repository.bagit.verify.FailModeSupporting;
 
 public class CompleteVerifierImpl extends LongRunningOperationBase implements CompleteVerifier, FailModeSupporting {
 	
+	private Normalizer.Form[] formArray = new Normalizer.Form[] { Normalizer.Form.NFC, Normalizer.Form.NFD };
 	private static final Log log = LogFactory.getLog(CompleteVerifierImpl.class);
 	
 	private boolean missingBagItTolerant = false;
@@ -243,14 +245,21 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 						count++;
 						this.progress("verifying payload files on disk are in bag", filepath, count, total);
 						log.trace(MessageFormat.format("Checking that payload file {0} is in bag", filepath));
-						if (bag.getBagFile(filepath) == null) {
+						boolean file_in_bag = false;
+						for (Normalizer.Form form : formArray) {
+							String normalizedPath = Normalizer.normalize(filepath, form);
+							if (bag.getBagFile(normalizedPath) != null) {
+								file_in_bag = true;
+								break;
+							}
+						}
+						if (file_in_bag == false) {
 							result.setSuccess(false);
 							result.addMessage(CODE_PAYLOAD_FILE_NOT_IN_PAYLOAD_MANIFEST, "Payload file {0} not found in any payload manifest.", filepath);
 							String msg = MessageFormat.format("Bag has file {0} not found in manifest file.", filepath);
 							log.warn(msg);
-							if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;							
+							if(FailMode.FAIL_FAST == failMode && ! result.isSuccess()) return result;
 						}
-
 					}
 					if (FailMode.FAIL_STEP == failMode && ! result.isSuccess()) return result;
 					
@@ -280,18 +289,35 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 			manifestCount++;
 			this.progress("verifying files in manifest exist", filepath, manifestCount, manifestTotal);
 			log.trace(MessageFormat.format("Checking that file {0} in manifest {1} exists", filepath, manifest.getFilepath()));
-			BagFile bagFile = bag.getBagFile(filepath);					
-			if (bagFile == null || ! bagFile.exists())
-			{
+			boolean file_exists = false;
+			for(Normalizer.Form form : formArray) {
+				String normalizedPath = Normalizer.normalize(filepath, form);
+				log.trace(MessageFormat.format("Trying path {0}, normalized as {1}", normalizedPath, form));
+				BagFile bagFile = bag.getBagFile(normalizedPath);
+				if (bagFile == null) {
+					log.trace(normalizedPath + " not found in " + manifest.getFilepath());
+					continue;
+				}
+				if ( bagFile.exists()) {
+					file_exists = true;
+					break;
+				}
+			}
+			if (! file_exists) {
 				if (manifest.isPayloadManifest()) {
 					SimpleResultHelper.missingPayloadFile(result, manifest.getFilepath(), filepath);
 				} else {
 					SimpleResultHelper.missingTagFile(result, manifest.getFilepath(), filepath);
 				}
-				String message = MessageFormat.format("File {0} in manifest {1} missing from bag.", filepath, manifest.getFilepath());
+				String message = MessageFormat.format("File {0} in manifest {1} missing from bag.", 
+						filepath, manifest.getFilepath());
 				log.warn(message);
-				if(FailMode.FAIL_FAST == failMode) return;
+				if (failMode == FailMode.FAIL_FAST) {
+					return;
+				}
+				
 			}
+		
 		}				
 		
 	}
