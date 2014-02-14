@@ -24,8 +24,8 @@ public interface BagFile {
 	
 	/**
 	 * Determines whether the file exists on disk or not.
-	 * @return Return <c>true</c> if the file file exists;
-	 * <c>false</c> otherwise.
+	 * @return Return <code>true</code> if the file file exists;
+	 * <code>false</code> otherwise.
 	 */
 	boolean exists();
 	

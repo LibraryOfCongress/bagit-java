@@ -31,10 +31,10 @@ import gov.loc.repository.bagit.verify.ManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.Verifier;
 
 /**
- * A {@link Verifier verification strategy} that verifies a bag's payload
+ * A {@link Verifier} verification strategy that verifies a bag's payload
  * using multiple threads.  The number of threads is initially set to the
  * {@link Runtime#availableProcessors() number of CPUs}, but may be manually
- * set using {@link #setNumebrOfThreads(int)}.
+ * set using {@link #setNumberOfThreads(int)}.
  * 
  */
 public class ParallelManifestChecksumVerifier extends LongRunningOperationBase implements ManifestChecksumVerifier, FailModeSupporting

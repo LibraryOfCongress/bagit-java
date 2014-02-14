@@ -11,11 +11,11 @@ import java.util.Map;
  * A {@link FetchFailStrategy} that fails in different ways
  * for different thresholds.
  * 
- * <p>This strategy has two different thresholds:
+ * <p>This strategy has two different thresholds:</p>
  * <ul>
  * 	<li>{@link #getTotalFailureThreshold() total failures}</li>
  * 	<li>{@link #getFileFailureThreshold() failures per-file}</li>
- * </ul></p>
+ * </ul>
  * 
  * <p>If a particular file (uniquely identified by the URI) fails,
  * the strategy will return

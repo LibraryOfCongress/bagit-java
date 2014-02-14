@@ -138,7 +138,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     /**
      * Gets the current fetch failure strategy.
      * @return The currently set failure strategy.
-     * 		   Will never be <c>null</c>.
+     * 		   Will never be <code>null</code>.
      */
     public FetchFailStrategy getFetchFailStrategy(){
     	return this.failStrategy;
@@ -152,8 +152,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
      * {@link #fetch(Bag, FetchedFileDestinationFactory) fetch()}
      * method has been called. 
      * 
-     * @param strategy The new strategy to use.  Cannot be <c>null</c>.
-     * @throws NullPointerException Thrown if <c>null</c> is set.  
+     * @param strategy The new strategy to use.  Cannot be <code>null</code>.
+     * @throws NullPointerException Thrown if <code>null</code> is set.  
      */
     public void setFetchFailStrategy(FetchFailStrategy strategy) {
     	if (strategy == null)
@@ -200,7 +200,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
      * @param resume The switch to fetch only missing and invalid files or all files listed in fetch.txt.
      * @param verify The switch to verify the holey bag before fetching any files.
      * @return SimpleResult indicates the fetch result with a list of fetch/verify-failure files. 
-     * @throws BagTransferException
+     * @throws BagTransferException If there is an error fetching the payload files
      */
     public SimpleResult fetch(Bag bag, FetchedFileDestinationFactory destinationFactory, boolean resume, boolean verify) throws BagTransferException {
         this.bagToFetch = bag;
@@ -504,7 +504,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
      * @param resume The switch to fetch only missing and invalid files or all files listed in fetch.txt.
      * @param verify The switch to verify the holey bag before fetching any files.
      * @return SimpleResult indicates the fetch result with a list of fetch/verify-failure files. 
-     * @throws BagTransferException
+     * @throws BagTransferException If there is an error fetching the remote bag.
      */
     public SimpleResult fetchRemoteBag(File destFile, String url, boolean resume, boolean verify) throws BagTransferException{
         this.destinationFactory = new FileSystemFileDestination(destFile);
