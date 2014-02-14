@@ -267,7 +267,7 @@ public class CommandLineBagDriver {
 
 		this.addOperation(OPERATION_UPDATE,
 				"Updates the manifests and (if it exists) the bag-info.txt for a bag.",
-				new Parameter[] {sourceParam, optionalDestParam, writerParam, moveParam, compressionParam, manifestSeparatorParam},
+				new Parameter[] {sourceParam, optionalDestParam, writerParam, moveParam, compressionParam, manifestSeparatorParam, tagManifestAlgorithmParam, payloadManifestAlgorithmParam},
 				new String[] {MessageFormat.format("bag {0} {1} ", OPERATION_UPDATE, this.getBag("mybag"))});
 		
 		this.addOperation(OPERATION_UPDATE_TAGMANIFESTS,
@@ -790,6 +790,8 @@ public class CommandLineBagDriver {
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_FILES);
 				try {
 					UpdateCompleter updateCompleter = new UpdateCompleter(bagFactory);
+					updateCompleter.setTagManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_TAG_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
+					updateCompleter.setPayloadManifestAlgorithm(Algorithm.valueOfBagItAlgorithm(config.getString(PARAM_PAYLOAD_MANIFEST_ALGORITHM, Algorithm.MD5.bagItAlgorithm)));
 					completer.setNonDefaultManifestSeparator(manifestSeparator);
 					completer.addProgressListener(listener);
 					Bag newBag = updateCompleter.complete(bag);
