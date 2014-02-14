@@ -3,10 +3,10 @@ package gov.loc.repository.bagit.transfer;
 import java.net.PasswordAuthentication;
 
 /**
- * A very naieve implementation of a {@link FetchContext}.
- * This implementation always returns <c>false</c> for
- * {@link #performCancel() performCancel()}, and does
- * nothing on {@link #reportProgress(String, String, int, int) reportProgress()}.
+ * A very naive implementation of a {@link FetchContext}.
+ * This implementation always returns <code>false</code> for
+ * {@link #isCancelled()}, and does
+ * nothing on {@link #reportProgress(String, Object, Long, Long)}.
  * 
  * @version $Id$
  *

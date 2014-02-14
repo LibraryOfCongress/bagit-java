@@ -88,6 +88,7 @@ public class FileSystemWriter extends AbstractWriter {
 	 * and the fixity of the file on disk does not match the fixity recorded in the manifests.
 	 * 
 	 * When there are multiple fixities recorded for a file, only one is checked.
+	 * @param filesThatDoNotMatchManifestOnly True to only write files that exist if they do not match the manifest.
 	 */
 	public void setFilesThatDoNotMatchManifestOnly(boolean filesThatDoNotMatchManifestOnly) {
 		this.filesThatDoNotMatchManifestOnly = filesThatDoNotMatchManifestOnly;
@@ -95,7 +96,7 @@ public class FileSystemWriter extends AbstractWriter {
 	
 	/**
 	 * Whether to only write tag files.
-	 * 
+	 * @param tagFilesOnly True to only write tag files.
 	 */
 	public void setTagFilesOnly(boolean tagFilesOnly) {
 		this.tagFilesOnly = tagFilesOnly;
@@ -106,6 +107,7 @@ public class FileSystemWriter extends AbstractWriter {
 	 * When removing extra files, whether to ignore NFS tmp files.
 	 * 
 	 * NFS tmp files start with .nfs. They cannot be deleted.
+	 * @param ignore True to ignore NFS tmp files, starting with .nfs
 	 */
 	public void setIgnoreNfsTmpFiles(boolean ignore) {
 		this.ignoreNfsTmpFiles = ignore;
@@ -115,6 +117,7 @@ public class FileSystemWriter extends AbstractWriter {
 	 * When writing, skip writing a payload file if it already exists.
 	 * 
 	 * This will make writing a bag much faster.
+	 * @param skip True to skip writing a payload file if it already exists.
 	 */
 	public void setSkipIfPayloadFileExists(boolean skip) {
 		this.skipIfPayloadFileExists = skip;
@@ -126,7 +129,7 @@ public class FileSystemWriter extends AbstractWriter {
 	 * When BagFile is a FileBagFile or a FileSystemBagFile with a FileFileNode 
 	 * (that is, there is a source file), determines the mechanism by which the
 	 * new file is written.
-	 * 
+	 * @param writeMode The {@link WriteMode} to use for the payload writer.
 	 */
 	public void setPayloadWriteMode(WriteMode writeMode) {
 		this.writeMode = writeMode;

@@ -89,6 +89,8 @@ public class BagFactory {
 		
 	/**
 	 * Creates a new Bag of the latest version.
+	 * @return A Bag using the latest version of the BagIt specification.
+	 * @see BagFactory#createBag(Version)
 	 */
 	public Bag createBag() {
 		return createBag(LATEST);
@@ -97,6 +99,7 @@ public class BagFactory {
 	/**
 	 * Creates a new Bag of the specified version.
 	 * @param version The version of the bag to be created.
+	 * @return A Bag using the given version of the BagIt specification.
 	 * @throws RuntimeException Thrown if an unsupported version is passed.
 	 */
 	public Bag createBag(Version version) {
@@ -129,6 +132,8 @@ public class BagFactory {
 	 * @param bagFile The {@link File} from which to load the bag.  This may
 	 * be either a filesystem directory, or a file containing a serialized
 	 * bag.
+	 * @return A Bag using the latest version of the BagIt specification, for the given file.
+	 * @see BagFactory#createBag(File, LoadOption)
 	 */
 	public Bag createBag(File bagFile) {
 		return createBag(bagFile, LoadOption.BY_MANIFESTS);
@@ -143,6 +148,8 @@ public class BagFactory {
 	 * 
 	 * @param bagFile The {@link File} containing the bag to load.
 	 * @param loadOption The mechanism to use for loading the bag.
+	 * @return A Bag using the latest version of the BagIt specification, for the given file or directory.
+	 * @see BagFactory#createBag(File, Version, LoadOption)
 	 */
 	public Bag createBag(File bagFile, LoadOption loadOption) {
 		String versionString = BagHelper.getVersion(bagFile);
@@ -167,8 +174,9 @@ public class BagFactory {
 	 * 
 	 * @param bagFile The {@link File} containing the bag to load.
 	 * @param version The version to load the bag as.   
-	 * @param ignoreAdditionalDirecories A set of directories to ignore when
+	 * @param ignoreAdditionalDirectories A set of directories to ignore when
 	 * loading from the actual files.
+	 * @return A Bag using the given file or directory.
 	 */
 	public Bag createBagByPayloadFiles(File bagFile, Version version, List<String> ignoreAdditionalDirectories) {
 		Bag bag = this.createBag(version);
@@ -185,6 +193,7 @@ public class BagFactory {
 	 * @param bagFile The {@link File} containing the bag to load.
 	 * @param version The version to load the bag as.   
 	 * @param loadOption The mechanism to use for loading the bag.
+	 * @return A Bag using the given file or directory.
 	 */
 	public Bag createBag(File bagFile, Version version, LoadOption loadOption) {		
 		Bag bag = this.createBag(version);
@@ -203,6 +212,7 @@ public class BagFactory {
 	 * The bag is not loaded.
 	 * 
 	 * @param bag The bag to copy.
+	 * @return A copy of the given bag.
 	 */
 	public Bag createBag(Bag bag) {
 		if (bag.getFile() == null) {
@@ -214,6 +224,8 @@ public class BagFactory {
 	
 	/**
 	 * Gets a BagPartFactory of the latest version.
+	 * @return A {@link BagPartFactory} using the latest version of the BagIt specification.
+	 * @see #getBagPartFactory(Version)
 	 */
 	public BagPartFactory getBagPartFactory() {
 		return getBagPartFactory(LATEST);
@@ -223,6 +235,7 @@ public class BagFactory {
 	 * Gets a BagPartFactory of the specified version.
 	 * 
 	 * @param version The version for which to retrieve a {@link BagPartFactory}.
+	 * @return A {@link BagPartFactory} using the given version of the BagIt specification.
 	 */
 	public BagPartFactory getBagPartFactory(Version version) {
 		if (Version.V0_93.equals(version)) {
@@ -245,6 +258,8 @@ public class BagFactory {
 	
 	/**
 	 * Gets BagConstants of the latest version.
+	 * @return A {@link BagConstants} using the latest version of the BagIt specification.
+	 * @see #getBagConstants(Version)
 	 */
 	public BagConstants getBagConstants() {
 		return getBagConstants(LATEST);
@@ -254,6 +269,7 @@ public class BagFactory {
 	 * Gets BagConstants of the specified version.
 	 * 
 	 * @param version The version for which to retrieve a {@link BagConstants}.
+	 * @return A {@link BagConstants} using the given version of the BagIt specification.
 	 */
 	public BagConstants getBagConstants(Version version) {
 		if (Version.V0_93.equals(version)) {
@@ -277,6 +293,7 @@ public class BagFactory {
 	/**
 	 * Creates a PreBag which can be bagged-in-place.
 	 * @param dir The {@link File} containing the data to be pre-bagged.
+	 * @return A {@link PreBag} containing the data.
 	 */
 	public PreBag createPreBag(File dir) {
 		PreBag preBag = new PreBagImpl(this);

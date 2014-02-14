@@ -35,12 +35,13 @@ public interface Bag extends Closeable {
 	 * as "zip") or they may simply be directories on
 	 * the filesystem (such as "file").</p>
 	 * 
-	 * <table border="2">
+	 * <table>
 	 * <tbody>
 	 * <tr><th>Format</th><th>Scheme</th><th>Extension</th><th>Serialized?</th></tr>
 	 * <tr><td>{@link #FILESYSTEM}</td><td>file</td><td>&lt;none&gt;</td><td>false</td></tr>
 	 * <tr><td>{@link #ZIP}</td><td>zip</td><td>.zip</td><td>true</td></tr>
 	 * </tbody>
+	 * <caption>Supported BagIt formats and extensions</caption>
 	 * </table>
 	 */
 	enum Format {
@@ -114,6 +115,8 @@ public interface Bag extends Closeable {
 	
 	/**
 	 * Finds checksums in all manifests for a file.
+	 * @param filepath The file to get checksums for.
+	 * @return A map for each algorithm to each checksum for the given file.
 	 */
 	Map<Algorithm, String> getChecksums(String filepath);
 	
@@ -129,6 +132,7 @@ public interface Bag extends Closeable {
 
 	/**
 	 * Determines whether the bag is valid according to the BagIt Specification.
+	 * @return A {@link SimpleResult} representing the validity of the bag
 	 */		
 	SimpleResult verifyValid();
 
@@ -137,6 +141,7 @@ public interface Bag extends Closeable {
 	
 	/**
 	 * Determines whether the bag is complete according to the BagIt Specification.
+	 * @return A {@link SimpleResult} representing the completeness of the bag
 	 */		
 	SimpleResult verifyComplete();
 
@@ -145,12 +150,15 @@ public interface Bag extends Closeable {
 	
 	/**
 	 * Invokes a Verifier to verify a bag.
+	 * @param verifier The {@link Verifier} implementation to use
+	 * @return A {@link SimpleResult} representing the verification result for the bag
 	 */	
 	SimpleResult verify(Verifier verifier);
 		
 	/**
 	 * Verify that each checksum in every payload manifest can be verified against
 	 * the appropriate contents.
+	 * @return A {@link SimpleResult} representing the verification of the payload manifests for the bag
 	 */
 	SimpleResult verifyPayloadManifests();
 
@@ -161,6 +169,7 @@ public interface Bag extends Closeable {
 	/**
 	 * Verify that each checksum in every tag manifest can be verified against
 	 * the appropriate contents.
+	 * @return A {@link SimpleResult} representing the verification of the tag manifests for the bag
 	 */	
 	SimpleResult verifyTagManifests();
 
@@ -181,6 +190,7 @@ public interface Bag extends Closeable {
 	
 	/**
 	 * Invokes a BagVisitor.
+	 * @param visitor The visitor for the bag
 	 */
 	void accept(BagVisitor visitor);
 	
@@ -188,22 +198,39 @@ public interface Bag extends Closeable {
 
 	/**
 	 * Makes a bag holey by creating a fetch.txt and removing payload files.
+	 * 
+	 * @param baseUrl The url part to prepend to create the payload url
+	 * @param includePayloadDirectoryInUrl Whether to include the payload directory ("data") in the payload url
+	 * @param includeTags Whether to include the tags in the fetch.txt.  If true then includePayloadDirectory will be true.
+	 * @param resume True to indicate that the process should be resumed.
+	 * @return the newly holey bag
+	 * @see HolePuncher#makeHoley(Bag, String, boolean, boolean, boolean, boolean)
 	 */
-	
 	Bag makeHoley(String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume);
 
 	/**
 	 * Invokes a HolePuncher to make a bag holey.
+	 * 
+	 * @param holePuncher The {@link HolePuncher} implementation to use
+	 * @param baseUrl The url part to prepend to create the payload url
+	 * @param includePayloadDirectoryInUrl Whether to include the payload directory ("data") in the payload url
+	 * @param includeTags Whether to include the tags in the fetch.txt.  If true then includePayloadDirectory will be true.
+	 * @param resume True to indicate that the process should be resumed.
+	 * @return the newly holey bag
+	 * @see HolePuncher#makeHoley(Bag, String, boolean, boolean, boolean, boolean)
 	 */	
 	Bag makeHoley(HolePuncher holePuncher, String baseUrl, boolean includePayloadDirectoryInUrl, boolean includeTags, boolean resume);
 	
 	/**
 	 * Makes a bag complete by filling in any pieces necessary to satisfy the BagIt Specification.
+	 * @return the completed bag
 	 */
 	Bag makeComplete();
 
 	/**
 	 * Invokes a Completer to make a bag complete.
+	 * @param completer The {@link Completer} implementation to use
+	 * @return the completed bag
 	 */
 	Bag makeComplete(Completer completer);
 		
@@ -218,8 +245,8 @@ public interface Bag extends Closeable {
 	 * abstracts away those constants so they can be examined on a
 	 * per-version basis.</p>
 	 * 
-	 * <p>For example, the <c>bag-info.txt</c> file was called
-	 * <c>package-info.txt</c> in earlier versions of the spec.
+	 * <p>For example, the <code>bag-info.txt</code> file was called
+	 * <code>package-info.txt</code> in earlier versions of the spec.
 	 * The correct name can be determined by using the
 	 * {@link #getBagInfoTxt()} method.</p>
 	 * 

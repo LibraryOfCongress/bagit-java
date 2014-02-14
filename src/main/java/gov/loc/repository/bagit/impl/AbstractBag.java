@@ -70,6 +70,10 @@ public abstract class AbstractBag implements Bag {
 	/**
 	 * Constructor for a new bag.
 	 * Payload should be added to the bag by calling addPayload().
+	 * 
+	 * @param bagPartFactory The {@link BagPartFactory} to use for this bag
+	 * @param bagConstants The {@link BagConstants} to use for this bag
+	 * @param bagFactory The {@link BagFactory} to use for this bag
 	 */	
 	public AbstractBag(BagPartFactory bagPartFactory, BagConstants bagConstants, BagFactory bagFactory) {
 		this.bagPartFactory = bagPartFactory;

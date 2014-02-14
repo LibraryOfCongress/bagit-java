@@ -14,7 +14,7 @@ import gov.loc.repository.bagit.FetchTxt;
  * 
  * <p>Fetch failures are used by the the
  * {@link BagFetcher#setFetchFailStrategy(FetchFailStrategy) setFetchFailStrategy}
- * method of the <c>BagFetcher</c>.  Some common strategies are
+ * method of the <code>BagFetcher</code>.  Some common strategies are
  * the {@link StandardFailStrategies#ALWAYS_CONTINUE ALWAYS_CONTINUE},
  * {@link StandardFailStrategies#ALWAYS_RETRY ALWAYS_RETRY},
  * and {@link StandardFailStrategies#FAIL_FAST FAIL_FAST} strategies.

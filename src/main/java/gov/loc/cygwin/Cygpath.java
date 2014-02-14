@@ -16,7 +16,7 @@ public class Cygpath
 	
 	/**
 	 * Returns a given path as a unix-style path by calling
-	 * out to the <c>cygpath --unix</c> command line.  If the
+	 * out to the <code>cygpath --unix</code> command line.  If the
 	 * current environment is not a Windows machine, then the
 	 * given path is returned unchanged.
 	 * 
