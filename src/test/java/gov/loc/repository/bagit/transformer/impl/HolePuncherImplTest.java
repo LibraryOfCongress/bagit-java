@@ -39,18 +39,17 @@ public class HolePuncherImplTest {
 				boolean foundSpace = false;
 				for(int i=0; i < fetch.size(); i++) {
 					FilenameSizeUrl filenameSizeUrl = fetch.get(i);
+					System.out.println(filenameSizeUrl.getFilename());
 					if ("data/dir2/dir3/test5.txt".equals(filenameSizeUrl.getFilename())) {
 						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
 						assertEquals("http://foo.com/bag/data/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
 						foundNoSpace = true;
 					}
-					System.out.println(filenameSizeUrl.getFilename());
-					if ("data/test 1.txt".equals(filenameSizeUrl.getFilename())) {
+					else if ("data/test 1.txt".equals(filenameSizeUrl.getFilename())) {
 						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
 						assertEquals("http://foo.com/bag/data/test%201.txt", filenameSizeUrl.getUrl());
 						foundSpace = true;
 					}
-					
 				}
 				assertTrue(foundNoSpace);
 				assertTrue(foundSpace);
@@ -77,10 +76,34 @@ public class HolePuncherImplTest {
 			try {
 				FetchTxt fetch = newBag.getFetchTxt();
 				assertNotNull(fetch);
-				FilenameSizeUrl filenameSizeUrl = fetch.get(0);
-				assertEquals("data/dir2/dir3/test5.txt", filenameSizeUrl.getFilename());
-				assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
-				assertEquals("http://foo.com/bag/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
+				assertEquals(5, fetch.size());
+				for(int i=0; i < fetch.size(); i++) {
+					FilenameSizeUrl filenameSizeUrl = fetch.get(i);
+					System.out.println(filenameSizeUrl.getFilename());
+					if ("data/dir2/dir3/test5.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/dir2/dir3/test5.txt", filenameSizeUrl.getUrl());
+					}
+					else if ("data/test1.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/test1.txt", filenameSizeUrl.getUrl());
+					}
+					else if ("data/test2.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/test2.txt", filenameSizeUrl.getUrl());
+					}
+					else if ("data/dir1/test3.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/dir1/test3.txt", filenameSizeUrl.getUrl());
+					}
+					else if ("data/dir2/test4.txt".equals(filenameSizeUrl.getFilename())) {
+						assertEquals(Long.valueOf(5L), filenameSizeUrl.getSize());
+						assertEquals("http://foo.com/bag/dir2/test4.txt", filenameSizeUrl.getUrl());
+					}
+					else {
+						fail("Found unexpected line in fetch.txt: " + filenameSizeUrl);
+					}
+				}
 			} finally {
 				bag.close();
 			}

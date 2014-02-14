@@ -14,7 +14,7 @@ import java.net.URI;
  * sequentially, and so may leave persistent connections to
  * remote servers open for performance.  However, it is guaranteed
  * that a given FileFetcher instance will not have its
- * {@link #fetchFile(URI, Long, FetchedFileDestination) fetchFile()} method
+ * {@link #fetchFile(URI, Long, FetchedFileDestination, FetchContext) fetchFile()} method
  * called in any thread before the current invocation completes.</p>
  * 
  * <h3>Retry</h3>
@@ -23,14 +23,14 @@ import java.net.URI;
  * attempt should only throw a {@link BagTransferException} after
  * all retry and error correction has been exhausted.</p>
  * <p>If a particular invocation of
- * {@link #fetchFile(URI, Long, FetchedFileDestination) fetchFilefetchFile()}
- * fails and throws a {@link BagTransferException}, the <c>FileFetcher</c>
+ * {@link #fetchFile(URI, Long, FetchedFileDestination, FetchContext) fetchFilefetchFile()}
+ * fails and throws a {@link BagTransferException}, the <code>FileFetcher</code>
  * should be prepared to accept additional calls to
- * {@link #fetchFile(URI, Long, FetchedFileDestination) fetchFile()}.
+ * {@link #fetchFile(URI, Long, FetchedFileDestination, FetchContext) fetchFile()}.
  * Only after the {@link #close()} method is called will there be no more
  * files to fetch.</p>
  * 
- * @see #fetchFile(URI, Long, FetchedFileDestination)
+ * @see #fetchFile(URI, Long, FetchedFileDestination, FetchContext)
  * @see BagTransferException
  */
 public interface FileFetcher extends Cancellable, ProgressListenable
@@ -38,7 +38,7 @@ public interface FileFetcher extends Cancellable, ProgressListenable
 	/**
 	 * Permits the FileFetcher to initialize.  Guaranteed to be called
 	 * prior to any calls to
-	 * {@link #fetchFile(URI, Long, FetchedFileDestination) fetchFile()}.
+	 * {@link #fetchFile(URI, Long, FetchedFileDestination, FetchContext) fetchFile()}.
 	 * @throws BagTransferException Thrown if an error occurs during initialization.
 	 */
 	void initialize() throws BagTransferException;
@@ -46,9 +46,9 @@ public interface FileFetcher extends Cancellable, ProgressListenable
 	/**
 	 * Permits the FileFetcher to clean up.  Guaranteed to not be called
 	 * until all calls to
-	 * {@link #fetchFile(URI, Long, FetchedFileDestination) fetchFile()}
+	 * {@link #fetchFile(URI, Long, FetchedFileDestination, FetchContext) fetchFile()}
 	 * are completed, and no more class to
-	 * {@link #fetchFile(URI, Long, FetchedFileDestination) fetchFile()}
+	 * {@link #fetchFile(URI, Long, FetchedFileDestination, FetchContext) fetchFile()}
 	 * will occur after the call to {@link #close()}.
 	 */
     void close();
@@ -61,7 +61,7 @@ public interface FileFetcher extends Cancellable, ProgressListenable
      * 
      * If credentials are not applicable, do nothing in the implementation of this method.
      * 
-     * @param username
+     * @param username The username
      */
     void setUsername(String username);
     
@@ -73,7 +73,7 @@ public interface FileFetcher extends Cancellable, ProgressListenable
      * 
      * If credentials are not applicable, do nothing in the implementation of this method.
      *
-     * @param password
+     * @param password The password
      */
     void setPassword(String password);
     
@@ -81,9 +81,9 @@ public interface FileFetcher extends Cancellable, ProgressListenable
      * Fetches a single file.  Each call to this method corresponds to
      * the desire to fetch a single line from a fetch.txt.
 	 *
-     * @param uri The URI to be fetched.  If the URI scheme cannotbe handled by this
+     * @param uri The URI to be fetched.  If the URI scheme cannot be handled by this
      * 			  fetcher, then a {@link BagTransferException} should be thrown.
-     * @param size The size of the file.  If no size was specified, this will be <c>null</c>.
+     * @param size The size of the file.  If no size was specified, this will be <code>null</code>.
      * @param destination The destination for the fetched file.
      * @param context The context for this fetch.
      * @throws BagTransferException Thrown if the file could not be fetched for any reason.
