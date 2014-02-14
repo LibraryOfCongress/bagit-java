@@ -1,6 +1,14 @@
+jdk: 
+- openjdk6
+- openjdk7
+- oraclejdk7
+env: 
+  global: 
+  - secure: SCGYrG7fUpGSLSr6resDhW4G3Cmr4rlTexw6m1av+J8NhtII3lb5TkBImLlH1gGyaMwGN7ULV6wzmJ5/EHMnVEW5jEDlv6Gla0niX0hnmH4WmTH387gurvZhr+xnIj06fyDt7W0Wt3i9wUMLWIcCk6c+DOattRtVQa8tJSocn5Q=
+  - secure: Hd0Teo2pVdibnK+ioAw5ACtfLFCmyXnKFa3TXiQWvHrtLRIc+wxlZ59J0WFaB6L8yME8nT8yunXLuc99K+w6E0A29Vja56zuRN1bviLntsJnG0/dNro9ZsaHgZJfRrgzS+ne9QlzAGiwTJduGI9D1ehg1ibcrUqA/9V1n5LYYUI=
 language: java
-jdk:
-  - openjdk6
-  - openjdk7
-  - oraclejdk7
-
+before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
+script: "mvn deploy --settings target/travis/settings.xml"
+branches:
+  only:
+    - master
