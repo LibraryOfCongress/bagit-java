@@ -44,9 +44,13 @@ public class BagHelper {
 			log.debug(MessageFormat.format("Unable to determine version for {0}.", bagFile.toString()));
 			return null;
 		}
-		BagItTxt bagItTxt = new BagItTxtImpl(new FileSystemBagFile(BAGIT, bagItNode), new BagConstantsImpl());
-		log.debug(MessageFormat.format("Determined that version for {0} is {1}.", bagFile.toString(), bagItTxt.getVersion()));
-		return bagItTxt.getVersion();
+		try {
+            BagItTxt bagItTxt = new BagItTxtImpl(new FileSystemBagFile(BAGIT, bagItNode), new BagConstantsImpl());
+            log.debug(MessageFormat.format("Determined that version for {0} is {1}.", bagFile.toString(), bagItTxt.getVersion()));
+            return bagItTxt.getVersion();
+        } finally {
+            bagFileDirNode.getFileSystem().closeQuietly();
+        }
 		
 	}
 	
