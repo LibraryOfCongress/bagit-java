@@ -65,25 +65,25 @@ public class SimpleResult {
 	}
 	
 	public void addWarningMessage(String code, String message) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
 		this.addSimpleMessage(simpleMessage);
 	}
 	
 	public void addWarningMessage(String code, String message, String subject) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message, subject);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
 		this.addSimpleMessage(simpleMessage);
 	}
 
 	public void addWarningMessage(String code, String message, String subject, String object) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, object);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message, subject, object);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
 		this.addSimpleMessage(simpleMessage);
 	}
 
 	public void addWarningMessage(String code, String message, String subject, Collection<String> objects) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, objects);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message, subject, objects);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_WARNING);
 		this.addSimpleMessage(simpleMessage);
 	}
@@ -95,25 +95,25 @@ public class SimpleResult {
 	}
 	
 	public void addInfoMessage(String code, String message) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
 		this.addSimpleMessage(simpleMessage);
 	}
 	
 	public void addInfoMessage(String code, String message, String subject) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message, subject);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
 		this.addSimpleMessage(simpleMessage);
 	}
 
 	public void addInfoMessage(String code, String message, String subject, String object) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, object);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message, subject, object);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
 		this.addSimpleMessage(simpleMessage);
 	}
 
 	public void addInfoWarningMessage(String code, String message, String subject, Collection<String> objects) {
-		SimpleMessage simpleMessage = new SimpleMessage(message, code, subject, objects);
+		SimpleMessage simpleMessage = new SimpleMessage(code, message, subject, objects);
 		simpleMessage.setMessageType(SimpleMessage.MESSAGE_TYPE_INFO);
 		this.addSimpleMessage(simpleMessage);
 	}

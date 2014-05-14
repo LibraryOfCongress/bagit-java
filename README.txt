@@ -31,6 +31,9 @@ a bad thing.
 
 RELEASE NOTES:
 
+Changes in 4.10.0:
+1. Fixes defect in SimpleResult.add*Message() methods.
+
 Changes in 4.9.0:
 1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
 2. Fixed bug in zip compression.
