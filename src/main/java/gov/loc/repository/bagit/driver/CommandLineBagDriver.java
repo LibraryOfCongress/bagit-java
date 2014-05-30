@@ -761,10 +761,15 @@ public class CommandLineBagDriver {
 			} else if (OPERATION_VERIFY_PAYLOADMANIFESTS.equals(operation.name)) {				
 				Bag bag = this.getBag(sourceFile, version, LoadOption.BY_MANIFESTS);
 				try {
-					ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
-					verifier.addProgressListener(listener);
-					verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));					
-					SimpleResult result = verifier.verify(bag.getPayloadManifests(), bag);
+					SimpleResult result;
+					if (bag.getPayloadManifests().size() == 0) {
+						result = new SimpleResult(false, "Bag has no payload manifests");
+					} else {
+						ParallelManifestChecksumVerifier verifier = new ParallelManifestChecksumVerifier();
+						verifier.addProgressListener(listener);
+						verifier.setFailMode(FailMode.valueOf(config.getString(PARAM_FAIL_MODE).toUpperCase()));					
+						result = verifier.verify(bag.getPayloadManifests(), bag);
+					}
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {

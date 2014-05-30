@@ -33,6 +33,7 @@ RELEASE NOTES:
 
 Changes in 4.10.0:
 1. Fixes defect in SimpleResult.add*Message() methods.
+2. Reports an error when verifying payloads for a bag with no payload manifests.
 
 Changes in 4.9.0:
 1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
