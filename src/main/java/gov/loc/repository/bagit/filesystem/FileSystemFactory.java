@@ -31,10 +31,12 @@ public class FileSystemFactory {
 		DirNode root = fs.getRoot();
 		if (format.isSerialized) {
 			if (root.listChildren().size() != 1) {
+				root.getFileSystem().closeQuietly();
 				throw new RuntimeException("Unable to find bag_dir in serialized bag");
 			}
 			FileSystemNode bagDirNode = root.listChildren().iterator().next();
 			if (! (bagDirNode instanceof DirNode)) {
+				root.getFileSystem().closeQuietly();
 				throw new RuntimeException("Unable to find bag_dir in serialized bag");
 			}
 			root = (DirNode)bagDirNode;
