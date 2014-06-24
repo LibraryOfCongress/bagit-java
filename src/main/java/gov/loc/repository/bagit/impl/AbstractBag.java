@@ -104,49 +104,56 @@ public abstract class AbstractBag implements Bag {
 		this.tagMap.clear();
 		this.payloadMap.clear();
 		
-		DirNode bagFileDirNode;
+		DirNode bagFileDirNode = null;
 		try {
 			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag);
+
+			log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
+
+			//Load root tag map
+			for(FileSystemNode node : bagFileDirNode.listChildren()) {
+				if (node instanceof FileNode) {
+					FileNode tagFileNode = (FileNode)node;
+					String filepath = FilenameHelper.removeBasePath(bagFileDirNode.getFilepath(), tagFileNode.getFilepath());
+					log.trace(MessageFormat.format("Loading tag {0} using filepath {1}", tagFileNode.getFilepath(), filepath));
+					BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
+					this.putBagFile(bagFile);
+				}
+			}
+
+			//Find manifests to load tag map
+			List<Manifest> tagManifests = this.getTagManifests();
+			for(Manifest manifest : tagManifests) {
+				for(String filepath : manifest.keySet()) {
+					String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
+					FileNode tagFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
+					BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
+					log.trace(MessageFormat.format("Loading tag {0} from {1} using filepath {2}", tagFileNode.getFilepath(), manifest.getFilepath(), filepath));
+					this.putBagFile(bagFile);
+				}
+			}
+
+			//Find manifests to load payload map
+			List<Manifest> payloadManifests = this.getPayloadManifests();
+			for(Manifest manifest : payloadManifests) {
+				for(String filepath : manifest.keySet()) {
+					String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
+					FileNode payloadFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
+					BagFile bagFile = new FileSystemBagFile(filepath, payloadFileNode);
+					log.trace(MessageFormat.format("Loading payload {0} from {1} using filepath {2}", payloadFileNode.getFilepath(), manifest.getFilepath(), filepath));
+					this.putBagFile(bagFile);
+				}
+			}
 		} catch (UnknownFormatException e) {
+			if (bagFileDirNode != null) {
+				bagFileDirNode.getFileSystem().closeQuietly();
+			}
 			throw new RuntimeException(e);
 		} catch (UnsupportedFormatException e) {
+			if (bagFileDirNode != null) {
+				bagFileDirNode.getFileSystem().closeQuietly();
+			}
 			throw new RuntimeException(e);
-		}
-		log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
-		
-		//Load root tag map
-		for(FileSystemNode node : bagFileDirNode.listChildren()) {
-			if (node instanceof FileNode) {
-				FileNode tagFileNode = (FileNode)node;
-				String filepath = FilenameHelper.removeBasePath(bagFileDirNode.getFilepath(), tagFileNode.getFilepath());
-				log.trace(MessageFormat.format("Loading tag {0} using filepath {1}", tagFileNode.getFilepath(), filepath));
-				BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
-				this.putBagFile(bagFile);
-			}
-		}
-
-		//Find manifests to load tag map
-		List<Manifest> tagManifests = this.getTagManifests();
-		for(Manifest manifest : tagManifests) {
-			for(String filepath : manifest.keySet()) {
-				String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
-				FileNode tagFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
-				BagFile bagFile = new FileSystemBagFile(filepath, tagFileNode);
-				log.trace(MessageFormat.format("Loading tag {0} from {1} using filepath {2}", tagFileNode.getFilepath(), manifest.getFilepath(), filepath));
-				this.putBagFile(bagFile);
-			}
-		}
-		
-		//Find manifests to load payload map
-		List<Manifest> payloadManifests = this.getPayloadManifests();
-		for(Manifest manifest : payloadManifests) {
-			for(String filepath : manifest.keySet()) {
-				String fullFilepath = FilenameHelper.concatFilepath(bagFileDirNode.getFilepath(), filepath);
-				FileNode payloadFileNode = bagFileDirNode.getFileSystem().resolve(fullFilepath);
-				BagFile bagFile = new FileSystemBagFile(filepath, payloadFileNode);
-				log.trace(MessageFormat.format("Loading payload {0} from {1} using filepath {2}", payloadFileNode.getFilepath(), manifest.getFilepath(), filepath));
-				this.putBagFile(bagFile);
-			}
 		}
 	}
 
