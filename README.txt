@@ -10,12 +10,17 @@ supported version is 0.93.
 REQUIREMENTS:
 Java 6
 
+BUILD:
+Inside the bagit-java root directory, run 'mvn package'. This will create two .zip files,
+bagit-X.X.X-bin.zip and bagit-X.X.X-src.zip. 
+
 COMMANDLINE:
-A commandline interface is provided to perform various operations on bag.
-Scripts to invoke the commandline interface can be found in the bin directory.
-To learn more about the supported operations, invoke the commandline interface
-with no arguments.  If you encounter memory issues, the memory allocation can
-be increased in the scripts found in the bin directory.
+A commandline interface is provided to perform various operations on bag. Unzip
+bagit-x.x.x-src.zip and change into the resulting 'bagit-x.x.x/bin' subdirectory,
+where you will find scripts to invoke the commandline interface. To learn more
+about the supported operations, invoke ./bag or bag.bat with no arguments. If you
+encounter memory issues, the memory allocation can be increased in the scripts found
+in the bin directory.
 
 NOTE IF USING WITH ECLIPSE:
 There is a known defect with m2eclipse (https://issues.sonatype.org/browse/MNGECLIPSE-1091)
