@@ -40,6 +40,7 @@ Changes in 4.10.0:
 1. Fixes defect in SimpleResult.add*Message() methods.
 2. Reports an error when verifying payloads for a bag with no payload manifests.
 3. Fix bugs causing streams to be left open after an exception is thrown.
+4. Upgraded Commons Compress to 1.8.1.
 
 Changes in 4.9.0:
 1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
