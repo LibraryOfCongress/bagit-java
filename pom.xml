@@ -36,9 +36,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	</properties>
 	<developers>
 		<developer>
-			<id>justin</id>
-			<name>Justin Littman</name>
-			<email>jlit@loc.gov</email>
+			<id>smalik</id>
+			<name>Salim Malik</name>
+			<email>smalik@loc.gov</email>
 		</developer>
 	</developers>
 	<prerequisites>

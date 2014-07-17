@@ -41,6 +41,7 @@ Changes in 4.10.0:
 2. Reports an error when verifying payloads for a bag with no payload manifests.
 3. Fix bugs causing streams to be left open after an exception is thrown.
 4. Upgraded Commons Compress to 1.8.1.
+5. Transferred to Salim Malik.
 
 Changes in 4.9.0:
 1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
@@ -253,4 +254,4 @@ Changes in 2.1:
 
 
 For questions or problems, please post to the loc-xferutils mailing list at https://lists.sourceforge.net/lists/listinfo/loc-xferutils-mail.
-For further assistance, contact Justin Littman (jlit@loc.gov).
+For further assistance, contact Salim Malik (smalik@loc.gov).
