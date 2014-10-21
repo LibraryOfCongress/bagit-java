@@ -24,7 +24,8 @@ dependencies {
     'com.martiansoftware:jsap:2.1',
     'dom4j:dom4j:1.6.1',
     'commons-net:commons-net:3.3',
-    'org.apache.commons:commons-exec:1.2'
+    'org.apache.commons:commons-exec:1.2',
+    'org.bouncycastle:bcprov-jdk15on:1.52'
 
   runtime 'jaxen:jaxen:1.1.4',
     'classworlds:classworlds:1.1',
