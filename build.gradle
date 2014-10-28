@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply from: 'eclipse.gradle'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
