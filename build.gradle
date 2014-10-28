@@ -1,3 +1,12 @@
+buildscript {
+  dependencies { classpath("org.springframework.boot:spring-boot-gradle-plugin:1.1.7.RELEASE") }
+  repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/release" }
+  }
+}
+
+apply plugin: 'spring-boot'
 apply plugin: 'java'
 apply from: 'eclipse.gradle'
 
@@ -5,6 +14,7 @@ sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 repositories {
+  maven { url "http://repo.spring.io/release" }
   maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
   maven { url "http://repo.maven.apache.org/maven2" }
 }
@@ -29,4 +39,39 @@ dependencies {
   testCompile 'junit:junit:4.11',
     'org.mortbay.jetty:jetty:6.1.26',
     'org.jmock:jmock-junit4:2.5.1'
+}
+
+applicationDefaultJvmArgs = ["-Dapp.home=.."]
+
+distZip {
+  String baseZipDirectory = archiveName - ("." + extension)
+
+  //include the application properties in a separate folder outside the jar for easy modification
+  into("${baseZipDirectory}/conf"){ 
+    from 'src/assembly/conf'
+    include 'log4j.properties'
+  }
+  
+  into("${baseZipDirectory}"){
+    from '.'
+    include '*.txt'
+  }
+}
+
+task srcZip(type: Zip) {
+  classifier "src"
+  from 'src'
+  exclude 'assembly'
+}
+tasks.distZip.dependsOn srcZip
+
+//due to http://issues.gradle.org/browse/GRADLE-2333 need to do a small hack to added the config folder to the generated script's classpath
+startScripts {
+  classpath += files('src/dist/XX_CONFIG_PLACEHOLDER_XX')
+  doLast {
+    def windowsScriptFile = file getWindowsScript()
+    def unixScriptFile    = file getUnixScript()
+    windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\XX_CONFIG_PLACEHOLDER_XX', '%APP_HOME%\\conf')
+    unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/XX_CONFIG_PLACEHOLDER_XX', '$APP_HOME/conf')
+  }
 }
