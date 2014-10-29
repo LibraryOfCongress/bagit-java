@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.*
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply from: 'eclipse.gradle'
@@ -33,7 +35,7 @@ dependencies {
     'org.jmock:jmock-junit4:2.5.1'
 }
 
-applicationDefaultJvmArgs = ["-Dapp.home=..", "-Dversion=${version}"]
+applicationDefaultJvmArgs = ["-Dapp.home=..", "-Dversion=${project.version}"]
 mainClassName = "gov.loc.repository.bagit.driver.CommandLineBagDriver"
 
 distZip {
@@ -48,6 +50,8 @@ distZip {
   into("${baseZipDirectory}"){
     from '.'
     include '*.txt'
+    filter { line -> return line.replace('\${bagit.version}', "0.97") }
+    filter { line -> return line.replace('\${pom.version}', project.version) }
   }
 }
 
