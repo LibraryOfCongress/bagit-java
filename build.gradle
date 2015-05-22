@@ -1,0 +1,74 @@
+import org.apache.tools.ant.filters.*
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply from: 'eclipse.gradle'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+repositories {
+  maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+  maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+  compile 'org.slf4j:slf4j-api:1.7.5',
+	  'org.apache.commons:commons-compress:1.8.1',
+    'commons-logging:commons-logging-api:1.1',
+    'commons-logging:commons-logging:1.1.3',
+    'commons-io:commons-io:2.4',
+    'commons-codec:commons-codec:1.9',
+    'org.apache.httpcomponents:httpclient:4.3.2',
+    'org.apache.httpcomponents:httpmime:4.3.2',
+    'com.martiansoftware:jsap:2.1',
+    'dom4j:dom4j:1.6.1',
+    'commons-net:commons-net:3.3',
+    'org.apache.commons:commons-exec:1.2'
+
+  runtime 'jaxen:jaxen:1.1.4',
+    'classworlds:classworlds:1.1',
+    'log4j:log4j:1.2.17'
+
+  testCompile 'junit:junit:4.11',
+    'org.mortbay.jetty:jetty:6.1.26',
+    'org.jmock:jmock-junit4:2.5.1'
+}
+
+applicationDefaultJvmArgs = ["-Dapp.home=..", "-Dversion=${project.version}"]
+mainClassName = "gov.loc.repository.bagit.driver.CommandLineBagDriver"
+
+distZip {
+  String baseZipDirectory = archiveName - ("." + extension)
+
+  //include the log properties in a separate folder outside the jar for easy modification
+  into("${baseZipDirectory}/conf"){ 
+    from 'src/assembly/conf'
+    include 'log4j.properties'
+  }
+  
+  into("${baseZipDirectory}"){
+    from '.'
+    include '*.txt'
+    filter { line -> return line.replace('\${bagit.version}', "0.97") }
+    filter { line -> return line.replace('\${pom.version}', project.version) }
+  }
+}
+
+task srcZip(type: Zip) {
+  classifier "src"
+  from 'src'
+  exclude 'assembly'
+}
+tasks.distZip.dependsOn srcZip
+
+//due to http://issues.gradle.org/browse/GRADLE-2333 need to do a small hack to add the config folder to the generated script's classpath
+startScripts {
+  classpath += files('src/dist/XX_CONFIG_PLACEHOLDER_XX')
+  doLast {
+    def windowsScriptFile = file getWindowsScript()
+    def unixScriptFile    = file getUnixScript()
+    windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\XX_CONFIG_PLACEHOLDER_XX', '%APP_HOME%\\conf')
+    unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/XX_CONFIG_PLACEHOLDER_XX', '$APP_HOME/conf')
+  }
+}
