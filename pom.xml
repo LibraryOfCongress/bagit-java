@@ -201,7 +201,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+					<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
 				</configuration>
 				<executions>
 					<execution>
