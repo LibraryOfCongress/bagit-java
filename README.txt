@@ -251,7 +251,3 @@ Changes in 2.1:
 4. Added additional bag-info.txt methods for Bagging-Date, Bag-Count, Bag-Size, and Payload-Oxum.
 5. Changed to only include the tar-related classes from Ant, rather than the entire dependency.
 6. Added version-aware handling of filepath delimiters. 
-
-
-For questions or problems, please post to the loc-xferutils mailing list at https://lists.sourceforge.net/lists/listinfo/loc-xferutils-mail.
-For further assistance, contact Salim Malik (smalik@loc.gov).
