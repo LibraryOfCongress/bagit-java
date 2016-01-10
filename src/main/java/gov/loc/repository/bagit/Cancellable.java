@@ -31,4 +31,5 @@ public interface Cancellable
 	 * has been called; <code>false</code> otherwise.
 	 */
 	boolean isCancelled();
+	
 }

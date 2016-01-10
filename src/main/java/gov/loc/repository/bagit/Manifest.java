@@ -36,18 +36,40 @@ public interface Manifest extends Map<String,String>, BagFile {
 		
 	}
 
-	
+	/**
+	 * Returns true if this is a payload manifest, false otherwise.
+	 * @return True if this is a payload manifest, false otherwise.
+	 */
 	public boolean isPayloadManifest();
 	
+	/**
+	 * Returns true if this is a tag manifest, false otherwise.
+	 * @return True if this is a tag manifest, false otherwise.
+	 */
 	public boolean isTagManifest();
-		
+	
+	/**
+	 * Returns the checksum algorithm.
+	 * @return A checksum algorithm.
+	 */
 	public Algorithm getAlgorithm();
 	
+	/**
+	 * Gets the original InputStream of a manifest file.
+	 * @return The original InputStream.
+	 */
 	public InputStream originalInputStream();
 	
+	/**
+	 * Returns a non-default manifest separator in String format.
+	 * @return The non-default manifest separator in String format.
+	 */
 	public String getNonDefaultManifestSeparator();
 	
+	/**
+	 * Sets the non-default manifest separator String.
+	 * @param manifestSeparator Separates the contents of a manifest file.
+	 */
 	public void setNonDefaultManifestSeparator(String manifestSeparator);
-	
 	
 }
