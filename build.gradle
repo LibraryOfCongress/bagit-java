@@ -2,6 +2,8 @@ import org.apache.tools.ant.filters.*
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
 apply plugin: 'application'
 apply from: 'eclipse.gradle'
 
@@ -66,6 +68,17 @@ jacoco {
 
 jacocoTestReport.dependsOn test
 build.dependsOn jacocoTestReport
+
+findbugsTest.enabled = false
+
+findbugs {
+  ignoreFailures = true //don't fail the gradle build if bugs are found
+}
+
+pmd {
+  ruleSets = ["java-basic", "java-braces"]
+  ignoreFailures = true //don't fail the gradle build if rules are broken
+}
 
 task srcZip(type: Zip) {
   classifier "src"
