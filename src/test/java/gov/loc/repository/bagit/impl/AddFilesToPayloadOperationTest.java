@@ -1,21 +1,24 @@
 package gov.loc.repository.bagit.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.Arrays;
 
 public class AddFilesToPayloadOperationTest {
 	
@@ -38,7 +41,9 @@ public class AddFilesToPayloadOperationTest {
 	@Test
 	public void testBagByAddingPayloadFiles() throws Exception{
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag", this.getVersion().toString().toLowerCase()));
-		File srcAddFilesDir = new File(ResourceHelper.PROJECT_DIR+"/target/test-classes/srcFiles");
+		URL srcFilesUrl = this.getClass().getClassLoader().getResource("srcFiles");
+		
+		File srcAddFilesDir = new File(srcFilesUrl.toURI());
 		//Read Bag from disk
 		Bag bag = this.bagFactory.createBag(sourceBagDir);
 		try {
