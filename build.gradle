@@ -1,6 +1,7 @@
 import org.apache.tools.ant.filters.*
 
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: 'application'
 apply from: 'eclipse.gradle'
 
@@ -54,6 +55,17 @@ distZip {
     filter { line -> return line.replace('\${pom.version}', project.version) }
   }
 }
+
+test { //show test output
+  testLogging.showStandardStreams = true
+}
+
+jacoco {
+  toolVersion = "0.7.5.201505241946"
+}
+
+jacocoTestReport.dependsOn test
+build.dependsOn jacocoTestReport
 
 task srcZip(type: Zip) {
   classifier "src"
