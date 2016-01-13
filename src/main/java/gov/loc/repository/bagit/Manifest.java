@@ -6,7 +6,7 @@ import java.util.Map;
 public interface Manifest extends Map<String,String>, BagFile {
 	
 	enum Algorithm {
-		MD5 ("md5", "MD5"), SHA1 ("sha1", "SHA-1"), SHA256 ("sha256", "SHA-256"), SHA512 ("sha512", "SHA-512");
+		MD5 ("md5", "MD5"), SHA1 ("sha1", "SHA-1"), SHA256 ("sha256", "SHA-256"), SHA512 ("sha512", "SHA-512"), SHA3 ("sha3", "SHA3-256");
 		
 		public String bagItAlgorithm;
 		public String javaSecurityAlgorithm;
