@@ -1,6 +1,6 @@
 package gov.loc.repository.bagit.transfer.fetch;
 
-import static java.text.MessageFormat.*;
+import static java.text.MessageFormat.format;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -24,8 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import gov.loc.cygwin.Cygpath;
-import gov.loc.cygwin.CygwinException;
+
 import gov.loc.repository.bagit.transfer.BagTransferCancelledException;
 import gov.loc.repository.bagit.transfer.BagTransferException;
 import gov.loc.repository.bagit.transfer.FetchContext;
@@ -280,19 +280,8 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			
 			if (OS.isFamilyWindows())
 			{
-				// We've got to be running under Cygwin.
-				// We'll better handle non-Cygwin cases later, perhaps.
-				
-				try
-				{
-					finalPath = Cygpath.toUnix(file.getAbsolutePath());
-				}
-				catch (CygwinException e)
-				{
-					log.warn(format("Unable to convert path using cygpath.  Falling back to simple slash conversion."), e);
-					finalPath = FilenameUtils.separatorsToUnix(file.getAbsolutePath());
-					log.trace(format("Fallback final path: {0}", finalPath));
-				}
+			  finalPath = FilenameUtils.separatorsToUnix(file.getAbsolutePath());
+			  log.trace(format("Final path: {0}", finalPath));
 			}
 			else
 			{

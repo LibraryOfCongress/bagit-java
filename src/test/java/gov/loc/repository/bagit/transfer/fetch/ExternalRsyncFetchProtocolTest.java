@@ -1,19 +1,20 @@
 package gov.loc.repository.bagit.transfer.fetch;
 
-import static junit.framework.Assert.*;
 import java.net.URI;
-import gov.loc.cygwin.Cygpath;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.transfer.BagTransferException;
 import gov.loc.repository.bagit.transfer.FileFetcher;
 import gov.loc.repository.bagit.transfer.dest.ByteArrayFetchDestination;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
-import org.apache.commons.io.IOUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 
-public class ExternalRsyncFetchProtocolTest
+public class ExternalRsyncFetchProtocolTest extends Assert
 {
 	private static boolean skipTests = false; 
 
@@ -53,7 +54,7 @@ public class ExternalRsyncFetchProtocolTest
 
 		// Get the URI to be fetched.
 		FileFetcher fetcher = protocol.createFetcher(new URI("rsync:///bar.txt"), null);
-		String path = Cygpath.toUnix(ResourceHelper.getFile("bags/v0_96/bag/data/test1.txt").getAbsolutePath());
+		String path = ResourceHelper.getFile("bags/v0_96/bag/data/test1.txt").getAbsolutePath();
 		URI uri = new URI(path);
 		
 		// Run through the fetcher lifecycle.
@@ -87,7 +88,7 @@ public class ExternalRsyncFetchProtocolTest
 		
 		// Get the URI to be fetched.
 		FileFetcher fetcher = protocol.createFetcher(new URI("rsync:///bar.txt"), null);
-		String path = Cygpath.toUnix(ResourceHelper.getFile("bags/v0_96/bag-with-escapable-characters/data/test file with spaces.txt").getAbsolutePath());
+		String path = ResourceHelper.getFile("bags/v0_96/bag-with-escapable-characters/data/test file with spaces.txt").getAbsolutePath();
 		path = path.replace(" ", "%20");
 		
 		URI uri = new URI(path);
