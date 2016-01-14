@@ -1,6 +1,30 @@
 package gov.loc.repository.bagit.transfer;
 
 import static java.text.MessageFormat.format;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.PasswordAuthentication;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.BagFactory;
@@ -26,30 +50,6 @@ import gov.loc.repository.bagit.utilities.SimpleResultHelper;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-
-import java.io.File;
-import java.io.InputStream;
-import java.net.PasswordAuthentication;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Fetches a bag.  This class is not thread-safe.
@@ -843,16 +843,8 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         }
         
     	@Override
-    	public void run(){
+    	public synchronized void run(){
     		cancel();
-    		
-    		try{
-    			// Wait for a few seconds, so that the thread pool and
-    			// fetchers can clean up a bit.  Then let things die.
-				this.shutdownLatch.await(7, TimeUnit.SECONDS);
-			}catch (InterruptedException e){
-    			log.error("Timed out while waiting for fetch shutdown to finish.");
-			}
     	}
     }
 }
