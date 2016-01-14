@@ -40,11 +40,11 @@ import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.Manifest;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.PreBag;
-import gov.loc.repository.bagit.ProgressListenable;
 import gov.loc.repository.bagit.progresslistener.CompositeProgressListener;
 import gov.loc.repository.bagit.progresslistener.ConsoleProgressListener;
 import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
 import gov.loc.repository.bagit.transfer.BagFetcher;
+import gov.loc.repository.bagit.transfer.BagTransferException;
 import gov.loc.repository.bagit.transfer.FetchFailStrategy;
 import gov.loc.repository.bagit.transfer.StandardFailStrategies;
 import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
@@ -628,8 +628,8 @@ public class CommandLineBagDriver {
 					if (compressionLevel >=1 && compressionLevel <= 9) ((ZipWriter)writer).setCompressionLevel(compressionLevel);
 				}
 			}
-			if (writer instanceof ProgressListenable) ((ProgressListenable)writer).addProgressListener(listener);
-
+			if(writer != null){writer.addProgressListener(listener);}
+			
 			String manifestSeparator = null;
 			int ret = RETURN_SUCCESS;
 
@@ -886,8 +886,11 @@ public class CommandLineBagDriver {
 							if (! parentDir.isDirectory()) {
 								throw new RuntimeException(MessageFormat.format("{0} is not a directory.", parentDir));
 							}
-							for(File childFile : parentDir.listFiles()) {
-								bag.addFileToPayload(childFile);
+							File[] files = parentDir.listFiles();
+							if(files != null){
+  							for(File childFile : files) {
+  								bag.addFileToPayload(childFile);
+  							}
 							}
 						} else {						
 							bag.addFileToPayload(new File(filepath));
@@ -1005,7 +1008,7 @@ public class CommandLineBagDriver {
 	
 			    	//The default max bag size is 300 GB. 
 			    	Double maxBagSizeInGB = config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : 300;
-				    Double maxBagSize =  maxBagSizeInGB != null ? maxBagSizeInGB * SizeHelper.GB : 300 * SizeHelper.GB;			
+				    Double maxBagSize = 300 * SizeHelper.GB;			
 					
 					String[] fileExtensions = config.contains(PARAM_FILE_EXTENSIONS) ? config.getString(PARAM_FILE_EXTENSIONS).split(",") : null;
 					String[][] fileExtensionsIn = null;
@@ -1085,10 +1088,14 @@ public class CommandLineBagDriver {
 			log.info("Operation completed.");
 			return ret;
 		}
-		catch(Exception ex) {
+		catch(IOException ex) {
 			log.error("Error: " + ex.getMessage(), ex);
 			return RETURN_ERROR;
 		}
+		catch(BagTransferException ex) {
+      log.error("Error: " + ex.getMessage(), ex);
+      return RETURN_ERROR;
+    }
 	}
 	
 	private void completeAndWriteBagToDisk(List<Bag> bags, Completer completer, Writer writer, Bag srcBag, File destBagFile, boolean appendNumber){

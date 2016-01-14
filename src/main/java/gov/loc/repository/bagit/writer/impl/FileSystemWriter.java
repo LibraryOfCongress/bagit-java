@@ -233,12 +233,14 @@ public class FileSystemWriter extends AbstractWriter {
 			if (this.isCancelled()) return;
 			if (file.isDirectory()) {
 				if (log.isTraceEnabled()) {
-					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, file.listFiles().length));
+				  File[] files = file.listFiles();
+					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, files == null ? 0 : files.length));
 				}
 				if (recurse) {
 					this.removeExtraFiles(file, recurse);
 					if (log.isTraceEnabled()) {
-						log.trace(MessageFormat.format("{0} now has {1} children", file, file.listFiles().length));
+					  File[] files = file.listFiles();
+						log.trace(MessageFormat.format("{0} now has {1} children", file, files == null ? 0 : files.length));
 					}
 				}
 			} else {

@@ -145,14 +145,8 @@ public abstract class AbstractBag implements Bag {
 				}
 			}
 		} catch (UnknownFormatException e) {
-			if (bagFileDirNode != null) {
-				bagFileDirNode.getFileSystem().closeQuietly();
-			}
 			throw new RuntimeException(e);
 		} catch (UnsupportedFormatException e) {
-			if (bagFileDirNode != null) {
-				bagFileDirNode.getFileSystem().closeQuietly();
-			}
 			throw new RuntimeException(e);
 		}
 	}

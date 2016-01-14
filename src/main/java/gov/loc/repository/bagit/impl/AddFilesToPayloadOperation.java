@@ -41,8 +41,9 @@ public class AddFilesToPayloadOperation extends LongRunningOperationBase {
 			throw new RuntimeException("Can't read " + file.toString());
 		}
 		//If directory, recurse on children
-		if (file.isDirectory()) {			
-			for(File child : file.listFiles()) {
+		File[] files = file.listFiles();
+		if (file.isDirectory() && files != null) {			
+			for(File child : files) {
 				if (this.isCancelled()) return 0;
 				String filepath = file.getAbsolutePath();
 				this.progress("Adding payload file to data directory", filepath, count, null);

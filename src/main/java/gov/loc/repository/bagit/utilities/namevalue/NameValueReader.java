@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.utilities.namevalue;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 public interface NameValueReader extends Iterator<NameValueReader.NameValue> {
 
@@ -52,9 +53,8 @@ public interface NameValueReader extends Iterator<NameValueReader.NameValue> {
 			if (obj == null) return false;
 			if (! (obj instanceof NameValue)) return false;
 			NameValue that = (NameValue)obj;
-			if (! this.name.equals(that.getName())) return false;
-			if ((this.value != null && that.getValue() == null) || (this.value == null && that.getValue() != null) || (! this.value.equals(that.getValue()))) return false;
-			return true;			
+			return Objects.equals(this.name, that.getName()) && Objects.equals(this.value, that.getValue()) && 
+			    Objects.equals(this.getKey(), that.getKey());			
 		}
 		
 		@Override

@@ -113,11 +113,8 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 	}
 	
 	public String getCaseInsensitive(String key) {
-		if (key == null) {
-			return this.get(key);
-		}
 		for(Entry<String, String>entry : this.entrySet()) {
-			if (key.equalsIgnoreCase(entry.getKey())) {
+			if (entry.getKey().equalsIgnoreCase(key)) {
 				return this.get(entry.getKey());
 			}
 		}

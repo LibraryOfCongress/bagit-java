@@ -161,7 +161,8 @@ public class PreBagImpl implements PreBag {
 		if (file.isDirectory() && ! this.ignoreDirs.contains(file.getName())) {
 			//If file is empty, add .keep
 			File[] children = file.listFiles();
-			if (children.length == 0) {
+			
+			if (children == null || children.length == 0) {
 				log.info("Adding .keep file to " + file.toString());
 				try {
 					FileUtils.touch(new File(file, ".keep"));
