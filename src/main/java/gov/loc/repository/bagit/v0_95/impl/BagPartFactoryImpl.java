@@ -40,12 +40,12 @@ public class BagPartFactoryImpl extends AbstractBagPartFactory {
 	
 	@Override
 	public BagInfoTxt createBagInfoTxt() {
-		return new BagInfoTxtImpl(this.bagConstants);
+		return new Version0_95BagInfoTxtImpl(this.bagConstants);
 	}
 	
 	@Override
 	public BagInfoTxt createBagInfoTxt(BagFile bagFile) {
-		return new BagInfoTxtImpl(bagFile, this.bagConstants);
+		return new Version0_95BagInfoTxtImpl(bagFile, this.bagConstants);
 	}
 
 	@Override
