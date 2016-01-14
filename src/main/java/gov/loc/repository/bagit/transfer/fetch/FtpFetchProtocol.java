@@ -33,7 +33,7 @@ public class FtpFetchProtocol implements FetchProtocol
         return new FtpFetcher();
     }
 
-    private class FtpFetcher extends LongRunningOperationBase implements FileFetcher
+    private static class FtpFetcher extends LongRunningOperationBase implements FileFetcher
     {
         private FTPClient client;
     	private String username = null;
@@ -193,7 +193,7 @@ public class FtpFetchProtocol implements FetchProtocol
         }
     }
     
-    private class LogCommandListener implements ProtocolCommandListener
+    private static class LogCommandListener implements ProtocolCommandListener
     {
         @Override
         public void protocolCommandSent(ProtocolCommandEvent event)

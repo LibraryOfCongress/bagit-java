@@ -70,20 +70,22 @@ public class NameValueReaderImpl implements NameValueReader {
 		String line = this.lines.removeFirst();
 		String[] splitString = line.split(" *: *", 2);
 		String name = splitString[0];
-		String value = null;
+		
+		StringBuilder sb = new StringBuilder();
+		
 		if (splitString.length == 2) {
-			value = splitString[1].trim();
+			sb.append(splitString[1].trim());
 			String nextLine = this.lines.peekFirst();
 			Matcher continueLineMatcher = nextLine != null ? continueLinePattern.matcher(nextLine) : null;
 			Matcher continueNewlineMatcher = nextLine != null ? continueNewlinePattern.matcher(nextLine) : null;
 			boolean lastLineIsNewLine = false;
 			while (nextLine != null && (continueLineMatcher.matches() || continueNewlineMatcher.matches())) {
 				if (continueLineMatcher.matches() && ! continueNewlineMatcher.matches()) {
-					if (! lastLineIsNewLine) value += " ";
-					value += continueLineReplacePattern.matcher(nextLine).replaceAll("");
+					if (! lastLineIsNewLine){ sb.append(' ');}
+					sb.append(continueLineReplacePattern.matcher(nextLine).replaceAll(""));
 					lastLineIsNewLine = false;					
 				} else {
-					value += "\n";
+					sb.append("\n");
 					lastLineIsNewLine = true;
 				}
 				
@@ -93,14 +95,15 @@ public class NameValueReaderImpl implements NameValueReader {
 				continueNewlineMatcher = nextLine != null ? continueNewlinePattern.matcher(nextLine) : null;				
 			}
 			while(! this.lines.isEmpty() && this.lines.getFirst().matches("^( |\\t)+.+$")) {
-				value += " " + this.lines.removeFirst().replaceAll("^( |\\t)+", "");
+				sb.append(' ').append(this.lines.removeFirst().replaceAll("^( |\\t)+", ""));
 			}			
 		} else {
 			throw new RuntimeException("Improperly formatted line: " + line);
 		}
 		//If ends in \n then trim
-		if (value.endsWith("\n")) value = value.substring(0, value.length()-1);
-		NameValue ret = new NameValue(name, value);
+		if (sb.toString().endsWith("\n")){sb.setLength(sb.length() - 1);}
+		
+		NameValue ret = new NameValue(name, sb.toString());
 		log.debug(MessageFormat.format("Read from {0}: {1}", this.type, ret.toString()));
 		return ret;
 		

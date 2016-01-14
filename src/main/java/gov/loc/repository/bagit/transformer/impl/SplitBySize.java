@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.transformer.impl;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -177,15 +178,17 @@ public class SplitBySize implements Splitter{
 	   	return bagFileGroups;
 	 }
 	 
-	 private class BagFileSizeReverseComparator implements Comparator<BagFile>{
-		@Override
+	 private static class BagFileSizeReverseComparator implements Comparator<BagFile>, Serializable{
+		private static final long serialVersionUID = 1L;
+
+    @Override
 		public int compare(BagFile bagFile1, BagFile bagFile2) {			
-			return new Long(bagFile2.getSize()).compareTo(new Long(bagFile1.getSize()));
+			return ((Long)bagFile2.getSize()).compareTo(bagFile1.getSize());
 		}
 	    	
 	 }
 	 
-	 private class BagFileGroup{
+	 private static class BagFileGroup{
          List<BagFile> bagFiles = new ArrayList<BagFile>();
          Double groupSize = 0.0;
 		 Double maxGroupSize = 300 * SizeHelper.GB; 
@@ -211,7 +214,7 @@ public class SplitBySize implements Splitter{
 		}  
     }
 
-	 private class LowestLevelBagDir implements BagFile{
+	 private static class LowestLevelBagDir implements BagFile{
 		private String filePath;
 		private List<BagFile> bagFiles = new ArrayList<BagFile>();
 				

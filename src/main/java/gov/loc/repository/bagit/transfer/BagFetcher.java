@@ -662,7 +662,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	            	try{
 						this.fetchFile(fetchLine);
 						int index = fetchSuccessCounter.incrementAndGet();
-                		progress("Fetched", fetchLine.getFilename(), new Long(index), new Long(fetchLines.size()));
+                		progress("Fetched", fetchLine.getFilename(), Long.valueOf(index), Long.valueOf(fetchLines.size()));
 						fetchLine = getNextFetchLine();
 					}catch (BagTransferCancelledException e){
                 		progress("Fetch cancelled", "", null, null);
@@ -811,7 +811,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     }
 
 
-    private class MyContext implements FetchContext{
+    private static class MyContext implements FetchContext{
     	@Override
     	public boolean requiresLogin(){
     		return false;

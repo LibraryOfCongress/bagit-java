@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 
@@ -11,8 +12,8 @@ import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.utilities.MessageDigestHelper;
 import gov.loc.repository.bagit.utilities.namevalue.NameValueReader;
-import gov.loc.repository.bagit.utilities.namevalue.NameValueWriter;
 import gov.loc.repository.bagit.utilities.namevalue.NameValueReader.NameValue;
+import gov.loc.repository.bagit.utilities.namevalue.NameValueWriter;
 
 public abstract class AbstractNameValueBagFile extends LinkedHashMap<String, String> implements BagFile {
 
@@ -59,8 +60,8 @@ public abstract class AbstractNameValueBagFile extends LinkedHashMap<String, Str
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		NameValueWriter writer = new NameValueWriterImpl(out, this.encoding, this.getType());
 		try {
-			for(String name : this.keySet()) {
-				writer.write(name, this.get(name));
+			for(Entry<String, String> entry : this.entrySet()) {
+				writer.write(entry.getKey(), this.get(entry.getKey()));
 			}
 		} finally {
 			IOUtils.closeQuietly(writer);

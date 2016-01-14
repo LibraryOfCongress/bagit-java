@@ -423,66 +423,76 @@ public class CommandLineBagDriver {
 	}
 	
 	private static String getAlgorithmList() {
-		String list = "";
+		StringBuilder sb = new StringBuilder();
+		
 		for(int i=0; i < Algorithm.values().length; i++) {
-			list += Algorithm.values()[i].bagItAlgorithm;
+			sb.append(Algorithm.values()[i].bagItAlgorithm);
 			if (i != Algorithm.values().length -1) {
-				list += ";";
+				sb.append(';');
 			}
 		}
-		return list;
+		
+		return sb.toString();
 	}
 
 	private static String getFailModeList() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < FailMode.values().length; i++) {
-			list += FailMode.values()[i];
+			sb.append(FailMode.values()[i]);
 			if (i != FailMode.values().length -1) {
-				list += ";";
+				sb.append(';');
 			}
 		}
-		return list;
+		
+		return sb.toString();
 		
 	}
 	
 	private static String getAlgorithmListString() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < Algorithm.values().length; i++) {
-			list += Algorithm.values()[i].bagItAlgorithm;
+			sb.append(Algorithm.values()[i].bagItAlgorithm);
 
 			if (i != Algorithm.values().length -1) {
-				list += " and ";
+				sb.append(" and ");
 			} else if (i != Algorithm.values().length -1) {
-				list += ", ";
+				sb.append(", ");
 			}
 		}
-		return list;
+		
+		return sb.toString();
 		
 	}
 
 	private static String getVersionList() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < Version.values().length; i++) {
-			list += Version.values()[i].versionString;
+			sb.append(Version.values()[i].versionString);
 			if (i != Version.values().length -1) {
-				list += ";";
+				sb.append(';');
 			}
 		}
-		return list;
+		
+		return sb.toString();
 	}
 	
 	private static String getVersionListString() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < Version.values().length; i++) {
-			list += Version.values()[i].versionString;
+			sb.append(Version.values()[i].versionString);
 
 			if (i != Version.values().length -1) {
-				list += " and ";
+				sb.append(" and ");
 			} else if (i != Version.values().length -1) {
-				list += ", ";
+				sb.append(", ");
 			}
 		}
-		return list;
+		
+		return sb.toString();
 		
 	}
 		
@@ -550,14 +560,15 @@ public class CommandLineBagDriver {
 	}
 	
 	private static String argsToString(String[] args) {
-		String string = "";
-		for(int i=0; i < args.length; i++) {
+	  StringBuilder sb = new StringBuilder();
+
+	  for(int i=0; i < args.length; i++) {
 			if (i > 0) {
-				string += " ";
+				sb.append(' ');
 			}
-			string += args[i];
+			sb.append(args[i]);
 		}
-		return string;
+		return sb.toString();
 	}
 
 	private Bag getBag(File sourceFile, Version version, LoadOption loadOption) {
@@ -1125,7 +1136,7 @@ public class CommandLineBagDriver {
 		
 	}
 	
-	private class Operation {
+	private static class Operation {
 		public String help;
 		public JSAP jsap;
 		public String name;

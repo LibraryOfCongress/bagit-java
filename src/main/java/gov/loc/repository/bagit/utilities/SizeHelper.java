@@ -29,13 +29,14 @@ public class SizeHelper {
 			unit = "TB";
 			div = TB;
 		}
-		String format = "#.#";
+		StringBuilder format = new StringBuilder("#.#");
 		double size = octets/div;
-		String sizeString = (new DecimalFormat(format)).format(size);
+		
+		String sizeString = (new DecimalFormat(format.toString())).format(size);
 		if (size % 1 != 0) {
 			while (sizeString.endsWith("0")) {
-				format += "#";
-				sizeString = (new DecimalFormat(format)).format(size);
+				format.append('#');
+				sizeString = (new DecimalFormat(format.toString())).format(size);
 			}
 		}
 		return sizeString + " " + unit;

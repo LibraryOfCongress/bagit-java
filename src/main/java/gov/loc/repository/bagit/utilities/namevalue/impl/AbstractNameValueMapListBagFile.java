@@ -116,9 +116,9 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 		if (key == null) {
 			return this.get(key);
 		}
-		for(String name : this.keySet()) {
-			if (key.equalsIgnoreCase(name)) {
-				return this.get(name);
+		for(Entry<String, String>entry : this.entrySet()) {
+			if (key.equalsIgnoreCase(entry.getKey())) {
+				return this.get(entry.getKey());
 			}
 		}
 		return null;

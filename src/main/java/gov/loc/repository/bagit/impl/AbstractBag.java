@@ -1,23 +1,24 @@
 package gov.loc.repository.bagit.impl;
 
+import java.io.Closeable;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.io.Closeable;
-import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
@@ -25,11 +26,10 @@ import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.DeclareCloseable;
 import gov.loc.repository.bagit.FetchTxt;
-import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressListener;
-import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.ManifestHelper;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.filesystem.DirNode;
 import gov.loc.repository.bagit.filesystem.FileNode;
 import gov.loc.repository.bagit.filesystem.FileSystemFactory;
@@ -47,8 +47,8 @@ import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
+import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
@@ -446,9 +446,9 @@ public abstract class AbstractBag implements Bag {
 		
 		if (CancelUtil.isCancelled(visitor)) return;
 		
-		for(String filepath : this.tagMap.keySet()) {
+		for(Entry<String, BagFile> entry : this.tagMap.entrySet()) {
 			if (CancelUtil.isCancelled(visitor)) return;
-			visitor.visitTag(this.tagMap.get(filepath));
+			visitor.visitTag(this.tagMap.get(entry.getKey()));
 		}
 		
 		if (CancelUtil.isCancelled(visitor)) return;
@@ -461,9 +461,9 @@ public abstract class AbstractBag implements Bag {
 		
 		if (CancelUtil.isCancelled(visitor)) return;
 		
-		for(String filepath : this.payloadMap.keySet()) {
+		for(Entry<String, BagFile> entry : this.payloadMap.entrySet()) {
 			if (CancelUtil.isCancelled(visitor)) return;
-			visitor.visitPayload(this.payloadMap.get(filepath));
+			visitor.visitPayload(this.payloadMap.get(entry.getKey()));
 		}
 		
 		if (CancelUtil.isCancelled(visitor)) return;
