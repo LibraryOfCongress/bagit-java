@@ -13,7 +13,7 @@ public class RequiredBagInfoTxtFieldsVerifier implements Verifier {
 	private String[] requiredFields;
 	
 	public RequiredBagInfoTxtFieldsVerifier(String[] requiredFields) {
-		this.requiredFields = requiredFields;
+		this.requiredFields = requiredFields.clone();
 	}
 	
 	public SimpleResult verify(Bag bag) {

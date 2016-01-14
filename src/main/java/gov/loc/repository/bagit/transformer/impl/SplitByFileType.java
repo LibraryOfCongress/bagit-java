@@ -1,13 +1,13 @@
 package gov.loc.repository.bagit.transformer.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.transformer.Splitter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SplitByFileType implements Splitter{
 	
@@ -16,11 +16,11 @@ public class SplitByFileType implements Splitter{
 	private String[] exludeDirs;
 
 	public String[][] getFileExtensions() {
-		return fileExtensions;
+		return fileExtensions.clone();
 	}
 
 	public void setFileExtensions(String[][] fileExtensions) {
-		this.fileExtensions = fileExtensions;
+		this.fileExtensions = fileExtensions.clone();
 	}
 
 	public SplitByFileType(BagFactory bagFactory, String[][] fileExtensions, String[] excludeDirs) {
@@ -80,10 +80,10 @@ public class SplitByFileType implements Splitter{
 	}
 	
 	public String[] getExludeDirs() {
-		return exludeDirs;
+		return exludeDirs.clone();
 	}
 
 	public void setExludeDirs(String[] exludeDirs) {
-		this.exludeDirs = exludeDirs;
+		this.exludeDirs = exludeDirs.clone();
 	}
 }

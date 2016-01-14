@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import gov.loc.repository.bagit.BagFile;
 
@@ -14,7 +15,7 @@ public class StringBagFile implements BagFile {
 	public StringBagFile(String name, byte[] data)
 	{
 		this.filepath = name;
-		this.buf = data;
+		this.buf = Arrays.copyOf(data, data.length);
 	}
 	
 	public StringBagFile(String name, String str) {		

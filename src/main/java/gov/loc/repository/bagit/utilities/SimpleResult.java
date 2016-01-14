@@ -13,8 +13,8 @@ public class SimpleResult {
 	//Map<code, Map<subject, List<SimpleMessage>>
 	protected Map<String, Map<String, SimpleMessage>> messages = new HashMap<String, Map<String,SimpleMessage>>();
 	
-	public static Integer DEFAULT_MAX_MESSAGES = 100;
-	public static String DEFAULT_DELIM = " ";
+	public static final Integer DEFAULT_MAX_MESSAGES = 100;
+	public static final String DEFAULT_DELIM = " ";
 	
 	public SimpleResult() {
 	}	

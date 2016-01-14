@@ -32,7 +32,7 @@ public class SplitByFileTypeTest {
 		String[][] fileExtensions = new String[2][];
 		fileExtensions[0] = new String[]{"txt"};
 		fileExtensions[1] = new String[]{"xml", "html"};
-		splitter = new SplitByFileType(this.bagFactory, fileExtensions, null);
+		splitter = new SplitByFileType(this.bagFactory, fileExtensions, new String[]{});
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag-split", Version.V0_96.toString().toLowerCase()));
 		bag = bagFactory.createBag(sourceBagDir, BagFactory.LoadOption.BY_FILES);
 		srcBagPayloadFiles = bag.getPayload();

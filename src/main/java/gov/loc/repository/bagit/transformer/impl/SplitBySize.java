@@ -269,10 +269,10 @@ public class SplitBySize implements Splitter{
 	}
 	
 	public String[] getExludeDirs() {
-		return exludeDirs;
+		return exludeDirs.clone();
 	}
 
 	public void setExludeDirs(String[] exludeDirs) {
-		this.exludeDirs = exludeDirs;
+		this.exludeDirs = exludeDirs.clone();
 	}
 }
