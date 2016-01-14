@@ -31,27 +31,29 @@ public class BagHelper {
 		DirNode bagFileDirNode = null;
 		try {
 			bagFileDirNode = FileSystemFactory.getDirNodeForBag(bagFile);
+			log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
+			
+			FileNode bagItNode = bagFileDirNode.childFile(BAGIT);
+	    if (bagItNode == null || ! bagItNode.exists()) {
+	      log.debug(MessageFormat.format("Unable to determine version for {0}.", bagFile.toString()));
+	      return null;
+	    }
+	    BagItTxt bagItTxt = new BagItTxtImpl(new FileSystemBagFile(BAGIT, bagItNode), new BagConstantsImpl());
+      log.debug(MessageFormat.format("Determined that version for {0} is {1}.", bagFile.toString(), bagItTxt.getVersion()));
+      return bagItTxt.getVersion();
+      
 		} catch (UnknownFormatException e) {
 			log.debug(MessageFormat.format("Unable to determine version for {0} because unknown format.", bagFile.toString()));
 			return null;
 		} catch (UnsupportedFormatException e) {
 			log.debug(MessageFormat.format("Unable to determine version for {0} because unsupported format.", bagFile.toString()));
-		}
-		log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
-		
-		FileNode bagItNode = bagFileDirNode.childFile(BAGIT);
-		if (bagItNode == null || ! bagItNode.exists()) {
-			log.debug(MessageFormat.format("Unable to determine version for {0}.", bagFile.toString()));
 			return null;
 		}
-		try {
-            BagItTxt bagItTxt = new BagItTxtImpl(new FileSystemBagFile(BAGIT, bagItNode), new BagConstantsImpl());
-            log.debug(MessageFormat.format("Determined that version for {0} is {1}.", bagFile.toString(), bagItTxt.getVersion()));
-            return bagItTxt.getVersion();
-        } finally {
-            bagFileDirNode.getFileSystem().closeQuietly();
-        }
-		
+		finally {
+		  if(bagFileDirNode != null){
+		    bagFileDirNode.getFileSystem().closeQuietly();
+		  }
+		}
 	}
 	
 	public static long generatePayloadOctetCount(Bag bag) {
