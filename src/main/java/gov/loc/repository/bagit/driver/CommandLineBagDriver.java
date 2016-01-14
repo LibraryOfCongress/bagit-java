@@ -1,54 +1,14 @@
 package gov.loc.repository.bagit.driver;
 
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagHelper;
-import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.PreBag;
-import gov.loc.repository.bagit.ProgressListenable;
-import gov.loc.repository.bagit.Bag.Format;
-import gov.loc.repository.bagit.BagFactory.LoadOption;
-import gov.loc.repository.bagit.BagFactory.Version;
-import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.progresslistener.CompositeProgressListener;
-import gov.loc.repository.bagit.progresslistener.ConsoleProgressListener;
-import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
-import gov.loc.repository.bagit.transformer.Completer;
-import gov.loc.repository.bagit.transformer.Splitter;
-import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
-import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
-import gov.loc.repository.bagit.transformer.impl.SplitByFileType;
-import gov.loc.repository.bagit.transformer.impl.SplitBySize;
-import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
-import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
-import gov.loc.repository.bagit.transformer.impl.UpdatePayloadOxumCompleter;
-import gov.loc.repository.bagit.transfer.BagFetcher;
-import gov.loc.repository.bagit.transfer.FetchFailStrategy;
-import gov.loc.repository.bagit.transfer.StandardFailStrategies;
-import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
-import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
-import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
-import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
-import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
-import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
-import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.utilities.SizeHelper;
-import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
-import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
-import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
-import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
-import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.FileSystemHelper;
-import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-import gov.loc.repository.bagit.writer.impl.FileSystemWriter.WriteMode;
-import gov.loc.repository.bagit.writer.impl.ZipWriter;
-
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +29,50 @@ import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.UnflaggedOption;
 import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
+
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
+import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.BagHelper;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.PreBag;
+import gov.loc.repository.bagit.ProgressListenable;
+import gov.loc.repository.bagit.progresslistener.CompositeProgressListener;
+import gov.loc.repository.bagit.progresslistener.ConsoleProgressListener;
+import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
+import gov.loc.repository.bagit.transfer.BagFetcher;
+import gov.loc.repository.bagit.transfer.FetchFailStrategy;
+import gov.loc.repository.bagit.transfer.StandardFailStrategies;
+import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
+import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
+import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
+import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
+import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.transformer.Splitter;
+import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
+import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.transformer.impl.SplitByFileType;
+import gov.loc.repository.bagit.transformer.impl.SplitBySize;
+import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
+import gov.loc.repository.bagit.transformer.impl.UpdatePayloadOxumCompleter;
+import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
+import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.SizeHelper;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
+import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
+import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemHelper;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter.WriteMode;
+import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 public class CommandLineBagDriver {
 	
@@ -1104,9 +1108,9 @@ public class CommandLineBagDriver {
 			filename = MessageFormat.format("{0}-{1}", bagFile.getName(), filename);
 		}
 		File file = new File(filename);
-		FileWriter writer = null;
+		BufferedWriter writer = null;
 		try {
-			writer = new FileWriter(file);
+		  writer = Files.newBufferedWriter(Paths.get(file.toURI()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 			for(String msg : result.getMessages()) {
 				writer.write(msg + "\n");
 			}
@@ -1114,7 +1118,9 @@ public class CommandLineBagDriver {
 		} catch (IOException e) {
 			log.error("Unable to write results", e);
 		} finally {
-			IOUtils.closeQuietly(writer);
+		  if(writer != null){
+		    IOUtils.closeQuietly(writer);
+		  }
 		}
 		
 	}

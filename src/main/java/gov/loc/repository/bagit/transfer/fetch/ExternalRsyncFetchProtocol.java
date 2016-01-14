@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import org.apache.commons.exec.CommandLine;
@@ -228,7 +229,7 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 				if (this.isCancelled())
 					throw new BagTransferCancelledException();
 				
-				String error = new String(err.toByteArray());
+				String error = new String(err.toByteArray(), StandardCharsets.UTF_8);
 				String msg = format("An error occurred while executing command line \"{0}\": {1}", commandLine.toString(), error);
 				throw new BagTransferException(msg, e);
 			}
