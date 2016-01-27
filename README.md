@@ -16,7 +16,7 @@ bagit-\<VERSION\>.zip. To create an office release you should specify the versio
 
 ## COMMANDLINE
 A commandline interface is provided to perform various operations on bag. Unzip
-bagit-\<VERSION\>.zip and change into the resulting 'bagit\-<VERSION\>/bin' subdirectory,
+bagit-\<VERSION\>.zip and change into the resulting 'bagit-\<VERSION\>/bin' subdirectory,
 where you will find scripts to invoke the commandline interface. To learn more
 about the supported operations, invoke ./bag or bag.bat with no arguments. If you
 encounter memory issues, the memory allocation can be increased in the scripts found
