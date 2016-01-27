@@ -10,6 +10,10 @@ apply from: 'eclipse.gradle'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
+if(project.version == "unspecified"){
+  project.version = "4.10.0-SNAPSHOT"
+}
+
 repositories {
   maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
   maven { url "http://repo.maven.apache.org/maven2" }
@@ -53,8 +57,7 @@ distZip {
   into("${baseZipDirectory}"){
     from '.'
     include '*.txt'
-    filter { line -> return line.replace('\${bagit.version}', "0.97") }
-    filter { line -> return line.replace('\${pom.version}', project.version) }
+    include '*.md'
   }
 }
 
@@ -79,13 +82,6 @@ pmd {
   ruleSets = ["java-basic", "java-braces"]
   ignoreFailures = true //don't fail the gradle build if rules are broken
 }
-
-task srcZip(type: Zip) {
-  classifier "src"
-  from 'src'
-  exclude 'assembly'
-}
-tasks.distZip.dependsOn srcZip
 
 //due to http://issues.gradle.org/browse/GRADLE-2333 need to do a small hack to add the config folder to the generated script's classpath
 startScripts {

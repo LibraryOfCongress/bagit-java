@@ -1,6 +1,5 @@
 BAGIT LIBRARY (BIL)
-Version ${pom.version}
-BagIt Version ${bagit.version}
+BagIt Version 0.97
 
 DESCRIPTION:
 The BAGIT LIBRARY is a software library intended to support the creation, 
@@ -11,22 +10,19 @@ REQUIREMENTS:
 Java 6
 
 BUILD:
-Inside the bagit-java root directory, run 'mvn package'. This will create two .zip files,
-bagit-X.X.X-bin.zip and bagit-X.X.X-src.zip. 
+Inside the bagit-java root directory, run 'gradle distZip'. This will create a .zip file under build/distributions,
+bagit-<VERSION>.zip. 
 
 COMMANDLINE:
 A commandline interface is provided to perform various operations on bag. Unzip
-bagit-x.x.x-src.zip and change into the resulting 'bagit-x.x.x/bin' subdirectory,
+bagit-<VERSION>.zip and change into the resulting 'bagit-<VERSION>/bin' subdirectory,
 where you will find scripts to invoke the commandline interface. To learn more
 about the supported operations, invoke ./bag or bag.bat with no arguments. If you
 encounter memory issues, the memory allocation can be increased in the scripts found
 in the bin directory.
 
 NOTE IF USING WITH ECLIPSE:
-There is a known defect with m2eclipse (https://issues.sonatype.org/browse/MNGECLIPSE-1091)
-that will cause problems with this project.  To work around the problem, in Eclipse select
-the project's Properties, then Maven and unselect "Skip Maven compiler plugin when processing
-resources".
+Simply run "gradle eclipse" and it will automatically create a eclipse project for you that you can import.
 
 FILENAMES WITH BACKSLASHES (\):
 The BagIt specification requires that the only valid path separator is the forward slash /. Thus, a
@@ -41,7 +37,6 @@ Changes in 4.10.0:
 2. Reports an error when verifying payloads for a bag with no payload manifests.
 3. Fix bugs causing streams to be left open after an exception is thrown.
 4. Upgraded Commons Compress to 1.8.1.
-5. Transferred to Salim Malik.
 
 Changes in 4.9.0:
 1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
