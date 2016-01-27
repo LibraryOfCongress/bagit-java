@@ -23,11 +23,11 @@ encounter memory issues, the memory allocation can be increased in the scripts f
 in the bin directory.
 
 ### NOTE IF USING WITH ECLIPSE
-Simply run "gradle eclipse" and it will automatically create a eclipse project for you that you can import.
+Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
-### FILENAMES WITH BACKSLASHES (\)
+### FILENAMES WITH BACKSLASHES
 The BagIt specification requires that the only valid path separator is the forward slash /. Thus, a
-backslash (\) in a file name is completely legal.  However, due to a shortcoming in Commons VFS
+backslash ( \ ) in a file name is completely legal.  However, due to a shortcoming in Commons VFS
 backslashes are supported by BIL.  Given platform compatability issues, this is not necessarily
 a bad thing.
 
