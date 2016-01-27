@@ -12,11 +12,11 @@ supported version is 0.93.
 
 ## BUILD
 Inside the bagit-java root directory, run `gradle distZip`. This will create a .zip file under build/distributions,
-bagit-<VERSION>.zip. To create an office release you should specify the version by running `gradle distZip -Pversion=<VERSION>` 
+bagit-\<VERSION\>.zip. To create an office release you should specify the version by running `gradle distZip -Pversion=<VERSION>` 
 
 ## COMMANDLINE
 A commandline interface is provided to perform various operations on bag. Unzip
-bagit-<VERSION>.zip and change into the resulting 'bagit-<VERSION>/bin' subdirectory,
+bagit-\<VERSION\>.zip and change into the resulting 'bagit\-<VERSION\>/bin' subdirectory,
 where you will find scripts to invoke the commandline interface. To learn more
 about the supported operations, invoke ./bag or bag.bat with no arguments. If you
 encounter memory issues, the memory allocation can be increased in the scripts found
