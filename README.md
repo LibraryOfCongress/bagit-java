@@ -1,19 +1,20 @@
-BAGIT LIBRARY (BIL)
+# BAGIT LIBRARY (BIL)
 BagIt Version 0.97
 
-DESCRIPTION:
+## DESCRIPTION
 The BAGIT LIBRARY is a software library intended to support the creation, 
 manipulation, and validation of bags.  It is version aware.  The earliest
 supported version is 0.93.
 
-REQUIREMENTS:
-Java 6
+## REQUIREMENTS
+* Java 6
+* gradle
 
-BUILD:
+## BUILD
 Inside the bagit-java root directory, run 'gradle distZip'. This will create a .zip file under build/distributions,
 bagit-<VERSION>.zip. 
 
-COMMANDLINE:
+## COMMANDLINE
 A commandline interface is provided to perform various operations on bag. Unzip
 bagit-<VERSION>.zip and change into the resulting 'bagit-<VERSION>/bin' subdirectory,
 where you will find scripts to invoke the commandline interface. To learn more
@@ -21,24 +22,24 @@ about the supported operations, invoke ./bag or bag.bat with no arguments. If yo
 encounter memory issues, the memory allocation can be increased in the scripts found
 in the bin directory.
 
-NOTE IF USING WITH ECLIPSE:
+### NOTE IF USING WITH ECLIPSE
 Simply run "gradle eclipse" and it will automatically create a eclipse project for you that you can import.
 
-FILENAMES WITH BACKSLASHES (\):
+### FILENAMES WITH BACKSLASHES (\)
 The BagIt specification requires that the only valid path separator is the forward slash /. Thus, a
 backslash (\) in a file name is completely legal.  However, due to a shortcoming in Commons VFS
 backslashes are supported by BIL.  Given platform compatability issues, this is not necessarily
 a bad thing.
 
-RELEASE NOTES:
+### RELEASE NOTES
 
-Changes in 4.10.0:
+#### Changes in 4.10.0
 1. Fixes defect in SimpleResult.add*Message() methods.
 2. Reports an error when verifying payloads for a bag with no payload manifests.
 3. Fix bugs causing streams to be left open after an exception is thrown.
 4. Upgraded Commons Compress to 1.8.1.
 
-Changes in 4.9.0:
+#### Changes in 4.9.0
 1. Bug fix for normalization conversion between stored manifest filenames and filenames on disk.
 2. Fixed bug in zip compression.
 3. Upgraded numerous dependencies.
@@ -46,32 +47,32 @@ Changes in 4.9.0:
 5. Added .travis.yml for integration with travis-ci (http://travis-ci.com/).
 6. Fixed problems so that compiles under Java 8.
 
-Changes in 4.8.1:
+#### Changes in 4.8.1
 1. Bug fix to FileSystemWriter to handle files that did do not already exist.
 2. Bug fix to SizeHelper.
 
-Changes in 4.8:
+#### Changes in 4.8
 1. Added additional convenience method to FileHelper.
 
-Changes in 4.7:
+#### Changes in 4.7
 1. Handle NPE when encountering improperly formatted bag-info.txt.
 2. Added progress reports to bag fetch. 
 
-Changes in 4.6:
+#### Changes in 4.6
 1. Added tag file fetch-progress.txt to support progressive fetch and verification.  The file 
 	will be removed once the bag is successfully fetched.  In BagFetcher, added verification
 	of a fetched file against the checksum in the manifest file.  Added switch verify to fill 
 	holey bag and fetch remote bag command-line operations.  This option enables bag verification 
 	before the fetch is resumed.
 	
-Changes in 4.5.1:
+#### Changes in 4.5.1
 1. Added missing braces to conditional blocks in ValidHoleyBagVerifier.  This caused false
 	error message when verifying a holey bag.
 
-Changes in 4.5:
+#### Changes in 4.5
 1. Adds support for bag-info.txt values that contain line terminators.
 
-Changes in 4.4:
+#### Changes in 4.4
 1. Attempt to correct for unicode normalization form in filepaths. Note: Java has
     problems dealing with differences in unicode normalization form 
     (http://www.unicode.org/reports/tr15/tr15-23.html) in filepaths.
@@ -86,11 +87,11 @@ Changes in 4.4:
 4. Added setUsername()/setPassword() interfaces to all bag fetchers to support
 	concurrent clients; each client's credentials will be local to each instance of bag fetcher. 	
 
-Changes in 4.3.1:
+#### Changes in 4.3.1
 1. Changes to pom for maven 3.
 2. Fix for NPE in SimpleMessage.
 
-Changes in 4.3:
+#### Changes in 4.3
 1. To enhance ability to machine-process SimpleResult, refactored to allow the
     recording of codes, with subject and objects.
 2. Removed BagVerifyResult.
@@ -101,14 +102,14 @@ Changes in 4.3:
 6. Added UpdatePayloadOxumCompleter and added support to commandline driver.
 7. Added PayloadOxumVerifier.
 
-Changes in 4.2:
+#### Changes in 4.2
 1. Changed most interfaces to extends Closeable instead of declaring own close() method.
 2. Improved safety of stream closing throughout code.
 
-Changes in 4.1:
+#### Changes in 4.1
 1. Fixes excessive logging.
 
-Changes in 4.0:
+#### Changes in 4.0
 1. Added support for BagIt 0.97. The significant change is allowing tag directories. (Note that operations
 	are version aware, meaning pre-0.97 bags do not allow tag directories.)
 2. Removes Commons VFS.
@@ -128,64 +129,64 @@ Changes in 4.0:
 9. Added support for compressing zip files.
 10. Replaced Commons Httpclient with Apache HttpComponents.
 
-Changes in 3.13:
+#### Changes in 3.13
 1. Added support for keeping empty directories when bagging in place.
 2. Increased default MAXMEM to 1024m.
 3. Added verbose console and log progress reporting to CommandLineBagDriver.
 4. Added support for ignoring symbolic links when verifying a bag on a file system.
 5. Upgraded to Commons IO 2.0.1.
 
-Changes in 3.12:
+#### Changes in 3.12
 1. Added support to CompleteVerifier, PreBag, and BagFactory to ignore specified directories (e.g., lost+found).
 
-Changes in 3.11:
+#### Changes in 3.11
 1. Added support to FileSystemWriter to only write files that had mismatch between
 	manifest and files on disk.
 
-Changes in 3.10:
+#### Changes in 3.10
 1. Added additional list methods to BagInfoTxt.
 2. Added chaining completer.
 3. Changed completers to not create empty payload manifests.
 4. Added support to FileSystemWriter to only write tag files.
 
-Changes in 3.9:
+#### Changes in 3.9
 1. Change to licensing terms.
 2. Minor modifications to support for splitting bags.
 
-Changes in 3.8:
+#### Changes in 3.8
 1. Added support for splitting bags.
 2. Added support for resuming fetches of bags.
 3. Improved support for filepaths with encoding.
 
-Changes in 3.7.1:
+#### Changes in 3.7.1
 1. Fixed defect in the writing of repeated fields in bag-info.txt.
 2. Fixed defect in adding a list of values to bag-info.txt.
 
-Changes in 3.7:
+#### Changes in 3.7
 1. Added option to limit added, updated, and deleted files in UpdateCompleter.
 2. Added support for repeating fields in bag-info.txt.  The existing Map interface was extended,
     not changed.
 
-Changes in 3.6:
+#### Changes in 3.6
 1. Fixed bug with HolePunchers handling of filepaths with spaces.
 2. Fixed bug which caused the FileSystem Writer to delete empty directories.
 3. Added option for FileSystem Writer to ignore nfs temp files since they can't be deleted.
 
-Changes in 3.5:
+#### Changes in 3.5
 1. Fixed bug with support for specifying a manifest delimeter.
 2. Added missing files to source zip.
 3. Added results log and output for retrieve and fill holey operations.
 4. Fixed bug with handling of holey bags missing fetch.txt.
 5. Set FTP data transfer sockets timeout.
 
-Changes in 3.4:
+#### Changes in 3.4
 1. Fixed critical bug that disallowed payload files to have tag manifest names.
 2. Changed logging so each invocation produces a unique log file.
 3. Added a new results log written to working directory for failed verification commandline operations.
 4. Reduced output to System.out when invoking commandline.
 5. Added support for reporting BIL version number.
 
-Changes in 3.3:
+#### Changes in 3.3
 1. Added support for HTTPS, including lax certificate handling via the --relaxssl option.
 2. Fixed problems with the console authenticator.
 3. Changed socket timeout from infinity to 20 seconds for http fetches.
@@ -193,7 +194,7 @@ Changes in 3.3:
 5. Made whitespace used in creating manifests configurable.
 6. Smarter handling of relative paths in manifests. 
 
-Changes in 3.2:
+#### Changes in 3.2
 1. Fixed handling of bag-info.txt with colons in the value.
 2. Added Update Completer, which updates the manifests and bag-info.txt for a modified bag.
 3. Added support for retrieving a bag exposed by a web server without first having a local
@@ -201,14 +202,14 @@ Changes in 3.2:
 4. Added support for BIL versions 0.93 and 0.94.
 5. Changed default number of spaces in manifests to 2.
 
-Changes in 3.1:
+#### Changes in 3.1
 1. Updates to bag.bat.
 2. Added support for tolerating additional directories in bag_dir.
 3. Added support for adding external bag-info.txt when creating bag or bagging-in-place
 	from commandline.
 4. Added support for updating tag manifests only.
 
-Changes in 3.0:
+#### Changes in 3.0
 1. Numerous changes to Bag interface for clarity, consistency, and simplification.
 2. Add support for visitor pattern.  Changed Writers to use visitor.
 3. Writer (formerly BagWriter), Completeter (formerly CompletionStrategy), Hole Puncher (formerly Bag.makeHoley())
@@ -223,10 +224,10 @@ Changes in 3.0:
 10. Added support for bag-in-place.
 11. Improved usability of commandline interface.
 
-Changes in 2.4:
+#### Changes in 2.4
 1. Added support for getting lists of standard and non-standard fields in manifests.
 
-Changes in 2.3:
+#### Changes in 2.3
 1. Trial implementation of writer for depositing serialized bags using SWORD.
 2. Trial implementation of writer for depositing unserialized bags using BOB.
 3. Implementation of writer for tar gz.
@@ -236,10 +237,10 @@ Changes in 2.3:
 7. Added license information.
 8. Add verifyPayloadManifests() and verifyTagManifests() to Bag.
 
-Changes in 2.2:
+#### Changes in 2.2
 1. Fixed bug with Window filepaths.
 
-Changes in 2.1:
+#### Changes in 2.1
 1. Changed Payload-Ossum to Payload-Oxsum.
 2. Updated separator for manifests.
 3. Made bag-info.txt labels case-insensitive.
