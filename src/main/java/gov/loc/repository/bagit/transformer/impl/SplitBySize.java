@@ -183,7 +183,7 @@ public class SplitBySize implements Splitter{
 
     @Override
 		public int compare(BagFile bagFile1, BagFile bagFile2) {			
-			return ((Long)bagFile2.getSize()).compareTo(bagFile1.getSize());
+			return Long.compare(bagFile2.getSize(), bagFile1.getSize());
 		}
 	    	
 	 }

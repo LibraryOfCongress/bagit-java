@@ -1096,6 +1096,10 @@ public class CommandLineBagDriver {
       log.error("Error: " + ex.getMessage(), ex);
       return RETURN_ERROR;
     }
+		catch(RuntimeException ex){
+		  log.error("Error: " + ex.getMessage(), ex);
+      return RETURN_ERROR;
+		}
 	}
 	
 	private void completeAndWriteBagToDisk(List<Bag> bags, Completer completer, Writer writer, Bag srcBag, File destBagFile, boolean appendNumber){
