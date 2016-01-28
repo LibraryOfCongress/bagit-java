@@ -27,10 +27,12 @@ public class ThreadSafeIteratorWrapper<E> implements Iterator<E>, Iterable<E> {
             {
                 boolean hasNext = this.iterator.hasNext();
                 
-                if (hasNext)
+                if (hasNext){
                     this.nextItem = this.iterator.next();
-                else
+                }
+                else{
                     this.nextItem = null;
+                }
                 
                 return hasNext;
             }
@@ -42,8 +44,9 @@ public class ThreadSafeIteratorWrapper<E> implements Iterator<E>, Iterable<E> {
     {
         synchronized (this)
         {
-            if (this.nextItem == null)
+            if (this.nextItem == null){
                 throw new NoSuchElementException();
+            }
             E tmp = this.nextItem;
             this.nextItem = null;
             return tmp;

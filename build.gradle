@@ -93,3 +93,10 @@ startScripts {
     unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/XX_CONFIG_PLACEHOLDER_XX', '$APP_HOME/conf')
   }
 }
+
+tasks.withType(Pmd) {
+  reports {
+      xml.enabled = false
+      html.enabled = true
+  }
+}

@@ -12,7 +12,7 @@ import java.util.Comparator;
  * @author Brian Vargas
  * @param <T> The type to be compared by the sub-comparisons.
  */
-class ChainSorter<T> extends Object implements Comparator<T>
+class ChainSorter<T> implements Comparator<T>
 {
 	private Comparator<T>[] comparators;
 		
@@ -30,8 +30,9 @@ class ChainSorter<T> extends Object implements Comparator<T>
     	{
     		result = this.comparators[i].compare(left, right);
     		
-    		if (result != 0)
+    		if (result != 0){
     			break;
+    		}
     	}
     	
     	return result;

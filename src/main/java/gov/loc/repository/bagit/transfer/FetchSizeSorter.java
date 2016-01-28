@@ -6,7 +6,7 @@ import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import java.io.Serializable;
 import java.util.Comparator;
 
-class FetchSizeSorter extends Object implements Comparator<FetchTxt.FilenameSizeUrl>, Serializable
+class FetchSizeSorter implements Comparator<FetchTxt.FilenameSizeUrl>, Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -17,19 +17,21 @@ class FetchSizeSorter extends Object implements Comparator<FetchTxt.FilenameSize
         Long rightSize = right.getSize();
         int result;
         
-        if (leftSize == null)
-        {
-            if (rightSize == null)
+        if (leftSize == null){
+            if (rightSize == null){
                 result = 0;
-            else
+            }
+            else{
                 result = -1;
+            }
         }
-        else
-        {
-            if (rightSize == null)
+        else{
+            if (rightSize == null){
                 result = 1;
-            else
+            }
+            else{
                 result = leftSize.compareTo(rightSize);
+            }
         }
         
         return result;

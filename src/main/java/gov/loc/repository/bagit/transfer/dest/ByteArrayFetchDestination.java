@@ -52,8 +52,9 @@ public class ByteArrayFetchDestination implements FetchedFileDestination
 	@Override
 	public BagFile commit() throws BagTransferException
 	{
-		if (this.stream == null)
+		if (this.stream == null){
 			throw new BagTransferException("No data ever written to destination.");
+		}
 		
 		StringBagFile result = new StringBagFile(this.path, this.stream.toByteArray());
 		this.stream = null;

@@ -575,16 +575,13 @@ public class CommandLineBagDriver {
 		if (version != null) {
 			if (sourceFile != null) {
 				return bagFactory.createBag(sourceFile, version, loadOption);
-			} else {
-				return bagFactory.createBag(version);
 			}
-		} else {
-			if (sourceFile != null) {
-				return bagFactory.createBag(sourceFile, loadOption);
-			} else {
-				return bagFactory.createBag();
-			}
+      return bagFactory.createBag(version);
 		}
+    if (sourceFile != null) {
+    	return bagFactory.createBag(sourceFile, loadOption);
+    }
+    return bagFactory.createBag();
 	}
 	
 	private int performOperation(Operation operation, JSAPResult config) {
@@ -625,7 +622,7 @@ public class CommandLineBagDriver {
 				} else if (Format.ZIP.equals(format)) {
 					writer = new ZipWriter(bagFactory);
 					int compressionLevel = config.getInt(PARAM_COMPRESSION_LEVEL);
-					if (compressionLevel >=1 && compressionLevel <= 9) ((ZipWriter)writer).setCompressionLevel(compressionLevel);
+					if (compressionLevel >=1 && compressionLevel <= 9){ ((ZipWriter)writer).setCompressionLevel(compressionLevel);}
 				}
 			}
 			if(writer != null){writer.addProgressListener(listener);}
@@ -697,12 +694,15 @@ public class CommandLineBagDriver {
 				String fetchRetryString = config.getString(PARAM_FETCH_RETRY);
 				FetchFailStrategy failStrategy;
 								
-				if (fetchRetryString.equalsIgnoreCase("none"))
+				if (fetchRetryString.equalsIgnoreCase("none")){
 					failStrategy = StandardFailStrategies.FAIL_FAST;
-				else if (fetchRetryString.equalsIgnoreCase("next"))
+				}
+				else if (fetchRetryString.equalsIgnoreCase("next")){
 					failStrategy = StandardFailStrategies.ALWAYS_CONTINUE;
-				else if (fetchRetryString.equalsIgnoreCase("retry"))
+				}
+				else if (fetchRetryString.equalsIgnoreCase("retry")){
 					failStrategy = StandardFailStrategies.ALWAYS_RETRY;
+				}
 				else // threshold
 				{
 					int fileFailThreshold = config.getInt(PARAM_FETCH_FILE_FAILURE_THRESHOLD);
@@ -732,7 +732,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -751,7 +751,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -767,7 +767,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -788,7 +788,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -977,7 +977,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 			    } finally {
@@ -988,7 +988,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, destFile);
+					if (writeResultFile){ this.writeResultFile(operation.name, result, destFile);}
 					ret = RETURN_FAILURE;
 				}
 
@@ -1035,7 +1035,7 @@ public class CommandLineBagDriver {
 						try {
 							this.completeAndWriteBagToDisk(splitBags, completer, writer, srcBag, destBagFile, true);
 						} finally {
-							for(Bag bag : splitBags) bag.close();
+							for(Bag bag : splitBags){ bag.close();}
 						}
 	
 					} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)){
@@ -1049,7 +1049,7 @@ public class CommandLineBagDriver {
 						try {
 							this.completeAndWriteBagToDisk(splitBags, completer, writer, srcBag, destBagFile, false);
 						} finally {
-							for(Bag bag : splitBags) bag.close();
+							for(Bag bag : splitBags){ bag.close();}
 						}
 						
 					} else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)){
@@ -1071,13 +1071,13 @@ public class CommandLineBagDriver {
 									try {
 										this.completeAndWriteBagToDisk(bags2, completer, writer, srcBag, destBagFile, true);
 									} finally {
-										for(Bag bag2 : bags2) bag2.close();
+										for(Bag bag2 : bags2){ bag2.close();}
 									}
 								}
 								this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true);							
 							}
 						} finally {
-							for(Bag bag : bags) bag.close();
+							for(Bag bag : bags){ bag.close();}
 						}
 					}
 				} finally {
@@ -1124,7 +1124,7 @@ public class CommandLineBagDriver {
 	}
 		
 	private void writeResultFile(String operation, SimpleResult result, File bagFile) {
-		if (result.isSuccess()) return;
+		if (result.isSuccess()){ return;}
 		String filename = MessageFormat.format("{0}-{1}.txt", operation, System.getProperty("log.timestamp"));
 		if (bagFile != null) {
 			filename = MessageFormat.format("{0}-{1}", bagFile.getName(), filename);

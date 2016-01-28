@@ -1,12 +1,6 @@
 package gov.loc.repository.bagit.transfer.fetch;
 
 import static java.text.MessageFormat.format;
-import gov.loc.repository.bagit.transfer.BagTransferException;
-import gov.loc.repository.bagit.transfer.FetchContext;
-import gov.loc.repository.bagit.transfer.FetchProtocol;
-import gov.loc.repository.bagit.transfer.FetchedFileDestination;
-import gov.loc.repository.bagit.transfer.FileFetcher;
-import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +27,13 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.CoreProtocolPNames;
+
+import gov.loc.repository.bagit.transfer.BagTransferException;
+import gov.loc.repository.bagit.transfer.FetchContext;
+import gov.loc.repository.bagit.transfer.FetchProtocol;
+import gov.loc.repository.bagit.transfer.FetchedFileDestination;
+import gov.loc.repository.bagit.transfer.FileFetcher;
+import gov.loc.repository.bagit.utilities.LongRunningOperationBase;
 
 public class HttpFetchProtocol implements FetchProtocol
 {
@@ -129,8 +130,9 @@ public class HttpFetchProtocol implements FetchProtocol
                 HttpResponse resp = client.execute(method);
                 log.trace(format("Server said: {0}", resp.getStatusLine().toString()));
                 
-                if (resp.getStatusLine() == null || resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
+                if (resp.getStatusLine() == null || resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
                     throw new BagTransferException(format("Server returned code {0}: {1}", resp.getStatusLine() != null ? resp.getStatusLine().getStatusCode() : "nothing", uri));
+                }
 
                 log.trace("Opening destination.");
                 out = destination.openOutputStream(false);

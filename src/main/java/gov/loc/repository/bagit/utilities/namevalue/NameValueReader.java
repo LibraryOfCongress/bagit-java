@@ -50,8 +50,8 @@ public interface NameValueReader extends Iterator<NameValueReader.NameValue> {
 		
 		@Override
 		public boolean equals(Object obj) {
-			if (obj == null) return false;
-			if (! (obj instanceof NameValue)) return false;
+			if (obj == null){ return false;}
+			if (! (obj instanceof NameValue)){ return false;}
 			NameValue that = (NameValue)obj;
 			return Objects.equals(this.name, that.getName()) && Objects.equals(this.value, that.getValue()) && 
 			    Objects.equals(this.getKey(), that.getKey());			

@@ -26,9 +26,9 @@ public class IgnoringFileSystemNodeFilter implements FileSystemNodeFilter {
 	@Override
 	public boolean accept(FileSystemNode fileSystemNode) {
 		String filepath = fileSystemNode.getFilepath();
-		if (relativeFilepath != null) filepath = FilenameHelper.removeBasePath(relativeFilepath, filepath);
-		if (this.ignoreSymlinks && fileSystemNode.isSymlink()) return false;
-		if ((fileSystemNode instanceof DirNode) && this.ignoreAdditionalDirectories.contains(filepath)) return false;
+		if (relativeFilepath != null){ filepath = FilenameHelper.removeBasePath(relativeFilepath, filepath);}
+		if (this.ignoreSymlinks && fileSystemNode.isSymlink()){ return false;}
+		if (fileSystemNode instanceof DirNode && this.ignoreAdditionalDirectories.contains(filepath)){ return false;}
 		return true;
 	}
 

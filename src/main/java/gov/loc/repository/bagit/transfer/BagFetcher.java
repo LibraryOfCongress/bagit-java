@@ -156,8 +156,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
      * @throws NullPointerException Thrown if <code>null</code> is set.  
      */
     public void setFetchFailStrategy(FetchFailStrategy strategy) {
-    	if (strategy == null)
+    	if (strategy == null){
     		throw new NullPointerException("strategy cannot be null");
+    	}
     	
     	this.failStrategy = strategy;
     }
@@ -283,10 +284,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
             log.debug(format("Verify valid completed with result: {0}", bagVerifyResult.isSuccess()));
             progress("Verify valid completed", "", null, null);
             return bagVerifyResult;
-        }else{
-            this.updateFetchProgressTxtOnDisk();        	
-            return finalResult;
-        }        
+        }
+        this.updateFetchProgressTxtOnDisk();        	
+        return finalResult;        
     }
     
     private void updateFetchProgressTxtOnDisk(){
@@ -545,7 +545,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 		
 		//Get tag manifests and write to disk
 		for(Manifest manifest: partialBag.getTagManifests()){
-			fetchFromManifest(manifest, partialBag.getBagConstants(), baseUrl);
+			fetchFromManifest(manifest, baseUrl);
 		}
 		
 		//Get bag-info.txt and write to disk		
@@ -566,7 +566,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     	return fetchResult;
     }
 
-	protected SimpleResult fetchFromManifest(Manifest manifest, BagConstants bagConstants, String baseUrl) throws BagTransferException{
+	protected SimpleResult fetchFromManifest(Manifest manifest, String baseUrl) throws BagTransferException{
 		SimpleResult result = new SimpleResult(true);
 		
 		for(String filepath : manifest.keySet()){
@@ -674,10 +674,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                    FetchFailureAction failureAction = failStrategy.registerFailure(fetchLine, e);
 	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", fetchLine.getFilename(), fetchLine.getSize(), failureAction));
 	    	                	
-	                	if (failureAction == FetchFailureAction.RETRY_CURRENT){
-	                		// Do nothing.  The target variable will
-	                		// remain the same, and we'll loop back around.
-	                	}else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
+	                	if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
 	                		String errorMsg = null;
 		                    if(fetchLine.getFetchStatus().equals(FetchStatus.FETCH_FAILED)){
 		                    	errorMsg = format("An error occurred while fetching target: {0}", fetchLine.getFilename());
@@ -837,6 +834,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         	try{
         		Runtime.getRuntime().removeShutdownHook(this);
         	}catch (IllegalStateException e){
+        	  log.warn("Failed to remove shutdown hook. Most likely cause we are already shutting down", e);
         		// Ignore this - we're already shutting down.
         		// http://java.sun.com/javase/6/docs/api/java/lang/Runtime.html#addShutdownHook(java.lang.Thread)
         	}

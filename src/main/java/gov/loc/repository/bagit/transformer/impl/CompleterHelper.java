@@ -38,8 +38,9 @@ public class CompleterHelper extends LongRunningOperationBase {
 	}
 	
     public void setNumberOfThreads(int num) {
-        if (num < 1)
+        if (num < 1){
             throw new IllegalArgumentException("Number of threads must be at least 1.");
+        }
         
         this.numberOfThreads = num;
     }
@@ -52,7 +53,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 
 	private boolean filepathListContains(List<String> filepaths, String filepath) {
 		boolean res = false;
-		if (filepaths != null && filepaths.contains(filepath)) res = true;
+		if (filepaths != null && filepaths.contains(filepath)){ res = true;}
 		log.trace(MessageFormat.format("Checking if filepath list contains {0}: {1}", filepath, res));
 		return res;
 	}
@@ -61,7 +62,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		boolean res = false;
 		if (dirs != null) {
 			for(String dir : dirs) {
-				if (! dir.endsWith("/")) dir += "/";
+				if (! dir.endsWith("/")) {dir += "/";}
 				if (filepath.startsWith(dir)) {
 					res = true;
 					break;
@@ -97,7 +98,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 			
 			List<String> deleteFilepaths = new ArrayList<String>();
 			for(String filepath : manifest.keySet()) {
-				if (this.isCancelled()) return;
+				if (this.isCancelled()) {return;}
 				BagFile bagFile = bag.getBagFile(filepath);
 				if ((bagFile == null || ! bagFile.exists()) && isLimited(filepath, limitDeleteFilepaths, limitDeleteDirectories)) {
 					deleteFilepaths.add(filepath);
@@ -136,7 +137,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		                Map<String,String> manifestEntries = new LinkedHashMap<String, String>();
 		                
 		        		for(final BagFile bagFile : safeIterator) {
-		        			if (isCancelled()) return null;
+		        			if (isCancelled()){ return null;}
 		        			progress("creating manifest entry", bagFile.getFilepath(), count.incrementAndGet(), total);
 		        			if (isLimited(bagFile.getFilepath(), limitAddFilepaths, limitAddDirectories)) {
 			        			if (ManifestHelper.isTagManifest(bagFile.getFilepath(), bag.getBagConstants())) {
@@ -175,7 +176,7 @@ public class CompleterHelper extends LongRunningOperationBase {
         	threadPool.shutdown();
         	log.debug("Thread pool shut down.");
         }
-    	if (! manifest.isEmpty()) bag.putBagFile(manifest);
+    	if (! manifest.isEmpty()){ bag.putBagFile(manifest);}
 	}
 
 	public void regenerateManifest(final Bag bag, final Manifest manifest) {
@@ -203,7 +204,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 		                Map<String,String> manifestEntries = new LinkedHashMap<String, String>();
 		                
 		        		for(final String filepath : safeIterator) {
-		        			if (isCancelled()) return null;
+		        			if (isCancelled()){ return null;}
 		        			progress("creating manifest entry", filepath, count.incrementAndGet(), total);
 		        			log.trace(MessageFormat.format("Creating manifest entry for {0}", filepath));
 	        				String checksum = manifest.get(filepath);
@@ -214,7 +215,7 @@ public class CompleterHelper extends LongRunningOperationBase {
 	        						//originalInputStream may be null
 	        						in = ((Manifest)bag.getBagFile(filepath)).originalInputStream();
 	        					}
-	        					if (in == null) in = bag.getBagFile(filepath).newInputStream();
+	        					if (in == null){ in = bag.getBagFile(filepath).newInputStream();}
 	        					checksum = MessageDigestHelper.generateFixity(in, manifest.getAlgorithm());
 	        					log.trace(MessageFormat.format("Fixity for {0} is {1}.", filepath, checksum));
 	        				}

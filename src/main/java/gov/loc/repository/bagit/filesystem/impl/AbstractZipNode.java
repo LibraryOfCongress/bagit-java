@@ -36,8 +36,8 @@ public class AbstractZipNode implements FileSystemNode {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (! (obj instanceof AbstractZipNode)) return false;
+		if (this == obj){ return true;}
+		if (! (obj instanceof AbstractZipNode)){ return false;}
 		final AbstractZipNode that = (AbstractZipNode)obj;
 		return this.filepath.equals(that.getFilepath());
 		

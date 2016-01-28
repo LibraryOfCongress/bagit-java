@@ -118,7 +118,7 @@ public class DefaultCompleter extends LongRunningOperationBase implements Comple
 			log.trace("Not completing tag manifests");
 		}
 		
-		if (this.isCancelled()) return null;
+		if (this.isCancelled()){ return null;}
 		
 		log.trace("Done completing");
 		return this.newBag;

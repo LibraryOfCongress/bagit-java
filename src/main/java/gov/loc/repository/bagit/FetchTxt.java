@@ -89,23 +89,30 @@ public interface FetchTxt extends List<FetchTxt.FilenameSizeUrl>, BagFile {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
+			if (this == obj){
 				return true;
-			if (obj == null)
+			}
+			if (obj == null){
 				return false;
-			if (getClass() != obj.getClass())
+			}
+			if (getClass() != obj.getClass()){
 				return false;
+			}
 			FilenameSizeUrl other = (FilenameSizeUrl) obj;
 			if (filename == null) {
-				if (other.filename != null)
+				if (other.filename != null){
 					return false;
-			} else if (!filename.equals(other.filename))
+				}
+			} else if (!filename.equals(other.filename)){
 				return false;
+			}
 			if (url == null) {
-				if (other.url != null)
+				if (other.url != null){
 					return false;
-			} else if (!url.equals(other.url))
+				}
+			} else if (!url.equals(other.url)){
 				return false;
+			}
 			return true;
 		}
 	}

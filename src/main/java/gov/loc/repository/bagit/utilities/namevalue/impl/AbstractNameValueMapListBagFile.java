@@ -167,7 +167,7 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 	public List<String> getList(String key) {
 		List<String> values = new ArrayList<String>();
 		for(NameValue nameValue : this.nameValueList) {
-			if (nameValue.getName().equals(key)) values.add(nameValue.getValue());
+			if (nameValue.getName().equals(key)){ values.add(nameValue.getValue());}
 		}
 		return values;
 	}
@@ -224,7 +224,7 @@ public abstract class AbstractNameValueMapListBagFile extends AbstractMap<String
 	public boolean removeAllList(String key) {
 		List<NameValue> toRemove = new ArrayList<NameValue>();
 		for(NameValue nameValue : this.nameValueList) {
-			if (nameValue.getName().equals(key)) toRemove.add(nameValue);
+			if (nameValue.getName().equals(key)){ toRemove.add(nameValue);}
 		}
 		return this.nameValueList.removeAll(toRemove);
 	}

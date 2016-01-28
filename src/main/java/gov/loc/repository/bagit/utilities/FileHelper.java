@@ -15,7 +15,7 @@ public class FileHelper {
 	private static final Log log = LogFactory.getLog(FileHelper.class);
 	
 	public static File normalizeForm(File file) {
-		if (file == null) return file;
+		if (file == null){ return file;}
 		if (file.exists()) {
 			log.debug(MessageFormat.format("No problem with form of filename for {0}", file));
 			return file;
@@ -34,7 +34,7 @@ public class FileHelper {
 	}
 	
 	public static File[] normalizeForm(File[] files) {
-		if (files == null) return null;
+		if (files == null){ return null;}
 		for(int i=0; i < files.length; i++) {
 			files[i] = normalizeForm(files[i]);
 		}
@@ -42,7 +42,7 @@ public class FileHelper {
 	}
 	
 	public static Collection<File> normalizeForm(Collection<File> files) {
-		if (files == null) return null;
+		if (files == null){ return null;}
 		Collection<File> newFiles = new ArrayList<File>(files.size());
 		for(File file : files) {
 			newFiles.add(normalizeForm(file));

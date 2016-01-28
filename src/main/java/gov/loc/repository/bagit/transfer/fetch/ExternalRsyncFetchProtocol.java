@@ -161,8 +161,9 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 					{
 						log.trace(format("Creating directory: {0}", containingDirectory.getAbsolutePath()));
 						
-						if (!containingDirectory.mkdirs())
+						if (!containingDirectory.mkdirs()){
 							log.debug(format("Unable to create parent directory when downloading file (Maybe somebody created it before us?): {0}", destination.getDirectAccessPath()));
+						}
 					}
 				}
 				else
@@ -226,8 +227,9 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			}
 			catch (ExecuteException e)
 			{
-				if (this.isCancelled())
+				if (this.isCancelled()){
 					throw new BagTransferCancelledException();
+				}
 				
 				String error = new String(err.toByteArray(), StandardCharsets.UTF_8);
 				String msg = format("An error occurred while executing command line \"{0}\": {1}", commandLine.toString(), error);
@@ -235,8 +237,9 @@ public class ExternalRsyncFetchProtocol implements FetchProtocol
 			}
 			catch (IOException e)
 			{
-				if (this.isCancelled())
+				if (this.isCancelled()){
 					throw new BagTransferCancelledException();
+				}
 				
 				throw new BagTransferException(format("Unexpected exception when executing command: {0}", commandLine.toString()));
 			}

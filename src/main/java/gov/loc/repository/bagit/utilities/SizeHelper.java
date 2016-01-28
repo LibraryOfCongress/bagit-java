@@ -32,11 +32,11 @@ public class SizeHelper {
 		StringBuilder format = new StringBuilder("#.#");
 		double size = octets/div;
 		
-		String sizeString = (new DecimalFormat(format.toString())).format(size);
+		String sizeString = new DecimalFormat(format.toString()).format(size);
 		if (size % 1 != 0) {
 			while (sizeString.endsWith("0")) {
 				format.append('#');
-				sizeString = (new DecimalFormat(format.toString())).format(size);
+				sizeString = new DecimalFormat(format.toString()).format(size);
 			}
 		}
 		return sizeString + " " + unit;

@@ -14,7 +14,7 @@ public class AndFileSystemNodeFilter implements FileSystemNodeFilter {
 	@Override
 	public boolean accept(FileSystemNode fileSystemNode) {
 		for(FileSystemNodeFilter filter : this.filters) {
-			if (! filter.accept(fileSystemNode)) return false;
+			if (! filter.accept(fileSystemNode)){ return false;}
 		}
 		return true;
 	}

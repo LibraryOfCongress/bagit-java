@@ -6,7 +6,7 @@ import gov.loc.repository.bagit.FetchTxt.FilenameSizeUrl;
 import java.io.Serializable;
 import java.util.Comparator;
 
-class FetchFilenameSorter extends Object implements Comparator<FetchTxt.FilenameSizeUrl>, Serializable
+class FetchFilenameSorter implements Comparator<FetchTxt.FilenameSizeUrl>, Serializable
 {
     private static final long serialVersionUID = 1L;
 

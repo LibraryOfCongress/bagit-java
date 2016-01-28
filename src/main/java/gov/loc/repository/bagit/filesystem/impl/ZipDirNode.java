@@ -30,14 +30,14 @@ public class ZipDirNode extends AbstractZipNode implements DirNode {
 	@Override
 	public FileNode childFile(String name) {
 		FileSystemNode child = this.childrenMap.get(name);
-		if (child != null && child instanceof FileNode) return (FileNode)child;
+		if (child != null && child instanceof FileNode){ return (FileNode)child;}
 		return null;
 	}
 
 	@Override
 	public DirNode childDir(String name) {
 		FileSystemNode child = this.childrenMap.get(name);
-		if (child != null && child instanceof DirNode) return (DirNode)child;
+		if (child != null && child instanceof DirNode){ return (DirNode)child;}
 		return null;
 	}
 

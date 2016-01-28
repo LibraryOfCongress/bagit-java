@@ -51,8 +51,9 @@ public class ZipWriter extends AbstractWriter {
 	}
 
 	public void setCompressionLevel(Integer compressionLevel) {
-		if (compressionLevel != null && (compressionLevel < 0 || compressionLevel > 9))
+		if (compressionLevel != null && (compressionLevel < 0 || compressionLevel > 9)){
 			throw new RuntimeException("Valid compression levels are 0-9.");
+		}
 		this.compressionLevel = compressionLevel;
 	}
 	
@@ -93,6 +94,11 @@ public class ZipWriter extends AbstractWriter {
 		for(String filepath : filepaths) {
 			this.newBag.putBagFile(new FileSystemBagFile(filepath, fileSystem.resolve(this.bagDir + "/" + filepath)));
 		}
+		try {
+      fileSystem.close();
+    } catch (IOException e) {
+      log.error("Could not close zip.", e);
+    }
 	}
 
 	@Override
@@ -157,7 +163,7 @@ public class ZipWriter extends AbstractWriter {
 		
 		bag.accept(this);
 				
-		if (this.isCancelled()) return null;
+		if (this.isCancelled()){ return null;}
 		
 		return this.newBag;		
 	}
