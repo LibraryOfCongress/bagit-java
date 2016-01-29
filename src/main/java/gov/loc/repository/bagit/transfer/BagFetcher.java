@@ -674,7 +674,11 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                    FetchFailureAction failureAction = failStrategy.registerFailure(fetchLine, e);
 	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", fetchLine.getFilename(), fetchLine.getSize(), failureAction));
 	    	                	
-	                	if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
+	                	if (failureAction == FetchFailureAction.RETRY_CURRENT){
+	                	  log.trace("Retrying current");
+	                		// Do nothing.  The target variable will
+	                		// remain the same, and we'll loop back around.
+	                	}else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
 	                		String errorMsg = null;
 		                    if(fetchLine.getFetchStatus().equals(FetchStatus.FETCH_FAILED)){
 		                    	errorMsg = format("An error occurred while fetching target: {0}", fetchLine.getFilename());
