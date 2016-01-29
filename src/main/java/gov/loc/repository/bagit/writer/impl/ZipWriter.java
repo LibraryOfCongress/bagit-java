@@ -94,11 +94,6 @@ public class ZipWriter extends AbstractWriter {
 		for(String filepath : filepaths) {
 			this.newBag.putBagFile(new FileSystemBagFile(filepath, fileSystem.resolve(this.bagDir + "/" + filepath)));
 		}
-		try {
-      fileSystem.close();
-    } catch (IOException e) {
-      log.error("Could not close zip.", e);
-    }
 	}
 
 	@Override
