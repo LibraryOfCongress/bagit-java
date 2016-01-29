@@ -347,12 +347,9 @@ public class BagInfoTxtImpl extends AbstractNameValueMapListBagFile implements B
 	}
 	
 	public String getCaseInsensitive(String key) {
-		if (key == null) {
-			return this.get(key);
-		}
-		for(String name : this.keySet()) {
-			if (key.equalsIgnoreCase(name)) {
-				return this.get(name);
+		for(Entry<String,String>entry : this.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(key)) {
+				return this.get(entry.getKey());
 			}
 		}
 		return null;
@@ -362,7 +359,7 @@ public class BagInfoTxtImpl extends AbstractNameValueMapListBagFile implements B
 	public List<String> getListCaseInsensitive(String key) {
 		List<String> values = new ArrayList<String>();
 		for(NameValue nameValue : this.nameValueList) {
-			if (nameValue.getName().equalsIgnoreCase(key)) values.add(nameValue.getValue());
+			if (nameValue.getName().equalsIgnoreCase(key)){ values.add(nameValue.getValue());}
 		}
 		return values;
 

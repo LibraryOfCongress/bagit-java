@@ -13,8 +13,8 @@ public class SimpleResult {
 	//Map<code, Map<subject, List<SimpleMessage>>
 	protected Map<String, Map<String, SimpleMessage>> messages = new HashMap<String, Map<String,SimpleMessage>>();
 	
-	public static Integer DEFAULT_MAX_MESSAGES = 100;
-	public static String DEFAULT_DELIM = " ";
+	public static final Integer DEFAULT_MAX_MESSAGES = 100;
+	public static final String DEFAULT_DELIM = " ";
 	
 	public SimpleResult() {
 	}	
@@ -167,7 +167,7 @@ public class SimpleResult {
 				buf.append(delim + "And others.");
 				break;
 			}
-			if (buf.length() > 0) buf.append(delim);
+			if (buf.length() > 0){ buf.append(delim);}
 			buf.append(message.toString());
 		}
 		String messageString = buf.toString();
@@ -188,7 +188,7 @@ public class SimpleResult {
 	}
 
 	public String toString(int maxMessages, String delim) {
-		if (this.messages.isEmpty()) delim = "";
+		if (this.messages.isEmpty()){ delim = "";}
 		String msg = MessageFormat.format("Result is {0}.{1}{2}", this.isSuccess, delim, this.messagesToString(maxMessages, delim));
 		return msg;
 	}
@@ -278,7 +278,7 @@ public class SimpleResult {
 		assert messageType != null;
 		List<SimpleMessage> messages = new ArrayList<SimpleMessage>();
 		for(SimpleMessage message : this.getSimpleMessages()) {
-			if (messageType.equals(message.getMessageType())) messages.add(message);
+			if (messageType.equals(message.getMessageType())){ messages.add(message);}
 		}
 		return messages;
 	}
@@ -288,7 +288,7 @@ public class SimpleResult {
 		assert messageType != null;
 		List<SimpleMessage> messages = new ArrayList<SimpleMessage>();
 		for(SimpleMessage message : this.getSimpleMessagesByCode(code)) {
-			if (messageType.equals(message.getMessageType())) messages.add(message);
+			if (messageType.equals(message.getMessageType())){ messages.add(message);}
 		}
 		return messages;
 	}

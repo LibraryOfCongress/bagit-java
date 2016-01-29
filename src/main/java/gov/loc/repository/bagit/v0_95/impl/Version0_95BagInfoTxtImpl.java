@@ -1,19 +1,19 @@
-package gov.loc.repository.bagit.v0_93.impl;
+package gov.loc.repository.bagit.v0_95.impl;
 
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagInfoTxt;
 
-public class BagInfoTxtImpl extends gov.loc.repository.bagit.impl.BagInfoTxtImpl implements BagInfoTxt {
+public class Version0_95BagInfoTxtImpl extends gov.loc.repository.bagit.impl.BagInfoTxtImpl implements BagInfoTxt {
 
 	public static final String FIELD_PACKING_DATE = "Packing-Date";
 	public static final String FIELD_PACKAGE_SIZE = "Package-Size";
 	
-	public BagInfoTxtImpl(BagFile bagFile, BagConstants bagConstants) {
+	public Version0_95BagInfoTxtImpl(BagFile bagFile, BagConstants bagConstants) {
 		super(bagFile, bagConstants);
 	}
 	
-	public BagInfoTxtImpl(BagConstants bagConstants) {
+	public Version0_95BagInfoTxtImpl(BagConstants bagConstants) {
 		super(bagConstants);
 			
 	}

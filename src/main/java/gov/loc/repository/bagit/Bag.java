@@ -13,6 +13,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -50,18 +51,18 @@ public interface Bag extends Closeable {
 		/**
 		 * The URI scheme for the format.
 		 */
-		public String scheme;
+		public final String scheme;
 		
 		/**
 		 * Whether or not the format is a serialized bag format.
 		 */
-		public boolean isSerialized;
+		public final boolean isSerialized;
 		
 		/**
 		 * The file extension typicaly appended to a bag name
 		 * in the given format when it is written to disk.
 		 */
-		public String extension;
+		public final String extension;
 		
 		Format(String scheme, boolean isSerialized, String extension) {
 			this.scheme = scheme;
@@ -264,7 +265,7 @@ public interface Bag extends Closeable {
 	 * @see BagFactory#getBagConstants()
 	 * @see BagFactory#getBagConstants(Version)
 	 */
-	public interface BagConstants {
+	public interface BagConstants extends Serializable{
 
 		/**
 		 * Get the prefix for a payload manifest, "manifest-"
@@ -360,7 +361,7 @@ public interface Bag extends Closeable {
 	 * 
 	 * @see Bag
 	 */
-	public interface BagPartFactory {
+	public interface BagPartFactory extends Serializable {
 		ManifestReader createManifestReader(InputStream in, String encoding);
 		ManifestReader createManifestReader(InputStream in, String encoding, boolean treatBackSlashAsPathSeparator);
 		ManifestWriter createManifestWriter(OutputStream out);

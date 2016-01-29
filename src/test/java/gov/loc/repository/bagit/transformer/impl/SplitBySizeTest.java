@@ -31,7 +31,7 @@ public class SplitBySizeTest {
 	@Before
 	public void setup() throws Exception {
 		maxPayloadSize = new Double(20);
-		splitter = new SplitBySize(this.bagFactory, maxPayloadSize, false, null);
+		splitter = new SplitBySize(this.bagFactory, maxPayloadSize, false, new String[]{});
 		File sourceBagDir = ResourceHelper.getFile(MessageFormat.format("bags/{0}/bag-split", Version.V0_96.toString().toLowerCase()));
 		bag = bagFactory.createBag(sourceBagDir, BagFactory.LoadOption.BY_FILES);
 		srcBagPayloadFiles = bag.getPayload();
@@ -223,7 +223,7 @@ public class SplitBySizeTest {
 		this.maxPayloadSize = new Double(10);
 		splitter.setKeepLowestLevelDir(true);
 		splitter.setMaxBagSize(this.maxPayloadSize);
-		splitter.setExludeDirs(null);
+		splitter.setExludeDirs(new String[]{});
 		boolean caughtEx = false;
 		try{
 			splitter.split(bag);			

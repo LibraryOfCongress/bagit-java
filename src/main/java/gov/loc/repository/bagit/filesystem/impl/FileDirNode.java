@@ -25,7 +25,7 @@ public class FileDirNode extends AbstractFileNode implements DirNode {
 	}
 
 	private synchronized void lazyInit() {
-		if (this.childrenMap != null) return;
+		if (this.childrenMap != null){ return;}
 		
 		this.childrenMap = new HashMap<String, FileSystemNode>();
 		
@@ -54,7 +54,7 @@ public class FileDirNode extends AbstractFileNode implements DirNode {
 	public FileNode childFile(String name) {
 		this.lazyInit();
 		FileSystemNode child = this.childrenMap.get(name);
-		if (child != null && child instanceof FileNode) return (FileNode)child;
+		if (child != null && child instanceof FileNode){ return (FileNode)child;}
 		return null;
 	}
 
@@ -62,7 +62,7 @@ public class FileDirNode extends AbstractFileNode implements DirNode {
 	public DirNode childDir(String name) {
 		this.lazyInit();
 		FileSystemNode child = this.childrenMap.get(name);
-		if (child != null && child instanceof DirNode) return (DirNode)child;
+		if (child != null && child instanceof DirNode){ return (DirNode)child;}
 		return null;
 	}
 	

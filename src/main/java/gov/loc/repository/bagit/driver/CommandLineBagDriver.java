@@ -1,54 +1,14 @@
 package gov.loc.repository.bagit.driver;
 
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagHelper;
-import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.PreBag;
-import gov.loc.repository.bagit.ProgressListenable;
-import gov.loc.repository.bagit.Bag.Format;
-import gov.loc.repository.bagit.BagFactory.LoadOption;
-import gov.loc.repository.bagit.BagFactory.Version;
-import gov.loc.repository.bagit.Manifest.Algorithm;
-import gov.loc.repository.bagit.progresslistener.CompositeProgressListener;
-import gov.loc.repository.bagit.progresslistener.ConsoleProgressListener;
-import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
-import gov.loc.repository.bagit.transformer.Completer;
-import gov.loc.repository.bagit.transformer.Splitter;
-import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
-import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
-import gov.loc.repository.bagit.transformer.impl.SplitByFileType;
-import gov.loc.repository.bagit.transformer.impl.SplitBySize;
-import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
-import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
-import gov.loc.repository.bagit.transformer.impl.UpdatePayloadOxumCompleter;
-import gov.loc.repository.bagit.transfer.BagFetcher;
-import gov.loc.repository.bagit.transfer.FetchFailStrategy;
-import gov.loc.repository.bagit.transfer.StandardFailStrategies;
-import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
-import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
-import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
-import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
-import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
-import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
-import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.utilities.SizeHelper;
-import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
-import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
-import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
-import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
-import gov.loc.repository.bagit.writer.Writer;
-import gov.loc.repository.bagit.writer.impl.FileSystemHelper;
-import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-import gov.loc.repository.bagit.writer.impl.FileSystemWriter.WriteMode;
-import gov.loc.repository.bagit.writer.impl.ZipWriter;
-
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +29,50 @@ import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.UnflaggedOption;
 import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
+
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.LoadOption;
+import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.BagHelper;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.Manifest;
+import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.PreBag;
+import gov.loc.repository.bagit.progresslistener.CompositeProgressListener;
+import gov.loc.repository.bagit.progresslistener.ConsoleProgressListener;
+import gov.loc.repository.bagit.progresslistener.LoggingProgressListener;
+import gov.loc.repository.bagit.transfer.BagFetcher;
+import gov.loc.repository.bagit.transfer.BagTransferException;
+import gov.loc.repository.bagit.transfer.FetchFailStrategy;
+import gov.loc.repository.bagit.transfer.StandardFailStrategies;
+import gov.loc.repository.bagit.transfer.ThresholdFailStrategy;
+import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.transfer.fetch.ExternalRsyncFetchProtocol;
+import gov.loc.repository.bagit.transfer.fetch.FtpFetchProtocol;
+import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
+import gov.loc.repository.bagit.transformer.Completer;
+import gov.loc.repository.bagit.transformer.Splitter;
+import gov.loc.repository.bagit.transformer.impl.DefaultCompleter;
+import gov.loc.repository.bagit.transformer.impl.HolePuncherImpl;
+import gov.loc.repository.bagit.transformer.impl.SplitByFileType;
+import gov.loc.repository.bagit.transformer.impl.SplitBySize;
+import gov.loc.repository.bagit.transformer.impl.TagManifestCompleter;
+import gov.loc.repository.bagit.transformer.impl.UpdateCompleter;
+import gov.loc.repository.bagit.transformer.impl.UpdatePayloadOxumCompleter;
+import gov.loc.repository.bagit.utilities.OperatingSystemHelper;
+import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.utilities.SizeHelper;
+import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
+import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
+import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
+import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
+import gov.loc.repository.bagit.writer.Writer;
+import gov.loc.repository.bagit.writer.impl.FileSystemHelper;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
+import gov.loc.repository.bagit.writer.impl.FileSystemWriter.WriteMode;
+import gov.loc.repository.bagit.writer.impl.ZipWriter;
 
 public class CommandLineBagDriver {
 	
@@ -419,66 +423,76 @@ public class CommandLineBagDriver {
 	}
 	
 	private static String getAlgorithmList() {
-		String list = "";
+		StringBuilder sb = new StringBuilder();
+		
 		for(int i=0; i < Algorithm.values().length; i++) {
-			list += Algorithm.values()[i].bagItAlgorithm;
+			sb.append(Algorithm.values()[i].bagItAlgorithm);
 			if (i != Algorithm.values().length -1) {
-				list += ";";
+				sb.append(';');
 			}
 		}
-		return list;
+		
+		return sb.toString();
 	}
 
 	private static String getFailModeList() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < FailMode.values().length; i++) {
-			list += FailMode.values()[i];
+			sb.append(FailMode.values()[i]);
 			if (i != FailMode.values().length -1) {
-				list += ";";
+				sb.append(';');
 			}
 		}
-		return list;
+		
+		return sb.toString();
 		
 	}
 	
 	private static String getAlgorithmListString() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < Algorithm.values().length; i++) {
-			list += Algorithm.values()[i].bagItAlgorithm;
+			sb.append(Algorithm.values()[i].bagItAlgorithm);
 
 			if (i != Algorithm.values().length -1) {
-				list += " and ";
+				sb.append(" and ");
 			} else if (i != Algorithm.values().length -1) {
-				list += ", ";
+				sb.append(", ");
 			}
 		}
-		return list;
+		
+		return sb.toString();
 		
 	}
 
 	private static String getVersionList() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < Version.values().length; i++) {
-			list += Version.values()[i].versionString;
+			sb.append(Version.values()[i].versionString);
 			if (i != Version.values().length -1) {
-				list += ";";
+				sb.append(';');
 			}
 		}
-		return list;
+		
+		return sb.toString();
 	}
 	
 	private static String getVersionListString() {
-		String list = "";
+	  StringBuilder sb = new StringBuilder();
+	  
 		for(int i=0; i < Version.values().length; i++) {
-			list += Version.values()[i].versionString;
+			sb.append(Version.values()[i].versionString);
 
 			if (i != Version.values().length -1) {
-				list += " and ";
+				sb.append(" and ");
 			} else if (i != Version.values().length -1) {
-				list += ", ";
+				sb.append(", ");
 			}
 		}
-		return list;
+		
+		return sb.toString();
 		
 	}
 		
@@ -546,30 +560,28 @@ public class CommandLineBagDriver {
 	}
 	
 	private static String argsToString(String[] args) {
-		String string = "";
-		for(int i=0; i < args.length; i++) {
+	  StringBuilder sb = new StringBuilder();
+
+	  for(int i=0; i < args.length; i++) {
 			if (i > 0) {
-				string += " ";
+				sb.append(' ');
 			}
-			string += args[i];
+			sb.append(args[i]);
 		}
-		return string;
+		return sb.toString();
 	}
 
 	private Bag getBag(File sourceFile, Version version, LoadOption loadOption) {
 		if (version != null) {
 			if (sourceFile != null) {
 				return bagFactory.createBag(sourceFile, version, loadOption);
-			} else {
-				return bagFactory.createBag(version);
 			}
-		} else {
-			if (sourceFile != null) {
-				return bagFactory.createBag(sourceFile, loadOption);
-			} else {
-				return bagFactory.createBag();
-			}
+      return bagFactory.createBag(version);
 		}
+    if (sourceFile != null) {
+    	return bagFactory.createBag(sourceFile, loadOption);
+    }
+    return bagFactory.createBag();
 	}
 	
 	private int performOperation(Operation operation, JSAPResult config) {
@@ -610,11 +622,11 @@ public class CommandLineBagDriver {
 				} else if (Format.ZIP.equals(format)) {
 					writer = new ZipWriter(bagFactory);
 					int compressionLevel = config.getInt(PARAM_COMPRESSION_LEVEL);
-					if (compressionLevel >=1 && compressionLevel <= 9) ((ZipWriter)writer).setCompressionLevel(compressionLevel);
+					if (compressionLevel >=1 && compressionLevel <= 9){ ((ZipWriter)writer).setCompressionLevel(compressionLevel);}
 				}
 			}
-			if (writer instanceof ProgressListenable) ((ProgressListenable)writer).addProgressListener(listener);
-
+			if(writer != null){writer.addProgressListener(listener);}
+			
 			String manifestSeparator = null;
 			int ret = RETURN_SUCCESS;
 
@@ -682,12 +694,15 @@ public class CommandLineBagDriver {
 				String fetchRetryString = config.getString(PARAM_FETCH_RETRY);
 				FetchFailStrategy failStrategy;
 								
-				if (fetchRetryString.equalsIgnoreCase("none"))
+				if (fetchRetryString.equalsIgnoreCase("none")){
 					failStrategy = StandardFailStrategies.FAIL_FAST;
-				else if (fetchRetryString.equalsIgnoreCase("next"))
+				}
+				else if (fetchRetryString.equalsIgnoreCase("next")){
 					failStrategy = StandardFailStrategies.ALWAYS_CONTINUE;
-				else if (fetchRetryString.equalsIgnoreCase("retry"))
+				}
+				else if (fetchRetryString.equalsIgnoreCase("retry")){
 					failStrategy = StandardFailStrategies.ALWAYS_RETRY;
+				}
 				else // threshold
 				{
 					int fileFailThreshold = config.getInt(PARAM_FETCH_FILE_FAILURE_THRESHOLD);
@@ -717,7 +732,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -736,7 +751,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -752,7 +767,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -773,7 +788,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 				} finally {
@@ -871,8 +886,11 @@ public class CommandLineBagDriver {
 							if (! parentDir.isDirectory()) {
 								throw new RuntimeException(MessageFormat.format("{0} is not a directory.", parentDir));
 							}
-							for(File childFile : parentDir.listFiles()) {
-								bag.addFileToPayload(childFile);
+							File[] files = parentDir.listFiles();
+							if(files != null){
+  							for(File childFile : files) {
+  								bag.addFileToPayload(childFile);
+  							}
 							}
 						} else {						
 							bag.addFileToPayload(new File(filepath));
@@ -959,7 +977,7 @@ public class CommandLineBagDriver {
 					log.info(result.toString());
 					System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 					if (! result.isSuccess()) {
-						if (writeResultFile) this.writeResultFile(operation.name, result, bag.getFile());
+						if (writeResultFile){ this.writeResultFile(operation.name, result, bag.getFile());}
 						ret = RETURN_FAILURE;
 					}
 			    } finally {
@@ -970,7 +988,7 @@ public class CommandLineBagDriver {
 				log.info(result.toString());
 				System.out.println(result.toString(SimpleResult.DEFAULT_MAX_MESSAGES, "\n"));
 				if (! result.isSuccess()) {
-					if (writeResultFile) this.writeResultFile(operation.name, result, destFile);
+					if (writeResultFile){ this.writeResultFile(operation.name, result, destFile);}
 					ret = RETURN_FAILURE;
 				}
 
@@ -990,7 +1008,7 @@ public class CommandLineBagDriver {
 	
 			    	//The default max bag size is 300 GB. 
 			    	Double maxBagSizeInGB = config.contains(PARAM_MAX_BAG_SIZE) ? config.getDouble(PARAM_MAX_BAG_SIZE) : 300;
-				    Double maxBagSize =  maxBagSizeInGB != null ? maxBagSizeInGB * SizeHelper.GB : 300 * SizeHelper.GB;			
+				    Double maxBagSize = 300 * SizeHelper.GB;			
 					
 					String[] fileExtensions = config.contains(PARAM_FILE_EXTENSIONS) ? config.getString(PARAM_FILE_EXTENSIONS).split(",") : null;
 					String[][] fileExtensionsIn = null;
@@ -1017,7 +1035,7 @@ public class CommandLineBagDriver {
 						try {
 							this.completeAndWriteBagToDisk(splitBags, completer, writer, srcBag, destBagFile, true);
 						} finally {
-							for(Bag bag : splitBags) bag.close();
+							for(Bag bag : splitBags){ bag.close();}
 						}
 	
 					} else if(OPERATION_SPLIT_BAG_BY_FILE_TYPE.equals(operation.name)){
@@ -1031,7 +1049,7 @@ public class CommandLineBagDriver {
 						try {
 							this.completeAndWriteBagToDisk(splitBags, completer, writer, srcBag, destBagFile, false);
 						} finally {
-							for(Bag bag : splitBags) bag.close();
+							for(Bag bag : splitBags){ bag.close();}
 						}
 						
 					} else if(OPERATION_SPLIT_BAG_BY_SIZE_AND_FILE_TYPE.equals(operation.name)){
@@ -1053,13 +1071,13 @@ public class CommandLineBagDriver {
 									try {
 										this.completeAndWriteBagToDisk(bags2, completer, writer, srcBag, destBagFile, true);
 									} finally {
-										for(Bag bag2 : bags2) bag2.close();
+										for(Bag bag2 : bags2){ bag2.close();}
 									}
 								}
 								this.completeAndWriteBagToDisk(bagsUnderMaxSize, completer, writer, srcBag, destBagFile, true);							
 							}
 						} finally {
-							for(Bag bag : bags) bag.close();
+							for(Bag bag : bags){ bag.close();}
 						}
 					}
 				} finally {
@@ -1070,9 +1088,17 @@ public class CommandLineBagDriver {
 			log.info("Operation completed.");
 			return ret;
 		}
-		catch(Exception ex) {
+		catch(IOException ex) {
 			log.error("Error: " + ex.getMessage(), ex);
 			return RETURN_ERROR;
+		}
+		catch(BagTransferException ex) {
+      log.error("Error: " + ex.getMessage(), ex);
+      return RETURN_ERROR;
+    }
+		catch(RuntimeException ex){
+		  log.error("Error: " + ex.getMessage(), ex);
+      return RETURN_ERROR;
 		}
 	}
 	
@@ -1098,15 +1124,15 @@ public class CommandLineBagDriver {
 	}
 		
 	private void writeResultFile(String operation, SimpleResult result, File bagFile) {
-		if (result.isSuccess()) return;
+		if (result.isSuccess()){ return;}
 		String filename = MessageFormat.format("{0}-{1}.txt", operation, System.getProperty("log.timestamp"));
 		if (bagFile != null) {
 			filename = MessageFormat.format("{0}-{1}", bagFile.getName(), filename);
 		}
 		File file = new File(filename);
-		FileWriter writer = null;
+		BufferedWriter writer = null;
 		try {
-			writer = new FileWriter(file);
+		  writer = Files.newBufferedWriter(Paths.get(file.toURI()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 			for(String msg : result.getMessages()) {
 				writer.write(msg + "\n");
 			}
@@ -1114,12 +1140,14 @@ public class CommandLineBagDriver {
 		} catch (IOException e) {
 			log.error("Unable to write results", e);
 		} finally {
-			IOUtils.closeQuietly(writer);
+		  if(writer != null){
+		    IOUtils.closeQuietly(writer);
+		  }
 		}
 		
 	}
 	
-	private class Operation {
+	private static class Operation {
 		public String help;
 		public JSAP jsap;
 		public String name;

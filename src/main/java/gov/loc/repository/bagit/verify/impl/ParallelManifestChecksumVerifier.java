@@ -62,8 +62,9 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
      */
     public void setNumberOfThreads(int num)
     {
-        if (num < 1)
+        if (num < 1){
             throw new IllegalArgumentException("Number of threads must be at least 1.");
+        }
         
         this.numberOfThreads = num;
     }
@@ -96,7 +97,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
 
         for (final Manifest manifest : manifests)
         {
-        	if (this.isCancelled()) return null;
+        	if (this.isCancelled()){ return null;}
         	
         	manifestCount++;
         	this.progress("verifying manifest checksums", manifest.getFilepath(), manifestCount, manifestTotal);
@@ -119,11 +120,12 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
                             
                             for (String filePath : safeIterator)
                             {
-                            	if (isCancelled()) return null;
-                            	if (FailMode.FAIL_FAST == failMode && failFast.get()) return result;
+                            	if (isCancelled()){ return null;}
+                            	if (FailMode.FAIL_FAST == failMode && failFast.get()){ return result;}
                             	progress("verifying file checksum", filePath, fileCount.incrementAndGet(), fileTotal);
-                            	if (log.isDebugEnabled())
+                            	if (log.isDebugEnabled()){
                                     log.debug(MessageFormat.format("Verifying {1} fixity for file: {0}", filePath, alg.bagItAlgorithm));
+                            	}
                             	
                             	boolean file_exists = false;
                             	String normalizedPath = null;
@@ -215,7 +217,7 @@ public class ParallelManifestChecksumVerifier extends LongRunningOperationBase i
 
         }
                 
-    	if (this.isCancelled()) return null;
+    	if (this.isCancelled()){ return null;}
     	
     	return finalResult;
     }

@@ -30,7 +30,7 @@ public class ZipFileSystem implements FileSystem {
 	
 	public ZipFileSystem(File file) {
 		assert file != null;		
-		if (! file.isFile()) throw new RuntimeException("Not a file");		
+		if (! file.isFile()){ throw new RuntimeException("Not a file");}		
 		this.file = file;
 		try {
 			this.zipFile = new ZipFile(file);
@@ -47,13 +47,13 @@ public class ZipFileSystem implements FileSystem {
 		while(entryEnum.hasMoreElements()) {
 			ZipArchiveEntry entry = entryEnum.nextElement();
 			String entryFilepath = entry.getName();
-			if(entryFilepath.endsWith("/")) entryFilepath = entryFilepath.substring(0, entryFilepath.length()-1);
+			if(entryFilepath.endsWith("/")){ entryFilepath = entryFilepath.substring(0, entryFilepath.length()-1);}
 
 			//Create the node for the entry			
 			File parentFile = new File(entryFilepath).getParentFile();
 			List<String> parentPaths = new ArrayList<String>();			
 			while(parentFile != null) {
-				parentPaths.add((parentFile.getPath()));
+				parentPaths.add(parentFile.getPath());
 				parentFile = parentFile.getParentFile();
 			}
 			//Can skip if first one already in map

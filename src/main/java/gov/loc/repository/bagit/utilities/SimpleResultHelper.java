@@ -30,16 +30,19 @@ public class SimpleResultHelper {
 	}
 
 	public static boolean isMissingOrInvalid(SimpleResult result, String filepath) {
-		if(containsObject(result, CompleteVerifier.CODE_TAG_MANIFEST_CONTAINS_MISSING_FILE, filepath))
+		if(containsObject(result, CompleteVerifier.CODE_TAG_MANIFEST_CONTAINS_MISSING_FILE, filepath)){
 			return true;
-		if(containsObject(result, CompleteVerifier.CODE_PAYLOAD_MANIFEST_CONTAINS_MISSING_FILE, filepath))
+		}
+		if(containsObject(result, CompleteVerifier.CODE_PAYLOAD_MANIFEST_CONTAINS_MISSING_FILE, filepath)){
 			return true;
-		if(containsObject(result, ManifestVerifier.CODE_TAG_MANIFEST_CONTAINS_INVALID_FILE, filepath))
+		}
+		if(containsObject(result, ManifestVerifier.CODE_TAG_MANIFEST_CONTAINS_INVALID_FILE, filepath)){
 			return true;
-		if(containsObject(result, ManifestVerifier.CODE_PAYLOAD_MANIFEST_CONTAINS_INVALID_FILE, filepath))
+		}
+		if(containsObject(result, ManifestVerifier.CODE_PAYLOAD_MANIFEST_CONTAINS_INVALID_FILE, filepath)){
 			return true;
+		}
 		return false;
-		
 	}
 	
 	public static boolean isMissingPayloadFile(SimpleResult result, String filepath) {
@@ -53,7 +56,7 @@ public class SimpleResultHelper {
 	public static boolean containsObject(SimpleResult result, String code, String object) {
 		List<SimpleMessage> messages = result.getSimpleMessagesByCode(code);
 		for(SimpleMessage message : messages) {
-			if (message.getObjects().contains(object)) return true;
+			if (message.getObjects().contains(object)){ return true;}
 		}
 		return false;
 	}

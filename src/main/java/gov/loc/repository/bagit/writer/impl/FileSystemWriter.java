@@ -158,7 +158,7 @@ public class FileSystemWriter extends AbstractWriter {
 	@Override
 	public void visitPayload(BagFile bagFile) {
 		File file = new File(this.newBagDir, bagFile.getFilepath());
-		if ((! this.tagFilesOnly) && (! this.skipIfPayloadFileExists || ! file.exists()) && (! this.filesThatDoNotMatchManifestOnly || ! this.fileMatchesManifest(bagFile, file))) {
+		if (!this.tagFilesOnly && (!this.skipIfPayloadFileExists || ! file.exists()) && (! this.filesThatDoNotMatchManifestOnly || ! this.fileMatchesManifest(bagFile, file))) {
 			this.fileCount++;
 			this.progress("writing", bagFile.getFilepath(), this.fileCount, this.fileTotal);
 			log.debug(MessageFormat.format("Writing payload file {0} to {1}.", bagFile.getFilepath(), file.toString()));
@@ -222,7 +222,7 @@ public class FileSystemWriter extends AbstractWriter {
 				this.removeExtraFiles(new File(this.newBagDir, bag.getBagConstants().getDataDirectory()), true);				
 			}
 		}
-		if (this.isCancelled()) return null;
+		if (this.isCancelled()){ return null;}
 		return this.newBag;		
 
 	}
@@ -230,15 +230,17 @@ public class FileSystemWriter extends AbstractWriter {
 	private void removeExtraFiles(File dir, boolean recurse) {
 		log.trace(MessageFormat.format("Checking children of {0} for removal", dir));
 		for(File file : FileHelper.normalizeForm(dir.listFiles())) {
-			if (this.isCancelled()) return;
+			if (this.isCancelled()){ return;}
 			if (file.isDirectory()) {
 				if (log.isTraceEnabled()) {
-					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, file.listFiles().length));
+				  File[] files = file.listFiles();
+					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, files == null ? 0 : files.length));
 				}
 				if (recurse) {
 					this.removeExtraFiles(file, recurse);
 					if (log.isTraceEnabled()) {
-						log.trace(MessageFormat.format("{0} now has {1} children", file, file.listFiles().length));
+					  File[] files = file.listFiles();
+						log.trace(MessageFormat.format("{0} now has {1} children", file, files == null ? 0 : files.length));
 					}
 				}
 			} else {

@@ -158,7 +158,7 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 		this.handlePayloadManifests();
 		this.handleTagManifests();
 		
-		if (this.isCancelled()) return null;
+		if (this.isCancelled()){ return null;}
 		
 		return this.newBag;
 	}
@@ -166,7 +166,7 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 	protected void handleBagIt() {
 		if (this.newBag.getBagItTxt() == null) {
 			this.newBag.putBagFile(this.newBag.getBagPartFactory().createBagItTxt());
-			if (this.limitAddTagFilepaths != null) this.limitAddTagFilepaths.add(this.newBag.getBagConstants().getBagItTxt());
+			if (this.limitAddTagFilepaths != null){ this.limitAddTagFilepaths.add(this.newBag.getBagConstants().getBagItTxt());}
 		}
 	}
 	
@@ -186,7 +186,7 @@ public class UpdateCompleter extends LongRunningOperationBase implements Complet
 		if (bagInfo.getBagSize() != null) {
 			bagInfo.generateBagSize(this.newBag);
 		}
-		if (this.limitUpdateTagFilepaths != null) this.limitUpdateTagFilepaths.add(this.newBag.getBagConstants().getBagInfoTxt());
+		if (this.limitUpdateTagFilepaths != null){ this.limitUpdateTagFilepaths.add(this.newBag.getBagConstants().getBagInfoTxt());}
 
 		
 	}

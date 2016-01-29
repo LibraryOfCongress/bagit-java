@@ -57,7 +57,7 @@ public class BagFactory {
 	 */
 	public enum Version { V0_93 ("0.93"), V0_94 ("0.94"), V0_95 ("0.95"), V0_96 ("0.96"), V0_97 ("0.97");
 	
-	public String versionString;
+	public final String versionString;
 	
 	Version(String versionString) {
 		this.versionString = versionString;

@@ -4,7 +4,7 @@ import gov.loc.repository.bagit.ProgressListener;
 import java.io.Console;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConsoleProgressListener extends Object implements ProgressListener
+public class ConsoleProgressListener implements ProgressListener
 {
 	private Console console = System.console();
 	private long nextUpdate = System.currentTimeMillis();

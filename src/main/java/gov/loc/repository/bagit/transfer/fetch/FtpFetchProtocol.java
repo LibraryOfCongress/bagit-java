@@ -33,7 +33,7 @@ public class FtpFetchProtocol implements FetchProtocol
         return new FtpFetcher();
     }
 
-    private class FtpFetcher extends LongRunningOperationBase implements FileFetcher
+    private static class FtpFetcher extends LongRunningOperationBase implements FileFetcher
     {
         private FTPClient client;
     	private String username = null;
@@ -155,7 +155,7 @@ public class FtpFetchProtocol implements FetchProtocol
                 
                 this.login();
                 
-                log.trace(format("Connected to: {0}", this.client.getSystemName()));
+                log.trace(format("Connected to: {0}", this.client.getSystemType()));
                 
                 log.trace("Setting PASV mode and setting binary file type.");
                 this.client.enterLocalPassiveMode();
@@ -170,30 +170,23 @@ public class FtpFetchProtocol implements FetchProtocol
         
         private void login() throws IOException, BagTransferException
         { 
-            try
-            {
+          if (this.username == null || this.password == null){
+            log.trace("No credentials available.  Login will be anonymous.");
+                this.username = "anonymous";
+                this.password = "bagitlibrary@loc.gov";
+          }
                 
-            	if (this.username == null || this.password == null){
-            		log.trace("No credentials available.  Login will be anonymous.");
-                    this.username = "anonymous";
-                    this.password = "bagitlibrary@loc.gov";
-            	}
-                    
-                log.trace(format("Logging in with credentials: {0}/***hidden***", this.username));
-                
-                if (!this.client.login(this.username, this.password))
-                {
-                    this.client.disconnect();
-                    throw new BagTransferException("Could not log in.");
-                }
-            }
-            finally
+            log.trace(format("Logging in with credentials: {0}/***hidden***", this.username));
+            
+            if (!this.client.login(this.username, this.password))
             {
+                this.client.disconnect();
+                throw new BagTransferException("Could not log in.");
             }
         }
     }
     
-    private class LogCommandListener implements ProtocolCommandListener
+    private static class LogCommandListener implements ProtocolCommandListener
     {
         @Override
         public void protocolCommandSent(ProtocolCommandEvent event)
@@ -202,8 +195,9 @@ public class FtpFetchProtocol implements FetchProtocol
         	{
         		String msg = event.getMessage().trim();
         		
-        		if (msg.startsWith("PASS"))
+        		if (msg.startsWith("PASS")){
         			msg = "PASS ***hidden***";
+        		}
 
         		log.trace(">> " + msg);
         	}
@@ -212,8 +206,9 @@ public class FtpFetchProtocol implements FetchProtocol
         @Override
         public void protocolReplyReceived(ProtocolCommandEvent event)
         {
-        	if (log.isTraceEnabled())
+        	if (log.isTraceEnabled()){
         		log.trace("<< " + event.getMessage().trim());
+        	}
         }
     }
 }

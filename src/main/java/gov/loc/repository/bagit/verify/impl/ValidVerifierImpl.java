@@ -47,8 +47,8 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 	@Override
 	public void setFailMode(FailMode failMode) {
 		this.failMode = failMode;
-		if (completeVerifier instanceof FailModeSupporting) ((FailModeSupporting)completeVerifier).setFailMode(failMode);
-		if (manifestVerifier instanceof FailModeSupporting) ((FailModeSupporting)manifestVerifier).setFailMode(failMode);
+		if (completeVerifier instanceof FailModeSupporting){ ((FailModeSupporting)completeVerifier).setFailMode(failMode);}
+		if (manifestVerifier instanceof FailModeSupporting){ ((FailModeSupporting)manifestVerifier).setFailMode(failMode);}
 	}
 	
 	@Override
@@ -64,21 +64,21 @@ public class ValidVerifierImpl extends LongRunningOperationBase implements Valid
 	public SimpleResult verify(Bag bag) {
 		//Is complete
 		SimpleResult result = this.completeVerifier.verify(bag);
-		if (this.isCancelled()) return null;
-		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
-		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;
-		if(! result.isSuccess() && FailMode.FAIL_STAGE == failMode) return result;
+		if (this.isCancelled()){ return null;}
+		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode){ return result;}
+		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode){ return result;}
+		if(! result.isSuccess() && FailMode.FAIL_STAGE == failMode){ return result;}
 
 		//Every checksum checks
 		result.merge(this.manifestVerifier.verify(bag.getTagManifests(), bag));
-		if (this.isCancelled()) return null;
-		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
-		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;
+		if (this.isCancelled()){ return null;}
+		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode){ return result;}
+		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode){ return result;}
 
 		result.merge(this.manifestVerifier.verify(bag.getPayloadManifests(), bag));
-		if (this.isCancelled()) return null;
-		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode) return result;
-		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode) return result;
+		if (this.isCancelled()){ return null;}
+		if(! result.isSuccess() && FailMode.FAIL_FAST == failMode){ return result;}
+		if(! result.isSuccess() && FailMode.FAIL_STEP == failMode){ return result;}
 		
 		log.info("Completed verification that bag is valid.");
 		log.info("Validity check: " + result.toString());				

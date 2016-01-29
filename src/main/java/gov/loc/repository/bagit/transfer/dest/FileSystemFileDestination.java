@@ -101,12 +101,9 @@ public class FileSystemFileDestination implements FetchedFileDestinationFactory
         @Override
         public void abandon()
         {
-        	if (this.file.exists())
+        	if (this.file.exists() && !this.file.delete())
         	{
-        		if (!this.file.delete())
-        		{
-        			this.file.deleteOnExit();
-        		}
+        		this.file.deleteOnExit();
         	}
         }
         

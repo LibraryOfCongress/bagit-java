@@ -8,7 +8,7 @@ public class DirNodeFileSystemNodeFilter implements FileSystemNodeFilter {
 
 	@Override
 	public boolean accept(FileSystemNode fileSystemNode) {
-		return (fileSystemNode instanceof DirNode);
+		return fileSystemNode instanceof DirNode;
 	}
 	
 }

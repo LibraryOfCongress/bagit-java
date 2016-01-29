@@ -85,8 +85,8 @@ public class ManifestImpl extends LinkedHashMap<String, String> implements Manif
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ManifestWriter writer = this.bagPartFactory.createManifestWriter(out, this.nonDefaultManifestSeparator);
 		try {
-			for(String filename : this.keySet()) {
-				writer.write(filename, this.get(filename));
+			for(Entry<String, String> entry : this.entrySet()) {
+				writer.write(entry.getKey(), this.get(entry.getKey()));
 			}
 		} finally {
 			IOUtils.closeQuietly(writer);

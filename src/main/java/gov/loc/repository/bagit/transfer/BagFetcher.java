@@ -1,6 +1,30 @@
 package gov.loc.repository.bagit.transfer;
 
 import static java.text.MessageFormat.format;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.PasswordAuthentication;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.BagFactory;
@@ -26,30 +50,6 @@ import gov.loc.repository.bagit.utilities.SimpleResultHelper;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
 import gov.loc.repository.bagit.verify.impl.ValidHoleyBagVerifier;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
-
-import java.io.File;
-import java.io.InputStream;
-import java.net.PasswordAuthentication;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Fetches a bag.  This class is not thread-safe.
@@ -156,8 +156,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
      * @throws NullPointerException Thrown if <code>null</code> is set.  
      */
     public void setFetchFailStrategy(FetchFailStrategy strategy) {
-    	if (strategy == null)
+    	if (strategy == null){
     		throw new NullPointerException("strategy cannot be null");
+    	}
     	
     	this.failStrategy = strategy;
     }
@@ -283,10 +284,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
             log.debug(format("Verify valid completed with result: {0}", bagVerifyResult.isSuccess()));
             progress("Verify valid completed", "", null, null);
             return bagVerifyResult;
-        }else{
-            this.updateFetchProgressTxtOnDisk();        	
-            return finalResult;
-        }        
+        }
+        this.updateFetchProgressTxtOnDisk();        	
+        return finalResult;        
     }
     
     private void updateFetchProgressTxtOnDisk(){
@@ -545,7 +545,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 		
 		//Get tag manifests and write to disk
 		for(Manifest manifest: partialBag.getTagManifests()){
-			fetchFromManifest(manifest, partialBag.getBagConstants(), baseUrl);
+			fetchFromManifest(manifest, baseUrl);
 		}
 		
 		//Get bag-info.txt and write to disk		
@@ -566,7 +566,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     	return fetchResult;
     }
 
-	protected SimpleResult fetchFromManifest(Manifest manifest, BagConstants bagConstants, String baseUrl) throws BagTransferException{
+	protected SimpleResult fetchFromManifest(Manifest manifest, String baseUrl) throws BagTransferException{
 		SimpleResult result = new SimpleResult(true);
 		
 		for(String filepath : manifest.keySet()){
@@ -662,7 +662,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	            	try{
 						this.fetchFile(fetchLine);
 						int index = fetchSuccessCounter.incrementAndGet();
-                		progress("Fetched", fetchLine.getFilename(), new Long(index), new Long(fetchLines.size()));
+                		progress("Fetched", fetchLine.getFilename(), Long.valueOf(index), Long.valueOf(fetchLines.size()));
 						fetchLine = getNextFetchLine();
 					}catch (BagTransferCancelledException e){
                 		progress("Fetch cancelled", "", null, null);
@@ -675,6 +675,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
 	                    log.trace(format("Failure action for {0} (size: {1}): {2} ", fetchLine.getFilename(), fetchLine.getSize(), failureAction));
 	    	                	
 	                	if (failureAction == FetchFailureAction.RETRY_CURRENT){
+	                	  log.trace("Retrying current");
 	                		// Do nothing.  The target variable will
 	                		// remain the same, and we'll loop back around.
 	                	}else if (failureAction == FetchFailureAction.CONTINUE_WITH_NEXT){
@@ -811,7 +812,7 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
     }
 
 
-    private class MyContext implements FetchContext{
+    private static class MyContext implements FetchContext{
     	@Override
     	public boolean requiresLogin(){
     		return false;
@@ -837,22 +838,15 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
         	try{
         		Runtime.getRuntime().removeShutdownHook(this);
         	}catch (IllegalStateException e){
+        	  log.warn("Failed to remove shutdown hook. Most likely cause we are already shutting down", e);
         		// Ignore this - we're already shutting down.
         		// http://java.sun.com/javase/6/docs/api/java/lang/Runtime.html#addShutdownHook(java.lang.Thread)
         	}
         }
         
     	@Override
-    	public void run(){
+    	public synchronized void run(){
     		cancel();
-    		
-    		try{
-    			// Wait for a few seconds, so that the thread pool and
-    			// fetchers can clean up a bit.  Then let things die.
-				this.shutdownLatch.await(7, TimeUnit.SECONDS);
-			}catch (InterruptedException e){
-    			log.error("Timed out while waiting for fetch shutdown to finish.");
-			}
     	}
     }
 }

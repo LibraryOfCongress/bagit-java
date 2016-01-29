@@ -51,8 +51,9 @@ public class ZipWriter extends AbstractWriter {
 	}
 
 	public void setCompressionLevel(Integer compressionLevel) {
-		if (compressionLevel != null && (compressionLevel < 0 || compressionLevel > 9))
+		if (compressionLevel != null && (compressionLevel < 0 || compressionLevel > 9)){
 			throw new RuntimeException("Valid compression levels are 0-9.");
+		}
 		this.compressionLevel = compressionLevel;
 	}
 	
@@ -157,7 +158,7 @@ public class ZipWriter extends AbstractWriter {
 		
 		bag.accept(this);
 				
-		if (this.isCancelled()) return null;
+		if (this.isCancelled()){ return null;}
 		
 		return this.newBag;		
 	}

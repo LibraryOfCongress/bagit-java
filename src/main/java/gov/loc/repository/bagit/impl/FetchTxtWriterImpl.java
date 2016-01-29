@@ -1,14 +1,16 @@
 package gov.loc.repository.bagit.impl;
 
-import gov.loc.repository.bagit.FetchTxt;
-import gov.loc.repository.bagit.FetchTxtWriter;
-
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import gov.loc.repository.bagit.FetchTxt;
+import gov.loc.repository.bagit.FetchTxtWriter;
 
 public class FetchTxtWriterImpl implements FetchTxtWriter {
 	private static final Log log = LogFactory.getLog(FetchTxtWriterImpl.class);
@@ -18,7 +20,7 @@ public class FetchTxtWriterImpl implements FetchTxtWriter {
 	private PrintWriter writer = null;
 	
 	public FetchTxtWriterImpl(OutputStream out) {
-		this.writer = new PrintWriter(out);
+		this.writer = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), true); //new PrintWriter(out);
 	}
 	
 	@Override

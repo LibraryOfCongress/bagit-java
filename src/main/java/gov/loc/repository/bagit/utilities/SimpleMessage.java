@@ -98,7 +98,7 @@ public class SimpleMessage {
 	}
 
 	public void addObjects(Collection<String> objects) {
-		if (objects == null) return;
+		if (objects == null){ return;}
 		
 		if (this.objects == null) {
 			this.objects = new HashSet<String>();				

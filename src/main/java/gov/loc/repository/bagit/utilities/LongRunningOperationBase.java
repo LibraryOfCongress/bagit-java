@@ -77,7 +77,7 @@ public class LongRunningOperationBase implements Cancellable, ProgressListenable
 	
 	protected void progress(String activity, Object item, Integer count, Integer total)
 	{
-		this.progress(activity, item, count == null? (Long)null : new Long(count), total == null? (Long)null : new Long(total));
+		this.progress(activity, item, count == null? (Long)null : Long.valueOf(count), total == null? (Long)null : Long.valueOf(total));
 	}
 	
 	protected void delegateProgress(ProgressListenable listenable)

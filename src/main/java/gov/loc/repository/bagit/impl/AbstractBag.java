@@ -1,23 +1,24 @@
 package gov.loc.repository.bagit.impl;
 
+import java.io.Closeable;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.io.Closeable;
-import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
 import gov.loc.repository.bagit.BagInfoTxt;
@@ -25,11 +26,10 @@ import gov.loc.repository.bagit.BagItTxt;
 import gov.loc.repository.bagit.BagVisitor;
 import gov.loc.repository.bagit.DeclareCloseable;
 import gov.loc.repository.bagit.FetchTxt;
-import gov.loc.repository.bagit.ManifestHelper;
 import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressListener;
-import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.ManifestHelper;
+import gov.loc.repository.bagit.ProgressListener;
 import gov.loc.repository.bagit.filesystem.DirNode;
 import gov.loc.repository.bagit.filesystem.FileNode;
 import gov.loc.repository.bagit.filesystem.FileSystemFactory;
@@ -47,8 +47,8 @@ import gov.loc.repository.bagit.utilities.FilenameHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper;
 import gov.loc.repository.bagit.utilities.FormatHelper.UnknownFormatException;
 import gov.loc.repository.bagit.utilities.SimpleResult;
-import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.FailModeSupporting.FailMode;
+import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.verify.impl.CompleteVerifierImpl;
 import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
@@ -145,14 +145,8 @@ public abstract class AbstractBag implements Bag {
 				}
 			}
 		} catch (UnknownFormatException e) {
-			if (bagFileDirNode != null) {
-				bagFileDirNode.getFileSystem().closeQuietly();
-			}
 			throw new RuntimeException(e);
 		} catch (UnsupportedFormatException e) {
-			if (bagFileDirNode != null) {
-				bagFileDirNode.getFileSystem().closeQuietly();
-			}
 			throw new RuntimeException(e);
 		}
 	}
@@ -252,27 +246,27 @@ public abstract class AbstractBag implements Bag {
 			this.payloadMap.put(bagFile.getFilepath(), bagFile);
 		} else {
 			//Is a Manifest
-			if (bagFile.exists() && (! (bagFile instanceof Manifest)) && (ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants()))) {
+			if (bagFile.exists() && !(bagFile instanceof Manifest) && (ManifestHelper.isPayloadManifest(bagFile.getFilepath(), this.getBagConstants()) || ManifestHelper.isTagManifest(bagFile.getFilepath(), this.getBagConstants()))) {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a Manifest", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createManifest(bagFile.getFilepath(), bagFile));
 			}
 			//Is a BagItTxt
-			else if (bagFile.exists() && (! (bagFile instanceof BagItTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagItTxt())) {
+			else if (bagFile.exists() && !(bagFile instanceof BagItTxt) && bagFile.getFilepath().equals(this.getBagConstants().getBagItTxt())) {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a BagItTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createBagItTxt(bagFile));
 			}
 			//Is a BagInfoTxt
-			else if (bagFile.exists() && (! (bagFile instanceof BagInfoTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getBagInfoTxt())) {
+			else if (bagFile.exists() && !(bagFile instanceof BagInfoTxt) && bagFile.getFilepath().equals(this.getBagConstants().getBagInfoTxt())) {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a BagInfoTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createBagInfoTxt(bagFile));
 			}
 			//Is a FetchTxt
-			else if (bagFile.exists() && (! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchTxt())) {
+			else if (bagFile.exists() && !(bagFile instanceof FetchTxt) && bagFile.getFilepath().equals(this.getBagConstants().getFetchTxt())) {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a FetchTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchTxt(bagFile));
 			}
 			//Is a FetchProgressTxt
-			else if (bagFile.exists() && (! (bagFile instanceof FetchTxt)) && bagFile.getFilepath().equals(this.getBagConstants().getFetchProgressTxt())) {
+			else if (bagFile.exists() && !(bagFile instanceof FetchTxt) && bagFile.getFilepath().equals(this.getBagConstants().getFetchProgressTxt())) {
 				log.trace(MessageFormat.format("Adding bag file {0} to tag map as a FetchProgressTxt", bagFile.getFilepath()));
 				tagMap.put(bagFile.getFilepath(), this.getBagPartFactory().createFetchProgressTxt(bagFile));
 			}
@@ -343,9 +337,8 @@ public abstract class AbstractBag implements Bag {
 		
 		if (BagHelper.isPayload(filepath, this.getBagConstants())) {
 			return this.payloadMap.get(filepath);
-		} else {
-			return this.tagMap.get(filepath);
 		}
+    return this.tagMap.get(filepath);
 	}
 	
 	@Override
@@ -365,7 +358,7 @@ public abstract class AbstractBag implements Bag {
 	public BagItTxt getBagItTxt() {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getBagItTxt());
-		if (bagFile != null && bagFile instanceof BagItTxt) return (BagItTxt)bagFile;
+		if (bagFile != null && bagFile instanceof BagItTxt){ return (BagItTxt)bagFile;}
 		return null;
 	}
 
@@ -436,41 +429,41 @@ public abstract class AbstractBag implements Bag {
 	@Override
 	public void accept(BagVisitor visitor) {
 		checkClosed();
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 		
 		visitor.startBag(this);
 
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 
 		visitor.startTags();
 		
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 		
-		for(String filepath : this.tagMap.keySet()) {
-			if (CancelUtil.isCancelled(visitor)) return;
-			visitor.visitTag(this.tagMap.get(filepath));
+		for(Entry<String, BagFile> entry : this.tagMap.entrySet()) {
+			if (CancelUtil.isCancelled(visitor)){ return;}
+			visitor.visitTag(this.tagMap.get(entry.getKey()));
 		}
 		
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 
 		visitor.endTags();
 
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 		
 		visitor.startPayload();
 		
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 		
-		for(String filepath : this.payloadMap.keySet()) {
-			if (CancelUtil.isCancelled(visitor)) return;
-			visitor.visitPayload(this.payloadMap.get(filepath));
+		for(Entry<String, BagFile> entry : this.payloadMap.entrySet()) {
+			if (CancelUtil.isCancelled(visitor)){ return;}
+			visitor.visitPayload(this.payloadMap.get(entry.getKey()));
 		}
 		
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 
 		visitor.endPayload();
 	
-		if (CancelUtil.isCancelled(visitor)) return;
+		if (CancelUtil.isCancelled(visitor)){ return;}
 		
 		visitor.endBag();
 	}
@@ -479,7 +472,7 @@ public abstract class AbstractBag implements Bag {
 	public FetchTxt getFetchTxt() {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getFetchTxt());
-		if (bagFile != null && bagFile instanceof FetchTxt) return (FetchTxt)bagFile;
+		if (bagFile != null && bagFile instanceof FetchTxt) {return (FetchTxt)bagFile;}
 		return null;
 	}
 	
@@ -487,7 +480,7 @@ public abstract class AbstractBag implements Bag {
 	public FetchTxt getFetchProgressTxt() {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getFetchProgressTxt());
-		if (bagFile != null && bagFile instanceof FetchTxt) return (FetchTxt)bagFile;
+		if (bagFile != null && bagFile instanceof FetchTxt){ return (FetchTxt)bagFile;}
 		return null;
 	}
 	
@@ -507,7 +500,7 @@ public abstract class AbstractBag implements Bag {
 	public BagInfoTxt getBagInfoTxt() {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(this.getBagConstants().getBagInfoTxt());
-		if (bagFile != null && bagFile instanceof BagInfoTxt) return (BagInfoTxt)bagFile;
+		if (bagFile != null && bagFile instanceof BagInfoTxt){ return (BagInfoTxt)bagFile;}
 		return null;
 	}
 			
@@ -615,7 +608,7 @@ public abstract class AbstractBag implements Bag {
 	public Manifest getPayloadManifest(Algorithm algorithm) {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(ManifestHelper.getPayloadManifestFilename(algorithm, this.bagConstants));
-		if (bagFile != null && bagFile instanceof Manifest) return (Manifest)bagFile;
+		if (bagFile != null && bagFile instanceof Manifest){ return (Manifest)bagFile;}
 		return null;
 	}
 	
@@ -623,7 +616,7 @@ public abstract class AbstractBag implements Bag {
 	public Manifest getTagManifest(Algorithm algorithm) {
 		checkClosed();
 		BagFile bagFile = this.getBagFile(ManifestHelper.getTagManifestFilename(algorithm, this.bagConstants));
-		if (bagFile != null && bagFile instanceof Manifest) return (Manifest)bagFile;
+		if (bagFile != null && bagFile instanceof Manifest){ return (Manifest)bagFile;}
 		return null;
 	}
 	

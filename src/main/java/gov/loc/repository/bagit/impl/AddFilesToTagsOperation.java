@@ -24,10 +24,9 @@ public class AddFilesToTagsOperation extends LongRunningOperationBase {
 	public void addFilesToTags(List<File> files) {			
 		int count = 0;
 		for(File file : files) {
-			if (this.isCancelled()) return;
+			if (this.isCancelled()){ return;}
 			count = this.addTag(file, file.getParentFile(), count);
 		}
-		return;
 	}
 
 	public void addFileToTags(File file) {
@@ -35,15 +34,16 @@ public class AddFilesToTagsOperation extends LongRunningOperationBase {
 	}
 
 	private int addTag(File file, File rootDir, int count) {
-		if (this.isCancelled()) return 0;
+		if (this.isCancelled()){ return 0;}
 		file = FileHelper.normalizeForm(file);
 		if (! file.canRead()) {
 			throw new RuntimeException("Can't read " + file.toString());
 		}
 		//If directory, recurse on children
-		if (file.isDirectory()) {			
-			for(File child : file.listFiles()) {
-				if (this.isCancelled()) return 0;
+		File[] files = file.listFiles();
+		if (file.isDirectory() && files != null) {			
+			for(File child : files) {
+				if (this.isCancelled()){ return 0;}
 				String filepath = file.getAbsolutePath();
 				this.progress("Adding tag file", filepath, count, null);
 				log.trace(MessageFormat.format("Adding tag {0}", filepath));

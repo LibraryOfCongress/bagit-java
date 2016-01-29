@@ -13,8 +13,8 @@ public class ChainingCompleter extends LongRunningOperationBase implements Compl
 	public ChainingCompleter(Completer... completers) {
 		this.completers = completers;
 		for(Completer completer : completers) {
-			if (completer instanceof Cancellable) this.addChainedCancellable((Cancellable)completer);
-			if (completer instanceof ProgressListenable) this.addChainedProgressListenable((ProgressListenable)completer);
+			if (completer instanceof Cancellable){ this.addChainedCancellable((Cancellable)completer);}
+			if (completer instanceof ProgressListenable){ this.addChainedProgressListenable((ProgressListenable)completer);}
 		}
 	}
 	

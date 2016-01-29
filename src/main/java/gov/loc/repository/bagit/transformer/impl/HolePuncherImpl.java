@@ -68,11 +68,8 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	
 	@Override
 	public void visitPayload(BagFile bagFile) {
-		if(resume){
-			//Skip the file if the file is not missing or invalid. 
-			if(! SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, bagFile.getFilepath())){
-				return;
-			}
+		if(resume && ! SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, bagFile.getFilepath())){
+			return;
 		}
 		String url = baseUrl;
 		if (includePayloadDirectory) {
@@ -86,11 +83,8 @@ public class HolePuncherImpl extends AbstractBagVisitor implements HolePuncher {
 	
 	@Override
 	public void visitTag(BagFile bagFile) {
-		if(resume){
-			//Skip the file if the file is not missing or invalid. 
-			if(! SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, bagFile.getFilepath())){
-				return;
-			}
+		if(resume && !SimpleResultHelper.isMissingOrInvalid(bagVerifyResult, bagFile.getFilepath())){
+			return;
 		}
 		if (includeTags) {
 			String url = baseUrl + UrlHelper.encodeFilepath(bagFile.getFilepath());

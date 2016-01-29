@@ -13,7 +13,7 @@ public class FileFileSystem implements FileSystem {
 	
 	public FileFileSystem(File file) {
 		assert file != null;		
-		if (! file.isDirectory()) throw new RuntimeException("Not a directory");		
+		if (! file.isDirectory()){ throw new RuntimeException("Not a directory");}		
 		this.file = file;
 		
 		this.dirNode = new FileDirNode(file, this);

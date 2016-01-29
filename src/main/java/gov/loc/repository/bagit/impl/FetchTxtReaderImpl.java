@@ -72,10 +72,7 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 					this.next = null;
 					return;
 				}
-				else
-				{
-					line = line.trim();
-				}
+        line = line.trim();
 				
 				if (line.length() > 0)
 				{
@@ -94,7 +91,7 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 						try{
 							status = FetchTxt.FetchStatus.valueOf(subSplitString[0].toUpperCase());							
 						}catch(Exception e){
-							
+						  log.error("Failed to fetch status",e);
 						}
 						
 						if(status != null && subSplitString.length == 2){	
@@ -105,11 +102,8 @@ public class FetchTxtReaderImpl implements FetchTxtReader {
 						}
 						
 						return;
-					} 
-					else
-					{
-						log.warn(format("Invalid fetch line: {0}", line));
 					}
+          log.warn(format("Invalid fetch line: {0}", line));
 				}
 			}
 		}

@@ -53,8 +53,9 @@ class FetchStreamCopier extends LongRunningOperationBase
 			log.trace("Progress updated.");
 			
 			log.trace("Checking for cancellation.");
-			if (this.isCancelled())
+			if (this.isCancelled()){
 				throw new BagTransferCancelledException(format("Copy cancelled after {0} bytes.", totalCopied));
+			}
 			log.trace("Not cancelled.");
 			
 			log.trace("Reading from input stream.");
