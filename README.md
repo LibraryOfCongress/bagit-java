@@ -1,10 +1,10 @@
 # BAGIT LIBRARY (BIL)
-BagIt Version 0.97
+[![Build Status](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
 
 ## DESCRIPTION
 The BAGIT LIBRARY is a software library intended to support the creation, 
-manipulation, and validation of bags.  It is version aware.  The earliest
-supported version is 0.93.
+manipulation, and validation of bags. Its current version is 0.97. It is version aware with the earliest
+supported version being 0.93.
 
 ## REQUIREMENTS
 * Java 6
