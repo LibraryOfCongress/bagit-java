@@ -11,7 +11,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 if(project.version == "unspecified"){
-  project.version = "4.10.0-SNAPSHOT"
+  project.version = "4.11-SNAPSHOT"
 }
 
 repositories {
