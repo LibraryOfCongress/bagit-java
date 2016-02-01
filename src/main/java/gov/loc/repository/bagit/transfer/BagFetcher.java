@@ -718,6 +718,9 @@ public final class BagFetcher implements Cancellable, ProgressListenable{
                 URI uri = parseUri(filenameSizeUrl.getUrl());
                 Long size = filenameSizeUrl.getSize();
                 String destinationPath = filenameSizeUrl.getFilename();
+                if(!destinationPath.startsWith("data")){
+                  throw new BagTransferException("Destination of fetch file is [" + destinationPath + "] which is not a payload file.");
+                }
 
                 // Create the destination for the file.
                 log.trace(format("Creating destination: {0}", destinationPath));

@@ -5,6 +5,8 @@ import static junit.framework.Assert.assertTrue;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
+import gov.loc.repository.bagit.transfer.dest.FileSystemFileDestination;
+import gov.loc.repository.bagit.transfer.fetch.HttpFetchProtocol;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
 
@@ -18,6 +20,7 @@ import org.jmock.Mockery;
 import org.jmock.States;
 import org.jmock.integration.junit4.JMock;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -312,6 +315,59 @@ public class BagFetcherTest{
 		this.unit.fetch(bag, mockDestinationFactory, false);
 		
 	}
+	
+	/**
+   * Fetching a payload file. This is correct according to the specs and works in the library.
+   *
+   * @link https://tools.ietf.org/html/draft-kunze-bagit#section-2.2.3
+   * @throws Exception
+   */
+  @Test
+  public void fetchToPayloadOk() throws Exception {
+    File templateBag = new File("src/test/resources/bad-fetch-bag");
+    File bagFile = new File("target/fetchToPayloadOk");
+    FileUtils.deleteDirectory(bagFile);
+    FileUtils.copyDirectory(templateBag, bagFile);
+    BagFetcher fetcher = new BagFetcher(bagFactory);
+    fetcher.registerProtocol("https", new HttpFetchProtocol());
+    Bag bag = bagFactory.createBag(bagFile, BagFactory.Version.V0_97, null);
+    FileSystemFileDestination dest = new FileSystemFileDestination(bagFile);
+    SimpleResult result = fetcher.fetch(bag, dest, false, true);
+    Assert.assertTrue(result.isSuccess());
+  }
+
+  /**
+   * Fetching a non-payload file. This is not allowed according to the specs, at least the specs
+   * only mention payload files.
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void fetchNonPayloadFileShouldFail() throws Exception {
+    File templateBag = new File("src/test/resources/bad-fetch-bag");
+    File bagFile = new File("target/fetchNonPayloadFileShouldFail");
+    FileUtils.deleteDirectory(bagFile);
+    FileUtils.copyDirectory(templateBag, bagFile);
+
+    // Adding an extra line to the fetch.txt, to attempt to fetch a non-payload file
+    FileUtils.writeStringToFile(
+            new File(bagFile, "fetch.txt"),
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Wikipedia-logo-v2-nl.svg/135px-Wikipedia-logo-v2-nl.svg.png - metadata/wikipedia.png",
+            true);
+
+    BagFetcher fetcher = new BagFetcher(bagFactory);
+    fetcher.registerProtocol("https", new HttpFetchProtocol());
+    Bag bag = bagFactory.createBag(bagFile, BagFactory.Version.V0_97, null);
+    FileSystemFileDestination dest = new FileSystemFileDestination(bagFile);
+
+    // Depending on
+    SimpleResult result = fetcher.fetch(bag, dest, false, true); // Returns failure, but fetches metadata/wikipedia.png anyway
+    //SimpleResult result = fetcher.fetch(bag, dest, true, true); // Returns success, but does not fetch metadata/wikipedia.png anyway
+    Assert.assertFalse(result.isSuccess());
+
+    // However ...
+    Assert.assertFalse(new File(bagFile, "metadata/wikipedia.png").exists());
+  }
 
 	private void expectDest(Expectations e, FetchedFileDestinationFactory destFactory, String path) throws Exception{
 		FetchedFileDestination mockDestination = this.context.mock(FetchedFileDestination.class, "FetchedFileDestination:" + path);
