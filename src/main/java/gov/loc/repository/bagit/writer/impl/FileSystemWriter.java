@@ -229,37 +229,50 @@ public class FileSystemWriter extends AbstractWriter {
 
 	private void removeExtraFiles(File dir, boolean recurse) {
 		log.trace(MessageFormat.format("Checking children of {0} for removal", dir));
-		for(File file : FileHelper.normalizeForm(dir.listFiles())) {
-			if (this.isCancelled()){ return;}
-			if (file.isDirectory()) {
-				if (log.isTraceEnabled()) {
-				  File[] files = file.listFiles();
-					log.trace(MessageFormat.format("{0} is a directory with {1} children", file, files == null ? 0 : files.length));
-				}
-				if (recurse) {
-					this.removeExtraFiles(file, recurse);
-					if (log.isTraceEnabled()) {
-					  File[] files = file.listFiles();
-						log.trace(MessageFormat.format("{0} now has {1} children", file, files == null ? 0 : files.length));
-					}
-				}
-			} else {
-				String filepath = FilenameHelper.removeBasePath(this.newBagDir.toString(), file.toString());
-				log.trace(MessageFormat.format("{0} is a file whose filepath is {1}", file, filepath));
-				if (this.newBag.getBagFile(filepath) == null) {
-					if (! this.ignoreNfsTmpFiles || ! file.getName().startsWith(".nfs")) { 
-						try {
-							log.trace("Deleting " + file);
-							FileUtils.forceDelete(file);
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					} else {
-						log.warn("Ignoring nfs temp file: " + file);
-					}
-				}				
-			}
+		File[] files = FileHelper.normalizeForm(dir.listFiles());
+		if(files != null){
+		  for(File file : files) {
+	      if (this.isCancelled()){ return;}
+	      if (file.isDirectory()) {
+	        removeDirectory(file, recurse);
+	      } else {
+	        removeFile(file);
+	      }
+	    }
+		} else{
+		  log.warn("Directory [" + dir + "] is empty, skipping.");
 		}
+	}
+	
+	private void removeDirectory(File file, boolean recurse){
+    if (log.isTraceEnabled()) {
+      File[] files = file.listFiles();
+      log.trace(MessageFormat.format("{0} is a directory with {1} children", file, files == null ? 0 : files.length));
+    }
+    if (recurse) {
+      this.removeExtraFiles(file, recurse);
+      if (log.isTraceEnabled()) {
+        File[] files = file.listFiles();
+        log.trace(MessageFormat.format("{0} now has {1} children", file, files == null ? 0 : files.length));
+      }
+    }
+	}
+	
+	private void removeFile(File file){
+    String filepath = FilenameHelper.removeBasePath(this.newBagDir.toString(), file.toString());
+    log.trace(MessageFormat.format("{0} is a file whose filepath is {1}", file, filepath));
+    if (this.newBag.getBagFile(filepath) == null) {
+      if (! this.ignoreNfsTmpFiles || ! file.getName().startsWith(".nfs")) { 
+        try {
+          log.trace("Deleting " + file);
+          FileUtils.forceDelete(file);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      } else {
+        log.warn("Ignoring nfs temp file: " + file);
+      }
+    }       
 	}
 	
 	private boolean fileMatchesManifest(BagFile bagFile, File file) {
