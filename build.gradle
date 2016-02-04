@@ -3,12 +3,15 @@ import org.apache.tools.ant.filters.*
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'findbugs'
+apply plugin: 'maven'
+apply plugin: 'signing'
 apply plugin: 'pmd'
 apply plugin: 'application'
 apply from: 'eclipse.gradle'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
+group = 'gov.loc'
 
 if(project.version == "unspecified"){
   project.version = "4.11-SNAPSHOT"
@@ -98,5 +101,72 @@ tasks.withType(Pmd) {
   reports {
       xml.enabled = false
       html.enabled = true
+  }
+}
+
+//javadocs and sources required for uploading to maven central
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives javadocJar
+  archives sourcesJar
+}
+
+//artifacts need to be signed in order to upload them to maven central
+signing {
+//  required { !version.endsWith("SNAPSHOT") } //only sign an actual release
+  sign configurations.archives
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'bagit-java'
+        packaging 'jar'
+        // optionally artifactId can be defined here
+        description 'The BAGIT LIBRARY is a software library intended to support the creation, manipulation, and validation of bags. Its current version is 0.97. It is version aware with the earliest supported version being 0.93.'
+        url 'https://github.com/LibraryOfCongress/bagit-java'
+
+        scm {
+          connection 'scm:git:https://github.com/LibraryOfCongress/bagit-java'
+          developerConnection 'scm:git:ssh://github.com/LibraryOfCongress/bagit-java'
+          url 'https://github.com/LibraryOfCongress/bagit-java'
+        }
+
+        licenses {
+          license {
+            name 'No Copyright'
+            url 'https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt'
+          }
+        }
+
+        developers {
+          developer {
+            id 'johnscancella'
+            name 'John Scancella'
+            email 'jsca@loc.gov'
+          }
+        }
+      }
+    }
   }
 }
