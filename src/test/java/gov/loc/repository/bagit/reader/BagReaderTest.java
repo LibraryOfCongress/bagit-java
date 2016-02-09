@@ -121,7 +121,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagitFile()throws IOException{
     File bagitFile = new File(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").getFile());
-    Bag returnedBag = BagReader.readBagitTextFile(bagitFile);
+    Bag returnedBag = BagReader.readBagitTextFile(bagitFile, new Bag());
     assertEquals("0.97", returnedBag.getVersion());
     assertEquals(StandardCharsets.UTF_8.name(), returnedBag.getFileEncoding());
   }

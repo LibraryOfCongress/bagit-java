@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.domain;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,12 +13,14 @@ import java.util.Set;
  * The main representation of the bagit spec.
  */
 public class Bag {
-  private final String version;
+  //The original version of the bag
+  private String version;
   private String fileEncoding = StandardCharsets.UTF_8.name();
   private Set<Manifest> payLoadManifests = new HashSet<>();
   private Set<Manifest> tagManifests = new HashSet<>();
   private List<FetchItem> itemsToFetch = new ArrayList<>();
   private LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
+  private File rootDir;
   
   public Bag(){
     version = "0.97";
@@ -34,6 +37,7 @@ public class Bag {
     this.metadata = bag.getMetadata();
     this.payLoadManifests = bag.getPayLoadManifests();
     this.tagManifests = bag.getTagManifests();
+    this.rootDir = bag.getRootDir();
   }
   
   public String getVersion(){
@@ -111,5 +115,17 @@ public class Bag {
         Objects.equals(this.tagManifests, other.getTagManifests()) &&
         Objects.equals(this.itemsToFetch, other.getItemsToFetch()) &&
         Objects.equals(this.metadata, other.getMetadata());
+  }
+
+  public File getRootDir() {
+    return rootDir;
+  }
+
+  public void setRootDir(File rootDir) {
+    this.rootDir = rootDir;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
   }
 }

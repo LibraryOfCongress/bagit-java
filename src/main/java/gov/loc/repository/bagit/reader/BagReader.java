@@ -25,7 +25,8 @@ public class BagReader {
   //TODO read in parallel
   public static Bag read(File rootDir) throws IOException{
     File bagitFile = new File(rootDir, "bagit.txt");
-    Bag bag = readBagitTextFile(bagitFile);
+    Bag bag = readBagitTextFile(bagitFile, new Bag());
+    bag.setRootDir(rootDir);
     
     bag = readAllManifests(rootDir, bag);
     
@@ -42,13 +43,14 @@ public class BagReader {
     return bag;
   }
   
-  protected static Bag readBagitTextFile(File bagitFile) throws IOException{
+  protected static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
     LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
     
-    Bag bag = new Bag(map.get("BagIt-Version"));
-    bag.setFileEncoding(map.get("Tag-File-Character-Encoding"));
+    Bag newBag = new Bag(bag);
+    newBag.setVersion(map.get("BagIt-Version"));
+    newBag.setFileEncoding(map.get("Tag-File-Character-Encoding"));
     
-    return bag;
+    return newBag;
   }
   
   protected static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
@@ -68,7 +70,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static Manifest readManifest(File manifestFile) throws IOException{
+  public static Manifest readManifest(File manifestFile) throws IOException{
     String alg = manifestFile.getName().split("[-\\.]")[1];
     Manifest manifest = new Manifest(alg);
     

@@ -3,6 +3,8 @@ package gov.loc.repository.bagit;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +20,21 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 
 public class FooTest extends Assert{
+  
+  @Test
+  public void testWhichIsFaster(){
+    File root = new File("/Users/jscancella/development/repos/bagit-java/src/test/resources/bags/v0_96");
+    
+    LocalDateTime start = LocalDateTime.now();
+    root.listFiles();
+    long delta = ChronoUnit.NANOS.between(start, LocalDateTime.now());
+    System.err.println("listFiles() took " + delta + " ns");
+    
+    start = LocalDateTime.now();
+    root.list();
+    delta = ChronoUnit.NANOS.between(start, LocalDateTime.now());
+    System.err.println("list() took      " + delta + " ns");
+  }
   
   @Test
   public void testCreatingUrlFromFetch() throws MalformedURLException{
