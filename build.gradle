@@ -6,8 +6,8 @@ apply plugin: 'signing'
 apply plugin: 'pmd'
 apply from: 'eclipse.gradle'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 group = 'gov.loc'
 
 if(project.version == "unspecified"){
