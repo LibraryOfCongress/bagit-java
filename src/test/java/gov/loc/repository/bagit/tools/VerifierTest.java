@@ -69,6 +69,30 @@ public class VerifierTest extends Assert{
   }
   
   @Test
+  public void testCorruptPayloadFile() throws Exception{
+    rootDir = new File(getClass().getClassLoader().getResource("corruptPayloadFile").getFile());
+    File corruptFile = new File(rootDir, "data/dir1/test3.txt");
+    Bag bag = BagReader.read(rootDir);
+    
+    VerifyResponse response = Verifier.isValid(bag);
+    
+    assertTrue(response.hasError());
+    assertTrue(response.getErrorMessages().contains("File [" + corruptFile + "] is suppose to have a md5 hash of [88888888888888888888888888888888] but was computed [8ad8757baa8564dc136c1e07507f4a98]"));
+  }
+  
+  @Test
+  public void testCorruptTagFile() throws Exception{
+    rootDir = new File(getClass().getClassLoader().getResource("corruptTagFile").getFile());
+    File corruptFile = new File(rootDir, "bagit.txt");
+    Bag bag = BagReader.read(rootDir);
+    
+    VerifyResponse response = Verifier.isValid(bag);
+    
+    assertTrue(response.hasError());
+    assertTrue(response.getErrorMessages().contains("File [" + corruptFile + "] is suppose to have a md5 hash of [44444444444444444444444444444444] but was computed [41b89090f32a9ef33226b48f1b98dddf]"));
+  }
+  
+  @Test
   public void testErrorWhenMissingBagitTextFile() throws Exception{
     copyBagToTestFolder();
     Bag bag = BagReader.read(folder.getRoot());
