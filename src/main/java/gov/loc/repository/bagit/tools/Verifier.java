@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashSet;
@@ -17,8 +18,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.SupportedAlgorithms;
 import gov.loc.repository.bagit.domain.VerifyResponse;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -26,6 +30,10 @@ import gov.loc.repository.bagit.reader.BagReader;
  * Responsible for verifying if a bag is valid, complete
  */
 public class Verifier {
+  
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
   /**
    *  See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a></br>
@@ -62,8 +70,9 @@ public class Verifier {
    */
   protected static List<String> checkHashes(Manifest manifest) throws NoSuchAlgorithmException, IOException{
     List<String> messages = new ArrayList<>();
+    SupportedAlgorithms algorithm = SupportedAlgorithms.valueOf(manifest.getAlgorithm().toUpperCase());
     
-    MessageDigest messageDigest = MessageDigest.getInstance(manifest.getAlgorithm());
+    MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){
       if(entry.getKey().exists()){
         InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);

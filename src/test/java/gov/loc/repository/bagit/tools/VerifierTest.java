@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -15,6 +17,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.VerifyResponse;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -23,6 +26,15 @@ public class VerifierTest extends Assert{
   public TemporaryFolder folder= new TemporaryFolder();
   
   File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+  
+  @Test
+  public void testSupportedAlgorithms() throws Exception{
+    List<String> algorithms = Arrays.asList("md5", "sha1", "sha256", "sha512");
+    for(String algorithm : algorithms){
+      Manifest manifest = new Manifest(algorithm);
+      Verifier.checkHashes(manifest);
+    }
+  }
   
   @Test
   public void testIsValid() throws Exception{

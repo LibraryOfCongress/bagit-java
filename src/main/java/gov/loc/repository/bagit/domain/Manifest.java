@@ -8,7 +8,7 @@ import java.util.HashMap;
  */
 public class Manifest {
   private final String algorithm;
-  private HashMap<File, String> fileToChecksumMap;
+  private HashMap<File, String> fileToChecksumMap = new HashMap<>();
   
   public Manifest(String algorithm){
     this.algorithm = algorithm;
