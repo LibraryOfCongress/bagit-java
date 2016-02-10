@@ -48,7 +48,7 @@ public class BagWriter {
     }
   }
   
-  protected static void writeBagitFile(String version, String encoding, File outputDir) throws IOException{
+  public static void writeBagitFile(String version, String encoding, File outputDir) throws IOException{
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
     Path bagitPath = Paths.get(outputDir.getPath(), "bagit.txt");
     
@@ -63,7 +63,7 @@ public class BagWriter {
   }
   
   //copy the payload files to the destination /data directory and make needed parent directories
-  protected static void writePayloadFiles(Set<Manifest> payloadManifests, File outputDir) throws IOException{
+  public static void writePayloadFiles(Set<Manifest> payloadManifests, File outputDir) throws IOException{
     for(Manifest payloadManifest : payloadManifests){
       for(File payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
         Path writeToPath = Paths.get(outputDir.getPath(), getPathRelativeToDataDir(payloadFile));
@@ -76,12 +76,12 @@ public class BagWriter {
   }
   
   //write the manifests out
-  protected static void writePayloadManifests(Set<Manifest> manifests, File outputDir, String charsetName) throws IOException{
+  public static void writePayloadManifests(Set<Manifest> manifests, File outputDir, String charsetName) throws IOException{
     writeManifests(manifests, outputDir, "manifest-", charsetName);
   }
   
   //write the tag manifests
-  protected static void writeTagManifests(Set<Manifest> tagManifests, File outputDir, String charsetName) throws IOException{
+  public static void writeTagManifests(Set<Manifest> tagManifests, File outputDir, String charsetName) throws IOException{
     writeManifests(tagManifests, outputDir, "tagmanifest-", charsetName);
   }
   
@@ -99,7 +99,7 @@ public class BagWriter {
     }
   }
   
-  protected static void writeBagitInfoFile(LinkedHashMap<String, String> metadata, File outputDir, String charsetName) throws IOException{
+  public static void writeBagitInfoFile(LinkedHashMap<String, String> metadata, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing bag-info.txt to [{}]", outputDir);
     Path outputPath = Paths.get(outputDir.getPath(), "bag-info.txt");
     
@@ -111,7 +111,7 @@ public class BagWriter {
     }
   }
   
-  protected static void writeFetchFile(List<FetchItem> itemsToFetch, File outputDir, String charsetName) throws IOException{
+  public static void writeFetchFile(List<FetchItem> itemsToFetch, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing fetch.txt to [{}]", outputDir);
     Path outputPath = Paths.get(outputDir.getPath(), "fetch.txt");
     

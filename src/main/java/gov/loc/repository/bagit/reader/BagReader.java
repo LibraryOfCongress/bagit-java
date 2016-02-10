@@ -49,7 +49,7 @@ public class BagReader {
     return bag;
   }
   
-  protected static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
+  public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
     logger.debug("Reading bagit.txt file");
     LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
     
@@ -65,7 +65,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
+  public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
     File[] files = rootDir.listFiles();
     if(files != null){
@@ -109,7 +109,7 @@ public class BagReader {
     return map;
   }
   
-  protected static Bag readBagInfo(File bagInfoFile, Bag bag) throws IOException{
+  public static Bag readBagInfo(File bagInfoFile, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
     
     LinkedHashMap<String, String> metadata = readKeyValueMapFromFile(bagInfoFile, ":");
@@ -118,7 +118,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static Bag readFetch(File fetchFile, Bag bag) throws IOException{
+  public static Bag readFetch(File fetchFile, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
     BufferedReader br = Files.newBufferedReader(Paths.get(fetchFile.toURI()));
 

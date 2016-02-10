@@ -1,6 +1,5 @@
 package gov.loc.repository.bagit.verify;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -24,8 +22,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SupportedAlgorithms;
 import gov.loc.repository.bagit.domain.SimpleResponse;
+import gov.loc.repository.bagit.domain.SupportedAlgorithms;
+import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.reader.BagReader;
 
 /**
@@ -85,7 +84,7 @@ public class Verifier {
       if(entry.getKey().exists()){
         logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
         InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
-        String hash = hash(inputStream, messageDigest);
+        String hash = Hasher.hash(inputStream, messageDigest);
         if(!hash.equals(entry.getValue())){
           logger.error("File [{}] is suppose to have a {} hash of [{}] but was computed to be [{}]", 
               entry.getKey(), algorithm, entry.getValue(), hash);
@@ -99,27 +98,6 @@ public class Verifier {
     }
     
     return messages;
-  }
-  
-  protected static String hash(final InputStream inputStream, final MessageDigest messageDigest) throws IOException {
-    try (InputStream is = new BufferedInputStream(inputStream)) {
-      final byte[] buffer = new byte[1024];
-      for (int read = 0; (read = is.read(buffer)) != -1;) {
-        messageDigest.update(buffer, 0, read);
-      }
-    }
-
-    // Convert the byte to hex format
-    return formatMessageDigest(messageDigest);
-  }
-  
-  protected static String formatMessageDigest(final MessageDigest messageDigest){
-    try (Formatter formatter = new Formatter()) {
-      for (final byte b : messageDigest.digest()) {
-        formatter.format("%02x", b);
-      }
-      return formatter.toString();
-    }
   }
   
   /**

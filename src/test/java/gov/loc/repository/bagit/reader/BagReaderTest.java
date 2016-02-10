@@ -14,9 +14,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import gov.loc.repository.bagit.creator.BagCreator;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.SupportedAlgorithms;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
@@ -131,5 +133,10 @@ public class BagReaderTest extends Assert{
     File rootBag = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
     Bag returnedBag = BagReader.read(rootBag);
     assertNotNull(returnedBag);
+  }
+  
+  @Test
+  public void foo() throws Exception{
+    BagCreator.bagInPlace(new File("/Users/jscancella/work/baggerTest/foo"), SupportedAlgorithms.SHA256, false);
   }
 }
