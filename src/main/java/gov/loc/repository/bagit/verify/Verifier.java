@@ -47,9 +47,9 @@ public class Verifier {
    * @throws NoSuchAlgorithmException 
    */
   //TODO make multithreaded?
-  public static SimpleResponse isValid(Bag bag) throws NoSuchAlgorithmException, IOException{
+  public static SimpleResponse isValid(Bag bag, boolean ignoreHiddenFiles) throws NoSuchAlgorithmException, IOException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
-    SimpleResponse response = isComplete(bag);
+    SimpleResponse response = isComplete(bag, ignoreHiddenFiles);
     
     logger.debug("Checking payload manifest(s) checksums");
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
@@ -134,7 +134,7 @@ public class Verifier {
    * </ul></p>
    * @throws IOException 
    */
-  public static SimpleResponse isComplete(Bag bag) throws IOException{
+  public static SimpleResponse isComplete(Bag bag, boolean ignoreHiddenFiles) throws IOException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     SimpleResponse response = new SimpleResponse();
     
@@ -156,7 +156,7 @@ public class Verifier {
     
     Set<File> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     response = checkAllFilesListedInManifestExist(allFilesListedInManifests, response);
-    response = checkAllFilesInPayloadDirAreListedInAManifest(response, allFilesListedInManifests, dataDir);
+    response = checkAllFilesInPayloadDirAreListedInAManifest(response, allFilesListedInManifests, dataDir, ignoreHiddenFiles);
     
     return response;
   }
@@ -207,11 +207,11 @@ public class Verifier {
     return response;
   }
   
-  protected static SimpleResponse checkAllFilesInPayloadDirAreListedInAManifest(SimpleResponse response, Set<File> filesListedInManifests, File payloadDir) throws IOException{
+  protected static SimpleResponse checkAllFilesInPayloadDirAreListedInAManifest(SimpleResponse response, Set<File> filesListedInManifests, File payloadDir, boolean ignoreHiddenFiles) throws IOException{
     logger.debug("Checking if all payload files (files in /data dir) are listed in at least one manifest");
     if(payloadDir.exists()){
       Path start = Paths.get(payloadDir.toURI());
-      Files.walkFileTree(start, new PayloadFileExistsInManifestVistor(filesListedInManifests, response));
+      Files.walkFileTree(start, new PayloadFileExistsInManifestVistor(filesListedInManifests, response, ignoreHiddenFiles));
     }
     
     return response;

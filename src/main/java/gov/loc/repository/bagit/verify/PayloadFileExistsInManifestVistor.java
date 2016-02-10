@@ -18,10 +18,21 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   private final Set<File> filesListedInManifests;
   private final SimpleResponse response;
+  private final boolean ignoreHiddenFiles;
 
-  public PayloadFileExistsInManifestVistor(Set<File> filesListedInManifests, SimpleResponse response) {
+  public PayloadFileExistsInManifestVistor(Set<File> filesListedInManifests, SimpleResponse response, boolean ignoreHiddenFiles) {
     this.filesListedInManifests = filesListedInManifests;
     this.response = response;
+    this.ignoreHiddenFiles = ignoreHiddenFiles;
+  }
+  
+  @Override
+  public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+    if(ignoreHiddenFiles && Files.isHidden(dir)){
+      return FileVisitResult.SKIP_SUBTREE;
+    }
+    
+    return FileVisitResult.CONTINUE;
   }
 
   @Override

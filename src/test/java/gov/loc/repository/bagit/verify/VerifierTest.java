@@ -41,7 +41,7 @@ public class VerifierTest extends Assert{
   public void testIsValid() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isValid(bag);
+    SimpleResponse response = Verifier.isValid(bag, true);
     
     assertFalse(response.hasError());
     assertEquals(0, response.getErrorMessages().size());
@@ -51,7 +51,7 @@ public class VerifierTest extends Assert{
   public void testIsComplete() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isComplete(bag);
+    SimpleResponse response = Verifier.isComplete(bag, true);
     
     assertFalse(response.hasError());
     assertEquals(0, response.getErrorMessages().size());
@@ -63,7 +63,7 @@ public class VerifierTest extends Assert{
     File missingFile = new File(rootDir, "data/test1.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isComplete(bag);
+    SimpleResponse response = Verifier.isComplete(bag, true);
     
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("Bag lists file [" + missingFile + "] in manifest but it does not exist"));
@@ -75,7 +75,7 @@ public class VerifierTest extends Assert{
     File extraFile = new File(rootDir, "data/test1.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isComplete(bag);
+    SimpleResponse response = Verifier.isComplete(bag, true);
     
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("File " + Paths.get(extraFile.toURI()) + " is in the payload directory but isn't listed in any of the manifests!"));
@@ -87,7 +87,7 @@ public class VerifierTest extends Assert{
     File corruptFile = new File(rootDir, "data/dir1/test3.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isValid(bag);
+    SimpleResponse response = Verifier.isValid(bag, true);
     
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("File [" + corruptFile + "] is suppose to have a md5 hash of [88888888888888888888888888888888] but was computed [8ad8757baa8564dc136c1e07507f4a98]"));
@@ -99,7 +99,7 @@ public class VerifierTest extends Assert{
     File corruptFile = new File(rootDir, "bagit.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isValid(bag);
+    SimpleResponse response = Verifier.isValid(bag, true);
     
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("File [" + corruptFile + "] is suppose to have a md5 hash of [44444444444444444444444444444444] but was computed [41b89090f32a9ef33226b48f1b98dddf]"));
@@ -112,7 +112,7 @@ public class VerifierTest extends Assert{
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     bagitFile.delete();
     
-    SimpleResponse response = Verifier.isValid(bag);
+    SimpleResponse response = Verifier.isValid(bag, true);
     
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("File [" + bagitFile + "] should exist but it doesn't"));
@@ -125,7 +125,7 @@ public class VerifierTest extends Assert{
     File dataDir = new File(folder.getRoot(), "data");
     deleteDirectory(Paths.get(dataDir.toURI()));
     
-    SimpleResponse response = Verifier.isValid(bag);
+    SimpleResponse response = Verifier.isValid(bag, true);
     
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("File [" + dataDir + "] should exist but it doesn't"));
@@ -138,7 +138,7 @@ public class VerifierTest extends Assert{
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
     manifestFile.delete();
     
-    SimpleResponse response = Verifier.isValid(bag);
+    SimpleResponse response = Verifier.isValid(bag, true);
     assertTrue(response.hasError());
     assertTrue(response.getErrorMessages().contains("Bag does not contain any payload manifest files!"));
   }
