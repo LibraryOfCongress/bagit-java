@@ -15,11 +15,23 @@ import java.util.Set;
 public class Bag {
   //The original version of the bag
   private String version;
+  
+  //from the bagit.txt or UTF-8 for new bags
   private String fileEncoding = StandardCharsets.UTF_8.name();
+  
+  //equivalent to the manifest-<ALG>.txt files
   private Set<Manifest> payLoadManifests = new HashSet<>();
+  
+  //equivalent to the tagmanifest-<ALG>.txt  files
   private Set<Manifest> tagManifests = new HashSet<>();
+  
+  //equivalent to the fetch.txt
   private List<FetchItem> itemsToFetch = new ArrayList<>();
+  
+  //equivalent to the bag-info.txt 
   private LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
+  
+  //the current location of the bag on the filesystem
   private File rootDir;
   
   public Bag(){

@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.tools;
+package gov.loc.repository.bagit.verify;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -19,19 +19,23 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.SupportedAlgorithms;
-import gov.loc.repository.bagit.domain.VerifyResponse;
+import gov.loc.repository.bagit.domain.SimpleResponse;
 import gov.loc.repository.bagit.reader.BagReader;
 
 /**
  * Responsible for verifying if a bag is valid, complete
  */
 public class Verifier {
+  private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
   
   static {
+    logger.debug("Adding bouncy castle crypo provider to enable SHA3 support");
     Security.addProvider(new BouncyCastleProvider());
   }
 
@@ -43,9 +47,11 @@ public class Verifier {
    * @throws NoSuchAlgorithmException 
    */
   //TODO make multithreaded?
-  public static VerifyResponse isValid(Bag bag) throws NoSuchAlgorithmException, IOException{
-    VerifyResponse response = isComplete(bag);
+  public static SimpleResponse isValid(Bag bag) throws NoSuchAlgorithmException, IOException{
+    logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
+    SimpleResponse response = isComplete(bag);
     
+    logger.debug("Checking payload manifest(s) checksums");
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
       List<String> errorMessages = checkHashes(payloadManifest);
       if(errorMessages.size() > 0){
@@ -54,6 +60,7 @@ public class Verifier {
       }
     }
     
+    logger.debug("Checking tag manifest(s) checksums");
     for(Manifest tagManifest : bag.getTagManifests()){
       List<String> errorMessages = checkHashes(tagManifest);
       if(errorMessages.size() > 0){
@@ -71,16 +78,23 @@ public class Verifier {
   protected static List<String> checkHashes(Manifest manifest) throws NoSuchAlgorithmException, IOException{
     List<String> messages = new ArrayList<>();
     SupportedAlgorithms algorithm = SupportedAlgorithms.valueOf(manifest.getAlgorithm().toUpperCase());
+    logger.debug("Checking manifest using algorithm {}", algorithm.getMessageDigestName());
     
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){
       if(entry.getKey().exists()){
+        logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
         InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
         String hash = hash(inputStream, messageDigest);
         if(!hash.equals(entry.getValue())){
+          logger.error("File [{}] is suppose to have a {} hash of [{}] but was computed to be [{}]", 
+              entry.getKey(), algorithm, entry.getValue(), hash);
           messages.add("File [" + entry.getKey() + "] is suppose to have a " + manifest.getAlgorithm() + 
               " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
         }
+      }
+      else{
+        logger.warn("File [{}] is listed in the manifest but doesn't exist on disk!", entry.getKey());
       }
     }
     
@@ -120,17 +134,20 @@ public class Verifier {
    * </ul></p>
    * @throws IOException 
    */
-  public static VerifyResponse isComplete(Bag bag) throws IOException{
-    VerifyResponse response = new VerifyResponse();
+  public static SimpleResponse isComplete(Bag bag) throws IOException{
+    logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
+    SimpleResponse response = new SimpleResponse();
     
     File bagitFile = new File(bag.getRootDir(), "bagit.txt");
     if(!bagitFile.exists()){
+      logger.error("File [{}] should exist but it doesn't", bagitFile);
       response.setErrored(true);
       response.getErrorMessages().add("File [" + bagitFile + "] should exist but it doesn't");
     }
     
     File dataDir = new File(bag.getRootDir(), "data");
     if(!dataDir.exists()){
+      logger.error("File [{}] should exist but it doesn't", dataDir);
       response.setErrored(true);
       response.getErrorMessages().add("File [" + dataDir + "] should exist but it doesn't");
     }
@@ -144,17 +161,19 @@ public class Verifier {
     return response;
   }
   
-  private static VerifyResponse checkIfAtLeastOnePayloadManifestsExist(File rootDir, VerifyResponse response){
+  private static SimpleResponse checkIfAtLeastOnePayloadManifestsExist(File rootDir, SimpleResponse response){
     boolean hasAtLeastOneManifest = false;
     for(String filename : rootDir.list()){
       if(filename.matches("manifest\\-.*\\.txt")){
+        logger.debug("Found payload manifest file [{}]", filename);
         hasAtLeastOneManifest = true;
       }
     }
     
     if(!hasAtLeastOneManifest){
+      logger.error("Bag does not contain any payload manifest files");
       response.setErrored(true);
-      response.getErrorMessages().add("Bag does not contain any payload manifest files!");
+      response.getErrorMessages().add("Bag does not contain any payload manifest files");
     }
     
     return response;
@@ -166,6 +185,7 @@ public class Verifier {
     File[] files = bag.getRootDir().listFiles();
     for(File file : files){
       if(file.getName().matches("(tag)?manifest\\-.*\\.txt")){
+        logger.debug("Getting files and checksums listed in [{}]", file);
         Manifest manifest = BagReader.readManifest(file);
         filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
       }
@@ -174,18 +194,21 @@ public class Verifier {
     return filesListedInManifests;
   }
   
-  protected static VerifyResponse checkAllFilesListedInManifestExist(Set<File> files, VerifyResponse response){
+  protected static SimpleResponse checkAllFilesListedInManifestExist(Set<File> files, SimpleResponse response){
+    logger.debug("Checking if all files listed in the manifest(s) exist");
     for(File file : files){
       if(!file.exists()){
+        logger.error("Manifest lists file [{}] but it does not exist", file);
         response.setErrored(true);
-        response.getErrorMessages().add("Bag lists file [" + file + "] in manifest but it does not exist");
+        response.getErrorMessages().add("Manifest lists file [" + file + "] but it does not exist");
       }
     }
     
     return response;
   }
   
-  protected static VerifyResponse checkAllFilesInPayloadDirAreListedInAManifest(VerifyResponse response, Set<File> filesListedInManifests, File payloadDir) throws IOException{
+  protected static SimpleResponse checkAllFilesInPayloadDirAreListedInAManifest(SimpleResponse response, Set<File> filesListedInManifests, File payloadDir) throws IOException{
+    logger.debug("Checking if all payload files (files in /data dir) are listed in at least one manifest");
     if(payloadDir.exists()){
       Path start = Paths.get(payloadDir.toURI());
       Files.walkFileTree(start, new PayloadFileExistsInManifestVistor(filesListedInManifests, response));

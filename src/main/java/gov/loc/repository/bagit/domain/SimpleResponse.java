@@ -3,7 +3,7 @@ package gov.loc.repository.bagit.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VerifyResponse {
+public class SimpleResponse {
   private boolean errored = false;
   private List<String> errorMessages = new ArrayList<>();
   

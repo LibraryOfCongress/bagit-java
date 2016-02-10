@@ -3,6 +3,8 @@ package gov.loc.repository.bagit;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -20,6 +22,31 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 
 public class FooTest extends Assert{
+  
+  @Test
+  public void testGetingRelativePath() throws Exception{
+    Path path = Paths.get("/foo/bar/ham/data/one/two/three/file.txt");
+//    System.err.println(path.getNameCount());
+    
+    LocalDateTime start = LocalDateTime.now();
+    for(int index=0; index<path.getNameCount(); index++){
+      Path relativePath = path.subpath(index, path.getNameCount());
+      if(relativePath.startsWith("data")){
+//        System.err.println(relativePath);
+        break;
+      }
+    }
+    long delta = ChronoUnit.NANOS.between(start, LocalDateTime.now());
+    System.err.println("path.subpath took " + delta + " ns");
+    
+    LocalDateTime start2 = LocalDateTime.now();
+    String pathAsString = path.toString();
+    int index = pathAsString.indexOf("data");
+//    Thread.sleep(5);
+    Path p = Paths.get(pathAsString.substring(index, pathAsString.length()));
+    Long delta2 = ChronoUnit.NANOS.between(start2, LocalDateTime.now());
+    System.err.println("indexOf took " + delta2 + " ns");
+  }
   
   @Test
   public void testWhichIsFaster(){

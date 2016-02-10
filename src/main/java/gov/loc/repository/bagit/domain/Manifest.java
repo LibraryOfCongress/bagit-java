@@ -1,3 +1,4 @@
+
 package gov.loc.repository.bagit.domain;
 
 import java.io.File;

@@ -27,4 +27,21 @@ public class FetchItem {
     this.length = length;
     this.path = path;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(url).append(' ');
+    
+    if(length < 0){
+      sb.append('-').append(' ');
+    }
+    else{
+      sb.append(length).append(' ');
+    }
+    
+    sb.append(path).append(System.lineSeparator());
+      
+    return sb.toString();
+  }
 }

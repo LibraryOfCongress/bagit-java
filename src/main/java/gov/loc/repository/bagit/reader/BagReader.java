@@ -9,20 +9,26 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 
 /**
  * responsible for reading a bag from the filesystem.
  */
 //TODO add logic for versions other than 0.97
 public class BagReader {
+  private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
+  
   /**
    * Read the bag from the filesystem and create a bag object 
    * @throws IOException 
    */
-  //TODO read in parallel
+//  TODO read in parallel?
   public static Bag read(File rootDir) throws IOException{
     File bagitFile = new File(rootDir, "bagit.txt");
     Bag bag = readBagitTextFile(bagitFile, new Bag());
@@ -44,11 +50,17 @@ public class BagReader {
   }
   
   protected static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
+    logger.debug("Reading bagit.txt file");
     LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
     
+    String version = map.get("BagIt-Version");
+    logger.debug("BagIt-Version is [{}]", version);
+    String encoding = map.get("Tag-File-Character-Encoding");
+    logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
+    
     Bag newBag = new Bag(bag);
-    newBag.setVersion(map.get("BagIt-Version"));
-    newBag.setFileEncoding(map.get("Tag-File-Character-Encoding"));
+    newBag.setVersion(version);
+    newBag.setFileEncoding(encoding);
     
     return newBag;
   }
@@ -71,6 +83,7 @@ public class BagReader {
   }
   
   public static Manifest readManifest(File manifestFile) throws IOException{
+    logger.debug("Reading manifest [{}]", manifestFile);
     String alg = manifestFile.getName().split("[-\\.]")[1];
     Manifest manifest = new Manifest(alg);
     
@@ -88,6 +101,7 @@ public class BagReader {
     while(line != null){
       String[] parts = line.split("\\s+");
       File file = new File(manifestFile.getParentFile(), parts[1]);
+      logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[1], file, manifestFile);
       map.put(file, parts[0]);
       line = br.readLine();
     }
@@ -114,6 +128,7 @@ public class BagReader {
       long length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
       URL url = new URL(parts[0]);
       
+      logger.debug("Read URL [{}] length [{}] path [{}] from fetch file [{}]", url, length, parts[2], fetchFile);
       FetchItem itemToFetch = new FetchItem(url, length, parts[2]);
       newBag.getItemsToFetch().add(itemToFetch);
       
@@ -131,12 +146,15 @@ public class BagReader {
     String line = br.readLine();
     while(line != null){
       if(line.matches("^\\s+.*")){
+        logger.debug("Found an indented line - merging it to key [{}]", lastEnteredKey);
         map.merge(lastEnteredKey, System.lineSeparator() + line, String::concat);
       }
       else{
         String[] parts = line.split(splitRegex);
         lastEnteredKey = parts[0].trim();
-        map.put(lastEnteredKey, parts[1].trim());
+        String value = parts[1].trim();
+        logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", lastEnteredKey, value, file, splitRegex);
+        map.put(lastEnteredKey, value);
       }
        
       line = br.readLine();
