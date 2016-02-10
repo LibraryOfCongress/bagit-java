@@ -54,7 +54,8 @@ public class BagWriter {
     
     String firstLine = "BagIt-Version : " + version + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", firstLine, bagitPath);
-    Files.write(bagitPath, firstLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+    Files.write(bagitPath, firstLine.getBytes(StandardCharsets.UTF_8), 
+        StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     
     String secondLine = "Tag-File-Character-Encoding : " + encoding + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", secondLine, bagitPath);
@@ -92,13 +93,14 @@ public class BagWriter {
       for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){
         String line = entry.getValue() + " " + getPathRelativeToDataDir(entry.getKey()) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
-        Files.write(manifestPath, line.getBytes(Charset.forName(charsetName)), StandardOpenOption.APPEND);
+        Files.write(manifestPath, line.getBytes(Charset.forName(charsetName)), 
+            StandardOpenOption.APPEND, StandardOpenOption.CREATE);
       }
     }
   }
   
   protected static void writeBagitInfoFile(LinkedHashMap<String, String> metadata, File outputDir, String charsetName) throws IOException{
-    logger.debug("Writing bagit-info.txt to [{}]", outputDir);
+    logger.debug("Writing bag-info.txt to [{}]", outputDir);
     Path outputPath = Paths.get(outputDir.getPath(), "bag-info.txt");
     
     for(Entry<String, String> entry : metadata.entrySet()){
@@ -124,6 +126,10 @@ public class BagWriter {
   protected static String getPathRelativeToDataDir(File file){
     String path = file.getPath();
     int index = path.indexOf("data");
+    
+    if(index == -1){
+      return file.getName();
+    }
     
     return path.substring(index, path.length());
   }
