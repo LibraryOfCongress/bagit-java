@@ -35,6 +35,9 @@ test { //show test output
   testLogging.showStandardStreams = true
 }
 
+jacoco {
+  toolVersion = "0.7.5.201505241946" //needed for jenkins to report code coverage correctly
+}
 jacocoTestReport.dependsOn test
 check.dependsOn jacocoTestReport
 
