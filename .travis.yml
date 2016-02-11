@@ -5,4 +5,5 @@ language: java
 before_install:
   - sudo hostname "$(hostname | cut -c1-63)"
   - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
+install: /bin/true #skip having travis-ci trying to run assemble which will fail cause it doesn't have the correct properties like it does below
 script: "gradle clean check -PossrhUsername=foo -PossrhPassword=foo" #need to have these parameters or travis fails to build
