@@ -7,7 +7,7 @@ manipulation, and validation of bags. Its current version is 0.97. It is version
 supported version being 0.93.
 
 ## REQUIREMENTS
-* Java 7
+* Java 8
 * gradle
 
 ## BUILD

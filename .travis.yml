@@ -1,6 +1,4 @@
 jdk:
-  - openjdk7
-  - oraclejdk7
   - oraclejdk8
 language: java
 #needed as a work around for https://github.com/travis-ci/travis-ci/issues/5227 which is a buffer overflow in openjdk7 due to using IPV6 (due to docker)
