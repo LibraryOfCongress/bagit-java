@@ -18,9 +18,13 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SimpleResponse;
+import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
+import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
+import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.reader.BagReader;
-import gov.loc.repository.bagit.verify.Verifier;
 
 public class VerifierTest extends Assert{
   @Rule
@@ -41,106 +45,78 @@ public class VerifierTest extends Assert{
   public void testIsValid() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isValid(bag, true);
-    
-    assertFalse(response.hasError());
-    assertEquals(0, response.getErrorMessages().size());
+    boolean isValid = Verifier.isValid(bag, true);
+    assertTrue(isValid);
   }
   
   @Test
   public void testIsComplete() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isComplete(bag, true);
-    
-    assertFalse(response.hasError());
-    assertEquals(0, response.getErrorMessages().size());
+    boolean isComplete = Verifier.isComplete(bag, true);
+    assertTrue(isComplete);
   }
   
-  @Test
+  @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenManifestListFileThatDoesntExist() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("filesInManifestDontExist").getFile());
-    File missingFile = new File(rootDir, "data/test1.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isComplete(bag, true);
-    
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("Bag lists file [" + missingFile + "] in manifest but it does not exist"));
+    Verifier.isComplete(bag, true);
   }
   
-  @Test
+  @Test(expected=FileNotInManifestException.class)
   public void testErrorWhenFileIsntInManifest() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("filesInPayloadDirAreNotInManifest").getFile());
-    File extraFile = new File(rootDir, "data/test1.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isComplete(bag, true);
-    
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("File " + Paths.get(extraFile.toURI()) + " is in the payload directory but isn't listed in any of the manifests!"));
+    Verifier.isComplete(bag, true);
   }
   
-  @Test
+  @Test(expected=CorruptChecksumException.class)
   public void testCorruptPayloadFile() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("corruptPayloadFile").getFile());
-    File corruptFile = new File(rootDir, "data/dir1/test3.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isValid(bag, true);
-    
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("File [" + corruptFile + "] is suppose to have a md5 hash of [88888888888888888888888888888888] but was computed [8ad8757baa8564dc136c1e07507f4a98]"));
+    Verifier.isValid(bag, true);
   }
   
-  @Test
+  @Test(expected=CorruptChecksumException.class)
   public void testCorruptTagFile() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("corruptTagFile").getFile());
-    File corruptFile = new File(rootDir, "bagit.txt");
     Bag bag = BagReader.read(rootDir);
     
-    SimpleResponse response = Verifier.isValid(bag, true);
-    
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("File [" + corruptFile + "] is suppose to have a md5 hash of [44444444444444444444444444444444] but was computed [41b89090f32a9ef33226b48f1b98dddf]"));
+    Verifier.isValid(bag, true);
   }
   
-  @Test
+  @Test(expected=MissingBagitFileException.class)
   public void testErrorWhenMissingBagitTextFile() throws Exception{
     copyBagToTestFolder();
     Bag bag = BagReader.read(folder.getRoot());
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     bagitFile.delete();
     
-    SimpleResponse response = Verifier.isValid(bag, true);
-    
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("File [" + bagitFile + "] should exist but it doesn't"));
+    Verifier.isValid(bag, true);
   }
   
-  @Test
+  @Test(expected=MissingPayloadDirectoryException.class)
   public void testErrorWhenMissingPayloadDirectory() throws Exception{
     copyBagToTestFolder();
     Bag bag = BagReader.read(folder.getRoot());
     File dataDir = new File(folder.getRoot(), "data");
     deleteDirectory(Paths.get(dataDir.toURI()));
     
-    SimpleResponse response = Verifier.isValid(bag, true);
-    
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("File [" + dataDir + "] should exist but it doesn't"));
+    Verifier.isValid(bag, true);
   }
   
-  @Test
+  @Test(expected=MissingPayloadManifestException.class)
   public void testErrorWhenMissingPayloadManifest() throws Exception{
     copyBagToTestFolder();
     Bag bag = BagReader.read(folder.getRoot());
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
     manifestFile.delete();
     
-    SimpleResponse response = Verifier.isValid(bag, true);
-    assertTrue(response.hasError());
-    assertTrue(response.getErrorMessages().contains("Bag does not contain any payload manifest files!"));
+    Verifier.isValid(bag, true);
   }
   
   private void copyBagToTestFolder() throws Exception{

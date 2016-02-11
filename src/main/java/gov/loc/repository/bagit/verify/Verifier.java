@@ -10,9 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -22,8 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SimpleResponse;
 import gov.loc.repository.bagit.domain.SupportedAlgorithms;
+import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
+import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -44,38 +46,35 @@ public class Verifier {
    *  verified against the contents of its corresponding file.
    * @throws IOException 
    * @throws NoSuchAlgorithmException 
+   * @throws FileNotInPayloadDirectoryException 
+   * @throws MissingPayloadDirectoryException 
+   * @throws MissingBagitFileException 
+   * @throws MissingPayloadManifestException 
+   * @throws CorruptChecksumException 
    */
   //TODO make multithreaded?
-  public static SimpleResponse isValid(Bag bag, boolean ignoreHiddenFiles) throws NoSuchAlgorithmException, IOException{
+  public static boolean isValid(Bag bag, boolean ignoreHiddenFiles) throws 
+    NoSuchAlgorithmException, IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, CorruptChecksumException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
-    SimpleResponse response = isComplete(bag, ignoreHiddenFiles);
+    isComplete(bag, ignoreHiddenFiles);
     
     logger.debug("Checking payload manifest(s) checksums");
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
-      List<String> errorMessages = checkHashes(payloadManifest);
-      if(errorMessages.size() > 0){
-        response.setErrored(true);
-        response.getErrorMessages().addAll(errorMessages);
-      }
+      checkHashes(payloadManifest);
     }
     
     logger.debug("Checking tag manifest(s) checksums");
     for(Manifest tagManifest : bag.getTagManifests()){
-      List<String> errorMessages = checkHashes(tagManifest);
-      if(errorMessages.size() > 0){
-        response.setErrored(true);
-        response.getErrorMessages().addAll(errorMessages);
-      }
+      checkHashes(tagManifest);
     }
     
-    return response;
+    return true;
   }
   
   /**
-   * returns a list of error messages or an empty list if none 
+   * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum 
    */
-  protected static List<String> checkHashes(Manifest manifest) throws NoSuchAlgorithmException, IOException{
-    List<String> messages = new ArrayList<>();
+  protected static void checkHashes(Manifest manifest) throws NoSuchAlgorithmException, IOException, CorruptChecksumException{
     SupportedAlgorithms algorithm = SupportedAlgorithms.valueOf(manifest.getAlgorithm().toUpperCase());
     logger.debug("Checking manifest using algorithm {}", algorithm.getMessageDigestName());
     
@@ -86,9 +85,7 @@ public class Verifier {
         InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
         String hash = Hasher.hash(inputStream, messageDigest);
         if(!hash.equals(entry.getValue())){
-          logger.error("File [{}] is suppose to have a {} hash of [{}] but was computed to be [{}]", 
-              entry.getKey(), algorithm, entry.getValue(), hash);
-          messages.add("File [" + entry.getKey() + "] is suppose to have a " + manifest.getAlgorithm() + 
+          throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + manifest.getAlgorithm() + 
               " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
         }
       }
@@ -96,8 +93,6 @@ public class Verifier {
         logger.warn("File [{}] is listed in the manifest but doesn't exist on disk!", entry.getKey());
       }
     }
-    
-    return messages;
   }
   
   /**
@@ -110,36 +105,36 @@ public class Verifier {
    * <li>every file in the data directory must be listed in at least one payload manifest
    * <li>each element must comply with the bagit spec
    * </ul></p>
-   * @throws IOException 
+   * @throws IOException if there was an error with the file
+   * @throws MissingPayloadManifestException if there is not at least one payload manifest
+   * @throws MissingBagitFileException  if there is no bagit.txt file
+   * @throws MissingPayloadDirectoryException if there is no /data directory
+   * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    */
-  public static SimpleResponse isComplete(Bag bag, boolean ignoreHiddenFiles) throws IOException{
+  public static boolean isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
+    IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
-    SimpleResponse response = new SimpleResponse();
     
     File bagitFile = new File(bag.getRootDir(), "bagit.txt");
     if(!bagitFile.exists()){
-      logger.error("File [{}] should exist but it doesn't", bagitFile);
-      response.setErrored(true);
-      response.getErrorMessages().add("File [" + bagitFile + "] should exist but it doesn't");
+      throw new MissingBagitFileException("File [" + bagitFile + "] should exist but it doesn't");
     }
     
     File dataDir = new File(bag.getRootDir(), "data");
     if(!dataDir.exists()){
-      logger.error("File [{}] should exist but it doesn't", dataDir);
-      response.setErrored(true);
-      response.getErrorMessages().add("File [" + dataDir + "] should exist but it doesn't");
+      throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");
     }
     
-    response = checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), response);
+    checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir());
     
     Set<File> allFilesListedInManifests = getAllFilesListedInManifests(bag);
-    response = checkAllFilesListedInManifestExist(allFilesListedInManifests, response);
-    response = checkAllFilesInPayloadDirAreListedInAManifest(response, allFilesListedInManifests, dataDir, ignoreHiddenFiles);
+    checkAllFilesListedInManifestExist(allFilesListedInManifests);
+    checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, dataDir, ignoreHiddenFiles);
     
-    return response;
+    return true;
   }
   
-  private static SimpleResponse checkIfAtLeastOnePayloadManifestsExist(File rootDir, SimpleResponse response){
+  private static void checkIfAtLeastOnePayloadManifestsExist(File rootDir) throws MissingPayloadManifestException{
     boolean hasAtLeastOneManifest = false;
     for(String filename : rootDir.list()){
       if(filename.matches("manifest\\-.*\\.txt")){
@@ -149,12 +144,9 @@ public class Verifier {
     }
     
     if(!hasAtLeastOneManifest){
-      logger.error("Bag does not contain any payload manifest files");
-      response.setErrored(true);
-      response.getErrorMessages().add("Bag does not contain any payload manifest files");
+      throw new MissingPayloadManifestException("Bag does not contain any payload manifest files");
     }
     
-    return response;
   }
   
   protected static Set<File> getAllFilesListedInManifests(Bag bag) throws IOException{
@@ -172,26 +164,20 @@ public class Verifier {
     return filesListedInManifests;
   }
   
-  protected static SimpleResponse checkAllFilesListedInManifestExist(Set<File> files, SimpleResponse response){
+  protected static void checkAllFilesListedInManifestExist(Set<File> files) throws FileNotInPayloadDirectoryException{
     logger.debug("Checking if all files listed in the manifest(s) exist");
     for(File file : files){
       if(!file.exists()){
-        logger.error("Manifest lists file [{}] but it does not exist", file);
-        response.setErrored(true);
-        response.getErrorMessages().add("Manifest lists file [" + file + "] but it does not exist");
+        throw new FileNotInPayloadDirectoryException("Manifest lists file [" + file + "] but it does not exist");
       }
     }
-    
-    return response;
   }
   
-  protected static SimpleResponse checkAllFilesInPayloadDirAreListedInAManifest(SimpleResponse response, Set<File> filesListedInManifests, File payloadDir, boolean ignoreHiddenFiles) throws IOException{
+  protected static void checkAllFilesInPayloadDirAreListedInAManifest(Set<File> filesListedInManifests, File payloadDir, boolean ignoreHiddenFiles) throws IOException{
     logger.debug("Checking if all payload files (files in /data dir) are listed in at least one manifest");
     if(payloadDir.exists()){
       Path start = Paths.get(payloadDir.toURI());
-      Files.walkFileTree(start, new PayloadFileExistsInManifestVistor(filesListedInManifests, response, ignoreHiddenFiles));
+      Files.walkFileTree(start, new PayloadFileExistsInManifestVistor(filesListedInManifests, ignoreHiddenFiles));
     }
-    
-    return response;
   }
 }

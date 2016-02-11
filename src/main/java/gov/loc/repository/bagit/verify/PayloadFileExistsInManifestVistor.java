@@ -12,17 +12,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.loc.repository.bagit.domain.SimpleResponse;
+import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 
 public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   private final Set<File> filesListedInManifests;
-  private final SimpleResponse response;
   private final boolean ignoreHiddenFiles;
 
-  public PayloadFileExistsInManifestVistor(Set<File> filesListedInManifests, SimpleResponse response, boolean ignoreHiddenFiles) {
+  public PayloadFileExistsInManifestVistor(Set<File> filesListedInManifests, boolean ignoreHiddenFiles) {
     this.filesListedInManifests = filesListedInManifests;
-    this.response = response;
     this.ignoreHiddenFiles = ignoreHiddenFiles;
   }
   
@@ -36,12 +34,11 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   }
 
   @Override
-  public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws IOException{
+  public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws FileNotInManifestException{
     if(Files.isRegularFile(path) && !filesListedInManifests.contains(path.toFile())){
-      logger.error("File [{}] is in the payload directory but isn't listed in any of the manifests", path);
-      response.setErrored(true);
-      response.getErrorMessages().add("File " + path + " is in the payload directory but isn't listed in any of the manifests");
+      throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in any of the manifests");
     }
+    logger.debug("[{}] is in at least one manifest", path);
     return FileVisitResult.CONTINUE;
   }
 }
