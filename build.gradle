@@ -26,12 +26,17 @@ dependencies {
   testCompile 'junit:junit:4.12'
 }
 
+sourceSets.main.resources {
+  srcDirs = ["src/assembly"]
+  include "*.groovy"
+}
+
 test { //show test output
   testLogging.showStandardStreams = true
 }
 
 jacocoTestReport.dependsOn test
-build.dependsOn jacocoTestReport
+check.dependsOn jacocoTestReport
 
 findbugsTest.enabled = false
 
