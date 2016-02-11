@@ -45,16 +45,14 @@ public class VerifierTest extends Assert{
   public void testIsValid() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    boolean isValid = Verifier.isValid(bag, true);
-    assertTrue(isValid);
+    Verifier.isValid(bag, true);
   }
   
   @Test
   public void testIsComplete() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    boolean isComplete = Verifier.isComplete(bag, true);
-    assertTrue(isComplete);
+    Verifier.isComplete(bag, true);
   }
   
   @Test(expected=FileNotInPayloadDirectoryException.class)

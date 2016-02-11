@@ -2,17 +2,19 @@ package gov.loc.repository.bagit.verify;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
@@ -26,8 +28,9 @@ import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
-import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.tasks.CheckIfFileExistsTask;
+import gov.loc.repository.bagit.tasks.CheckManifestHashsTask;
 
 /**
  * Responsible for verifying if a bag is valid, complete
@@ -53,10 +56,9 @@ public class Verifier {
    * @throws MissingBagitFileException 
    * @throws MissingPayloadManifestException 
    * @throws CorruptChecksumException 
+   * @throws InterruptedException 
    */
-  //TODO make multithreaded?
-  public static void isValid(Bag bag, boolean ignoreHiddenFiles) throws 
-    NoSuchAlgorithmException, IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, CorruptChecksumException{
+  public static void isValid(Bag bag, boolean ignoreHiddenFiles) throws Exception{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
@@ -74,27 +76,23 @@ public class Verifier {
   /**
    * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum 
    */
-  protected static void checkHashes(Manifest manifest) throws NoSuchAlgorithmException, IOException, CorruptChecksumException{
+  protected static void checkHashes(Manifest manifest) throws Exception{
     SupportedAlgorithms algorithm = SupportedAlgorithms.valueOf(manifest.getAlgorithm().toUpperCase());
     logger.debug("Checking manifest using algorithm {}", algorithm.getMessageDigestName());
     
-    MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
+    ExecutorService executor = Executors.newCachedThreadPool();
+    final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
+    final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
+    
     for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){
-      checkManifestEntry(entry, messageDigest, manifest.getAlgorithm());
+      executor.execute(new CheckManifestHashsTask(entry, algorithm.getMessageDigestName(), latch, exceptions));
     }
-  }
-  
-  protected static void checkManifestEntry(Entry<File, String> entry, MessageDigest messageDigest, String algorithm) throws IOException, CorruptChecksumException{
-    if(entry.getKey().exists()){
-      logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
-      InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
-      String hash = Hasher.hash(inputStream, messageDigest);
-      if(!hash.equals(entry.getValue())){
-        throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 
-            " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
-      }
+    
+    latch.await();
+    
+    if(exceptions.size() > 0){
+      throw exceptions.get(0);
     }
-    //if the file doesn't exist it will be caught by checkAllFilesListedInManifestExist method
   }
   
   /**
@@ -112,9 +110,11 @@ public class Verifier {
    * @throws MissingBagitFileException  if there is no bagit.txt file
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
+   * @throws InterruptedException 
    */
   public static void isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
-    IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException{
+    IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
+    FileNotInPayloadDirectoryException, InterruptedException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
     checkBagitFileExists(bag.getRootDir());
@@ -172,12 +172,21 @@ public class Verifier {
     return filesListedInManifests;
   }
   
-  protected static void checkAllFilesListedInManifestExist(Set<File> files) throws FileNotInPayloadDirectoryException{
+  protected static void checkAllFilesListedInManifestExist(Set<File> files) throws FileNotInPayloadDirectoryException, InterruptedException{
+    ExecutorService executor = Executors.newCachedThreadPool();
+    final CountDownLatch latch = new CountDownLatch(files.size());
+    final StringBuilder messageBuilder = new StringBuilder();
+    
     logger.debug("Checking if all files listed in the manifest(s) exist");
     for(File file : files){
-      if(!file.exists()){
-        throw new FileNotInPayloadDirectoryException("Manifest lists file [" + file + "] but it does not exist");
-      }
+      executor.execute(new CheckIfFileExistsTask(file, messageBuilder, latch));
+    }
+    
+    latch.await();
+    
+    String missingFilesMessage = messageBuilder.toString();
+    if(!missingFilesMessage.isEmpty()){
+      throw new FileNotInPayloadDirectoryException(missingFilesMessage);
     }
   }
   
