@@ -37,6 +37,9 @@ public class BagReader {
     bag = readAllManifests(rootDir, bag);
     
     File bagInfoFile = new File(rootDir, "bag-info.txt");
+    if("0.93".equals(bag.getVersion()) || "0.94".equals(bag.getVersion()) || "0.95".equals(bag.getVersion())){
+      bagInfoFile = new File(rootDir, "package-info.txt");
+    }
     if(bagInfoFile.exists()){
       bag = readBagInfo(bagInfoFile, bag);
     }

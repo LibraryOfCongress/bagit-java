@@ -14,11 +14,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.loc.repository.bagit.creator.BagCreator;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SupportedAlgorithms;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
@@ -32,6 +30,30 @@ public class BagReaderTest extends Assert{
         new URL("http://localhost/foo/data/dir2/test4.txt"),
         new URL("http://localhost/foo/data/test%201.txt"),
         new URL("http://localhost/foo/data/test2.txt"));
+  }
+  
+  @Test
+  public void testReadVersion0_93() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_93/bag").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertEquals("0.93", bag.getVersion());
+    assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
+  }
+  
+  @Test
+  public void testReadVersion0_94() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertEquals("0.94", bag.getVersion());
+    assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
+  }
+  
+  @Test
+  public void testReadVersion0_95() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_95/bag").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertEquals("0.95", bag.getVersion());
+    assertEquals("260 GB", bag.getMetadata().get("Package-Size"));
   }
 
   @Test
@@ -133,10 +155,5 @@ public class BagReaderTest extends Assert{
     File rootBag = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
     Bag returnedBag = BagReader.read(rootBag);
     assertNotNull(returnedBag);
-  }
-  
-  @Test
-  public void foo() throws Exception{
-    BagCreator.bagInPlace(new File("/Users/jscancella/work/baggerTest/foo"), SupportedAlgorithms.SHA256, false);
   }
 }
