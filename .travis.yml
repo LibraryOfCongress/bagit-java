@@ -7,4 +7,4 @@ language: java
 before_install:
   - sudo hostname "$(hostname | cut -c1-63)"
   - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
-script: "gradle clean check"
+script: "gradle clean check -PossrhUsername=foo -PossrhPassword=foo" #need to have these parameters or travis fails to build
