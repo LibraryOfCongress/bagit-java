@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.reader;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -28,7 +29,6 @@ public class BagReader {
    * Read the bag from the filesystem and create a bag object 
    * @throws IOException 
    */
-//  TODO read in parallel?
   public static Bag read(File rootDir) throws IOException{
     File bagitFile = new File(rootDir, "bagit.txt");
     Bag bag = readBagitTextFile(bagitFile, new Bag());
@@ -67,19 +67,29 @@ public class BagReader {
   
   public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
-    File[] files = rootDir.listFiles();
-    if(files != null){
-      for(File file : files){
-        if(file.getName().matches("tagmanifest\\-.*\\.txt")){
-          newBag.getTagManifests().add(readManifest(file));
-        }
-        else if(file.getName().matches("manifest\\-.*\\.txt")){
-          newBag.getPayLoadManifests().add(readManifest(file));
-        }
+    File[] files = getAllManifestFiles(rootDir);
+    
+    for(File file : files){
+      if(file.getName().startsWith("tag")){
+        newBag.getTagManifests().add(readManifest(file));
+      }
+      else if(file.getName().startsWith("manifest")){
+        newBag.getPayLoadManifests().add(readManifest(file));
       }
     }
     
     return newBag;
+  }
+  
+  protected static File[] getAllManifestFiles(File rootDir){
+    File[] files = rootDir.listFiles(new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.matches("(tag)?manifest\\-.*\\.txt");
+      }
+    });
+    
+    return files == null? new File[]{} : files;
   }
   
   public static Manifest readManifest(File manifestFile) throws IOException{
