@@ -42,9 +42,15 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   @Override
   public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws IOException{
     if(Files.isRegularFile(path)){
-      InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
-      String hash = Hasher.hash(inputStream, messageDigest);
-      manifest.getFileToChecksumMap().put(path.toFile(), hash);
+      if(ignoreHiddenFiles && Files.isHidden(path)){
+        logger.debug("Skipping [{}] since we are ignoring hidden files", path);
+      }
+      else{
+        InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
+        String hash = Hasher.hash(inputStream, messageDigest);
+        logger.debug("Adding [{}] to manifest with hash [{}]", path, hash);
+        manifest.getFileToChecksumMap().put(path.toFile(), hash); 
+      }
     }
     
     return FileVisitResult.CONTINUE;
