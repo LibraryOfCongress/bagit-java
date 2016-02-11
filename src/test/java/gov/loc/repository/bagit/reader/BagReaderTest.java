@@ -87,7 +87,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagInfo() throws IOException{
+  public void testReadBagMetadata() throws IOException{
     LinkedHashMap<String, String> expectedValues = new LinkedHashMap<>();
     expectedValues.put("Source-Organization", "Spengler University");
     expectedValues.put("Organization-Address", "1400 Elm St., Cupertino, California, 95014");
@@ -106,7 +106,7 @@ public class BagReaderTest extends Assert{
         "         microfilm.");
     
     File bagInfoFile = new File(getClass().getClassLoader().getResource("baginfoFiles/bag-info-0.97.txt").getFile());
-    Bag returnedBag = BagReader.readBagInfo(bagInfoFile, new Bag());
+    Bag returnedBag = BagReader.readBagMetadata(bagInfoFile, new Bag());
     
     assertEquals(expectedValues, returnedBag.getMetadata());
   }

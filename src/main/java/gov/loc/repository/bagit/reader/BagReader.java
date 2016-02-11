@@ -36,13 +36,7 @@ public class BagReader {
     
     bag = readAllManifests(rootDir, bag);
     
-    File bagInfoFile = new File(rootDir, "bag-info.txt");
-    if("0.93".equals(bag.getVersion()) || "0.94".equals(bag.getVersion()) || "0.95".equals(bag.getVersion())){
-      bagInfoFile = new File(rootDir, "package-info.txt");
-    }
-    if(bagInfoFile.exists()){
-      bag = readBagInfo(bagInfoFile, bag);
-    }
+    bag = readBagMetadata(rootDir, bag);
     
     File fetchFile = new File(rootDir, "fetch.txt");
     if(fetchFile.exists()){
@@ -122,10 +116,19 @@ public class BagReader {
     return map;
   }
   
-  public static Bag readBagInfo(File bagInfoFile, Bag bag) throws IOException{
+  public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
+    LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
     
-    LinkedHashMap<String, String> metadata = readKeyValueMapFromFile(bagInfoFile, ":");
+    File bagInfoFile = new File(rootDir, "bag-info.txt");
+    if(bagInfoFile.exists()){
+      metadata = readKeyValueMapFromFile(bagInfoFile, ":");
+    }
+    File packageInfoFile = new File(rootDir, "package-info.txt"); //onlu exists in versions 0.93 - 0.95
+    if(packageInfoFile.exists()){
+      metadata = readKeyValueMapFromFile(packageInfoFile, ":");
+    }
+    
     newBag.setMetadata(metadata);
     
     return newBag;
