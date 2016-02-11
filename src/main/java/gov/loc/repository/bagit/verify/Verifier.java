@@ -144,10 +144,13 @@ public class Verifier {
   
   protected static void checkIfAtLeastOnePayloadManifestsExist(File rootDir) throws MissingPayloadManifestException{
     boolean hasAtLeastOneManifest = false;
-    for(String filename : rootDir.list()){
-      if(filename.matches("manifest\\-.*\\.txt")){
-        logger.debug("Found payload manifest file [{}]", filename);
-        hasAtLeastOneManifest = true;
+    String[] filenames = rootDir.list();
+    if(filenames != null){
+      for(String filename : filenames){
+        if(filename.matches("manifest\\-.*\\.txt")){
+          logger.debug("Found payload manifest file [{}]", filename);
+          hasAtLeastOneManifest = true;
+        }
       }
     }
     
@@ -161,11 +164,13 @@ public class Verifier {
     Set<File> filesListedInManifests = new HashSet<>();
     
     File[] files = bag.getRootDir().listFiles();
-    for(File file : files){
-      if(file.getName().matches("(tag)?manifest\\-.*\\.txt")){
-        logger.debug("Getting files and checksums listed in [{}]", file);
-        Manifest manifest = BagReader.readManifest(file);
-        filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
+    if(files != null){
+      for(File file : files){
+        if(file.getName().matches("(tag)?manifest\\-.*\\.txt")){
+          logger.debug("Getting files and checksums listed in [{}]", file);
+          Manifest manifest = BagReader.readManifest(file);
+          filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
+        }
       }
     }
     

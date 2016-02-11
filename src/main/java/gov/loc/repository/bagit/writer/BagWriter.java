@@ -68,7 +68,10 @@ public class BagWriter {
       for(File payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
         Path writeToPath = Paths.get(outputDir.getPath(), getPathRelativeToDataDir(payloadFile));
         logger.debug("Writing payload file [{}] to [{}]", payloadFile, writeToPath);
-        Files.createDirectories(writeToPath.getParent());
+        Path parent = writeToPath.getParent();
+        if(parent != null){
+          Files.createDirectories(parent);
+        }
         Files.copy(Paths.get(payloadFile.toURI()), writeToPath, 
             StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
       }
