@@ -80,19 +80,21 @@ public class Verifier {
     
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){
-      if(entry.getKey().exists()){
-        logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
-        InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
-        String hash = Hasher.hash(inputStream, messageDigest);
-        if(!hash.equals(entry.getValue())){
-          throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + manifest.getAlgorithm() + 
-              " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
-        }
-      }
-      else{
-        logger.warn("File [{}] is listed in the manifest but doesn't exist on disk!", entry.getKey());
+      checkManifestEntry(entry, messageDigest, manifest.getAlgorithm());
+    }
+  }
+  
+  protected static void checkManifestEntry(Entry<File, String> entry, MessageDigest messageDigest, String algorithm) throws IOException, CorruptChecksumException{
+    if(entry.getKey().exists()){
+      logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
+      InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
+      String hash = Hasher.hash(inputStream, messageDigest);
+      if(!hash.equals(entry.getValue())){
+        throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 
+            " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
       }
     }
+    //if the file doesn't exist it will be caught by checkAllFilesListedInManifestExist method
   }
   
   /**
