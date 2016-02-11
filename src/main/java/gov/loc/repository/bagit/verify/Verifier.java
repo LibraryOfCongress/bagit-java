@@ -35,6 +35,8 @@ import gov.loc.repository.bagit.reader.BagReader;
 public class Verifier {
   private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
   
+  private static final String PAYLOAD_DIR_NAME = "data";
+  
   static {
     logger.debug("Adding bouncy castle crypo provider to enable SHA3 support");
     Security.addProvider(new BouncyCastleProvider());
@@ -53,7 +55,7 @@ public class Verifier {
    * @throws CorruptChecksumException 
    */
   //TODO make multithreaded?
-  public static boolean isValid(Bag bag, boolean ignoreHiddenFiles) throws 
+  public static void isValid(Bag bag, boolean ignoreHiddenFiles) throws 
     NoSuchAlgorithmException, IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, CorruptChecksumException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
@@ -67,8 +69,6 @@ public class Verifier {
     for(Manifest tagManifest : bag.getTagManifests()){
       checkHashes(tagManifest);
     }
-    
-    return true;
   }
   
   /**
@@ -113,30 +113,36 @@ public class Verifier {
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    */
-  public static boolean isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
+  public static void isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
-    File bagitFile = new File(bag.getRootDir(), "bagit.txt");
-    if(!bagitFile.exists()){
-      throw new MissingBagitFileException("File [" + bagitFile + "] should exist but it doesn't");
-    }
+    checkBagitFileExists(bag.getRootDir());
     
-    File dataDir = new File(bag.getRootDir(), "data");
-    if(!dataDir.exists()){
-      throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");
-    }
+    checkPayloadDirectoryExists(bag.getRootDir());
     
     checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir());
     
     Set<File> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     checkAllFilesListedInManifestExist(allFilesListedInManifests);
-    checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, dataDir, ignoreHiddenFiles);
-    
-    return true;
+    checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, bag.getRootDir(), ignoreHiddenFiles);
   }
   
-  private static void checkIfAtLeastOnePayloadManifestsExist(File rootDir) throws MissingPayloadManifestException{
+  protected static void checkBagitFileExists(File rootDir) throws MissingBagitFileException{
+    File bagitFile = new File(rootDir, "bagit.txt");
+    if(!bagitFile.exists()){
+      throw new MissingBagitFileException("File [" + bagitFile + "] should exist but it doesn't");
+    }
+  }
+  
+  protected static void checkPayloadDirectoryExists(File rootDir) throws MissingPayloadDirectoryException{
+    File dataDir = new File(rootDir, PAYLOAD_DIR_NAME);
+    if(!dataDir.exists()){
+      throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");
+    }
+  }
+  
+  protected static void checkIfAtLeastOnePayloadManifestsExist(File rootDir) throws MissingPayloadManifestException{
     boolean hasAtLeastOneManifest = false;
     for(String filename : rootDir.list()){
       if(filename.matches("manifest\\-.*\\.txt")){
@@ -175,7 +181,8 @@ public class Verifier {
     }
   }
   
-  protected static void checkAllFilesInPayloadDirAreListedInAManifest(Set<File> filesListedInManifests, File payloadDir, boolean ignoreHiddenFiles) throws IOException{
+  protected static void checkAllFilesInPayloadDirAreListedInAManifest(Set<File> filesListedInManifests, File rootDir, boolean ignoreHiddenFiles) throws IOException{
+    File payloadDir = new File(rootDir, PAYLOAD_DIR_NAME);
     logger.debug("Checking if all payload files (files in /data dir) are listed in at least one manifest");
     if(payloadDir.exists()){
       Path start = Paths.get(payloadDir.toURI());
