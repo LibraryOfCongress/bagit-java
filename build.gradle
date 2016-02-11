@@ -27,7 +27,7 @@ dependencies {
 }
 
 sourceSets.main.resources {
-  srcDirs = ["src/assembly"]
+  srcDir "src/assembly"
   include "*.groovy"
 }
 
