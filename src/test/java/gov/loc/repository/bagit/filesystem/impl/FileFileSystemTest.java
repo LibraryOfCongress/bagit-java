@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.filesystem.impl;
 
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.filesystem.FileSystem;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 
@@ -21,7 +22,7 @@ public class FileFileSystemTest extends AbstractFileSystemTest {
 	
 	@Override
 	FileSystem getFileSystem() {
-		return new FileFileSystem(this.rootFile);
+		return new FileFileSystem(this.rootFile, null);
 	}
 		
 }

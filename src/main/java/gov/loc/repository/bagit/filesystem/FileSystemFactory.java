@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.filesystem;
 
 import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.filesystem.impl.FileFileSystem;
 import gov.loc.repository.bagit.filesystem.impl.ZipFileSystem;
 import gov.loc.repository.bagit.utilities.FormatHelper;
@@ -11,7 +12,7 @@ import java.text.MessageFormat;
 
 public class FileSystemFactory {
 
-	public static DirNode getDirNodeForBag(File fileForBag) throws UnknownFormatException, UnsupportedFormatException {
+	public static DirNode getDirNodeForBag(File fileForBag, BagFactory bagFactory) throws UnknownFormatException, UnsupportedFormatException {
 		assert fileForBag != null;
 		
 		if (! fileForBag.exists()) {
@@ -21,7 +22,7 @@ public class FileSystemFactory {
 		Format format = FormatHelper.getFormat(fileForBag);
 		FileSystem fs = null;
 		if (Format.FILESYSTEM == format) {
-			fs = new FileFileSystem(fileForBag);
+			fs = new FileFileSystem(fileForBag, bagFactory.getDefaultNodeFilter());
 		} else if (Format.ZIP == format) {
 			fs = new ZipFileSystem(fileForBag);
 		} else {
@@ -30,11 +31,11 @@ public class FileSystemFactory {
 
 		DirNode root = fs.getRoot();
 		if (format.isSerialized) {
-			if (root.listChildren().size() != 1) {
+			if (root.listChildren(fs.getDefaultNodeFilter()).size() != 1) {
 				root.getFileSystem().closeQuietly();
 				throw new RuntimeException("Unable to find bag_dir in serialized bag");
 			}
-			FileSystemNode bagDirNode = root.listChildren().iterator().next();
+			FileSystemNode bagDirNode = root.listChildren(fs.getDefaultNodeFilter()).iterator().next();
 			if (! (bagDirNode instanceof DirNode)) {
 				root.getFileSystem().closeQuietly();
 				throw new RuntimeException("Unable to find bag_dir in serialized bag");

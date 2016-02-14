@@ -6,15 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.BagItTxt;
-import gov.loc.repository.bagit.BagVisitor;
-import gov.loc.repository.bagit.Cancellable;
-import gov.loc.repository.bagit.FetchTxt;
-import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.ProgressListener;
+import gov.loc.repository.bagit.*;
 import gov.loc.repository.bagit.BagFactory.Version;
 import gov.loc.repository.bagit.Manifest.Algorithm;
 import gov.loc.repository.bagit.transformer.Completer;
@@ -94,6 +86,12 @@ public class CancelTriggeringBagDecorator extends CancelThresholdBase implements
 	{
 		this.increment();
 		return realBag.getBagPartFactory();
+	}
+
+	@Override
+	public BagFactory getBagFactory() {
+		this.increment();
+		return realBag.getBagFactory();
 	}
 
 	public Map<Algorithm, String> getChecksums(String filepath)

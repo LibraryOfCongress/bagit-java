@@ -4,6 +4,12 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.List;
 
+import gov.loc.repository.bagit.filesystem.FileSystem;
+import gov.loc.repository.bagit.filesystem.FileSystemFactory;
+import gov.loc.repository.bagit.filesystem.FileSystemNode;
+import gov.loc.repository.bagit.filesystem.FileSystemNodeFilter;
+import gov.loc.repository.bagit.filesystem.impl.FileFileNode;
+import gov.loc.repository.bagit.filesystem.impl.FileFileSystem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,23 +41,40 @@ public class AddFilesToPayloadOperation extends LongRunningOperationBase {
 
 	private int addPayload(File file, File rootDir, int count) {
 		if (this.isCancelled()){ return 0;}
+
 		file = FileHelper.normalizeForm(file);
 		if (! file.canRead()) {
 			throw new RuntimeException("Can't read " + file.toString());
 		}
+
 		//If directory, recurse on children
 		File[] files = file.listFiles();
-		if (file.isDirectory() && files != null) {			
+		if (file.isDirectory() && files != null) {
+			FileSystem fileSystem = new FileFileSystem(rootDir != null ? rootDir : file, this.bag.getBagFactory().getDefaultNodeFilter());
+			FileSystemNodeFilter nodeFilter = fileSystem.getDefaultNodeFilter();
+
 			for(File child : files) {
 				if (this.isCancelled()){ return 0;}
-				String filepath = file.getAbsolutePath();
+
+				String filepath = child.getAbsolutePath();
+
+				// check filters
+				//
+				if (nodeFilter != null) {
+					FileSystemNode node = fileSystem.resolve(filepath);
+					if (!nodeFilter.accept(node)) {
+						this.progress("Excluding payload file from data directory", filepath, count, null);
+						continue;
+					}
+				}
+
 				this.progress("Adding payload file to data directory", filepath, count, null);
 				log.trace(MessageFormat.format("Adding payload {0} in data directory", filepath));
 				count = this.addPayload(child, rootDir, count);
 			}
-					
+
 		} else if (file.isFile()) {
-			
+
 			//If file, add to payloadMap
 			String filepath = this.bag.getBagConstants().getDataDirectory() + "/";
 			if (rootDir != null) {
@@ -62,7 +85,7 @@ public class AddFilesToPayloadOperation extends LongRunningOperationBase {
 			if (filepath.indexOf('\\') != -1)  {
 				throw new UnsupportedOperationException(MessageFormat.format("This Library does not support \\ in filepaths: {0}. See README.txt.", filepath));
 			}
-			count++;				
+			count++;
 			log.debug(MessageFormat.format("Adding {0} to payload.", filepath));
 			this.bag.putBagFile(new FileBagFile(filepath, file));
 		}
