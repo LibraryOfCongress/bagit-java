@@ -130,8 +130,8 @@ uploadArchives {
   repositories {
     mavenDeployer {
       if(!project.hasProperty("ossrhUsername")){ //so travis CI doesn't break...
-        ossrhUsername = "foo"
-        ossrhPassword = "foo"
+        project.ext.ossrhUsername = "foo"
+        project.ext.ossrhPassword = "foo"
       }
 
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
