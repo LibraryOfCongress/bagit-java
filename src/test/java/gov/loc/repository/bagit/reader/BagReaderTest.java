@@ -105,7 +105,7 @@ public class BagReaderTest extends Assert{
     expectedValues.put("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from\n" + 
         "         microfilm.");
     
-    File bagInfoFile = new File(getClass().getClassLoader().getResource("baginfoFiles/bag-info-0.97.txt").getFile());
+    File bagInfoFile = new File(getClass().getClassLoader().getResource("baginfoFiles").getFile());
     Bag returnedBag = BagReader.readBagMetadata(bagInfoFile, new Bag());
     
     assertEquals(expectedValues, returnedBag.getMetadata());
