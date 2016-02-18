@@ -1,6 +1,6 @@
 # BAGIT LIBRARY (BIL)
 [![Build Status](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit)](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit/badge.svg)](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit)
 
 ## DESCRIPTION
 The BAGIT LIBRARY is a software library intended to support the creation, 
