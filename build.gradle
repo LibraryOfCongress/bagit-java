@@ -46,7 +46,8 @@ findbugs {
   ignoreFailures = true //don't fail the gradle build if bugs are found
 }
 
+pmdTest.enabled = false
+
 pmd {
-  ruleSets = ["java-basic", "java-braces"]
-  ignoreFailures = true //don't fail the gradle build if rules are broken
+  ruleSets = ["java-basic", "java-braces", "java-empty"]
 }
