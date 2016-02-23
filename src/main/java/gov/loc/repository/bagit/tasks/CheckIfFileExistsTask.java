@@ -3,6 +3,9 @@ package gov.loc.repository.bagit.tasks;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * A simple task to check if a file exists on the filesystem. This is thread safe, so many can be called at once.
+ */
 public class CheckIfFileExistsTask implements Runnable {
   private final File file;
   private final StringBuilder messageBuilder;

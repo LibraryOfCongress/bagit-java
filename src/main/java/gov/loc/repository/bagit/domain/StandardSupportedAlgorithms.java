@@ -1,9 +1,7 @@
 package gov.loc.repository.bagit.domain;
 
-import java.security.MessageDigest;
-
 /**
- * Easy way to see which algorithms are supported and convert between bagit manifest spec and {@link MessageDigest}
+ * The standard algorithms that are supported "out of the box" in bagit
  */
 public enum StandardSupportedAlgorithms implements SupportedAlgorithm{
   MD5("MD5"),

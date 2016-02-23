@@ -48,6 +48,13 @@ public class BagWriter {
     }
   }
   
+  /**
+   * Write the bagit.txt file in required UTF-8 encoding.
+   * @param version
+   * @param encoding
+   * @param outputDir
+   * @throws IOException
+   */
   public static void writeBagitFile(String version, String encoding, File outputDir) throws IOException{
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
     Path bagitPath = Paths.get(outputDir.getPath(), "bagit.txt");
@@ -62,7 +69,12 @@ public class BagWriter {
     Files.write(bagitPath, secondLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
   }
   
-  //copy the payload files to the destination /data directory and make needed parent directories
+  /**
+   * Write the payload <b>file(s)</b> to the output directory
+   * @param payloadManifests
+   * @param outputDir
+   * @throws IOException
+   */
   public static void writePayloadFiles(Set<Manifest> payloadManifests, File outputDir) throws IOException{
     for(Manifest payloadManifest : payloadManifests){
       for(File payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
@@ -78,12 +90,24 @@ public class BagWriter {
     }
   }
   
-  //write the manifests out
+  /**
+   * Write the payload <b>manifest(s)</b> to the output directory
+   * @param manifests
+   * @param outputDir
+   * @param charsetName
+   * @throws IOException
+   */
   public static void writePayloadManifests(Set<Manifest> manifests, File outputDir, String charsetName) throws IOException{
     writeManifests(manifests, outputDir, "manifest-", charsetName);
   }
   
-  //write the tag manifests
+  /**
+   * Write the tag <b>manifest(s)</b> to the output directory
+   * @param tagManifests
+   * @param outputDir
+   * @param charsetName
+   * @throws IOException
+   */
   public static void writeTagManifests(Set<Manifest> tagManifests, File outputDir, String charsetName) throws IOException{
     writeManifests(tagManifests, outputDir, "tagmanifest-", charsetName);
   }
@@ -102,6 +126,13 @@ public class BagWriter {
     }
   }
   
+  /**
+   * Write the bag-info.txt file to the specified outputDir with specified encoding (charsetName)
+   * @param metadata
+   * @param outputDir
+   * @param charsetName
+   * @throws IOException
+   */
   public static void writeBagitInfoFile(LinkedHashMap<String, String> metadata, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing bag-info.txt to [{}]", outputDir);
     Path outputPath = Paths.get(outputDir.getPath(), "bag-info.txt");
@@ -114,6 +145,13 @@ public class BagWriter {
     }
   }
   
+  /**
+   * Write the fetch.txt file to the outputDir with the specified encoding (charsetName)
+   * @param itemsToFetch
+   * @param outputDir
+   * @param charsetName
+   * @throws IOException
+   */
   public static void writeFetchFile(List<FetchItem> itemsToFetch, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing fetch.txt to [{}]", outputDir);
     Path outputPath = Paths.get(outputDir.getPath(), "fetch.txt");

@@ -17,6 +17,10 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.hash.Hasher;
 
+/**
+ * Checks a give file to make sure the given checksum hash matches the computed checksum hash.
+ * This is thread safe so you can call many at a time.
+ */
 public class CheckManifestHashsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashsTask.class);
   

@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.Formatter;
 
+/**
+ * Convenience class for generating a HEX formatted string of the checksum hash. 
+ */
 public class Hasher {
   
   public static String hash(final InputStream inputStream, final MessageDigest messageDigest) throws IOException {

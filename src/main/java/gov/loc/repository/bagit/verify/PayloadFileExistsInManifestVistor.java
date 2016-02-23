@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 
+/**
+ * Implements {@link SimpleFileVisitor} to ensure that the encountered file is in one of the manifests.
+ */
 public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   private final Set<File> filesListedInManifests;

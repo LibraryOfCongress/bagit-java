@@ -19,9 +19,8 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 
 /**
- * responsible for reading a bag from the filesystem.
+ * Responsible for reading a bag from the filesystem.
  */
-//TODO add logic for versions other than 0.97
 public class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   
@@ -46,6 +45,14 @@ public class BagReader {
     return bag;
   }
   
+  /**
+   * Read the bagit.txt file and add it to the given bag. 
+   * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * @param bagitFile
+   * @param bag
+   * @return
+   * @throws IOException
+   */
   public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
     logger.debug("Reading bagit.txt file");
     LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
@@ -62,6 +69,14 @@ public class BagReader {
     return newBag;
   }
   
+  /**
+   * Finds and reads all manifest files in the rootDir and adds them to the given bag.
+   * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * @param rootDir
+   * @param bag
+   * @return
+   * @throws IOException
+   */
   public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
     File[] files = getAllManifestFiles(rootDir);
@@ -89,6 +104,12 @@ public class BagReader {
     return files == null? new File[]{} : files;
   }
   
+  /**
+   * Reads a manifest file and converts it to a {@link Manifest} object.
+   * @param manifestFile
+   * @return
+   * @throws IOException
+   */
   public static Manifest readManifest(File manifestFile) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
     String alg = manifestFile.getName().split("[-\\.]")[1];
@@ -116,6 +137,14 @@ public class BagReader {
     return map;
   }
   
+  /**
+   * Reads the bag metadata file (bag-info.txt or package-info.txt) and adds it to the given bag.
+   * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * @param rootDir
+   * @param bag
+   * @return
+   * @throws IOException
+   */
   public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
     LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
@@ -134,6 +163,14 @@ public class BagReader {
     return newBag;
   }
   
+  /**
+   * Reads a fetch.txt file and adds {@link FetchItem} to the given bag.
+   * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * @param fetchFile
+   * @param bag
+   * @return
+   * @throws IOException
+   */
   public static Bag readFetch(File fetchFile, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
     BufferedReader br = Files.newBufferedReader(Paths.get(fetchFile.toURI()));

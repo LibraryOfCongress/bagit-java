@@ -16,6 +16,10 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.Hasher;
 
+/**
+ * An implementation of the {@link SimpleFileVisitor} class that optionally avoids hidden files.
+ * Mainly used in {@link BagCreator}
+ */
 public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   private static final Logger logger = LoggerFactory.getLogger(AddPayloadToBagManifestVistor.class);
   
