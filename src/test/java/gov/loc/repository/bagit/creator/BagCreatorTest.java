@@ -43,6 +43,12 @@ public class BagCreatorTest extends Assert {
     File file2 = folder.newFile("file2.txt");
     file2.createNewFile();
     
+    File hiddenFile = folder.newFile(".hiddentFile.txt");
+    assertTrue(hiddenFile.isHidden());
+    
+    File hiddenDirectory = folder.newFolder(".hiddenFolder");
+    assertTrue(hiddenDirectory.isHidden());
+    
     return Arrays.asList(new File(dataDir, file1.getName()), new File(dataDir, dir1.getName()), new File(dataDir, file2.getName()));
   }
 }
