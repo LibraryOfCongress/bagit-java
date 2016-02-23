@@ -45,6 +45,14 @@ public class VerifierTest extends Assert{
   }
   
   @Test
+  public void testBagWithTagFilesInPayloadIsValid() throws Exception{
+    rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-tagfiles-in-payload-manifest").getFile());
+    Bag bag = BagReader.read(rootDir);
+    
+    Verifier.isValid(bag, algorithm, true);
+  }
+  
+  @Test
   public void testIsValid() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
@@ -53,6 +61,14 @@ public class VerifierTest extends Assert{
   
   @Test
   public void testIsComplete() throws Exception{
+    Bag bag = BagReader.read(rootDir);
+    
+    Verifier.isComplete(bag, true);
+  }
+  
+  @Test(expected=FileNotInPayloadDirectoryException.class)
+  public void testErrorWhenFetchItemsDontExist() throws Exception{
+    rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/holey-bag").getFile());
     Bag bag = BagReader.read(rootDir);
     
     Verifier.isComplete(bag, true);

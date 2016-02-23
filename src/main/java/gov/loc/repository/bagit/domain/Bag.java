@@ -98,8 +98,21 @@ public class Bag {
 
   @Override
   public String toString() {
-    return "Bag [version=" + version + ", fileEncoding=" + fileEncoding + ", payLoadManifests=" + payLoadManifests
-        + ", tagManifests=" + tagManifests + ", itemsToFetch=" + itemsToFetch + ", metadata=" + metadata + "]";
+    StringBuilder sb = new StringBuilder();
+    sb.append("Bag [version=").append(version);
+    sb.append(", fileEncoding=").append(fileEncoding);
+    sb.append(", payLoadManifests=[");
+    for(Manifest payloadManifest : payLoadManifests){
+      sb.append(payloadManifest).append(' ');
+    }
+    sb.append("], tagManifests=[");
+    for(Manifest tagManifest : tagManifests){
+      sb.append(tagManifest).append(' ');
+    }
+    sb.append("], itemsToFetch=").append(itemsToFetch);
+    sb.append(", metadata=").append(metadata).append(']');
+    
+    return sb.toString();
   }
 
   @Override

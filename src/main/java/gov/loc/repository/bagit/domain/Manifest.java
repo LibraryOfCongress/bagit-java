@@ -26,4 +26,9 @@ public class Manifest {
   public String getAlgorithm() {
     return algorithm;
   }
+
+  @Override
+  public String toString() {
+    return "Manifest [algorithm=" + algorithm + ", fileToChecksumMap=" + fileToChecksumMap + "]";
+  }
 }

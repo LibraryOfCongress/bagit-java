@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
@@ -120,6 +121,9 @@ public class Verifier {
     FileNotInPayloadDirectoryException, InterruptedException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
+    File dataDir = new File(bag.getRootDir(), PAYLOAD_DIR_NAME);
+    checkFetchItemsExist(bag.getItemsToFetch(), dataDir);
+    
     checkBagitFileExists(bag.getRootDir());
     
     checkPayloadDirectoryExists(bag.getRootDir());
@@ -129,6 +133,15 @@ public class Verifier {
     Set<File> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     checkAllFilesListedInManifestExist(allFilesListedInManifests);
     checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, bag.getRootDir(), ignoreHiddenFiles);
+  }
+  
+  protected static void checkFetchItemsExist(List<FetchItem> items, File dataDir) throws FileNotInPayloadDirectoryException{
+    for(FetchItem item : items){
+      File file = new File(dataDir, item.path);
+      if(!file.exists()){
+        throw new FileNotInPayloadDirectoryException("Fetch item " + item + " has not been fetched!");
+      }
+    }
   }
   
   protected static void checkBagitFileExists(File rootDir) throws MissingBagitFileException{

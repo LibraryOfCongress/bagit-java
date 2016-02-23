@@ -33,6 +33,61 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
+  public void testReadBagWithinABag() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-in-a-bag").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertNotNull(bag);
+  }
+  
+  @Test
+  public void testReadBagWithEncodedNames() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-encoded-names").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertNotNull(bag);
+    for(Manifest payloadManifest : bag.getPayLoadManifests()){
+      for(File file : payloadManifest.getFileToChecksumMap().keySet()){
+        assertTrue(file + " should exist but it doesn't!", file.exists());
+      }
+    }
+  }
+  
+  @Test
+  public void testReadBagWithEscapableCharacter() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-escapable-characters").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertNotNull(bag);
+    for(Manifest payloadManifest : bag.getPayLoadManifests()){
+      for(File file : payloadManifest.getFileToChecksumMap().keySet()){
+        assertTrue(file + " should exist but it doesn't!", file.exists());
+      }
+    }
+  }
+  
+  @Test
+  public void testReadBagWithDotSlash() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-leading-dot-slash-in-manifest").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertNotNull(bag);
+    for(Manifest payloadManifest : bag.getPayLoadManifests()){
+      for(File file : payloadManifest.getFileToChecksumMap().keySet()){
+        assertTrue(file + " should exist but it doesn't!", file.exists());
+      }
+    }
+  }
+  
+  @Test
+  public void testReadBagWithSpaceAsManifestDelimiter() throws IOException{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-space").getFile());
+    Bag bag = BagReader.read(rootDir);
+    assertNotNull(bag);
+    for(Manifest payloadManifest : bag.getPayLoadManifests()){
+      for(File file : payloadManifest.getFileToChecksumMap().keySet()){
+        assertTrue(file + " should exist but it doesn't!", file.exists());
+      }
+    }
+  }
+  
+  @Test
   public void testReadVersion0_93() throws IOException{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_93/bag").getFile());
     Bag bag = BagReader.read(rootDir);

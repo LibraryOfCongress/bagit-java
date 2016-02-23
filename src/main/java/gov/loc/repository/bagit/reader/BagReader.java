@@ -129,7 +129,7 @@ public class BagReader {
 
     String line = br.readLine();
     while(line != null){
-      String[] parts = line.split("\\s+");
+      String[] parts = line.split("\\s+", 2);
       File file = new File(manifestFile.getParentFile(), parts[1]);
       logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[1], file, manifestFile);
       map.put(file, parts[0]);
