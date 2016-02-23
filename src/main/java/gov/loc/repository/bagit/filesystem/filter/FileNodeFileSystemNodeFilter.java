@@ -10,16 +10,11 @@ public class FileNodeFileSystemNodeFilter implements FileSystemNodeFilter {
 	@Override
 	public boolean accept(FileSystemNode fileSystemNode) {
 		if (fileSystemNode.getFileSystem().getDefaultNodeFilter() != null &&
-				fileSystemNode instanceof AbstractFileNode) {
-			// additional checks are required
-			//
-			if (!fileSystemNode.getFileSystem().getDefaultNodeFilter().accept(fileSystemNode)) {
-				// excluded by the basic filter
-				//
+				fileSystemNode instanceof AbstractFileNode &&
+				!fileSystemNode.getFileSystem().getDefaultNodeFilter().accept(fileSystemNode)) {
+				// excluded by the default filter
 				return false;
 			}
-		}
-
 		return fileSystemNode instanceof FileNode;
 	}
 }
