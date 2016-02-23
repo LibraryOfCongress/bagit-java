@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +37,6 @@ public class Verifier {
   private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
   
   private static final String PAYLOAD_DIR_NAME = "data";
-  
-  static {
-    logger.debug("Adding bouncy castle crypo provider to enable SHA3 support");
-    Security.addProvider(new BouncyCastleProvider());
-  }
 
   /**
    *  See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a><br>
