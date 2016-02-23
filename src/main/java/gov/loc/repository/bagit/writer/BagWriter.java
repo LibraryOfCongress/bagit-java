@@ -29,7 +29,8 @@ public class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
 
   /**
-   * Write the bag out to the specified directory
+   * Write the bag out to the specified directory. 
+   * If an error occurs some of the files may have been written out to the filesystem.
    * @throws IOException 
    */
   public static void write(Bag bag, File outputDir) throws IOException{

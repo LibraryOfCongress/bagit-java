@@ -22,6 +22,8 @@ public class BagCreator {
   
   /**
    * Creates a basic(only required elements) bag in place.
+   * This method moves and creates files, thus if an error is thrown during operation it may leave the filesystem 
+   * in an unknown state of transition. Thus this is <b>not thread safe</b>
    */
   public static Bag bagInPlace(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     Bag bag = new Bag();
