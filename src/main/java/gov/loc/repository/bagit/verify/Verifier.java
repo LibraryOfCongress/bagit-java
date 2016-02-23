@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,17 +40,21 @@ public class Verifier {
   private static final String PAYLOAD_DIR_NAME = "data";
 
   /**
-   *  See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a><br>
+   * See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a><br>
    *  A bag is <b>valid</b> if the bag is complete and every checksum has been 
    *  verified against the contents of its corresponding file.
-   * @throws IOException 
-   * @throws NoSuchAlgorithmException 
-   * @throws FileNotInPayloadDirectoryException 
-   * @throws MissingPayloadDirectoryException 
-   * @throws MissingBagitFileException 
-   * @throws MissingPayloadManifestException 
-   * @throws CorruptChecksumException 
-   * @throws InterruptedException 
+   * @param bag the {@link Bag} object to check
+   * @param algorithm the {@link SupportedAlgorithm} implementation to use to generate checksum hashes
+   * @param ignoreHiddenFiles ignore hidden files unless explicitly listed in manifest(s)
+   * 
+   * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} 
+   * @throws CorruptChecksumException when the computed hash doesn't match given hash
+   * @throws IOException if there was an error with the file
+   * @throws MissingPayloadManifestException if there is not at least one payload manifest
+   * @throws MissingBagitFileException  if there is no bagit.txt file
+   * @throws MissingPayloadDirectoryException if there is no /data directory
+   * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
+   * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    */
   public static void isValid(Bag bag, SupportedAlgorithm algorithm, boolean ignoreHiddenFiles) throws Exception{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
@@ -67,7 +72,11 @@ public class Verifier {
   }
   
   /**
-   * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum 
+   * Check the supplied checksum hashes against the generated checksum hashes
+   * 
+   * @param manifest list of file and their hash
+   * @param algorithm the algorithm to use to generate checksum hash
+   * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum
    */
   protected static void checkHashes(Manifest manifest, SupportedAlgorithm algorithm) throws Exception{
     logger.debug("Checking manifest using algorithm {}", algorithm.getMessageDigestName());
@@ -97,12 +106,14 @@ public class Verifier {
    * <li>every file in the data directory must be listed in at least one payload manifest
    * <li>each element must comply with the bagit spec
    * </ul>
+   * @param bag the {@link Bag} object to check
+   * @param ignoreHiddenFiles ignore hidden files unless explicitly listed in manifest(s)
    * @throws IOException if there was an error with the file
    * @throws MissingPayloadManifestException if there is not at least one payload manifest
    * @throws MissingBagitFileException  if there is no bagit.txt file
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
-   * @throws InterruptedException 
+   * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    */
   public static void isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 

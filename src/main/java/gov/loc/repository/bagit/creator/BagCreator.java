@@ -17,6 +17,9 @@ import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 
+/**
+ * Responsible for creating a bag in place.
+ */
 public class BagCreator {
   private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
   
@@ -24,6 +27,12 @@ public class BagCreator {
    * Creates a basic(only required elements) bag in place.
    * This method moves and creates files, thus if an error is thrown during operation it may leave the filesystem 
    * in an unknown state of transition. Thus this is <b>not thread safe</b>
+   * @param root the directory that will become the base of the bag and where to start searching for content
+   * @param algorithm an implementation of {@link SupportedAlgorithm}
+   * @param includeHidden to include hidden files when generating the bagit files, like the manifests
+   * @throws NoSuchAlgorithmException if {@link MessageDigest} can't find the algorithm
+   * @throws IOException if there is a problem writing or moving file(s)
+   * @return a {@link Bag} object representing the newly created bagit bag
    */
   public static Bag bagInPlace(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     Bag bag = new Bag();

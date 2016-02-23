@@ -31,7 +31,9 @@ public class BagWriter {
   /**
    * Write the bag out to the specified directory. 
    * If an error occurs some of the files may have been written out to the filesystem.
-   * @throws IOException 
+   * @param bag the {@link Bag} object to write out
+   * @param outputDir the output directory that will become the root of the bag
+   * @throws IOException if there is a problem writing a file
    */
   public static void write(Bag bag, File outputDir) throws IOException{
     writeBagitFile(bag.getVersion(), bag.getFileEncoding(), outputDir);
@@ -51,10 +53,10 @@ public class BagWriter {
   
   /**
    * Write the bagit.txt file in required UTF-8 encoding.
-   * @param version
-   * @param encoding
-   * @param outputDir
-   * @throws IOException
+   * @param version the version of the bag to write out
+   * @param encoding the encoding of the tag files
+   * @param outputDir the root of the bag
+   * @throws IOException if there was a problem writing the file
    */
   public static void writeBagitFile(String version, String encoding, File outputDir) throws IOException{
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
@@ -72,9 +74,9 @@ public class BagWriter {
   
   /**
    * Write the payload <b>file(s)</b> to the output directory
-   * @param payloadManifests
-   * @param outputDir
-   * @throws IOException
+   * @param payloadManifests the set of objects representing the payload manifests
+   * @param outputDir the root of the bag
+   * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadFiles(Set<Manifest> payloadManifests, File outputDir) throws IOException{
     for(Manifest payloadManifest : payloadManifests){
@@ -93,10 +95,10 @@ public class BagWriter {
   
   /**
    * Write the payload <b>manifest(s)</b> to the output directory
-   * @param manifests
-   * @param outputDir
-   * @param charsetName
-   * @throws IOException
+   * @param manifests the payload{@link Manifest}s to write out
+   * @param outputDir the root of the bag
+   * @param charsetName the name of the encoding for the file
+   * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadManifests(Set<Manifest> manifests, File outputDir, String charsetName) throws IOException{
     writeManifests(manifests, outputDir, "manifest-", charsetName);
@@ -104,10 +106,10 @@ public class BagWriter {
   
   /**
    * Write the tag <b>manifest(s)</b> to the output directory
-   * @param tagManifests
-   * @param outputDir
-   * @param charsetName
-   * @throws IOException
+   * @param tagManifests the tag{@link Manifest}s to write out
+   * @param outputDir the root of the bag
+   * @param charsetName the name of the encoding for the file
+   * @throws IOException if there was a problem writing a file
    */
   public static void writeTagManifests(Set<Manifest> tagManifests, File outputDir, String charsetName) throws IOException{
     writeManifests(tagManifests, outputDir, "tagmanifest-", charsetName);
@@ -129,10 +131,10 @@ public class BagWriter {
   
   /**
    * Write the bag-info.txt file to the specified outputDir with specified encoding (charsetName)
-   * @param metadata
-   * @param outputDir
-   * @param charsetName
-   * @throws IOException
+   * @param metadata the key value pair info in the bag-info.txt file
+   * @param outputDir the root of the bag
+   * @param charsetName the name of the encoding for the file
+   * @throws IOException if there was a problem writing a file
    */
   public static void writeBagitInfoFile(LinkedHashMap<String, String> metadata, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing bag-info.txt to [{}]", outputDir);
@@ -148,10 +150,10 @@ public class BagWriter {
   
   /**
    * Write the fetch.txt file to the outputDir with the specified encoding (charsetName)
-   * @param itemsToFetch
-   * @param outputDir
-   * @param charsetName
-   * @throws IOException
+   * @param itemsToFetch the list of {@link FetchItem}s to write into the fetch.txt
+   * @param outputDir the root of the bag
+   * @param charsetName the name of the encoding for the file
+   * @throws IOException if there was a problem writing a file
    */
   public static void writeFetchFile(List<FetchItem> itemsToFetch, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing fetch.txt to [{}]", outputDir);

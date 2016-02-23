@@ -25,8 +25,10 @@ public class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   
   /**
-   * Read the bag from the filesystem and create a bag object 
-   * @throws IOException 
+   * Read the bag from the filesystem and create a bag object
+   * @param rootDir the root directory of the bag 
+   * @throws IOException if there is a problem reading a file
+   * @return a {@link Bag} object representing a bag on the filesystem
    */
   public static Bag read(File rootDir) throws IOException{
     File bagitFile = new File(rootDir, "bagit.txt");
@@ -48,10 +50,10 @@ public class BagReader {
   /**
    * Read the bagit.txt file and add it to the given bag. 
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
-   * @param bagitFile
-   * @param bag
-   * @return
-   * @throws IOException
+   * @param bagitFile the bagit.txt file
+   * @param bag the bag to include in the newly generated bag
+   * @return a new bag containing the bagit.txt info
+   * @throws IOException if there is a problem reading a file
    */
   public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
     logger.debug("Reading bagit.txt file");
@@ -72,10 +74,10 @@ public class BagReader {
   /**
    * Finds and reads all manifest files in the rootDir and adds them to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
-   * @param rootDir
-   * @param bag
-   * @return
-   * @throws IOException
+   * @param rootDir the root directory of the bag
+   * @param bag the bag to include in the new bag
+   * @return a new bag that contains all the manifest(s) information
+   * @throws IOException if there is a problem reading a file
    */
   public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
@@ -106,9 +108,9 @@ public class BagReader {
   
   /**
    * Reads a manifest file and converts it to a {@link Manifest} object.
-   * @param manifestFile
-   * @return
-   * @throws IOException
+   * @param manifestFile a specific manifest file
+   * @return the converted manifest object from the file
+   * @throws IOException if there is a problem reading a file
    */
   public static Manifest readManifest(File manifestFile) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
@@ -140,10 +142,10 @@ public class BagReader {
   /**
    * Reads the bag metadata file (bag-info.txt or package-info.txt) and adds it to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
-   * @param rootDir
-   * @param bag
-   * @return
-   * @throws IOException
+   * @param rootDir the root directory of the bag
+   * @param bag the bag to include in the new bag
+   * @return a new bag that contains the bag-info.txt (metadata) information
+   * @throws IOException if there is a problem reading a file
    */
   public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
@@ -166,10 +168,10 @@ public class BagReader {
   /**
    * Reads a fetch.txt file and adds {@link FetchItem} to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
-   * @param fetchFile
-   * @param bag
-   * @return
-   * @throws IOException
+   * @param fetchFile the specific fetch file
+   * @param bag the bag to include in the new bag
+   * @return a new bag that contains a list of items to fetch
+   * @throws IOException if there is a problem reading a file
    */
   public static Bag readFetch(File fetchFile, Bag bag) throws IOException{
     Bag newBag = new Bag(bag);
