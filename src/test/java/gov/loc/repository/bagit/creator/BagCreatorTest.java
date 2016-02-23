@@ -11,7 +11,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import gov.loc.repository.bagit.domain.SupportedAlgorithms;
+import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
 
 public class BagCreatorTest extends Assert {
   @Rule
@@ -21,7 +21,7 @@ public class BagCreatorTest extends Assert {
   public void testBagInPlace() throws IOException, NoSuchAlgorithmException{
     List<File> expectedPayloadFiles = createTestStructure();
     
-    BagCreator.bagInPlace(folder.getRoot(), SupportedAlgorithms.MD5, false);
+    BagCreator.bagInPlace(folder.getRoot(), StandardSupportedAlgorithms.MD5, false);
     
     File manifest = new File(folder.getRoot(), "manifest-md5.txt");
     assertTrue(manifest.exists());

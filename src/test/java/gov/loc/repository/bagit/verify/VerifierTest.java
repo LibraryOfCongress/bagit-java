@@ -18,6 +18,8 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
@@ -30,14 +32,15 @@ public class VerifierTest extends Assert{
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
-  File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+  private File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+  private SupportedAlgorithm algorithm = StandardSupportedAlgorithms.valueOf("MD5");
   
   @Test
-  public void testSupportedAlgorithms() throws Exception{
+  public void testStandardSupportedAlgorithms() throws Exception{
     List<String> algorithms = Arrays.asList("md5", "sha1", "sha256", "sha512");
     for(String algorithm : algorithms){
       Manifest manifest = new Manifest(algorithm);
-      Verifier.checkHashes(manifest);
+      Verifier.checkHashes(manifest, StandardSupportedAlgorithms.valueOf(algorithm.toUpperCase()));
     }
   }
   
@@ -45,7 +48,7 @@ public class VerifierTest extends Assert{
   public void testIsValid() throws Exception{
     Bag bag = BagReader.read(rootDir);
     
-    Verifier.isValid(bag, true);
+    Verifier.isValid(bag, algorithm, true);
   }
   
   @Test
@@ -76,7 +79,7 @@ public class VerifierTest extends Assert{
     rootDir = new File(getClass().getClassLoader().getResource("corruptPayloadFile").getFile());
     Bag bag = BagReader.read(rootDir);
     
-    Verifier.isValid(bag, true);
+    Verifier.isValid(bag, algorithm, true);
   }
   
   @Test(expected=CorruptChecksumException.class)
@@ -84,7 +87,7 @@ public class VerifierTest extends Assert{
     rootDir = new File(getClass().getClassLoader().getResource("corruptTagFile").getFile());
     Bag bag = BagReader.read(rootDir);
     
-    Verifier.isValid(bag, true);
+    Verifier.isValid(bag, algorithm, true);
   }
   
   @Test(expected=MissingBagitFileException.class)
@@ -94,7 +97,7 @@ public class VerifierTest extends Assert{
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     bagitFile.delete();
     
-    Verifier.isValid(bag, true);
+    Verifier.isValid(bag, algorithm, true);
   }
   
   @Test(expected=MissingPayloadDirectoryException.class)
@@ -104,7 +107,7 @@ public class VerifierTest extends Assert{
     File dataDir = new File(folder.getRoot(), "data");
     deleteDirectory(Paths.get(dataDir.toURI()));
     
-    Verifier.isValid(bag, true);
+    Verifier.isValid(bag, algorithm, true);
   }
   
   @Test(expected=MissingPayloadManifestException.class)
@@ -114,7 +117,7 @@ public class VerifierTest extends Assert{
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
     manifestFile.delete();
     
-    Verifier.isValid(bag, true);
+    Verifier.isValid(bag, algorithm, true);
   }
   
   private void copyBagToTestFolder() throws Exception{

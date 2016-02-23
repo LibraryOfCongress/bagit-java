@@ -90,7 +90,7 @@ public class BagWriter {
   
   protected static void writeManifests(Set<Manifest> tagManifests, File outputDir, String filenameBase, String charsetName) throws IOException{
     for(Manifest manifest : tagManifests){
-      Path manifestPath = Paths.get(outputDir.getPath(), filenameBase + manifest.getAlgorithm() + ".txt");
+      Path manifestPath = Paths.get(outputDir.getPath(), filenameBase + manifest.getAlgorithm().toLowerCase() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
       
       for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){

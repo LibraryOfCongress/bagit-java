@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SupportedAlgorithms;
+import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
@@ -58,26 +58,25 @@ public class Verifier {
    * @throws CorruptChecksumException 
    * @throws InterruptedException 
    */
-  public static void isValid(Bag bag, boolean ignoreHiddenFiles) throws Exception{
+  public static void isValid(Bag bag, SupportedAlgorithm algorithm, boolean ignoreHiddenFiles) throws Exception{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
     logger.debug("Checking payload manifest(s) checksums");
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
-      checkHashes(payloadManifest);
+      checkHashes(payloadManifest, algorithm);
     }
     
     logger.debug("Checking tag manifest(s) checksums");
     for(Manifest tagManifest : bag.getTagManifests()){
-      checkHashes(tagManifest);
+      checkHashes(tagManifest, algorithm);
     }
   }
   
   /**
    * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum 
    */
-  protected static void checkHashes(Manifest manifest) throws Exception{
-    SupportedAlgorithms algorithm = SupportedAlgorithms.valueOf(manifest.getAlgorithm().toUpperCase());
+  protected static void checkHashes(Manifest manifest, SupportedAlgorithm algorithm) throws Exception{
     logger.debug("Checking manifest using algorithm {}", algorithm.getMessageDigestName());
     
     ExecutorService executor = Executors.newCachedThreadPool();

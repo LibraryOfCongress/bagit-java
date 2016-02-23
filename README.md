@@ -25,13 +25,12 @@ in the bin directory.
 ### NOTE IF USING WITH ECLIPSE
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
-### FILENAMES WITH BACKSLASHES
-The BagIt specification requires that the only valid path separator is the forward slash /. Thus, a
-backslash ( \ ) in a file name is completely legal.  However, due to a shortcoming in Commons VFS
-backslashes are supported by BIL.  Given platform compatability issues, this is not necessarily
-a bad thing.
-
 ### RELEASE NOTES
+
+#### Changes in 5.0.0
+1. Complete rewrite of the library to remove bad practices and to allow for a much better design using java best practices.
+2. Removal of creating a zipped bag. There are many good zip (or other serialization) libraries in Java, please use one of them instead.
+3. Allow for ignoring hidden files except if specified in manifest
 
 #### Changes in 4.10.0
 1. Fixes defect in SimpleResult.add*Message() methods.

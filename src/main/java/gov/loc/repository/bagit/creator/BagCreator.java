@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SupportedAlgorithms;
+import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 
@@ -24,7 +24,7 @@ public class BagCreator {
    * Creates a basic(only required elements) bag in place.
    * @param algorithm - digest algorithm name, not bagit algorithm name
    */
-  public static Bag bagInPlace(File root, SupportedAlgorithms algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+  public static Bag bagInPlace(File root, StandardSupportedAlgorithms algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     Bag bag = new Bag();
     bag.setRootDir(root);
     
