@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class Bag {
   //The original version of the bag
-  private String version;
+  private Version version = new Version(-1, -1);
   
   //from the bagit.txt or UTF-8 for new bags
   private String fileEncoding = StandardCharsets.UTF_8.name();
@@ -35,10 +35,9 @@ public class Bag {
   private File rootDir;
   
   public Bag(){
-    version = "0.97";
   }
   
-  public Bag(String version){
+  public Bag(Version version){
     this.version = version;
   }
   
@@ -52,7 +51,7 @@ public class Bag {
     this.rootDir = bag.getRootDir();
   }
   
-  public String getVersion(){
+  public Version getVersion(){
     return version;
   }
 
@@ -150,7 +149,7 @@ public class Bag {
     this.rootDir = rootDir;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(Version version) {
     this.version = version;
   }
 }

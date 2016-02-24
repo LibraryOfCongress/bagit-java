@@ -1,12 +1,10 @@
 package gov.loc.repository.bagit.reader;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -17,6 +15,7 @@ import org.junit.Test;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.Version;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
@@ -33,14 +32,14 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagWithinABag() throws IOException{
+  public void testReadBagWithinABag() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-in-a-bag").getFile());
     Bag bag = BagReader.read(rootDir);
     assertNotNull(bag);
   }
   
   @Test
-  public void testReadBagWithEncodedNames() throws IOException{
+  public void testReadBagWithEncodedNames() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-encoded-names").getFile());
     Bag bag = BagReader.read(rootDir);
     assertNotNull(bag);
@@ -52,7 +51,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagWithEscapableCharacter() throws IOException{
+  public void testReadBagWithEscapableCharacter() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-escapable-characters").getFile());
     Bag bag = BagReader.read(rootDir);
     assertNotNull(bag);
@@ -64,7 +63,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagWithDotSlash() throws IOException{
+  public void testReadBagWithDotSlash() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-leading-dot-slash-in-manifest").getFile());
     Bag bag = BagReader.read(rootDir);
     assertNotNull(bag);
@@ -76,7 +75,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagWithSpaceAsManifestDelimiter() throws IOException{
+  public void testReadBagWithSpaceAsManifestDelimiter() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-space").getFile());
     Bag bag = BagReader.read(rootDir);
     assertNotNull(bag);
@@ -88,31 +87,31 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadVersion0_93() throws IOException{
+  public void testReadVersion0_93() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_93/bag").getFile());
     Bag bag = BagReader.read(rootDir);
-    assertEquals("0.93", bag.getVersion());
+    assertEquals(new Version(0, 93), bag.getVersion());
     assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
   }
   
   @Test
-  public void testReadVersion0_94() throws IOException{
+  public void testReadVersion0_94() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
     Bag bag = BagReader.read(rootDir);
-    assertEquals("0.94", bag.getVersion());
+    assertEquals(new Version(0, 94), bag.getVersion());
     assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
   }
   
   @Test
-  public void testReadVersion0_95() throws IOException{
+  public void testReadVersion0_95() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_95/bag").getFile());
     Bag bag = BagReader.read(rootDir);
-    assertEquals("0.95", bag.getVersion());
+    assertEquals(new Version(0, 95), bag.getVersion());
     assertEquals("260 GB", bag.getMetadata().get("Package-Size"));
   }
 
   @Test
-  public void testReadFetchWithNoSizeSpecified() throws IOException{
+  public void testReadFetchWithNoSizeSpecified() throws Exception{
     File fetchFile = new File(getClass().getClassLoader().getResource("fetchFiles/fetchWithNoSizeSpecified.txt").getFile());
     Bag returnedBag = BagReader.readFetch(fetchFile, new Bag());
     for(FetchItem item : returnedBag.getItemsToFetch()){
@@ -127,7 +126,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadFetchWithSizeSpecified() throws IOException{
+  public void testReadFetchWithSizeSpecified() throws Exception{
     File fetchFile = new File(getClass().getClassLoader().getResource("fetchFiles/fetchWithSizeSpecified.txt").getFile());
     Bag returnedBag = BagReader.readFetch(fetchFile, new Bag());
     for(FetchItem item : returnedBag.getItemsToFetch()){
@@ -142,7 +141,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagMetadata() throws IOException{
+  public void testReadBagMetadata() throws Exception{
     LinkedHashMap<String, String> expectedValues = new LinkedHashMap<>();
     expectedValues.put("Source-Organization", "Spengler University");
     expectedValues.put("Organization-Address", "1400 Elm St., Cupertino, California, 95014");
@@ -167,30 +166,7 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadChecksumFileMap() throws IOException{
-    File manifestFile = new File(getClass().getClassLoader().getResource("manifestFiles/manifest-md5-0.97.txt").getFile());
-    HashMap<File, String> expectedMap = new HashMap<>();
-    expectedMap.put(new File(manifestFile.getParentFile(), "data/dir1/test3.txt"), "8ad8757baa8564dc136c1e07507f4a98");
-    expectedMap.put(new File(manifestFile.getParentFile(), "data/dir2/dir3/test5.txt"), "e3d704f3542b44a621ebed70dc0efe13");
-    expectedMap.put(new File(manifestFile.getParentFile(), "data/dir2/test4.txt"), "86985e105f79b95d6bc918fb45ec7727");
-    expectedMap.put(new File(manifestFile.getParentFile(), "data/test1.txt"), "5a105e8b9d40e1329780d62ea2265d8a");
-    expectedMap.put(new File(manifestFile.getParentFile(), "data/test2.txt"), "ad0234829205b9033196ba818f7a872b");
-    
-    HashMap<File, String> actualMap = BagReader.readChecksumFileMap(manifestFile);
-    
-    assertEquals(expectedMap, actualMap);
-  }
-  
-  @Test
-  public void testReadManifestGetsCorrectAlgorithm() throws IOException{
-    File manifestFile = new File(getClass().getClassLoader().getResource("manifestFiles/manifest-md5-0.97.txt").getFile());
-    Manifest returnedManifest = BagReader.readManifest(manifestFile);
-    
-    assertEquals("md5", returnedManifest.getAlgorithm());
-  }
-  
-  @Test
-  public void testReadAllManifests() throws IOException{
+  public void testReadAllManifests() throws Exception{
     File rootBag = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
     Bag returnedBag = BagReader.readAllManifests(rootBag, new Bag());
     assertEquals(1, returnedBag.getPayLoadManifests().size());
@@ -198,17 +174,42 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadBagitFile()throws IOException{
+  public void testReadBagitFile()throws Exception{
     File bagitFile = new File(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").getFile());
-    Bag returnedBag = BagReader.readBagitTextFile(bagitFile, new Bag());
-    assertEquals("0.97", returnedBag.getVersion());
+    Bag returnedBag = BagReader.readBagitTextFile(bagitFile, new Bag(new Version(0, 96)));
+    assertEquals(new Version(0, 97), returnedBag.getVersion());
     assertEquals(StandardCharsets.UTF_8.name(), returnedBag.getFileEncoding());
   }
   
   @Test
-  public void testReadVersion0_97Bag() throws IOException{
+  public void testReadVersion0_97Bag() throws Exception{
     File rootBag = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+    File[] payloadFiles = new File[]{new File(rootBag, "data/dir1/test3.txt"), new File(rootBag, "data/dir2/dir3/test5.txt"), 
+        new File(rootBag, "data/dir2/test4.txt"), new File(rootBag, "data/test1.txt"), new File(rootBag, "data/test2.txt")};
+    
     Bag returnedBag = BagReader.read(rootBag);
+    
     assertNotNull(returnedBag);
+    assertEquals(new Version(0, 97), returnedBag.getVersion());
+    Manifest payloadManifest = (Manifest) returnedBag.getPayLoadManifests().toArray()[0];
+    for(File payloadFile : payloadFiles){
+      assertTrue(payloadManifest.getFileToChecksumMap().containsKey(payloadFile));
+    }
+  }
+  
+  @Test
+  public void testReadVersion0_98Bag() throws Exception{
+    File rootBag = new File(getClass().getClassLoader().getResource("bags/v0_98/bag").getFile());
+    File[] payloadFiles = new File[]{new File(rootBag, "dir1/test3.txt"), new File(rootBag, "dir2/dir3/test5.txt"), 
+        new File(rootBag, "dir2/test4.txt"), new File(rootBag, "test1.txt"), new File(rootBag, "test2.txt")};
+    
+    Bag returnedBag = BagReader.read(rootBag);
+    
+    assertNotNull(returnedBag);
+    assertEquals(new Version(0, 98), returnedBag.getVersion());
+    Manifest payloadManifest = (Manifest) returnedBag.getPayLoadManifests().toArray()[0];
+    for(File payloadFile : payloadFiles){
+      assertTrue("payload manifest should contain " + payloadFile, payloadManifest.getFileToChecksumMap().containsKey(payloadFile));
+    }
   }
 }

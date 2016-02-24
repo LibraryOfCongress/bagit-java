@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 
 /**
@@ -29,17 +31,23 @@ public class BagReader {
    * @param rootDir the root directory of the bag 
    * @throws IOException if there is a problem reading a file
    * @return a {@link Bag} object representing a bag on the filesystem
+   * @throws UnparsableVersionException If there is a problem parsing the bagit version
    */
-  public static Bag read(File rootDir) throws IOException{
-    File bagitFile = new File(rootDir, "bagit.txt");
+  public static Bag read(File rootDir) throws IOException, UnparsableVersionException{
+    File bagitDir = new File(rootDir, ".bagit");
+    if(!bagitDir.exists()){
+      bagitDir = rootDir;
+    }
+    
+    File bagitFile = new File(bagitDir, "bagit.txt");
     Bag bag = readBagitTextFile(bagitFile, new Bag());
     bag.setRootDir(rootDir);
     
-    bag = readAllManifests(rootDir, bag);
+    bag = readAllManifests(bagitDir, bag);
     
-    bag = readBagMetadata(rootDir, bag);
+    bag = readBagMetadata(bagitDir, bag);
     
-    File fetchFile = new File(rootDir, "fetch.txt");
+    File fetchFile = new File(bagitDir, "fetch.txt");
     if(fetchFile.exists()){
       bag = readFetch(fetchFile, bag);
     }
@@ -54,8 +62,9 @@ public class BagReader {
    * @param bag the bag to include in the newly generated bag
    * @return a new bag containing the bagit.txt info
    * @throws IOException if there is a problem reading a file
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    */
-  public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException{
+  public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException, UnparsableVersionException{
     logger.debug("Reading bagit.txt file");
     LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
     
@@ -65,16 +74,28 @@ public class BagReader {
     logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
     
     Bag newBag = new Bag(bag);
-    newBag.setVersion(version);
+    newBag.setVersion(parseVersion(version));
     newBag.setFileEncoding(encoding);
     
     return newBag;
   }
   
+  protected static Version parseVersion(String version) throws UnparsableVersionException{
+    if(!version.contains(".")){
+      throw new UnparsableVersionException("Version must be in format MAJOR.MINOR but was " + version);
+    }
+    
+    String[] parts = version.split("\\.");
+    int major = Integer.parseInt(parts[0]);
+    int minor = Integer.parseInt(parts[1]);
+    
+    return new Version(major, minor);
+  }
+  
   /**
    * Finds and reads all manifest files in the rootDir and adds them to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
-   * @param rootDir the root directory of the bag
+   * @param rootDir the parent directory of the manifest(s)
    * @param bag the bag to include in the new bag
    * @return a new bag that contains all the manifest(s) information
    * @throws IOException if there is a problem reading a file
@@ -85,10 +106,10 @@ public class BagReader {
     
     for(File file : files){
       if(file.getName().startsWith("tag")){
-        newBag.getTagManifests().add(readManifest(file));
+        newBag.getTagManifests().add(readManifest(file, bag.getRootDir()));
       }
       else if(file.getName().startsWith("manifest")){
-        newBag.getPayLoadManifests().add(readManifest(file));
+        newBag.getPayLoadManifests().add(readManifest(file, bag.getRootDir()));
       }
     }
     
@@ -109,29 +130,30 @@ public class BagReader {
   /**
    * Reads a manifest file and converts it to a {@link Manifest} object.
    * @param manifestFile a specific manifest file
+   * @param bagRootDir the root directory of the bag
    * @return the converted manifest object from the file
    * @throws IOException if there is a problem reading a file
    */
-  public static Manifest readManifest(File manifestFile) throws IOException{
+  public static Manifest readManifest(File manifestFile, File bagRootDir) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
     String alg = manifestFile.getName().split("[-\\.]")[1];
     Manifest manifest = new Manifest(alg);
     
-    HashMap<File, String> filetToChecksumMap = readChecksumFileMap(manifestFile);
+    HashMap<File, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
     manifest.setFileToChecksumMap(filetToChecksumMap);
     
     return manifest;
   }
   
-  protected static HashMap<File, String> readChecksumFileMap(File manifestFile) throws IOException{
+  protected static HashMap<File, String> readChecksumFileMap(File manifestFile, File bagRootDir) throws IOException{
     HashMap<File, String> map = new HashMap<>();
     BufferedReader br = Files.newBufferedReader(Paths.get(manifestFile.toURI()));
 
     String line = br.readLine();
     while(line != null){
       String[] parts = line.split("\\s+", 2);
-      File file = new File(manifestFile.getParentFile(), parts[1]);
-      logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[1], file, manifestFile);
+      File file = new File(bagRootDir, parts[1]);
+      logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[0], file, manifestFile);
       map.put(file, parts[0]);
       line = br.readLine();
     }

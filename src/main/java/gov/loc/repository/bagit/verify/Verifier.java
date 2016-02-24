@@ -184,7 +184,7 @@ public class Verifier {
       for(File file : files){
         if(file.getName().matches("(tag)?manifest\\-.*\\.txt")){
           logger.debug("Getting files and checksums listed in [{}]", file);
-          Manifest manifest = BagReader.readManifest(file);
+          Manifest manifest = BagReader.readManifest(file, bag.getRootDir());
           filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
         }
       }

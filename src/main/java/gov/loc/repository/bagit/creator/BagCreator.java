@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.SupportedAlgorithm;
+import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.verify.Verifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 
@@ -35,7 +36,7 @@ public class BagCreator {
    * @return a {@link Bag} object representing the newly created bagit bag
    */
   public static Bag bagInPlace(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
-    Bag bag = new Bag();
+    Bag bag = new Bag(new Version(0, 97));
     bag.setRootDir(root);
     
     File[] files = root.listFiles();
@@ -67,5 +68,37 @@ public class BagCreator {
         Files.move(Paths.get(file.toURI()), dest);
       }
     }
+  }
+  
+  /**
+   * Creates a basic(only required elements) .bagit bag in place.
+   * This creates files and directories, thus if an error is thrown during operation it may leave the filesystem 
+   * in an unknown state of transition. Thus this is <b>not thread safe</b>
+   * @param root the directory that will become the base of the bag and where to start searching for content
+   * @param algorithm an implementation of {@link SupportedAlgorithm}
+   * @param includeHidden to include hidden files when generating the bagit files, like the manifests
+   * @return a {@link Bag} object representing the newly created bagit bag
+   * @throws NoSuchAlgorithmException if {@link MessageDigest} can't find the algorithm
+   * @throws IOException if there is a problem writing files or .bagit directory
+   */
+  public static Bag createDotBagit(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+    Bag bag = new Bag(new Version(0, 98));
+    bag.setRootDir(root);
+    
+    File dotbagitDir = new File(root, ".bagit");
+    if(!dotbagitDir.mkdir()){
+      throw new IOException("Was unable to create " + dotbagitDir);
+    }
+    
+    Manifest manifest = new Manifest(algorithm.getBagitName().toLowerCase());
+    MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
+    AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
+    Files.walkFileTree(Paths.get(root.toURI()), visitor);
+    
+    bag.getPayLoadManifests().add(manifest);
+    BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
+    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, bag.getFileEncoding());
+    
+    return bag;
   }
 }

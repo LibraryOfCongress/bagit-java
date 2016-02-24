@@ -11,7 +11,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.domain.Version;
 
 public class BagCreatorTest extends Assert {
   @Rule
@@ -21,7 +23,9 @@ public class BagCreatorTest extends Assert {
   public void testBagInPlace() throws IOException, NoSuchAlgorithmException{
     List<File> expectedPayloadFiles = createTestStructure();
     
-    BagCreator.bagInPlace(folder.getRoot(), StandardSupportedAlgorithms.MD5, false);
+    Bag bag = BagCreator.bagInPlace(folder.getRoot(), StandardSupportedAlgorithms.MD5, false);
+    
+    assertEquals(new Version(0, 97), bag.getVersion());
     
     File manifest = new File(folder.getRoot(), "manifest-md5.txt");
     assertTrue(manifest.exists());
@@ -50,5 +54,18 @@ public class BagCreatorTest extends Assert {
     assertTrue(hiddenDirectory.isHidden());
     
     return Arrays.asList(new File(dataDir, file1.getName()), new File(dataDir, dir1.getName()), new File(dataDir, file2.getName()));
+  }
+  
+  @Test
+  public void testCreateDotBagit() throws IOException, NoSuchAlgorithmException{
+    File dotbagitDir = new File(folder.getRoot(), ".bagit");
+    File expectedManifestFile = new File(dotbagitDir, "manifest-md5.txt");
+    File expectedBagitFile = new File(dotbagitDir, "bagit.txt");
+    
+    Bag bag = BagCreator.createDotBagit(folder.getRoot(), StandardSupportedAlgorithms.MD5, false);
+    assertEquals(new Version(0, 98), bag.getVersion());
+    
+    assertTrue(expectedBagitFile.exists());
+    assertTrue(expectedManifestFile.exists());
   }
 }

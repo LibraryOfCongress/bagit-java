@@ -39,6 +39,10 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
+    if(dir.endsWith(".bagit")){
+      logger.debug("Skipping .bagit directory cause it shouldn't be in the payload manifest");
+      return FileVisitResult.SKIP_SUBTREE;
+    }
     
     return FileVisitResult.CONTINUE;
   }
