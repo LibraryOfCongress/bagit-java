@@ -25,17 +25,17 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   
   private final Manifest manifest;
   private final MessageDigest messageDigest;
-  private final boolean ignoreHiddenFiles;
+  private final boolean includeHiddenFiles;
   
-  public AddPayloadToBagManifestVistor(Manifest manifest, MessageDigest messageDigest, boolean ignoreHiddenFiles){
+  public AddPayloadToBagManifestVistor(Manifest manifest, MessageDigest messageDigest, boolean includeHiddenFiles){
     this.manifest = manifest;
     this.messageDigest = messageDigest;
-    this.ignoreHiddenFiles = ignoreHiddenFiles;
+    this.includeHiddenFiles = includeHiddenFiles;
   }
   
   @Override
   public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-    if(ignoreHiddenFiles && Files.isHidden(dir)){
+    if(!includeHiddenFiles && Files.isHidden(dir)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
@@ -49,7 +49,7 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
 
   @Override
   public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws IOException{
-    if(ignoreHiddenFiles && Files.isHidden(path)){
+    if(!includeHiddenFiles && Files.isHidden(path)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{

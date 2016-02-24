@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.domain.Version;
 
@@ -27,13 +28,15 @@ public class BagCreatorTest extends Assert {
     
     assertEquals(new Version(0, 97), bag.getVersion());
     
-    File manifest = new File(folder.getRoot(), "manifest-md5.txt");
-    assertTrue(manifest.exists());
+    File expectedManifest = new File(folder.getRoot(), "manifest-md5.txt");
+    assertTrue(expectedManifest.exists());
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     assertTrue(bagitFile.exists());
     
-    for(File expectedPayloadFile : expectedPayloadFiles){
-      assertTrue(expectedPayloadFile.exists());
+    for(Manifest manifest : bag.getPayLoadManifests()){
+      for(File expectedPayloadFile : manifest.getFileToChecksumMap().keySet()){
+        assertTrue(expectedPayloadFiles.contains(expectedPayloadFile));
+      }
     }
   }
   
