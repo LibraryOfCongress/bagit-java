@@ -1,9 +1,12 @@
 # BAGIT LIBRARY (BIL)
-[![Build Status](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
+[![Master Branch Build Status](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit/badge.svg)](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit)
 
-[![Dependency Status](https://www.versioneye.com/user/projects/56cc84d818b27104252decc3/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56cc84d818b27104252decc3)
+[![Master Branch Dependency Status](https://www.versioneye.com/user/projects/56cc84d818b27104252decc3/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56cc84d818b27104252decc3)
+
+[![License](https://img.shields.io/badge/License-Public--Domain-blue.svg)](https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt)
+
 
 ## DESCRIPTION
 The BAGIT LIBRARY is a software library intended to support the creation, 
@@ -19,12 +22,7 @@ Inside the bagit-java root directory, run `gradle distZip`. This will create a .
 bagit-\<VERSION\>.zip. To create an office release you should specify the version by running `gradle distZip -Pversion=<VERSION>` 
 
 ## COMMANDLINE
-A commandline interface is provided to perform various operations on bag. Unzip
-bagit-\<VERSION\>.zip and change into the resulting 'bagit-\<VERSION\>/bin' subdirectory,
-where you will find scripts to invoke the commandline interface. To learn more
-about the supported operations, invoke ./bag or bag.bat with no arguments. If you
-encounter memory issues, the memory allocation can be increased in the scripts found
-in the bin directory.
+We no longer support a command line interface for the java version of bagit. If you would like a command line interface for bagging, verifying, and other actions please check out our [bagit-python implementation](https://github.com/LibraryOfCongress/bagit-python) or the [ruby based implementation](https://github.com/tipr/bagit) 
 
 ### NOTE IF USING WITH ECLIPSE
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
