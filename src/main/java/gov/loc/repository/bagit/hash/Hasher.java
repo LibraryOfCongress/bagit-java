@@ -39,8 +39,10 @@ public class Hasher {
     for (final byte b : messageDigest.digest()) {
       formatter.format("%02x", b);
     }
+    
+    String hash = formatter.toString();
     formatter.close();
     
-    return formatter.toString();
+    return hash;
   }
 }
