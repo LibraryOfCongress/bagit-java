@@ -11,24 +11,36 @@ import java.util.Formatter;
  */
 public class Hasher {
   
+  /**
+   * 
+   * @param inputStream the stream that you wish to hash
+   * @param messageDigest the {@link MessageDigest} object representing the hashing algorithm
+   * @return the hash as a hex formated string
+   * @throws IOException if there is a problem reading the file
+   */
   public static String hash(final InputStream inputStream, final MessageDigest messageDigest) throws IOException {
-    try (InputStream is = new BufferedInputStream(inputStream)) {
-      final byte[] buffer = new byte[1024];
-      for (int read = 0; (read = is.read(buffer)) != -1;) {
-        messageDigest.update(buffer, 0, read);
-      }
+    InputStream is = new BufferedInputStream(inputStream);
+    final byte[] buffer = new byte[1024];
+    
+    int read = is.read(buffer);
+    
+    while(read != -1) {
+      messageDigest.update(buffer, 0, read);
+      read = is.read(buffer);
     }
-
-    // Convert the byte to hex format
+    
     return formatMessageDigest(messageDigest);
   }
   
+  //Convert the byte to hex format
   protected static String formatMessageDigest(final MessageDigest messageDigest){
-    try (Formatter formatter = new Formatter()) {
-      for (final byte b : messageDigest.digest()) {
-        formatter.format("%02x", b);
-      }
-      return formatter.toString();
+    Formatter formatter = new Formatter();
+    
+    for (final byte b : messageDigest.digest()) {
+      formatter.format("%02x", b);
     }
+    formatter.close();
+    
+    return formatter.toString();
   }
 }
