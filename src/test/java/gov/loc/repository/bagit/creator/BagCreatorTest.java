@@ -51,7 +51,12 @@ public class BagCreatorTest extends Assert {
     assertTrue(hiddenFile.isHidden());
     
     File hiddenDirectory = folder.newFolder(".hiddenFolder");
-    assertTrue(hiddenDirectory.isHidden());
+    assertTrue(hiddenDirectory + " should be hidden unless on windows", hiddenDirectory.isHidden());
+    
+    File hiddenFile2 = new File(hiddenDirectory, ".hiddenFile2.txt");
+    hiddenFile2.createNewFile();
+    File file3 = new File(hiddenDirectory, "file3.txt");
+    file3.createNewFile();
     
     return Arrays.asList(new File(dataDir, file1.getName()), new File(dataDir, dir1.getName()), new File(dataDir, file2.getName()));
   }

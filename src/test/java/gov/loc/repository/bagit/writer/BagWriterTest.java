@@ -46,6 +46,16 @@ public class BagWriterTest extends Assert {
   }
   
   @Test
+  public void testWriteHoley() throws Exception{
+    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag").getFile());
+    Bag bag = BagReader.read(rootDir); 
+    File bagitDir = folder.newFolder();
+    
+    BagWriter.write(bag, bagitDir);
+    assertTrue(bagitDir.exists());
+  }
+  
+  @Test
   public void testWriteBagitFile() throws Exception{
     File rootDir = folder.newFolder();
     File bagit = new File(rootDir, "bagit.txt");
