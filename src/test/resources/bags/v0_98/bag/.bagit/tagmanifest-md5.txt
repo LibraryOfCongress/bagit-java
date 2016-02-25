@@ -1,4 +1,3 @@
-41b89090f32a9ef33226b48f1b98dddf  bagit.txt
-ba8644f8c8b7adb3d5cf3ad4245606e8  manifest-md5.txt
-68b1dabaea8770a0e9411dc5d99341f9  bag-info.txt
-e9bae3ce1d7ac00b0b1aa2fbddc50cfb  addl_tags/tag1.txt
+32f027866d7141a0eaeee6e0cc5123f0  .bagit/bagit.txt
+9ee76b9f81aa504f2af0ef8f3e832d81  .bagit/manifest-md5.txt
+68b1dabaea8770a0e9411dc5d99341f9  .bagit/bag-info.txt

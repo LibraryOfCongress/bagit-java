@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.SupportedAlgorithm;
+import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
@@ -39,6 +40,7 @@ public class Verifier {
   private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
   
   private static final String PAYLOAD_DIR_NAME = "data";
+  private static final String DOT_BAGIT_DIR_NAME = ".bagit";
 
   /**
    * See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a><br>
@@ -121,18 +123,27 @@ public class Verifier {
     FileNotInPayloadDirectoryException, InterruptedException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
-    File dataDir = new File(bag.getRootDir(), PAYLOAD_DIR_NAME);
+    File dataDir = getDataDir(bag);
+    
     checkFetchItemsExist(bag.getItemsToFetch(), dataDir);
     
-    checkBagitFileExists(bag.getRootDir());
+    checkBagitFileExists(bag.getRootDir(), bag.getVersion());
     
-    checkPayloadDirectoryExists(bag.getRootDir());
+    checkPayloadDirectoryExists(bag.getRootDir(), bag.getVersion());
     
-    checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir());
+    checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), bag.getVersion());
     
     Set<File> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     checkAllFilesListedInManifestExist(allFilesListedInManifests);
-    checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, bag.getRootDir(), ignoreHiddenFiles);
+    checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, dataDir, ignoreHiddenFiles);
+  }
+  
+  protected static File getDataDir(Bag bag){
+    if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+      return bag.getRootDir();
+    }
+    
+    return new File(bag.getRootDir(), PAYLOAD_DIR_NAME);
   }
   
   protected static void checkFetchItemsExist(List<FetchItem> items, File dataDir) throws FileNotInPayloadDirectoryException{
@@ -144,23 +155,35 @@ public class Verifier {
     }
   }
   
-  protected static void checkBagitFileExists(File rootDir) throws MissingBagitFileException{
+  protected static void checkBagitFileExists(File rootDir, Version version) throws MissingBagitFileException{
     File bagitFile = new File(rootDir, "bagit.txt");
+    if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+      bagitFile = new File(rootDir, DOT_BAGIT_DIR_NAME + File.separator + "bagit.txt");
+    }
+    
     if(!bagitFile.exists()){
       throw new MissingBagitFileException("File [" + bagitFile + "] should exist but it doesn't");
     }
   }
   
-  protected static void checkPayloadDirectoryExists(File rootDir) throws MissingPayloadDirectoryException{
+  protected static void checkPayloadDirectoryExists(File rootDir, Version version) throws MissingPayloadDirectoryException{
     File dataDir = new File(rootDir, PAYLOAD_DIR_NAME);
+    if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+      dataDir = rootDir;
+    }
+    
     if(!dataDir.exists()){
       throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");
     }
   }
   
-  protected static void checkIfAtLeastOnePayloadManifestsExist(File rootDir) throws MissingPayloadManifestException{
+  protected static void checkIfAtLeastOnePayloadManifestsExist(File rootDir, Version version) throws MissingPayloadManifestException{
     boolean hasAtLeastOneManifest = false;
     String[] filenames = rootDir.list();
+    if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+      filenames = new File(rootDir, DOT_BAGIT_DIR_NAME).list();
+    }
+    
     if(filenames != null){
       for(String filename : filenames){
         if(filename.matches("manifest\\-.*\\.txt")){
@@ -179,7 +202,14 @@ public class Verifier {
   protected static Set<File> getAllFilesListedInManifests(Bag bag) throws IOException{
     Set<File> filesListedInManifests = new HashSet<>();
     
-    File[] files = bag.getRootDir().listFiles();
+    File[] files = null;
+    if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+      files = new File(bag.getRootDir(), DOT_BAGIT_DIR_NAME).listFiles();
+    }
+    else{
+      files = bag.getRootDir().listFiles();
+    }
+    
     if(files != null){
       for(File file : files){
         if(file.getName().matches("(tag)?manifest\\-.*\\.txt")){
@@ -211,9 +241,8 @@ public class Verifier {
     }
   }
   
-  protected static void checkAllFilesInPayloadDirAreListedInAManifest(Set<File> filesListedInManifests, File rootDir, boolean ignoreHiddenFiles) throws IOException{
-    File payloadDir = new File(rootDir, PAYLOAD_DIR_NAME);
-    logger.debug("Checking if all payload files (files in /data dir) are listed in at least one manifest");
+  protected static void checkAllFilesInPayloadDirAreListedInAManifest(Set<File> filesListedInManifests, File payloadDir, boolean ignoreHiddenFiles) throws IOException{
+    logger.debug("Checking if all payload files (files in {} dir) are listed in at least one manifest", payloadDir);
     if(payloadDir.exists()){
       Path start = Paths.get(payloadDir.toURI());
       Files.walkFileTree(start, new PayloadFileExistsInManifestVistor(filesListedInManifests, ignoreHiddenFiles));

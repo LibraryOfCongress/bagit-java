@@ -53,7 +53,15 @@ public class VerifierTest extends Assert{
   }
   
   @Test
-  public void testIsValid() throws Exception{
+  public void testVersion0_97IsValid() throws Exception{
+    Bag bag = BagReader.read(rootDir);
+    
+    Verifier.isValid(bag, algorithm, true);
+  }
+  
+  @Test
+  public void testVersion0_98IsValid() throws Exception{
+    rootDir = new File(getClass().getClassLoader().getResource("bags/v0_98/bag").getFile());
     Bag bag = BagReader.read(rootDir);
     
     Verifier.isValid(bag, algorithm, true);
