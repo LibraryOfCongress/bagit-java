@@ -618,11 +618,9 @@ public class CommandLineBagDriver {
 			BagFactory bagFactory = null;
 			if (config.getBoolean(PARAM_INCLUDE_HIDDEN)) {
 				// null filter will include all nodes, including hidden ones
-				//
 				bagFactory = new BagFactory(null);
 			} else {
                 // The default should filter out hidden files
-                //
 				bagFactory = new BagFactory(new NotHiddenFileSystemNodeFilter());
 			}
 

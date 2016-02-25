@@ -13,13 +13,11 @@ public class NotHiddenFileSystemNodeFilter implements FileSystemNodeFilter {
     public boolean accept(FileSystemNode fileSystemNode) {
         if (fileSystemNode instanceof AbstractFileNode) {
             // File-based node, check if resource is hidden
-            //
             AbstractFileNode fileNode = (AbstractFileNode) fileSystemNode;
             return  !fileNode.getFile().isHidden();
         }
 
         // Not a file-based node, accept without checking
-        //
         return true;
     }
 }

@@ -59,7 +59,6 @@ public class AddFilesToPayloadOperation extends LongRunningOperationBase {
 				String filepath = child.getAbsolutePath();
 
 				// check filters
-				//
 				if (nodeFilter != null) {
 					FileSystemNode node = fileSystem.resolve(filepath);
 					if (!nodeFilter.accept(node)) {
