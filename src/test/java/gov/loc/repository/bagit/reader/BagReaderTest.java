@@ -16,6 +16,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
@@ -29,6 +30,11 @@ public class BagReaderTest extends Assert{
         new URL("http://localhost/foo/data/dir2/test4.txt"),
         new URL("http://localhost/foo/data/test%201.txt"),
         new URL("http://localhost/foo/data/test2.txt"));
+  }
+  
+  @Test(expected=UnparsableVersionException.class)
+  public void testParseVersionWithBadVersion() throws UnparsableVersionException{
+    BagReader.parseVersion("someVersionThatIsUnparsable");
   }
   
   @Test
