@@ -27,6 +27,27 @@ We no longer support a command line interface for the java version of bagit. If 
 ### Note if using with Eclipse
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
+### Examples
+The "new" bagit interface is very intuitive, but here are some easy to follow examples
+
+##### Create a bag from a folder using version 0.97
+```java
+File folder = new File("FolderYouWantToBag");
+StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
+boolean includeHiddenFiles = false;
+Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
+```
+##### Read an existing bag (version 0.93 and higher)
+```java
+File rootDir = new File("RootDirectoryOfExistingBag");
+Bag bag = BagReader.read(rootDir);
+```
+##### Write a Bag object to disk
+```java
+File outputDir = new File("WhereYouWantToWriteTheBagTo");
+BagWriter.write(bag, outputDir); //where bag is a Bag object
+```
+
 ### Roadmap
 * Further refine reading and writing of bags version 0.93-0.97
 * Integrate new proposed specification we are calling "dot bagit"
