@@ -63,7 +63,7 @@ public class Verifier {
    * @throws InvalidPayloadOxumException if either the total bytes or the number of files 
    * calculated for the payload directory of the bag is different than the supplied values
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
-   * To check, run {@link Verifier.canQuickVerify}
+   * To check, run {@link Verifier#canQuickVerify}
    */
   public static void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
     String payloadOxum = bag.getMetadata().get("Payload-Oxum");
