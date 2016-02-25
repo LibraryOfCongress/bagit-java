@@ -8,10 +8,10 @@ import java.util.HashMap;
  * A manifest is a list of files and their corresponding checksum with the algorithm used to generate that checksum
  */
 public class Manifest {
-  private final String algorithm;
+  private final SupportedAlgorithm algorithm;
   private HashMap<File, String> fileToChecksumMap = new HashMap<>();
   
-  public Manifest(String algorithm){
+  public Manifest(SupportedAlgorithm algorithm){
     this.algorithm = algorithm;
   }
 
@@ -23,7 +23,7 @@ public class Manifest {
     this.fileToChecksumMap = fileToChecksumMap;
   }
 
-  public String getAlgorithm() {
+  public SupportedAlgorithm getAlgorithm() {
     return algorithm;
   }
 

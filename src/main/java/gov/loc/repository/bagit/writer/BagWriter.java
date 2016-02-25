@@ -145,7 +145,7 @@ public class BagWriter {
   
   protected static void writeManifests(Set<Manifest> manifests, File outputDir, String filenameBase, String charsetName) throws IOException{
     for(Manifest manifest : manifests){
-      Path manifestPath = Paths.get(outputDir.getPath(), filenameBase + manifest.getAlgorithm().toLowerCase() + ".txt");
+      Path manifestPath = Paths.get(outputDir.getPath(), filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
       
       Files.createFile(manifestPath);

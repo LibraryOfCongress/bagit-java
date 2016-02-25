@@ -50,7 +50,7 @@ public class BagCreator {
     moveFilesToDataDir(files, dataDir);
     
     logger.info("Creating payload manifest");
-    Manifest manifest = new Manifest(algorithm.getBagitName().toLowerCase());
+    Manifest manifest = new Manifest(algorithm);
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
     Files.walkFileTree(Paths.get(dataDir.toURI()), visitor);
@@ -96,7 +96,7 @@ public class BagCreator {
     }
     
     logger.info("Creating payload manifest");
-    Manifest manifest = new Manifest(algorithm.getBagitName().toLowerCase());
+    Manifest manifest = new Manifest(algorithm);
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
     Files.walkFileTree(Paths.get(root.toURI()), visitor);

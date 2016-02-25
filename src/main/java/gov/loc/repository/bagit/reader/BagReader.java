@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
@@ -140,7 +141,9 @@ public class BagReader {
   public static Manifest readManifest(File manifestFile, File bagRootDir) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
     String alg = manifestFile.getName().split("[-\\.]")[1];
-    Manifest manifest = new Manifest(alg);
+    StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.valueOf(alg.toUpperCase());
+    
+    Manifest manifest = new Manifest(algorithm);
     
     HashMap<File, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
     manifest.setFileToChecksumMap(filetToChecksumMap);

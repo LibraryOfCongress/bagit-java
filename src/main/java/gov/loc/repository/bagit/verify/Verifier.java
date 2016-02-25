@@ -108,18 +108,18 @@ public class Verifier {
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    */
-  public static void isValid(Bag bag, SupportedAlgorithm algorithm, boolean ignoreHiddenFiles) throws Exception{
+  public static void isValid(Bag bag, boolean ignoreHiddenFiles) throws Exception{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
     logger.debug("Checking payload manifest(s) checksums");
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
-      checkHashes(payloadManifest, algorithm);
+      checkHashes(payloadManifest);
     }
     
     logger.debug("Checking tag manifest(s) checksums");
     for(Manifest tagManifest : bag.getTagManifests()){
-      checkHashes(tagManifest, algorithm);
+      checkHashes(tagManifest);
     }
   }
   
@@ -130,15 +130,13 @@ public class Verifier {
    * @param algorithm the algorithm to use to generate checksum hash
    * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum
    */
-  protected static void checkHashes(Manifest manifest, SupportedAlgorithm algorithm) throws Exception{
-    logger.debug("Checking manifest using algorithm {}", algorithm.getMessageDigestName());
-    
+  protected static void checkHashes(Manifest manifest) throws Exception{
     ExecutorService executor = Executors.newCachedThreadPool();
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
     
     for(Entry<File, String> entry : manifest.getFileToChecksumMap().entrySet()){
-      executor.execute(new CheckManifestHashsTask(entry, algorithm.getMessageDigestName(), latch, exceptions));
+      executor.execute(new CheckManifestHashsTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));
     }
     
     latch.await();

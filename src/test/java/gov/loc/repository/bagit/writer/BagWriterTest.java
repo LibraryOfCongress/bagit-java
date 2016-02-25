@@ -18,6 +18,7 @@ import org.junit.rules.TemporaryFolder;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -114,7 +115,7 @@ public class BagWriterTest extends Assert {
   @Test
   public void testWriteTagManifests() throws IOException{
     Set<Manifest> tagManifests = new HashSet<>();
-    Manifest manifest = new Manifest("md5");
+    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
     manifest.getFileToChecksumMap().put(new File("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
     tagManifests.add(manifest);
     File outputDir = folder.newFolder();
@@ -129,7 +130,7 @@ public class BagWriterTest extends Assert {
   public void testWritePayloadFiles() throws IOException{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
     File testFile = new File(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").getFile());
-    Manifest manifest = new Manifest("md5");
+    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
     manifest.getFileToChecksumMap().put(testFile, "someHashValue");
     Set<Manifest> payloadManifests = new HashSet<>();
     payloadManifests.add(manifest);
