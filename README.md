@@ -15,11 +15,7 @@ supported version being 0.93.
 
 ## Requirements
 * Java 8
-* gradle
-
-## Build
-Inside the bagit-java root directory, run `gradle distZip`. This will create a .zip file under build/distributions,
-bagit-\<VERSION\>.zip. To create an office release you should specify the version by running `gradle distZip -Pversion=<VERSION>` 
+* gradle (for development only)
 
 ## Major differences between version 5 and 4.*
 ##### Commandline
@@ -28,9 +24,6 @@ We no longer support a command line interface for the java version of bagit. If 
 We no longer support directly serializing a bag. But if that is something you require there are plenty of great libraries that offer this capability
 ##### Fetching
 We no longer support fetching. This is due to the various protocalls that could be involved. Again, if this is something you need, there are much better java libraries out there that you can use to fill this functionality.
-
-### Note if using with Eclipse
-Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
 ### Examples
 The "new" bagit interface is very intuitive, but here are some easy to follow examples. Instead of returning messages like in the old interface, now it throws errors so you don't have to parse messages to understand what happened.
@@ -70,6 +63,22 @@ if(BagVerifier.canQuickVerify(bag)){
   BagVerifier.quicklyVerify(bag, ignoreHiddenFiles);
 }
 ```
+
+## Developing Bagit-Java
+Bagit-Java uses [Grad;e](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.
+##### Building a Jar
+Inside the bagit-java root directory, run `gradle jar`.
+##### Running tests and code quality checks
+Inside the bagit-java root directory, run `gradle check`.
+##### Uploading to maven central
+1. Follow their guides
+  1. http://central.sonatype.org/pages/releasing-the-deployment.html
+  2. https://issues.sonatype.org/secure/Dashboard.jspa
+2. Once you have access, to create an office release and upload it you should specify the version by running `gradle -Pversion=<VERSION> uploadArchives` 
+  1. *Don't forget to tag the repository!* 
+
+### Note if using with Eclipse
+Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
 ### Roadmap
 * Further refine reading and writing of bags version 0.93-0.97
