@@ -21,8 +21,13 @@ supported version being 0.93.
 Inside the bagit-java root directory, run `gradle distZip`. This will create a .zip file under build/distributions,
 bagit-\<VERSION\>.zip. To create an office release you should specify the version by running `gradle distZip -Pversion=<VERSION>` 
 
-## Commandline
+## Major differences between version 5 and 4.*
+##### Commandline
 We no longer support a command line interface for the java version of bagit. If you would like a command line interface for bagging, verifying, and other actions please check out our [bagit-python implementation](https://github.com/LibraryOfCongress/bagit-python) or the [ruby based implementation](https://github.com/tipr/bagit) 
+##### Serialization
+We no longer support directly serializing a bag. But if that is something you require there are plenty of great libraries that offer this capability
+##### Fetching
+We no longer support fetching. This is due to the various protocalls that could be involved. Again, if this is something you need, there are much better java libraries out there that you can use to fill this functionality.
 
 ### Note if using with Eclipse
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
