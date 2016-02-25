@@ -28,7 +28,7 @@ We no longer support a command line interface for the java version of bagit. If 
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
 ### Examples
-The "new" bagit interface is very intuitive, but here are some easy to follow examples
+The "new" bagit interface is very intuitive, but here are some easy to follow examples. Instead of returning messages like in the old interface, now it throws errors so you don't have to parse messages to understand what happened.
 
 ##### Create a bag from a folder using version 0.97
 ```java
@@ -47,8 +47,27 @@ Bag bag = BagReader.read(rootDir);
 File outputDir = new File("WhereYouWantToWriteTheBagTo");
 BagWriter.write(bag, outputDir); //where bag is a Bag object
 ```
+##### Verify Complete
+```java
+boolean ignoreHiddenFiles = true;
+BagVerifier.isComplete(bag, ignoreHiddenFiles);
+```
+##### Verify Valid
+```java
+boolean ignoreHiddenFiles = true;
+BagVerifier.isValid(bag, ignoreHiddenFiles);
+```
+##### Quickly verify by payload-oxum
+```java
+boolean ignoreHiddenFiles = true;
+
+if(BagVerifier.canQuickVerify(bag)){
+  BagVerifier.quicklyVerify(bag, ignoreHiddenFiles);
+}
+```
 
 ### Roadmap
 * Further refine reading and writing of bags version 0.93-0.97
 * Integrate new proposed specification we are calling "dot bagit"
 * Fix bugs/issues reported with new library (on going)
+* Add extensions for more than standard supported algorithms

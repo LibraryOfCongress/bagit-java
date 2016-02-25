@@ -21,13 +21,13 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
-import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.verify.BagVerifier;
 
 /**
  * responsible for writing out a bag.
  */
 public class BagWriter {
-  private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
+  private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
 
   /**
    * Write the bag out to the specified directory. 

@@ -15,14 +15,14 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.domain.Version;
-import gov.loc.repository.bagit.verify.Verifier;
+import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 
 /**
  * Responsible for creating a bag in place.
  */
 public class BagCreator {
-  private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
+  private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   
   /**
    * Creates a basic(only required elements) bag in place for version 0.97.
