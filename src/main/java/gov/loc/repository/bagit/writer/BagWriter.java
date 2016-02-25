@@ -100,6 +100,7 @@ public class BagWriter {
    * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadFiles(Set<Manifest> payloadManifests, File outputDir, File bagRootDir) throws IOException{
+    logger.info("Writing payload files");
     for(Manifest payloadManifest : payloadManifests){
       for(File payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
         Path bagRootPath = Paths.get(bagRootDir.toURI());
@@ -126,6 +127,7 @@ public class BagWriter {
    * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadManifests(Set<Manifest> manifests, File outputDir, String charsetName) throws IOException{
+    logger.info("Writing payload manifest(s)");
     writeManifests(manifests, outputDir, "manifest-", charsetName);
   }
   
@@ -137,6 +139,7 @@ public class BagWriter {
    * @throws IOException if there was a problem writing a file
    */
   public static void writeTagManifests(Set<Manifest> tagManifests, File outputDir, String charsetName) throws IOException{
+    logger.info("Writing tag manifest(s)");
     writeManifests(tagManifests, outputDir, "tagmanifest-", charsetName);
   }
   
@@ -195,6 +198,7 @@ public class BagWriter {
   }
   
   protected static String getPathRelativeToDataDir(File file){
+    logger.debug("getting path relative to data directory for [{}]", file);
     String path = file.getPath();
     int index = path.indexOf("data");
     
@@ -202,6 +206,9 @@ public class BagWriter {
       return file.getName();
     }
     
-    return path.substring(index, path.length());
+    String rel = path.substring(index, path.length());
+    logger.debug("Relative path for file [{}] to data directory is [{}]", file, rel);
+    
+    return rel;
   }
 }

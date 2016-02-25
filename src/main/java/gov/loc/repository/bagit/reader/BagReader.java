@@ -101,14 +101,17 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    */
   public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
+    logger.info("Attempting to find and read manifests");
     Bag newBag = new Bag(bag);
     File[] files = getAllManifestFiles(rootDir);
     
     for(File file : files){
       if(file.getName().startsWith("tag")){
+        logger.debug("Found tag manifest [{}]", file);
         newBag.getTagManifests().add(readManifest(file, bag.getRootDir()));
       }
       else if(file.getName().startsWith("manifest")){
+        logger.debug("Found payload manifest [{}]", file);
         newBag.getPayLoadManifests().add(readManifest(file, bag.getRootDir()));
       }
     }
@@ -170,15 +173,18 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    */
   public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
+    logger.info("Attempting to read bag metadata file");
     Bag newBag = new Bag(bag);
     LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
     
     File bagInfoFile = new File(rootDir, "bag-info.txt");
     if(bagInfoFile.exists()){
+      logger.debug("Found [{}] file", bagInfoFile);
       metadata = readKeyValueMapFromFile(bagInfoFile, ":");
     }
     File packageInfoFile = new File(rootDir, "package-info.txt"); //onlu exists in versions 0.93 - 0.95
     if(packageInfoFile.exists()){
+      logger.debug("Found [{}] file", packageInfoFile);
       metadata = readKeyValueMapFromFile(packageInfoFile, ":");
     }
     
@@ -196,6 +202,7 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    */
   public static Bag readFetch(File fetchFile, Bag bag) throws IOException{
+    logger.info("Attempting to read [{}]", fetchFile);
     Bag newBag = new Bag(bag);
     BufferedReader br = Files.newBufferedReader(Paths.get(fetchFile.toURI()));
 

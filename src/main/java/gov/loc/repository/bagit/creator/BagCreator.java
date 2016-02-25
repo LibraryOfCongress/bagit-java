@@ -25,9 +25,10 @@ public class BagCreator {
   private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
   
   /**
-   * Creates a basic(only required elements) bag in place.
+   * Creates a basic(only required elements) bag in place for version 0.97.
    * This method moves and creates files, thus if an error is thrown during operation it may leave the filesystem 
    * in an unknown state of transition. Thus this is <b>not thread safe</b>
+   * 
    * @param root the directory that will become the base of the bag and where to start searching for content
    * @param algorithm an implementation of {@link SupportedAlgorithm}
    * @param includeHidden to include hidden files when generating the bagit files, like the manifests
@@ -38,6 +39,7 @@ public class BagCreator {
   public static Bag bagInPlace(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     Bag bag = new Bag(new Version(0, 97));
     bag.setRootDir(root);
+    logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     
     File[] files = root.listFiles();
     File dataDir = new File(root, "data");
@@ -47,6 +49,7 @@ public class BagCreator {
     
     moveFilesToDataDir(files, dataDir);
     
+    logger.info("Creating payload manifest");
     Manifest manifest = new Manifest(algorithm.getBagitName().toLowerCase());
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
@@ -62,6 +65,7 @@ public class BagCreator {
   
   protected static void moveFilesToDataDir(File[] files, File dataDir) throws IOException{
     if(files != null){
+      logger.info("Moving files to [{}]", dataDir);
       for(File file : files){
         Path dest = Paths.get(dataDir.getPath(), file.getName());
         logger.debug("Moving [{}] to [{}]", file, dest);
@@ -84,12 +88,14 @@ public class BagCreator {
   public static Bag createDotBagit(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     Bag bag = new Bag(new Version(0, 98));
     bag.setRootDir(root);
+    logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     
     File dotbagitDir = new File(root, ".bagit");
     if(!dotbagitDir.mkdir()){
       throw new IOException("Was unable to create " + dotbagitDir);
     }
     
+    logger.info("Creating payload manifest");
     Manifest manifest = new Manifest(algorithm.getBagitName().toLowerCase());
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
     AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);

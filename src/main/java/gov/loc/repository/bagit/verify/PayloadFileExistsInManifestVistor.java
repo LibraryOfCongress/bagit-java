@@ -30,6 +30,7 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   @Override
   public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
     if(ignoreHiddenFiles && Files.isHidden(dir)){
+      logger.debug("Skipping [{}] cause it is a hidden folder", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
     

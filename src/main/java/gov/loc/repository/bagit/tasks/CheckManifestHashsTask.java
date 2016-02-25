@@ -52,6 +52,7 @@ public class CheckManifestHashsTask implements Runnable {
       logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
       InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
       String hash = Hasher.hash(inputStream, messageDigest);
+      logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){
         throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 
             " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");

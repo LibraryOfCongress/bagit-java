@@ -52,6 +52,7 @@ public class Verifier {
    */
   public static boolean canQuickVerify(Bag bag){
     String payloadOxum = bag.getMetadata().get("Payload-Oxum");
+    logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
     return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
   }
   
@@ -143,6 +144,7 @@ public class Verifier {
     latch.await();
     
     if(exceptions.size() > 0){
+      logger.debug("[{}] hashes don't match, but I can only return one exception", exceptions.size());
       throw exceptions.get(0);
     }
   }
@@ -195,6 +197,7 @@ public class Verifier {
   }
   
   protected static void checkFetchItemsExist(List<FetchItem> items, File dataDir) throws FileNotInPayloadDirectoryException{
+    logger.info("Checking if all [{}] items in fetch.txt exist in the [{}]", items.size(), dataDir);
     for(FetchItem item : items){
       File file = new File(dataDir, item.path);
       if(!file.exists()){
@@ -204,6 +207,7 @@ public class Verifier {
   }
   
   protected static void checkBagitFileExists(File rootDir, Version version) throws MissingBagitFileException{
+    logger.info("Checking if bagit.txt file exists");
     File bagitFile = new File(rootDir, "bagit.txt");
     if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
       bagitFile = new File(rootDir, DOT_BAGIT_DIR_NAME + File.separator + "bagit.txt");
@@ -215,6 +219,7 @@ public class Verifier {
   }
   
   protected static void checkPayloadDirectoryExists(Bag bag) throws MissingPayloadDirectoryException{
+    logger.info("Checking if special payload directory exists (only for version 0.97 and earlier)");
     File dataDir = getDataDir(bag);
     
     if(!dataDir.exists()){
@@ -223,6 +228,7 @@ public class Verifier {
   }
   
   protected static void checkIfAtLeastOnePayloadManifestsExist(File rootDir, Version version) throws MissingPayloadManifestException{
+    logger.info("Checking if there is at least one payload manifest in [{}]", rootDir);
     boolean hasAtLeastOneManifest = false;
     String[] filenames = rootDir.list();
     if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
@@ -245,6 +251,7 @@ public class Verifier {
   }
   
   protected static Set<File> getAllFilesListedInManifests(Bag bag) throws IOException{
+    logger.debug("Getting all files listed in the manifest(s)");
     Set<File> filesListedInManifests = new HashSet<>();
     
     File[] files = null;
