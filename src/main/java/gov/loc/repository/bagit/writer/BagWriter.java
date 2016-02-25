@@ -96,6 +96,7 @@ public class BagWriter {
    * Write the payload <b>file(s)</b> to the output directory
    * @param payloadManifests the set of objects representing the payload manifests
    * @param outputDir the data directory of the bag
+   * @param bagRootDir the root directory of the bag
    * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadFiles(Set<Manifest> payloadManifests, File outputDir, File bagRootDir) throws IOException{
