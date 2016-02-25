@@ -26,9 +26,11 @@ import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
+import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.tasks.CheckIfFileExistsTask;
 import gov.loc.repository.bagit.tasks.CheckManifestHashsTask;
@@ -41,6 +43,52 @@ public class Verifier {
   
   private static final String PAYLOAD_DIR_NAME = "data";
   private static final String DOT_BAGIT_DIR_NAME = ".bagit";
+  private static final String PAYLOAD_OXUM_REGEX = "\\d+\\.\\d+";
+  
+  /**
+   * Quickly verify by comparing the number of files and the total number of bytes expected
+   * @param bag the {@link Bag} object you wish to check
+   * @return true if the bag can be quickly verified
+   */
+  public static boolean canQuickVerify(Bag bag){
+    String payloadOxum = bag.getMetadata().get("Payload-Oxum");
+    return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
+  }
+  
+  /**
+   * 
+   * @param bag the bag to verify by payload-oxum
+   * @param ignoreHiddenFiles ignore hidden files found in payload directory
+   * @throws IOException if there is an error reading a file
+   * @throws InvalidPayloadOxumException if either the total bytes or the number of files 
+   * calculated for the payload directory of the bag is different than the supplied values
+   * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
+   * To check, run {@link Verifier.canQuickVerify}
+   */
+  public static void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+    String payloadOxum = bag.getMetadata().get("Payload-Oxum");
+    if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
+      throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
+    }
+
+    String[] parts = payloadOxum.split("\\.");
+    logger.debug("Parsing [{}] for the total byte size of the payload oxum", parts[0]);
+    long totalSize = Long.parseLong(parts[0]);
+    logger.debug("Parsing [{}] for the number of files to find in the payload directory", parts[1]);
+    long numberOfFiles = Long.parseLong(parts[1]);
+    
+    File payloadDir = getDataDir(bag);
+    FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
+    Files.walkFileTree(Paths.get(payloadDir.toURI()), vistor);
+    logger.info("supplied payload-oxum: [{}], Calculated payload-oxum: [{}.{}], for payload directory [{}]", payloadOxum, vistor.getTotalSize(), vistor.getCount(), payloadDir);
+    
+    if(totalSize != vistor.getTotalSize()){
+      throw new InvalidPayloadOxumException("Invalid total size. Expected " + totalSize + "but calculated " + vistor.getTotalSize());
+    }
+    if(numberOfFiles != vistor.getCount()){
+      throw new InvalidPayloadOxumException("Invalid file count. Expected " + numberOfFiles + "but found " + vistor.getCount() + " files");
+    }
+  }
 
   /**
    * See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a><br>
@@ -129,7 +177,7 @@ public class Verifier {
     
     checkBagitFileExists(bag.getRootDir(), bag.getVersion());
     
-    checkPayloadDirectoryExists(bag.getRootDir(), bag.getVersion());
+    checkPayloadDirectoryExists(bag);
     
     checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), bag.getVersion());
     
@@ -166,11 +214,8 @@ public class Verifier {
     }
   }
   
-  protected static void checkPayloadDirectoryExists(File rootDir, Version version) throws MissingPayloadDirectoryException{
-    File dataDir = new File(rootDir, PAYLOAD_DIR_NAME);
-    if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
-      dataDir = rootDir;
-    }
+  protected static void checkPayloadDirectoryExists(Bag bag) throws MissingPayloadDirectoryException{
+    File dataDir = getDataDir(bag);
     
     if(!dataDir.exists()){
       throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");

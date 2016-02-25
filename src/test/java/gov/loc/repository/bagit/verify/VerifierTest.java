@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
@@ -34,6 +35,42 @@ public class VerifierTest extends Assert{
   
   private File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
   private SupportedAlgorithm algorithm = StandardSupportedAlgorithms.valueOf("MD5");
+  
+  @Test
+  public void testCanQuickVerify() throws Exception{
+    Bag bag = BagReader.read(rootDir);
+    boolean canQuickVerify = Verifier.canQuickVerify(bag);
+    assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
+    
+    File passingRootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
+    bag = BagReader.read(passingRootDir);
+    canQuickVerify = Verifier.canQuickVerify(bag);
+    assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
+  }
+  
+  @Test 
+  public void testQuickVerify() throws Exception{
+    File passingRootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
+    Bag bag = BagReader.read(passingRootDir);
+    
+    Verifier.quicklyVerify(bag, true);
+  }
+  
+  @Test(expected=InvalidPayloadOxumException.class)
+  public void testInvalidByteSizeForQuickVerify() throws Exception{
+    File badRootDir = new File(getClass().getClassLoader().getResource("badPayloadOxumByteSize/bag").getFile());
+    Bag bag = BagReader.read(badRootDir);
+    
+    Verifier.quicklyVerify(bag, true);
+  }
+  
+  @Test(expected=InvalidPayloadOxumException.class)
+  public void testInvalidFileCountForQuickVerify() throws Exception{
+    File badRootDir = new File(getClass().getClassLoader().getResource("badPayloadOxumFileCount/bag").getFile());
+    Bag bag = BagReader.read(badRootDir);
+    
+    Verifier.quicklyVerify(bag, true);
+  }
   
   @Test
   public void testStandardSupportedAlgorithms() throws Exception{
