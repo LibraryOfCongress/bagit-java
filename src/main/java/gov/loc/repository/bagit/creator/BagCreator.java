@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.SupportedAlgorithm;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 

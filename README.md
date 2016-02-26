@@ -65,9 +65,7 @@ if(BagVerifier.canQuickVerify(bag)){
 ```
 
 ## Developing Bagit-Java
-Bagit-Java uses [Grad;e](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.
-##### Building a Jar
-Inside the bagit-java root directory, run `gradle jar`.
+Bagit-Java uses [Gradle](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.
 ##### Running tests and code quality checks
 Inside the bagit-java root directory, run `gradle check`.
 ##### Uploading to maven central
@@ -85,3 +83,8 @@ Simply run `gradle eclipse` and it will automatically create a eclipse project f
 * Integrate new proposed specification we are calling "dot bagit"
 * Fix bugs/issues reported with new library (on going)
 * Add extensions for more than standard supported algorithms
+
+### Support
+1. If you have an issue using bagit-java you may contact us at
+2. If you have found a bug please create a new issue on [the issues page](https://github.com/LibraryOfCongress/bagit-java/issues)
+3. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)

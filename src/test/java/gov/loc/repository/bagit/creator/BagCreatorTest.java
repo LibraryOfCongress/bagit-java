@@ -13,8 +13,8 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
 public class BagCreatorTest extends Assert {
   @Rule

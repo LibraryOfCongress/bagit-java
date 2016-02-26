@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.domain;
+package gov.loc.repository.bagit.hash;
 
 /**
  * The standard algorithms that are supported "out of the box" in bagit

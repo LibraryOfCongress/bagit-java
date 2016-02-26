@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.domain;
+package gov.loc.repository.bagit.hash;
 
 import java.security.MessageDigest;
 
