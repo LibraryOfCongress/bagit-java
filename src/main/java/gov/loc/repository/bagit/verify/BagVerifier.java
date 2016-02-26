@@ -96,7 +96,6 @@ public class BagVerifier {
    *  A bag is <b>valid</b> if the bag is complete and every checksum has been 
    *  verified against the contents of its corresponding file.
    * @param bag the {@link Bag} object to check
-   * @param algorithm the {@link SupportedAlgorithm} implementation to use to generate checksum hashes
    * @param ignoreHiddenFiles ignore hidden files unless explicitly listed in manifest(s)
    * 
    * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} 
@@ -127,7 +126,6 @@ public class BagVerifier {
    * Check the supplied checksum hashes against the generated checksum hashes
    * 
    * @param manifest list of file and their hash
-   * @param algorithm the algorithm to use to generate checksum hash
    * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum
    */
   protected static void checkHashes(Manifest manifest) throws Exception{
