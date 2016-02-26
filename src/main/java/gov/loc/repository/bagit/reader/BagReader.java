@@ -18,7 +18,9 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
+import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
+import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 
 /**
@@ -27,6 +29,16 @@ import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 public class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   
+  private BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  
+  public BagReader(){
+    this.nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
+  }
+  
+  public BagReader(BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
+    this.nameMapping = nameMapping;
+  }
+  
   /**
    * Read the bag from the filesystem and create a bag object
    * @param rootDir the root directory of the bag 
@@ -34,7 +46,7 @@ public class BagReader {
    * @return a {@link Bag} object representing a bag on the filesystem
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
    */
-  public static Bag read(File rootDir) throws IOException, UnparsableVersionException{
+  public Bag read(File rootDir) throws IOException, UnparsableVersionException{
     File bagitDir = new File(rootDir, ".bagit");
     if(!bagitDir.exists()){
       bagitDir = rootDir;
@@ -65,7 +77,7 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    */
-  public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException, UnparsableVersionException{
+  public Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException, UnparsableVersionException{
     logger.debug("Reading bagit.txt file");
     LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
     
@@ -81,7 +93,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static Version parseVersion(String version) throws UnparsableVersionException{
+  protected Version parseVersion(String version) throws UnparsableVersionException{
     if(!version.contains(".")){
       throw new UnparsableVersionException("Version must be in format MAJOR.MINOR but was " + version);
     }
@@ -101,7 +113,7 @@ public class BagReader {
    * @return a new bag that contains all the manifest(s) information
    * @throws IOException if there is a problem reading a file
    */
-  public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
+  public Bag readAllManifests(File rootDir, Bag bag) throws IOException{
     logger.info("Attempting to find and read manifests");
     Bag newBag = new Bag(bag);
     File[] files = getAllManifestFiles(rootDir);
@@ -120,7 +132,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static File[] getAllManifestFiles(File rootDir){
+  protected File[] getAllManifestFiles(File rootDir){
     File[] files = rootDir.listFiles(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
@@ -138,10 +150,10 @@ public class BagReader {
    * @return the converted manifest object from the file
    * @throws IOException if there is a problem reading a file
    */
-  public static Manifest readManifest(File manifestFile, File bagRootDir) throws IOException{
+  public Manifest readManifest(File manifestFile, File bagRootDir) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
     String alg = manifestFile.getName().split("[-\\.]")[1];
-    StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.valueOf(alg.toUpperCase());
+    SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
     
     Manifest manifest = new Manifest(algorithm);
     
@@ -151,7 +163,7 @@ public class BagReader {
     return manifest;
   }
   
-  protected static HashMap<File, String> readChecksumFileMap(File manifestFile, File bagRootDir) throws IOException{
+  protected HashMap<File, String> readChecksumFileMap(File manifestFile, File bagRootDir) throws IOException{
     HashMap<File, String> map = new HashMap<>();
     BufferedReader br = Files.newBufferedReader(Paths.get(manifestFile.toURI()));
 
@@ -175,7 +187,7 @@ public class BagReader {
    * @return a new bag that contains the bag-info.txt (metadata) information
    * @throws IOException if there is a problem reading a file
    */
-  public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
+  public Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
     logger.info("Attempting to read bag metadata file");
     Bag newBag = new Bag(bag);
     LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
@@ -204,7 +216,7 @@ public class BagReader {
    * @return a new bag that contains a list of items to fetch
    * @throws IOException if there is a problem reading a file
    */
-  public static Bag readFetch(File fetchFile, Bag bag) throws IOException{
+  public Bag readFetch(File fetchFile, Bag bag) throws IOException{
     logger.info("Attempting to read [{}]", fetchFile);
     Bag newBag = new Bag(bag);
     BufferedReader br = Files.newBufferedReader(Paths.get(fetchFile.toURI()));
@@ -225,7 +237,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static LinkedHashMap<String, String> readKeyValueMapFromFile(File file, String splitRegex) throws IOException{
+  protected LinkedHashMap<String, String> readKeyValueMapFromFile(File file, String splitRegex) throws IOException{
     LinkedHashMap<String, String> map = new LinkedHashMap<>();
     BufferedReader br = Files.newBufferedReader(Paths.get(file.toURI()));
     String lastEnteredKey = "";

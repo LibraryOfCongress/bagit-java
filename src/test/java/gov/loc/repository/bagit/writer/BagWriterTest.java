@@ -26,10 +26,12 @@ public class BagWriterTest extends Assert {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
+  private BagReader reader = new BagReader();
+  
   @Test
   public void testWriteVersion97() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
-    Bag bag = BagReader.read(rootDir); 
+    Bag bag = reader.read(rootDir); 
     File bagitDir = folder.newFolder();
     
     BagWriter.write(bag, bagitDir);
@@ -39,7 +41,7 @@ public class BagWriterTest extends Assert {
   @Test
   public void testWriteVersion98() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_98/bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     File dotbagitDir = new File(folder.getRoot(), ".bagit");
     
     BagWriter.write(bag, folder.getRoot());
@@ -49,7 +51,7 @@ public class BagWriterTest extends Assert {
   @Test
   public void testWriteHoley() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag").getFile());
-    Bag bag = BagReader.read(rootDir); 
+    Bag bag = reader.read(rootDir); 
     File bagitDir = folder.newFolder();
     
     BagWriter.write(bag, bagitDir);

@@ -34,40 +34,43 @@ public class BagVerifierTest extends Assert{
   
   private File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
   
+  private BagVerifier sut = new BagVerifier();
+  private BagReader reader = new BagReader();
+  
   @Test
   public void testCanQuickVerify() throws Exception{
-    Bag bag = BagReader.read(rootDir);
-    boolean canQuickVerify = BagVerifier.canQuickVerify(bag);
+    Bag bag = reader.read(rootDir);
+    boolean canQuickVerify = sut.canQuickVerify(bag);
     assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
     
     File passingRootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
-    bag = BagReader.read(passingRootDir);
-    canQuickVerify = BagVerifier.canQuickVerify(bag);
+    bag = reader.read(passingRootDir);
+    canQuickVerify = sut.canQuickVerify(bag);
     assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
   }
   
   @Test 
   public void testQuickVerify() throws Exception{
     File passingRootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
-    Bag bag = BagReader.read(passingRootDir);
+    Bag bag = reader.read(passingRootDir);
     
-    BagVerifier.quicklyVerify(bag, true);
+    sut.quicklyVerify(bag, true);
   }
   
   @Test(expected=InvalidPayloadOxumException.class)
   public void testInvalidByteSizeForQuickVerify() throws Exception{
     File badRootDir = new File(getClass().getClassLoader().getResource("badPayloadOxumByteSize/bag").getFile());
-    Bag bag = BagReader.read(badRootDir);
+    Bag bag = reader.read(badRootDir);
     
-    BagVerifier.quicklyVerify(bag, true);
+    sut.quicklyVerify(bag, true);
   }
   
   @Test(expected=InvalidPayloadOxumException.class)
   public void testInvalidFileCountForQuickVerify() throws Exception{
     File badRootDir = new File(getClass().getClassLoader().getResource("badPayloadOxumFileCount/bag").getFile());
-    Bag bag = BagReader.read(badRootDir);
+    Bag bag = reader.read(badRootDir);
     
-    BagVerifier.quicklyVerify(bag, true);
+    sut.quicklyVerify(bag, true);
   }
   
   @Test
@@ -76,108 +79,108 @@ public class BagVerifierTest extends Assert{
     for(String alg : algorithms){
       StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.valueOf(alg.toUpperCase());
       Manifest manifest = new Manifest(algorithm);
-      BagVerifier.checkHashes(manifest);
+      sut.checkHashes(manifest);
     }
   }
   
   @Test
   public void testBagWithTagFilesInPayloadIsValid() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-tagfiles-in-payload-manifest").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test
   public void testVersion0_97IsValid() throws Exception{
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test
   public void testVersion0_98IsValid() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("bags/v0_98/bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test
   public void testIsComplete() throws Exception{
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isComplete(bag, true);
+    sut.isComplete(bag, true);
   }
   
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenFetchItemsDontExist() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/holey-bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isComplete(bag, true);
+    sut.isComplete(bag, true);
   }
   
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenManifestListFileThatDoesntExist() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("filesInManifestDontExist").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isComplete(bag, true);
+    sut.isComplete(bag, true);
   }
   
   @Test(expected=FileNotInManifestException.class)
   public void testErrorWhenFileIsntInManifest() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("filesInPayloadDirAreNotInManifest").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isComplete(bag, true);
+    sut.isComplete(bag, true);
   }
   
   @Test(expected=CorruptChecksumException.class)
   public void testCorruptPayloadFile() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("corruptPayloadFile").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test(expected=CorruptChecksumException.class)
   public void testCorruptTagFile() throws Exception{
     rootDir = new File(getClass().getClassLoader().getResource("corruptTagFile").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = reader.read(rootDir);
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test(expected=MissingBagitFileException.class)
   public void testErrorWhenMissingBagitTextFile() throws Exception{
     copyBagToTestFolder();
-    Bag bag = BagReader.read(folder.getRoot());
+    Bag bag = reader.read(folder.getRoot());
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     bagitFile.delete();
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test(expected=MissingPayloadDirectoryException.class)
   public void testErrorWhenMissingPayloadDirectory() throws Exception{
     copyBagToTestFolder();
-    Bag bag = BagReader.read(folder.getRoot());
+    Bag bag = reader.read(folder.getRoot());
     File dataDir = new File(folder.getRoot(), "data");
     deleteDirectory(Paths.get(dataDir.toURI()));
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   @Test(expected=MissingPayloadManifestException.class)
   public void testErrorWhenMissingPayloadManifest() throws Exception{
     copyBagToTestFolder();
-    Bag bag = BagReader.read(folder.getRoot());
+    Bag bag = reader.read(folder.getRoot());
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
     manifestFile.delete();
     
-    BagVerifier.isValid(bag, true);
+    sut.isValid(bag, true);
   }
   
   private void copyBagToTestFolder() throws Exception{

@@ -23,8 +23,11 @@ public class BagReaderTest extends Assert{
   private static final List<String> paths = Arrays.asList("data/dir1/test3.txt", "data/dir2/dir3/test5.txt", 
       "data/dir2/test4.txt", "data/test 1.txt", "data/test2.txt");
   
+  private BagReader sut;
+  
   @Before
   public void setup() throws MalformedURLException{
+    sut = new BagReader();
     urls = Arrays.asList(new URL("http://localhost/foo/data/dir1/test3.txt"), 
         new URL("http://localhost/foo/data/dir2/dir3/test5.txt"),
         new URL("http://localhost/foo/data/dir2/test4.txt"),
@@ -34,20 +37,20 @@ public class BagReaderTest extends Assert{
   
   @Test(expected=UnparsableVersionException.class)
   public void testParseVersionWithBadVersion() throws UnparsableVersionException{
-    BagReader.parseVersion("someVersionThatIsUnparsable");
+    sut.parseVersion("someVersionThatIsUnparsable");
   }
   
   @Test
   public void testReadBagWithinABag() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-in-a-bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertNotNull(bag);
   }
   
   @Test
   public void testReadBagWithEncodedNames() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-encoded-names").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertNotNull(bag);
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
       for(File file : payloadManifest.getFileToChecksumMap().keySet()){
@@ -59,7 +62,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagWithEscapableCharacter() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-escapable-characters").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertNotNull(bag);
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
       for(File file : payloadManifest.getFileToChecksumMap().keySet()){
@@ -71,7 +74,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagWithDotSlash() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-leading-dot-slash-in-manifest").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertNotNull(bag);
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
       for(File file : payloadManifest.getFileToChecksumMap().keySet()){
@@ -83,7 +86,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagWithSpaceAsManifestDelimiter() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag-with-space").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertNotNull(bag);
     for(Manifest payloadManifest : bag.getPayLoadManifests()){
       for(File file : payloadManifest.getFileToChecksumMap().keySet()){
@@ -95,7 +98,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadVersion0_93() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_93/bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 93), bag.getVersion());
     assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
   }
@@ -103,7 +106,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadVersion0_94() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 94), bag.getVersion());
     assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
   }
@@ -111,7 +114,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadVersion0_95() throws Exception{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_95/bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 95), bag.getVersion());
     assertEquals("260 GB", bag.getMetadata().get("Package-Size"));
   }
@@ -119,7 +122,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithNoSizeSpecified() throws Exception{
     File fetchFile = new File(getClass().getClassLoader().getResource("fetchFiles/fetchWithNoSizeSpecified.txt").getFile());
-    Bag returnedBag = BagReader.readFetch(fetchFile, new Bag());
+    Bag returnedBag = sut.readFetch(fetchFile, new Bag());
     for(FetchItem item : returnedBag.getItemsToFetch()){
       assertNotNull(item.url);
       assertTrue(urls.contains(item.url));
@@ -134,7 +137,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithSizeSpecified() throws Exception{
     File fetchFile = new File(getClass().getClassLoader().getResource("fetchFiles/fetchWithSizeSpecified.txt").getFile());
-    Bag returnedBag = BagReader.readFetch(fetchFile, new Bag());
+    Bag returnedBag = sut.readFetch(fetchFile, new Bag());
     for(FetchItem item : returnedBag.getItemsToFetch()){
       assertNotNull(item.url);
       assertTrue(urls.contains(item.url));
@@ -166,7 +169,7 @@ public class BagReaderTest extends Assert{
         "         microfilm.");
     
     File bagInfoFile = new File(getClass().getClassLoader().getResource("baginfoFiles").getFile());
-    Bag returnedBag = BagReader.readBagMetadata(bagInfoFile, new Bag());
+    Bag returnedBag = sut.readBagMetadata(bagInfoFile, new Bag());
     
     assertEquals(expectedValues, returnedBag.getMetadata());
   }
@@ -174,7 +177,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadAllManifests() throws Exception{
     File rootBag = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
-    Bag returnedBag = BagReader.readAllManifests(rootBag, new Bag());
+    Bag returnedBag = sut.readAllManifests(rootBag, new Bag());
     assertEquals(1, returnedBag.getPayLoadManifests().size());
     assertEquals(1, returnedBag.getTagManifests().size());
   }
@@ -182,7 +185,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagitFile()throws Exception{
     File bagitFile = new File(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").getFile());
-    Bag returnedBag = BagReader.readBagitTextFile(bagitFile, new Bag(new Version(0, 96)));
+    Bag returnedBag = sut.readBagitTextFile(bagitFile, new Bag(new Version(0, 96)));
     assertEquals(new Version(0, 97), returnedBag.getVersion());
     assertEquals(StandardCharsets.UTF_8.name(), returnedBag.getFileEncoding());
   }
@@ -193,7 +196,7 @@ public class BagReaderTest extends Assert{
     File[] payloadFiles = new File[]{new File(rootBag, "data/dir1/test3.txt"), new File(rootBag, "data/dir2/dir3/test5.txt"), 
         new File(rootBag, "data/dir2/test4.txt"), new File(rootBag, "data/test1.txt"), new File(rootBag, "data/test2.txt")};
     
-    Bag returnedBag = BagReader.read(rootBag);
+    Bag returnedBag = sut.read(rootBag);
     
     assertNotNull(returnedBag);
     assertEquals(new Version(0, 97), returnedBag.getVersion());
@@ -209,7 +212,7 @@ public class BagReaderTest extends Assert{
     File[] payloadFiles = new File[]{new File(rootBag, "dir1/test3.txt"), new File(rootBag, "dir2/dir3/test5.txt"), 
         new File(rootBag, "dir2/test4.txt"), new File(rootBag, "test1.txt"), new File(rootBag, "test2.txt")};
     
-    Bag returnedBag = BagReader.read(rootBag);
+    Bag returnedBag = sut.read(rootBag);
     
     assertNotNull(returnedBag);
     assertEquals(new Version(0, 98), returnedBag.getVersion());

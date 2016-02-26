@@ -29,6 +29,8 @@ import gov.loc.repository.bagit.verify.BagVerifier;
 public class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
 
+  private BagWriter(){}
+  
   /**
    * Write the bag out to the specified directory. 
    * If an error occurs some of the files may have been written out to the filesystem.
