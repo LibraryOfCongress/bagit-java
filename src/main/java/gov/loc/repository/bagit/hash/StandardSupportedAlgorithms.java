@@ -22,6 +22,6 @@ public enum StandardSupportedAlgorithms implements SupportedAlgorithm{
 
   @Override
   public String getBagitName() {
-    return name();
+    return name().toLowerCase();
   }
 }

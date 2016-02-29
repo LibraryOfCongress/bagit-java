@@ -30,7 +30,6 @@ import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
-import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.tasks.CheckIfFileExistsTask;
 import gov.loc.repository.bagit.tasks.CheckManifestHashsTask;
