@@ -3,8 +3,6 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit/badge.svg)](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit)
 
-[![Master Branch Dependency Status](https://www.versioneye.com/user/projects/56cc84d818b27104252decc3/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56cc84d818b27104252decc3)
-
 [![License](https://img.shields.io/badge/License-Public--Domain-blue.svg)](https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt)
 
 
@@ -85,6 +83,7 @@ Simply run `gradle eclipse` and it will automatically create a eclipse project f
 * Add extensions for more than standard supported algorithms
 
 ### Support
-1. If you have an issue using bagit-java you may contact us at
+1. The Digital Curation Google Group (https://groups.google.com/d/forum/digital-curation) is an open discussion list that reaches many of the contributors to and users of this open-source project
 2. If you have found a bug please create a new issue on [the issues page](https://github.com/LibraryOfCongress/bagit-java/issues)
-3. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
+3. To contact a developer at the Library of Congress please email repo-dev@listserv.loc.gov
+4. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
