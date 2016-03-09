@@ -106,12 +106,12 @@ public abstract class AbstractBag implements Bag {
 		
 		DirNode bagFileDirNode = null;
 		try {
-			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag);
+			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag, this.bagFactory);
 
 			log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
 
 			//Load root tag map
-			for(FileSystemNode node : bagFileDirNode.listChildren()) {
+			for(FileSystemNode node : bagFileDirNode.listChildren(this.bagFactory.getDefaultNodeFilter())) {
 				if (node instanceof FileNode) {
 					FileNode tagFileNode = (FileNode)node;
 					String filepath = FilenameHelper.removeBasePath(bagFileDirNode.getFilepath(), tagFileNode.getFilepath());
@@ -165,7 +165,7 @@ public abstract class AbstractBag implements Bag {
 		
 		DirNode bagFileDirNode;
 		try {
-			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag);
+			bagFileDirNode = FileSystemFactory.getDirNodeForBag(this.fileForBag, this.bagFactory);
 		} catch (UnknownFormatException e) {
 			throw new RuntimeException(e);
 		} catch (UnsupportedFormatException e) {
@@ -519,7 +519,12 @@ public abstract class AbstractBag implements Bag {
 	public BagPartFactory getBagPartFactory() {
 		return this.bagPartFactory;
 	}
-		
+
+	@Override
+	public BagFactory getBagFactory() {
+		return this.bagFactory;
+	}
+
 	@Override
 	public Bag write(Writer writer, File file) {
 		checkClosed();

@@ -207,7 +207,7 @@ public class CompleteVerifierImpl extends LongRunningOperationBase implements Co
 		if (bag.getFile() != null) {
 			DirNode bagDirNode;
 			try {
-				bagDirNode = FileSystemFactory.getDirNodeForBag(bag.getFile());
+				bagDirNode = FileSystemFactory.getDirNodeForBag(bag.getFile(), bag.getBagFactory());
 			} catch (UnknownFormatException e) {
 				throw new RuntimeException(e);
 			} catch (UnsupportedFormatException e) {

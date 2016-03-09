@@ -149,7 +149,7 @@ public class FileSystemWriter extends AbstractWriter {
 			throw new RuntimeException(ex);
 		}
 		this.newBag = this.bagFactory.createBag(this.newBagDir, bag.getBagConstants().getVersion(), LoadOption.NO_LOAD);
-		this.fileSystem = new FileFileSystem(this.newBagDir);
+		this.fileSystem = new FileFileSystem(this.newBagDir, bag.getBagFactory().getDefaultNodeFilter());
 		this.fileCount = 0;
 		this.fileTotal = bag.getTags().size() + bag.getPayload().size();
 		this.origBag = bag;

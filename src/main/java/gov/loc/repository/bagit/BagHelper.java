@@ -30,7 +30,7 @@ public class BagHelper {
 	public static String getVersion(File bagFile) {
 		DirNode bagFileDirNode = null;
 		try {
-			bagFileDirNode = FileSystemFactory.getDirNodeForBag(bagFile);
+			bagFileDirNode = FileSystemFactory.getDirNodeForBag(bagFile, new BagFactory());
 			log.trace(MessageFormat.format("BagFileDirNode has filepath {0} and is a {1}", bagFileDirNode.getFilepath(), bagFileDirNode.getClass().getSimpleName()));
 			
 			FileNode bagItNode = bagFileDirNode.childFile(BAGIT);

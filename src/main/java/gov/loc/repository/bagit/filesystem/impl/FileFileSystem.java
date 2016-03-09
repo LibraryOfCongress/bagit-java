@@ -5,17 +5,19 @@ import java.io.File;
 import gov.loc.repository.bagit.filesystem.DirNode;
 import gov.loc.repository.bagit.filesystem.FileNode;
 import gov.loc.repository.bagit.filesystem.FileSystem;
+import gov.loc.repository.bagit.filesystem.FileSystemNodeFilter;
 
 public class FileFileSystem implements FileSystem {
 
 	private File file;
 	private DirNode dirNode;
+	private FileSystemNodeFilter defaultNodeFilter;
 	
-	public FileFileSystem(File file) {
+	public FileFileSystem(File file, FileSystemNodeFilter defaultNodeFilter) {
 		assert file != null;		
 		if (! file.isDirectory()){ throw new RuntimeException("Not a directory");}		
 		this.file = file;
-		
+		this.defaultNodeFilter = defaultNodeFilter;
 		this.dirNode = new FileDirNode(file, this);
 	}
 	
@@ -45,4 +47,7 @@ public class FileFileSystem implements FileSystem {
 		return new FileFileNode(resolvedFile, this);
 	}
 
+	public FileSystemNodeFilter getDefaultNodeFilter() {
+		return this.defaultNodeFilter;
+	}
 }

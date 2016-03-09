@@ -20,15 +20,15 @@ import org.junit.Test;
 
 public class PreBagImplTest {
 
-	BagFactory bagFactory = new BagFactory();
-	
 	@Test
 	public void testBagInPlaceWithExistingDataDir() throws Exception {
 		File testDir = createTestBag(true);
 		assertTrue(testDir.exists());
 		File testDataDir = new File(testDir, "data");
 		assertTrue(testDataDir.exists());
-		
+
+		BagFactory bagFactory = new BagFactory();
+
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
 		try {
@@ -45,7 +45,8 @@ public class PreBagImplTest {
 		assertTrue(testDir.exists());
 		File testDataDir = new File(testDir, "data");
 		assertFalse(testDataDir.exists());
-		
+
+		BagFactory bagFactory = new BagFactory();
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, true);
 		try {
@@ -65,7 +66,8 @@ public class PreBagImplTest {
 		assertTrue(testDir.exists());
 		File testDataDir = new File(testDir, "data");
 		assertFalse(testDataDir.exists());
-		
+
+		BagFactory bagFactory = new BagFactory();
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
 		try {
@@ -93,6 +95,7 @@ public class PreBagImplTest {
 		FileUtils.write(extraFile, "extra");
 		assertTrue(extraFile.exists());
 
+		BagFactory bagFactory = new BagFactory();
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		List<String> ignoreDirs = new ArrayList<String>();
 		ignoreDirs.add("extra");
@@ -128,6 +131,7 @@ public class PreBagImplTest {
 		FileUtils.write(extraFile, "extra");
 		assertTrue(extraFile.exists());
 
+		BagFactory bagFactory = new BagFactory();
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		preBag.makeBagInPlace(Version.V0_96, false);
 	}
@@ -146,6 +150,7 @@ public class PreBagImplTest {
 		FileUtils.write(extraFile, "extra");
 		assertTrue(extraFile.exists());
 
+		BagFactory bagFactory = new BagFactory();
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);		
 		try {
@@ -175,7 +180,8 @@ public class PreBagImplTest {
 		assertTrue(emptyDir.exists());
 		File testDataDir = new File(testDir, "data");
 		assertFalse(testDataDir.exists());
-		
+
+		BagFactory bagFactory = new BagFactory();
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, false);
 		try {
@@ -198,7 +204,9 @@ public class PreBagImplTest {
 		File emptyDir = new File(testDir, "empty_dir");
 		FileUtils.forceMkdir(emptyDir);
 		assertTrue(emptyDir.exists());
-		
+
+		BagFactory bagFactory = new BagFactory(null);
+
 		PreBag preBag = bagFactory.createPreBag(testDir);
 		Bag bag = preBag.makeBagInPlace(BagFactory.LATEST, true, true);
 		try {

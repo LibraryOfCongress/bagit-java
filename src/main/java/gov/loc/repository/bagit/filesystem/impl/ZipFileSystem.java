@@ -1,9 +1,6 @@
 package gov.loc.repository.bagit.filesystem.impl;
 
-import gov.loc.repository.bagit.filesystem.DirNode;
-import gov.loc.repository.bagit.filesystem.FileNode;
-import gov.loc.repository.bagit.filesystem.FileSystem;
-import gov.loc.repository.bagit.filesystem.FileSystemNode;
+import gov.loc.repository.bagit.filesystem.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,7 +111,12 @@ public class ZipFileSystem implements FileSystem {
 		log.trace(MessageFormat.format("Resolving {0}", filepath));
 		return new ZipFileNode(this.zipFile.getEntry(filepath), filepath, this);
 	}
-	
+
+	@Override
+	public FileSystemNodeFilter getDefaultNodeFilter() {
+		return null;
+	}
+
 	@Override
 	protected void finalize() throws Throwable {
 		this.close();

@@ -238,7 +238,9 @@ public interface Bag extends Closeable {
 	BagConstants getBagConstants();
 	
 	BagPartFactory getBagPartFactory();
-	
+
+	BagFactory getBagFactory();
+
 	/**
 	 * <p>Contains names for constants associated with a bag.
 	 * BagIt defines and reserves several names, and some of those names
