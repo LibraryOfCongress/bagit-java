@@ -4,10 +4,11 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import javafx.util.Pair;
 
 /**
  * The main representation of the bagit spec.
@@ -29,7 +30,7 @@ public class Bag {
   private List<FetchItem> itemsToFetch = new ArrayList<>();
   
   //equivalent to the bag-info.txt 
-  private LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
+  private List<Pair<String, String>> metadata = new ArrayList<>();
   
   //the current location of the bag on the filesystem
   private File rootDir;
@@ -79,11 +80,11 @@ public class Bag {
     this.itemsToFetch = itemsToFetch;
   }
 
-  public LinkedHashMap<String, String> getMetadata() {
+  public List<Pair<String, String>> getMetadata() {
     return metadata;
   }
 
-  public void setMetadata(LinkedHashMap<String, String> metadata) {
+  public void setMetadata(List<Pair<String, String>> metadata) {
     this.metadata = metadata;
   }
 

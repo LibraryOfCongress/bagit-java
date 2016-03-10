@@ -13,3 +13,4 @@ Bag-Count: 1 of 15
 Internal-Sender-Identifier: /storage/images/yoshimuri
 Internal-Sender-Description: Uncompressed greyscale TIFFs created from
          microfilm.
+Bag-Count: 1 of 15

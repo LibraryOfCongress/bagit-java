@@ -4,8 +4,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -17,6 +17,7 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import javafx.util.Pair;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
@@ -97,7 +98,11 @@ public class BagReaderTest extends Assert{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_93/bag").getFile());
     Bag bag = BagReader.read(rootDir);
     assertEquals(new Version(0, 93), bag.getVersion());
-    assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
+    for(Pair<String, String> keyValue : bag.getMetadata()){
+      if("Payload-Oxum".equals(keyValue.getKey())){
+        assertEquals("25.5", keyValue.getValue());
+      }
+    }
   }
   
   @Test
@@ -105,7 +110,11 @@ public class BagReaderTest extends Assert{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_94/bag").getFile());
     Bag bag = BagReader.read(rootDir);
     assertEquals(new Version(0, 94), bag.getVersion());
-    assertEquals("25.5", bag.getMetadata().get("Payload-Oxum"));
+    for(Pair<String, String> keyValue : bag.getMetadata()){
+      if("Payload-Oxum".equals(keyValue.getKey())){
+        assertEquals("25.5", keyValue.getValue());
+      }
+    }
   }
   
   @Test
@@ -113,7 +122,11 @@ public class BagReaderTest extends Assert{
     File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_95/bag").getFile());
     Bag bag = BagReader.read(rootDir);
     assertEquals(new Version(0, 95), bag.getVersion());
-    assertEquals("260 GB", bag.getMetadata().get("Package-Size"));
+    for(Pair<String, String> keyValue : bag.getMetadata()){
+      if("Package-Size".equals(keyValue.getKey())){
+        assertEquals("260 GB", keyValue.getValue());
+      }
+    }
   }
 
   @Test
@@ -148,22 +161,23 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadBagMetadata() throws Exception{
-    LinkedHashMap<String, String> expectedValues = new LinkedHashMap<>();
-    expectedValues.put("Source-Organization", "Spengler University");
-    expectedValues.put("Organization-Address", "1400 Elm St., Cupertino, California, 95014");
-    expectedValues.put("Contact-Name", "Edna Janssen");
-    expectedValues.put("Contact-Phone", "+1 408-555-1212");
-    expectedValues.put("Contact-Email", "ej@spengler.edu");
-    expectedValues.put("External-Description", "Uncompressed greyscale TIFF images from the\n" + 
-        "         Yoshimuri papers collection.");
-    expectedValues.put("Bagging-Date", "2008-01-15");
-    expectedValues.put("External-Identifier", "spengler_yoshimuri_001");
-    expectedValues.put("Bag-Size", "260 GB");
-    expectedValues.put("Bag-Group-Identifier", "spengler_yoshimuri");
-    expectedValues.put("Bag-Count", "1 of 15");
-    expectedValues.put("Internal-Sender-Identifier", "/storage/images/yoshimuri");
-    expectedValues.put("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from\n" + 
-        "         microfilm.");
+    List<Pair<String, String>> expectedValues = new ArrayList<>();
+    expectedValues.add(new Pair<>("Source-Organization", "Spengler University"));
+    expectedValues.add(new Pair<>("Organization-Address", "1400 Elm St., Cupertino, California, 95014"));
+    expectedValues.add(new Pair<>("Contact-Name", "Edna Janssen"));
+    expectedValues.add(new Pair<>("Contact-Phone", "+1 408-555-1212"));
+    expectedValues.add(new Pair<>("Contact-Email", "ej@spengler.edu"));
+    expectedValues.add(new Pair<>("External-Description", "Uncompressed greyscale TIFF images from the\n" + 
+        "         Yoshimuri papers collection."));
+    expectedValues.add(new Pair<>("Bagging-Date", "2008-01-15"));
+    expectedValues.add(new Pair<>("External-Identifier", "spengler_yoshimuri_001"));
+    expectedValues.add(new Pair<>("Bag-Size", "260 GB"));
+    expectedValues.add(new Pair<>("Bag-Group-Identifier", "spengler_yoshimuri"));
+    expectedValues.add(new Pair<>("Bag-Count", "1 of 15"));
+    expectedValues.add(new Pair<>("Internal-Sender-Identifier", "/storage/images/yoshimuri"));
+    expectedValues.add(new Pair<>("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from\n" + 
+        "         microfilm."));
+    expectedValues.add(new Pair<>("Bag-Count", "1 of 15")); //test duplicate
     
     File bagInfoFile = new File(getClass().getClassLoader().getResource("baginfoFiles").getFile());
     Bag returnedBag = BagReader.readBagMetadata(bagInfoFile, new Bag());

@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
+import javafx.util.Pair;
 
 /**
  * Responsible for reading a bag from the filesystem.
@@ -67,12 +69,20 @@ public class BagReader {
    */
   public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException, UnparsableVersionException{
     logger.debug("Reading bagit.txt file");
-    LinkedHashMap<String, String> map = readKeyValueMapFromFile(bagitFile, ":");
+    List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
     
-    String version = map.get("BagIt-Version");
-    logger.debug("BagIt-Version is [{}]", version);
-    String encoding = map.get("Tag-File-Character-Encoding");
-    logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
+    String version = "";
+    String encoding = "";
+    for(Pair<String, String> pair : pairs){
+      if("BagIt-Version".equals(pair.getKey())){
+        version = pair.getValue();
+        logger.debug("BagIt-Version is [{}]", version);
+      }
+      if("Tag-File-Character-Encoding".equals(pair.getKey())){
+        encoding = pair.getValue();
+        logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
+      }
+    }
     
     Bag newBag = new Bag(bag);
     newBag.setVersion(parseVersion(version));
@@ -178,17 +188,17 @@ public class BagReader {
   public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
     logger.info("Attempting to read bag metadata file");
     Bag newBag = new Bag(bag);
-    LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
+    List<Pair<String, String>> metadata = new ArrayList<>();
     
     File bagInfoFile = new File(rootDir, "bag-info.txt");
     if(bagInfoFile.exists()){
       logger.debug("Found [{}] file", bagInfoFile);
-      metadata = readKeyValueMapFromFile(bagInfoFile, ":");
+      metadata = readKeyValuesFromFile(bagInfoFile, ":");
     }
     File packageInfoFile = new File(rootDir, "package-info.txt"); //onlu exists in versions 0.93 - 0.95
     if(packageInfoFile.exists()){
       logger.debug("Found [{}] file", packageInfoFile);
-      metadata = readKeyValueMapFromFile(packageInfoFile, ":");
+      metadata = readKeyValuesFromFile(packageInfoFile, ":");
     }
     
     newBag.setMetadata(metadata);
@@ -225,28 +235,31 @@ public class BagReader {
     return newBag;
   }
   
-  protected static LinkedHashMap<String, String> readKeyValueMapFromFile(File file, String splitRegex) throws IOException{
-    LinkedHashMap<String, String> map = new LinkedHashMap<>();
+  protected static List<Pair<String, String>> readKeyValuesFromFile(File file, String splitRegex) throws IOException{
+    List<Pair<String, String>> keyValues = new ArrayList<>();
     BufferedReader br = Files.newBufferedReader(Paths.get(file.toURI()));
-    String lastEnteredKey = "";
 
     String line = br.readLine();
     while(line != null){
       if(line.matches("^\\s+.*")){
-        logger.debug("Found an indented line - merging it to key [{}]", lastEnteredKey);
-        map.merge(lastEnteredKey, System.lineSeparator() + line, String::concat);
+        
+        Pair<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
+        Pair<String, String> newKeyValue = new Pair<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
+        keyValues.add(newKeyValue);
+        
+        logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
       }
       else{
         String[] parts = line.split(splitRegex);
-        lastEnteredKey = parts[0].trim();
+        String key = parts[0].trim();
         String value = parts[1].trim();
-        logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", lastEnteredKey, value, file, splitRegex);
-        map.put(lastEnteredKey, value);
+        logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", key, value, file, splitRegex);
+        keyValues.add(new Pair<String, String>(key, value));
       }
        
       line = br.readLine();
     }
     
-    return map;
+    return keyValues;
   }
 }
