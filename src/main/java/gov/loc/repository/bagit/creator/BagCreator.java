@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.annotation.Incubating;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
@@ -85,6 +86,7 @@ public class BagCreator {
    * @throws NoSuchAlgorithmException if {@link MessageDigest} can't find the algorithm
    * @throws IOException if there is a problem writing files or .bagit directory
    */
+  @Incubating
   public static Bag createDotBagit(File root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     Bag bag = new Bag(new Version(0, 98));
     bag.setRootDir(root);
