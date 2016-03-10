@@ -8,9 +8,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +31,12 @@ import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
 
 public class BagVerifierTest extends Assert{
+  static {
+    if (Security.getProvider("BC") == null) {
+      Security.addProvider(new BouncyCastleProvider());
+    }
+  }
+  
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
@@ -181,6 +189,16 @@ public class BagVerifierTest extends Assert{
     manifestFile.delete();
     
     sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testAddSHA3SupportViaExtension() throws Exception{
+    File sha3BagDir = new File(getClass().getClassLoader().getResource("sha3Bag").getFile());
+    MySupportedNameToAlgorithmMapping mapping = new MySupportedNameToAlgorithmMapping();
+    BagReader extendedReader = new BagReader(mapping);
+    Bag bag = extendedReader.read(sha3BagDir);
+    BagVerifier extendedSut = new BagVerifier(mapping);
+    extendedSut.isValid(bag, true);
   }
   
   private void copyBagToTestFolder() throws Exception{

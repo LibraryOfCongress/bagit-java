@@ -62,13 +62,13 @@ public class BagVerifier {
    * @param bag the {@link Bag} object you wish to check
    * @return true if the bag can be quickly verified
    */
-  public static boolean canQuickVerify(Bag bag){
+  public boolean canQuickVerify(Bag bag){
     String payloadOxum = getPayloadOxum(bag);
     logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
     return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
   }
   
-  protected static String getPayloadOxum(Bag bag){
+  protected String getPayloadOxum(Bag bag){
     for(Pair<String,String> keyValue : bag.getMetadata()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         return keyValue.getValue();
@@ -87,7 +87,7 @@ public class BagVerifier {
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public static void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+  public void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
     String payloadOxum = getPayloadOxum(bag);
     if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
       throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
