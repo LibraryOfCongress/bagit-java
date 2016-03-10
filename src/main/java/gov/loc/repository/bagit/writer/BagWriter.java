@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -22,6 +21,7 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.verify.BagVerifier;
+import javafx.util.Pair;
 
 /**
  * responsible for writing out a bag.
@@ -168,11 +168,11 @@ public class BagWriter {
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeBagitInfoFile(LinkedHashMap<String, String> metadata, File outputDir, String charsetName) throws IOException{
+  public static void writeBagitInfoFile(List<Pair<String, String>> metadata, File outputDir, String charsetName) throws IOException{
     logger.debug("Writing bag-info.txt to [{}]", outputDir);
     Path outputPath = Paths.get(outputDir.getPath(), "bag-info.txt");
     
-    for(Entry<String, String> entry : metadata.entrySet()){
+    for(Pair<String, String> entry : metadata){
       String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, outputPath);
       Files.write(outputPath, line.getBytes(Charset.forName(charsetName)), 

@@ -35,6 +35,7 @@ import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgori
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.tasks.CheckIfFileExistsTask;
 import gov.loc.repository.bagit.tasks.CheckManifestHashsTask;
+import javafx.util.Pair;
 
 /**
  * Responsible for verifying if a bag is valid, complete
@@ -61,10 +62,19 @@ public class BagVerifier {
    * @param bag the {@link Bag} object you wish to check
    * @return true if the bag can be quickly verified
    */
-  public boolean canQuickVerify(Bag bag){
-    String payloadOxum = bag.getMetadata().get("Payload-Oxum");
+  public static boolean canQuickVerify(Bag bag){
+    String payloadOxum = getPayloadOxum(bag);
     logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
     return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
+  }
+  
+  protected static String getPayloadOxum(Bag bag){
+    for(Pair<String,String> keyValue : bag.getMetadata()){
+      if("Payload-Oxum".equals(keyValue.getKey())){
+        return keyValue.getValue();
+      }
+    }
+    return null;
   }
   
   /**
@@ -77,8 +87,8 @@ public class BagVerifier {
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
-    String payloadOxum = bag.getMetadata().get("Payload-Oxum");
+  public static void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+    String payloadOxum = getPayloadOxum(bag);
     if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
       throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
     }

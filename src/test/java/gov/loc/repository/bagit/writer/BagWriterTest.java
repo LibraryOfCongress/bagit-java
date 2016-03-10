@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +21,7 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
+import javafx.util.Pair;
 
 public class BagWriterTest extends Assert {
   @Rule
@@ -81,10 +82,10 @@ public class BagWriterTest extends Assert {
   public void testWriteBagitInfoFile() throws IOException{
     File rootDir = folder.newFolder();
     File bagInfo = new File(rootDir, "bag-info.txt");
-    LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
-    metadata.put("key1", "value1");
-    metadata.put("key2", "value2");
-    metadata.put("key3", "value3");
+    List<Pair<String, String>> metadata = new ArrayList<>();
+    metadata.add(new Pair<>("key1", "value1"));
+    metadata.add(new Pair<>("key2", "value2"));
+    metadata.add(new Pair<>("key3", "value3"));
     
     assertFalse(bagInfo.exists());
     BagWriter.writeBagitInfoFile(metadata, rootDir, StandardCharsets.UTF_8.name());
