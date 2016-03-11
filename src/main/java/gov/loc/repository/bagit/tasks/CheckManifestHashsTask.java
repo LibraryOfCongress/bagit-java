@@ -1,10 +1,9 @@
 package gov.loc.repository.bagit.tasks;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.List;
@@ -24,12 +23,12 @@ import gov.loc.repository.bagit.hash.Hasher;
 public class CheckManifestHashsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashsTask.class);
   
-  private final Entry<File, String> entry;
+  private final Entry<Path, String> entry;
   private final CountDownLatch latch;
   private final List<Exception> exceptions;
   private final String algorithm;
   
-  public CheckManifestHashsTask(Entry<File, String> entry, String algorithm, CountDownLatch latch, List<Exception> exceptions) {
+  public CheckManifestHashsTask(Entry<Path, String> entry, String algorithm, CountDownLatch latch, List<Exception> exceptions) {
     this.entry = entry;
     this.algorithm = algorithm;
     this.latch = latch;
@@ -47,10 +46,10 @@ public class CheckManifestHashsTask implements Runnable {
     latch.countDown();
   }
   
-  protected static void checkManifestEntry(Entry<File, String> entry, MessageDigest messageDigest, String algorithm) throws IOException, CorruptChecksumException{
-    if(entry.getKey().exists()){
+  protected static void checkManifestEntry(Entry<Path, String> entry, MessageDigest messageDigest, String algorithm) throws IOException, CorruptChecksumException{
+    if(Files.exists(entry.getKey())){
       logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
-      InputStream inputStream = Files.newInputStream(Paths.get(entry.getKey().toURI()), StandardOpenOption.READ);
+      InputStream inputStream = Files.newInputStream(entry.getKey(), StandardOpenOption.READ);
       String hash = Hasher.hash(inputStream, messageDigest);
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){

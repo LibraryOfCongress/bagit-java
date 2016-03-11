@@ -1,7 +1,7 @@
 package gov.loc.repository.bagit.domain;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +33,7 @@ public class Bag {
   private List<Pair<String, String>> metadata = new ArrayList<>();
   
   //the current location of the bag on the filesystem
-  private File rootDir;
+  private Path rootDir;
   
   public Bag(){
   }
@@ -142,11 +142,11 @@ public class Bag {
         Objects.equals(this.metadata, other.getMetadata());
   }
 
-  public File getRootDir() {
+  public Path getRootDir() {
     return rootDir;
   }
 
-  public void setRootDir(File rootDir) {
+  public void setRootDir(Path rootDir) {
     this.rootDir = rootDir;
   }
 

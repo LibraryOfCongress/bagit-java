@@ -2,6 +2,9 @@ package gov.loc.repository.bagit.creator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
@@ -22,9 +25,9 @@ public class BagCreatorTest extends Assert {
   
   @Test
   public void testBagInPlace() throws IOException, NoSuchAlgorithmException{
-    List<File> expectedPayloadFiles = createTestStructure();
+    List<Path> expectedPayloadFiles = createTestStructure();
     
-    Bag bag = BagCreator.bagInPlace(folder.getRoot(), StandardSupportedAlgorithms.MD5, false);
+    Bag bag = BagCreator.bagInPlace(Paths.get(folder.getRoot().toURI()), StandardSupportedAlgorithms.MD5, false);
     
     assertEquals(new Version(0, 97), bag.getVersion());
     
@@ -34,20 +37,23 @@ public class BagCreatorTest extends Assert {
     assertTrue(bagitFile.exists());
     
     for(Manifest manifest : bag.getPayLoadManifests()){
-      for(File expectedPayloadFile : manifest.getFileToChecksumMap().keySet()){
+      for(Path expectedPayloadFile : manifest.getFileToChecksumMap().keySet()){
         assertTrue(expectedPayloadFiles.contains(expectedPayloadFile));
       }
     }
   }
   
-  private List<File> createTestStructure() throws IOException{
-    File dataDir = new File(folder.getRoot(), "data");
+  private List<Path> createTestStructure() throws IOException{
+    Path rootDir = Paths.get(folder.getRoot().toURI());
+    Path dataDir = rootDir.resolve("data");
     
     File file1 = folder.newFile("file1.txt");
+    Path file1Path = Paths.get(file1.toURI());
     file1.createNewFile();
     File dir1 = folder.newFolder("folder1");
     dir1.mkdir();
     File file2 = folder.newFile("file2.txt");
+    Path file2Path = Paths.get(file2.toURI());
     file2.createNewFile();
     
     File hiddenFile = folder.newFile(".hiddentFile.txt");
@@ -61,19 +67,20 @@ public class BagCreatorTest extends Assert {
     File file3 = new File(hiddenDirectory, "file3.txt");
     file3.createNewFile();
     
-    return Arrays.asList(new File(dataDir, file1.getName()), new File(dataDir, dir1.getName()), new File(dataDir, file2.getName()));
+    return Arrays.asList(dataDir.resolve(file1Path.getFileName()), dataDir.resolve(file2Path.getFileName()));
   }
   
   @Test
   public void testCreateDotBagit() throws IOException, NoSuchAlgorithmException{
-    File dotbagitDir = new File(folder.getRoot(), ".bagit");
-    File expectedManifestFile = new File(dotbagitDir, "manifest-md5.txt");
-    File expectedBagitFile = new File(dotbagitDir, "bagit.txt");
+    Path rootFolderPath = Paths.get(folder.getRoot().toURI());
+    Path dotbagitDir = rootFolderPath.resolve(".bagit");
+    Path expectedManifestFile = dotbagitDir.resolve("manifest-md5.txt");
+    Path expectedBagitFile = dotbagitDir.resolve("bagit.txt");
     
-    Bag bag = BagCreator.createDotBagit(folder.getRoot(), StandardSupportedAlgorithms.MD5, false);
+    Bag bag = BagCreator.createDotBagit(rootFolderPath, StandardSupportedAlgorithms.MD5, false);
     assertEquals(new Version(0, 98), bag.getVersion());
     
-    assertTrue(expectedBagitFile.exists());
-    assertTrue(expectedManifestFile.exists());
+    assertTrue(Files.exists(expectedBagitFile));
+    assertTrue(Files.exists(expectedManifestFile));
   }
 }
