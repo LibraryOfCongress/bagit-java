@@ -48,6 +48,7 @@ public class BagReader {
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
    */
   public Bag read(Path rootDir) throws IOException, UnparsableVersionException{
+    //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
     if(!Files.exists(bagitDir)){
       bagitDir = rootDir;

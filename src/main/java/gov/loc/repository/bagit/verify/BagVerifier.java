@@ -44,6 +44,7 @@ public class BagVerifier {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   
   private static final String PAYLOAD_DIR_NAME = "data";
+  //@Incubating
   private static final String DOT_BAGIT_DIR_NAME = ".bagit";
   private static final String PAYLOAD_OXUM_REGEX = "\\d+\\.\\d+";
   
@@ -226,6 +227,7 @@ public class BagVerifier {
   protected void checkBagitFileExists(Path rootDir, Version version) throws MissingBagitFileException{
     logger.info("Checking if bagit.txt file exists");
     Path bagitFile = rootDir.resolve("bagit.txt");
+    //@Incubating
     if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
       bagitFile = rootDir.resolve(DOT_BAGIT_DIR_NAME + File.separator + "bagit.txt");
     }
@@ -249,6 +251,7 @@ public class BagVerifier {
     boolean hasAtLeastOneManifest = false;
     
     DirectoryStream<Path> directoryStream = Files.newDirectoryStream(rootDir);
+    //@Incubating
     if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
       directoryStream = Files.newDirectoryStream(rootDir.resolve(DOT_BAGIT_DIR_NAME));
     }
@@ -271,6 +274,7 @@ public class BagVerifier {
     Set<Path> filesListedInManifests = new HashSet<>();
     
     DirectoryStream<Path> directoryStream = Files.newDirectoryStream(bag.getRootDir());
+    //@Incubating
     if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
       directoryStream = Files.newDirectoryStream(bag.getRootDir().resolve(DOT_BAGIT_DIR_NAME));
     }

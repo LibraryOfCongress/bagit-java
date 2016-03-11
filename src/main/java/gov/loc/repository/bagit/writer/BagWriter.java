@@ -56,6 +56,7 @@ public class BagWriter {
   
   protected static Path writeVersionDependentPayloadFiles(Bag bag, Path outputDir) throws IOException{
     Path bagitDir = outputDir;
+    //@Incubating
     if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){
       bagitDir = outputDir.resolve(".bagit");
       Files.createDirectories(bagitDir);
