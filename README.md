@@ -111,7 +111,6 @@ Simply run `gradle eclipse` and it will automatically create a eclipse project f
 * Further refine reading and writing of bags version 0.93-0.97
 * Integrate new proposed specification we are calling "dot bagit"
 * Fix bugs/issues reported with new library (on going)
-* Add extensions for more than standard supported algorithms
 
 ### Support
 1. The Digital Curation Google Group (https://groups.google.com/d/forum/digital-curation) is an open discussion list that reaches many of the contributors to and users of this open-source project
