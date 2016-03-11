@@ -1,6 +1,5 @@
 package gov.loc.repository.bagit.verify;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -19,10 +18,10 @@ import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
  */
 public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
-  private final Set<File> filesListedInManifests;
+  private final Set<Path> filesListedInManifests;
   private final boolean ignoreHiddenFiles;
 
-  public PayloadFileExistsInManifestVistor(Set<File> filesListedInManifests, boolean ignoreHiddenFiles) {
+  public PayloadFileExistsInManifestVistor(Set<Path> filesListedInManifests, boolean ignoreHiddenFiles) {
     this.filesListedInManifests = filesListedInManifests;
     this.ignoreHiddenFiles = ignoreHiddenFiles;
   }
@@ -39,7 +38,7 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
 
   @Override
   public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws FileNotInManifestException{
-    if(Files.isRegularFile(path) && !filesListedInManifests.contains(path.toFile())){
+    if(Files.isRegularFile(path) && !filesListedInManifests.contains(path)){
       throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in any of the manifests");
     }
     logger.debug("[{}] is in at least one manifest", path);

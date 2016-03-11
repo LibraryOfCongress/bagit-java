@@ -1,12 +1,11 @@
 package gov.loc.repository.bagit.reader;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +18,9 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
+import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
+import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 import javafx.util.Pair;
 
@@ -29,6 +30,16 @@ import javafx.util.Pair;
 public class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   
+  private BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  
+  public BagReader(){
+    this.nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
+  }
+  
+  public BagReader(BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
+    this.nameMapping = nameMapping;
+  }
+  
   /**
    * Read the bag from the filesystem and create a bag object
    * @param rootDir the root directory of the bag 
@@ -36,13 +47,13 @@ public class BagReader {
    * @return a {@link Bag} object representing a bag on the filesystem
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
    */
-  public static Bag read(File rootDir) throws IOException, UnparsableVersionException{
-    File bagitDir = new File(rootDir, ".bagit");
-    if(!bagitDir.exists()){
+  public Bag read(Path rootDir) throws IOException, UnparsableVersionException{
+    Path bagitDir = rootDir.resolve(".bagit");
+    if(!Files.exists(bagitDir)){
       bagitDir = rootDir;
     }
     
-    File bagitFile = new File(bagitDir, "bagit.txt");
+    Path bagitFile = bagitDir.resolve("bagit.txt");
     Bag bag = readBagitTextFile(bagitFile, new Bag());
     bag.setRootDir(rootDir);
     
@@ -50,8 +61,8 @@ public class BagReader {
     
     bag = readBagMetadata(bagitDir, bag);
     
-    File fetchFile = new File(bagitDir, "fetch.txt");
-    if(fetchFile.exists()){
+    Path fetchFile = bagitDir.resolve("fetch.txt");
+    if(Files.exists(fetchFile)){
       bag = readFetch(fetchFile, bag);
     }
     
@@ -67,7 +78,7 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    */
-  public static Bag readBagitTextFile(File bagitFile, Bag bag) throws IOException, UnparsableVersionException{
+  public Bag readBagitTextFile(Path bagitFile, Bag bag) throws IOException, UnparsableVersionException{
     logger.debug("Reading bagit.txt file");
     List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
     
@@ -91,7 +102,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static Version parseVersion(String version) throws UnparsableVersionException{
+  protected Version parseVersion(String version) throws UnparsableVersionException{
     if(!version.contains(".")){
       throw new UnparsableVersionException("Version must be in format MAJOR.MINOR but was " + version);
     }
@@ -111,34 +122,33 @@ public class BagReader {
    * @return a new bag that contains all the manifest(s) information
    * @throws IOException if there is a problem reading a file
    */
-  public static Bag readAllManifests(File rootDir, Bag bag) throws IOException{
+  public Bag readAllManifests(Path rootDir, Bag bag) throws IOException{
     logger.info("Attempting to find and read manifests");
     Bag newBag = new Bag(bag);
-    File[] files = getAllManifestFiles(rootDir);
+    DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
-    for(File file : files){
-      if(file.getName().startsWith("tag")){
-        logger.debug("Found tag manifest [{}]", file);
-        newBag.getTagManifests().add(readManifest(file, bag.getRootDir()));
+    for (Path path : manifests){
+      if(path.getFileName().toString().startsWith("tagmanifest-")){
+        logger.debug("Found tag manifest [{}]", path);
+        newBag.getTagManifests().add(readManifest(path, bag.getRootDir()));
       }
-      else if(file.getName().startsWith("manifest")){
-        logger.debug("Found payload manifest [{}]", file);
-        newBag.getPayLoadManifests().add(readManifest(file, bag.getRootDir()));
+      else if(path.getFileName().toString().startsWith("manifest-")){
+        logger.debug("Found payload manifest [{}]", path);
+        newBag.getPayLoadManifests().add(readManifest(path, bag.getRootDir()));
       }
     }
     
     return newBag;
   }
   
-  protected static File[] getAllManifestFiles(File rootDir){
-    File[] files = rootDir.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.matches("(tag)?manifest\\-.*\\.txt");
+  protected DirectoryStream<Path> getAllManifestFiles(Path rootDir) throws IOException{
+    DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+      public boolean accept(Path file) throws IOException {
+        return file.getFileName().toString().startsWith("tagmanifest-") || file.getFileName().toString().startsWith("manifest-");
       }
-    });
+    };
     
-    return files == null? new File[]{} : files;
+    return Files.newDirectoryStream(rootDir, filter);
   }
   
   /**
@@ -148,27 +158,27 @@ public class BagReader {
    * @return the converted manifest object from the file
    * @throws IOException if there is a problem reading a file
    */
-  public static Manifest readManifest(File manifestFile, File bagRootDir) throws IOException{
+  public Manifest readManifest(Path manifestFile, Path bagRootDir) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
-    String alg = manifestFile.getName().split("[-\\.]")[1];
-    StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.valueOf(alg.toUpperCase());
+    String alg = manifestFile.getFileName().toString().split("[-\\.]")[1];
+    SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
     
     Manifest manifest = new Manifest(algorithm);
     
-    HashMap<File, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
+    HashMap<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
     manifest.setFileToChecksumMap(filetToChecksumMap);
     
     return manifest;
   }
   
-  protected static HashMap<File, String> readChecksumFileMap(File manifestFile, File bagRootDir) throws IOException{
-    HashMap<File, String> map = new HashMap<>();
-    BufferedReader br = Files.newBufferedReader(Paths.get(manifestFile.toURI()));
+  protected HashMap<Path, String> readChecksumFileMap(Path manifestFile, Path bagRootDir) throws IOException{
+    HashMap<Path, String> map = new HashMap<>();
+    BufferedReader br = Files.newBufferedReader(manifestFile);
 
     String line = br.readLine();
     while(line != null){
       String[] parts = line.split("\\s+", 2);
-      File file = new File(bagRootDir, parts[1]);
+      Path file = bagRootDir.resolve(parts[1]);
       logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[0], file, manifestFile);
       map.put(file, parts[0]);
       line = br.readLine();
@@ -185,18 +195,18 @@ public class BagReader {
    * @return a new bag that contains the bag-info.txt (metadata) information
    * @throws IOException if there is a problem reading a file
    */
-  public static Bag readBagMetadata(File rootDir, Bag bag) throws IOException{
+  public Bag readBagMetadata(Path rootDir, Bag bag) throws IOException{
     logger.info("Attempting to read bag metadata file");
     Bag newBag = new Bag(bag);
     List<Pair<String, String>> metadata = new ArrayList<>();
     
-    File bagInfoFile = new File(rootDir, "bag-info.txt");
-    if(bagInfoFile.exists()){
+    Path bagInfoFile = rootDir.resolve("bag-info.txt");
+    if(Files.exists(bagInfoFile)){
       logger.debug("Found [{}] file", bagInfoFile);
       metadata = readKeyValuesFromFile(bagInfoFile, ":");
     }
-    File packageInfoFile = new File(rootDir, "package-info.txt"); //onlu exists in versions 0.93 - 0.95
-    if(packageInfoFile.exists()){
+    Path packageInfoFile = rootDir.resolve("package-info.txt"); //onlu exists in versions 0.93 - 0.95
+    if(Files.exists(packageInfoFile)){
       logger.debug("Found [{}] file", packageInfoFile);
       metadata = readKeyValuesFromFile(packageInfoFile, ":");
     }
@@ -214,10 +224,10 @@ public class BagReader {
    * @return a new bag that contains a list of items to fetch
    * @throws IOException if there is a problem reading a file
    */
-  public static Bag readFetch(File fetchFile, Bag bag) throws IOException{
+  public Bag readFetch(Path fetchFile, Bag bag) throws IOException{
     logger.info("Attempting to read [{}]", fetchFile);
     Bag newBag = new Bag(bag);
-    BufferedReader br = Files.newBufferedReader(Paths.get(fetchFile.toURI()));
+    BufferedReader br = Files.newBufferedReader(fetchFile);
 
     String line = br.readLine();
     while(line != null){
@@ -235,9 +245,9 @@ public class BagReader {
     return newBag;
   }
   
-  protected static List<Pair<String, String>> readKeyValuesFromFile(File file, String splitRegex) throws IOException{
+  protected static List<Pair<String, String>> readKeyValuesFromFile(Path file, String splitRegex) throws IOException{
     List<Pair<String, String>> keyValues = new ArrayList<>();
-    BufferedReader br = Files.newBufferedReader(Paths.get(file.toURI()));
+    BufferedReader br = Files.newBufferedReader(file);
 
     String line = br.readLine();
     while(line != null){

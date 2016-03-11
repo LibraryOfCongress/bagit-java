@@ -56,7 +56,7 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
       InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
       String hash = Hasher.hash(inputStream, messageDigest);
       logger.debug("Adding [{}] to manifest with hash [{}]", path, hash);
-      manifest.getFileToChecksumMap().put(path.toFile(), hash); 
+      manifest.getFileToChecksumMap().put(path, hash); 
     }
     
     return FileVisitResult.CONTINUE;

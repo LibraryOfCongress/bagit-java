@@ -2,8 +2,12 @@ package gov.loc.repository.bagit.writer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,53 +31,56 @@ public class BagWriterTest extends Assert {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
+  private BagReader reader = new BagReader();
+  
   @Test
   public void testWriteVersion97() throws Exception{
-    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
-    Bag bag = BagReader.read(rootDir); 
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
+    Bag bag = reader.read(rootDir); 
     File bagitDir = folder.newFolder();
     
-    BagWriter.write(bag, bagitDir);
+    BagWriter.write(bag, Paths.get(bagitDir.toURI()));
     assertTrue(bagitDir.exists());
   }
   
   @Test
   public void testWriteVersion98() throws Exception{
-    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_98/bag").getFile());
-    Bag bag = BagReader.read(rootDir);
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
+    Bag bag = reader.read(rootDir);
     File dotbagitDir = new File(folder.getRoot(), ".bagit");
     
-    BagWriter.write(bag, folder.getRoot());
+    BagWriter.write(bag, Paths.get(folder.getRoot().toURI()));
     assertTrue(dotbagitDir.exists());
   }
   
   @Test
   public void testWriteHoley() throws Exception{
-    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_96/bag").getFile());
-    Bag bag = BagReader.read(rootDir); 
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/bag").toURI());
+    Bag bag = reader.read(rootDir); 
     File bagitDir = folder.newFolder();
     
-    BagWriter.write(bag, bagitDir);
+    BagWriter.write(bag, Paths.get(bagitDir.toURI()));
     assertTrue(bagitDir.exists());
   }
   
   @Test
   public void testWriteBagitFile() throws Exception{
     File rootDir = folder.newFolder();
-    File bagit = new File(rootDir, "bagit.txt");
+    Path rootDirPath = Paths.get(rootDir.toURI());
+    Path bagit = rootDirPath.resolve("bagit.txt");
     
-    assertFalse(bagit.exists());
-    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8.name(), rootDir);
-    assertTrue(bagit.exists());
+    assertFalse(Files.exists(bagit));
+    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8.name(), rootDirPath);
+    assertTrue(Files.exists(bagit));
     
     //test truncating existing
-    long originalModified = bagit.lastModified();
-    long size = bagit.getTotalSpace();
-    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8.name(), rootDir);
-    assertTrue(bagit.exists());
-    assertTrue(bagit.lastModified() + " should be >= " + originalModified, 
-        bagit.lastModified() >= originalModified);
-    assertEquals(size, bagit.getTotalSpace());
+    long originalModified = Files.getLastModifiedTime(bagit).toMillis();
+    long size = Files.size(bagit);
+    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8.name(), rootDirPath);
+    assertTrue(Files.exists(bagit));
+    assertTrue(Files.getLastModifiedTime(bagit) + " should be >= " + originalModified, 
+        Files.getLastModifiedTime(bagit).toMillis() >= originalModified);
+    assertEquals(size, Files.size(bagit));
   }
   
   @Test
@@ -86,7 +93,7 @@ public class BagWriterTest extends Assert {
     metadata.add(new Pair<>("key3", "value3"));
     
     assertFalse(bagInfo.exists());
-    BagWriter.writeBagitInfoFile(metadata, rootDir, StandardCharsets.UTF_8.name());
+    BagWriter.writeBagitInfoFile(metadata, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
     assertTrue(bagInfo.exists());
   }
   
@@ -100,14 +107,14 @@ public class BagWriterTest extends Assert {
     
     
     assertFalse(fetch.exists());
-    BagWriter.writeFetchFile(itemsToFetch, rootDir, StandardCharsets.UTF_8.name());
+    BagWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
     assertTrue(fetch.exists());
   }
   
   @Test
   public void testGetPathRelativeToDataDir(){
     String expectedPath = "data/one/two/buckleMyShoe.txt";
-    File file = new File("/foo/bar/ham/" + expectedPath);
+    Path file = Paths.get("/foo/bar/ham/", expectedPath);
     
     String actualPath = BagWriter.getPathRelativeToDataDir(file);
     assertEquals(expectedPath + " should be equal to " + actualPath, expectedPath, actualPath);
@@ -117,20 +124,20 @@ public class BagWriterTest extends Assert {
   public void testWriteTagManifests() throws IOException{
     Set<Manifest> tagManifests = new HashSet<>();
     Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
-    manifest.getFileToChecksumMap().put(new File("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
+    manifest.getFileToChecksumMap().put(Paths.get("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
     tagManifests.add(manifest);
     File outputDir = folder.newFolder();
     File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
     
     assertFalse(tagManifest.exists());
-    BagWriter.writeTagManifests(tagManifests, outputDir, StandardCharsets.UTF_8.name());
+    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), StandardCharsets.UTF_8.name());
     assertTrue(tagManifest.exists());
   }
   
   @Test
-  public void testWritePayloadFiles() throws IOException{
-    File rootDir = new File(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
-    File testFile = new File(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").getFile());
+  public void testWritePayloadFiles() throws IOException, URISyntaxException{
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
+    Path testFile = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").toURI());
     Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
     manifest.getFileToChecksumMap().put(testFile, "someHashValue");
     Set<Manifest> payloadManifests = new HashSet<>();
@@ -139,7 +146,7 @@ public class BagWriterTest extends Assert {
     File copiedFile = new File(outputDir, "data/dir1/test3.txt");
     
     assertFalse(copiedFile.exists() || copiedFile.getParentFile().exists());
-    BagWriter.writePayloadFiles(payloadManifests, outputDir, rootDir);
+    BagWriter.writePayloadFiles(payloadManifests, Paths.get(outputDir.toURI()), rootDir);
     assertTrue(copiedFile.exists() && copiedFile.getParentFile().exists());
   }
 }

@@ -31,12 +31,14 @@ The "new" bagit interface is very intuitive, but here are some easy to follow ex
 File folder = new File("FolderYouWantToBag");
 StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 boolean includeHiddenFiles = false;
-Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
+BagCreator creator = new BagCreator();
+Bag bag = creator.bagInPlace(folder, algorithm, includeHiddenFiles);
 ```
 ##### Read an existing bag (version 0.93 and higher)
 ```java
 File rootDir = new File("RootDirectoryOfExistingBag");
-Bag bag = BagReader.read(rootDir);
+BagReader reader = new BagReader();
+Bag bag = reader.read(rootDir);
 ```
 ##### Write a Bag object to disk
 ```java
@@ -46,21 +48,50 @@ BagWriter.write(bag, outputDir); //where bag is a Bag object
 ##### Verify Complete
 ```java
 boolean ignoreHiddenFiles = true;
-BagVerifier.isComplete(bag, ignoreHiddenFiles);
+BagVerifier verifier = new BagVerifier();
+verifier.isComplete(bag, ignoreHiddenFiles);
 ```
 ##### Verify Valid
 ```java
 boolean ignoreHiddenFiles = true;
-BagVerifier.isValid(bag, ignoreHiddenFiles);
+BagVerifier verifier = new BagVerifier();
+verifier.isValid(bag, ignoreHiddenFiles);
 ```
 ##### Quickly verify by payload-oxum
 ```java
 boolean ignoreHiddenFiles = true;
+BagVerifier verifier = new BagVerifier();
 
-if(BagVerifier.canQuickVerify(bag)){
-  BagVerifier.quicklyVerify(bag, ignoreHiddenFiles);
+if(verifier.canQuickVerify(bag)){
+  verifier.quicklyVerify(bag, ignoreHiddenFiles);
 }
 ```
+##### Add other checksum algorithms
+You only need to implement 2 interfaces
+```java
+public class MyNewSupportedAlgorithm implements SupportedAlgorithm {
+  @Override
+  public String getMessageDigestName() {
+    return "SHA3-256";
+  }
+  @Override
+  public String getBagitName() {
+    return "sha3256";
+  }
+}
+
+public class MyNewNameMapping implements BagitAlgorithmNameToSupportedAlgorithmMapping {
+  @Override
+  public SupportedAlgorithm getMessageDigestName(String bagitAlgorithmName) {
+    if("sha3256".equals(bagitAlgorithmName)){
+      return new MyNewSupportedAlgorithm();
+    }
+    
+    return StandardSupportedAlgorithms.valueOf(bagitAlgorithmName.toUpperCase());
+  }
+}
+```
+and then add the implemented BagitAlgorithmNameToSupportedAlgorithmMapping class to your BagReader or bagVerifier object before using their methods
 
 ## Developing Bagit-Java
 Bagit-Java uses [Gradle](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.
@@ -80,7 +111,6 @@ Simply run `gradle eclipse` and it will automatically create a eclipse project f
 * Further refine reading and writing of bags version 0.93-0.97
 * Integrate new proposed specification we are calling "dot bagit"
 * Fix bugs/issues reported with new library (on going)
-* Add extensions for more than standard supported algorithms
 
 ### Support
 1. The Digital Curation Google Group (https://groups.google.com/d/forum/digital-curation) is an open discussion list that reaches many of the contributors to and users of this open-source project
