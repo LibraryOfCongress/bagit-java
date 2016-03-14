@@ -5,6 +5,7 @@
 
 [![License](https://img.shields.io/badge/License-Public--Domain-blue.svg)](https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt)
 
+[![Documentation Status](https://readthedocs.org/projects/bagit-java/badge/?version=latest)](http://bagit-java.readthedocs.org/en/latest/?badge=latest)
 
 ## Description
 The BAGIT LIBRARY is a software library intended to support the creation, 
