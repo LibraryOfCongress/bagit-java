@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.writer;
+package gov.loc.repository.bagit.operations;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,8 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
-import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.operations.BagReader;
+import gov.loc.repository.bagit.operations.BagWriter;
 import javafx.util.Pair;
 
 public class BagWriterTest extends Assert {

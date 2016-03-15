@@ -28,7 +28,7 @@ import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
-import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.operations.BagReader;
 
 public class BagVerifierTest extends Assert{
   static {

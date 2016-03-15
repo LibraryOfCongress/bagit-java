@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.reader;
+package gov.loc.repository.bagit.operations;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +36,11 @@ public class BagReader {
     this.nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
   }
   
+  /**
+   * Use this constructor if you are using a custom checksum algorithm
+   * 
+   * @param nameMapping the modified name mapping for the custom checksum algorithm
+   */
   public BagReader(BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     this.nameMapping = nameMapping;
   }

@@ -32,7 +32,7 @@ import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
-import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.operations.BagReader;
 import gov.loc.repository.bagit.tasks.CheckIfFileExistsTask;
 import gov.loc.repository.bagit.tasks.CheckManifestHashsTask;
 import javafx.util.Pair;
@@ -54,6 +54,11 @@ public class BagVerifier {
     nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
   }
   
+  /**
+   * Use this constructor if you are using a custom checksum algorithm
+   * 
+   * @param nameMapping the modified name mapping for the custom checksum algorithm
+   */
   public BagVerifier(BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     this.nameMapping = nameMapping;
   }
