@@ -41,16 +41,18 @@ public class BagWriter {
     
     writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
     writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getFileEncoding());
-    
-    
-    if(bag.getTagManifests().size() > 0){
-      writeTagManifests(bag.getTagManifests(), bagitDir, bag.getFileEncoding());
-    }
+
     if(bag.getMetadata().size() > 0){
       writeBagitInfoFile(bag.getMetadata(), bagitDir, bag.getFileEncoding());
     }
     if(bag.getItemsToFetch().size() > 0){
       writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getFileEncoding());
+    }
+    if(bag.getTagManifests().size() > 0){
+      //TODO update payload manifest(s) entries
+      //TODO update metadata info entries
+      //TODO update fetch entries
+      writeTagManifests(bag.getTagManifests(), bagitDir, bag.getFileEncoding());
     }
   }
   
@@ -105,7 +107,7 @@ public class BagWriter {
       for(Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
         Path relativePayloadPath = bagRootDir.relativize(payloadFile); 
             
-        Path writeToPath = outputDir.resolve(relativePayloadPath);
+        Path writeToPath = bagRootDir.resolve(relativePayloadPath);
         logger.debug("Writing payload file [{}] to [{}]", payloadFile, writeToPath);
         Path parent = writeToPath.getParent();
         if(parent != null){
@@ -144,10 +146,9 @@ public class BagWriter {
     for(Manifest manifest : manifests){
       Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
-      
-      if(!Files.exists(manifestPath)){
-        Files.createFile(manifestPath);
-      }
+
+      Files.deleteIfExists(manifestPath);
+      Files.createFile(manifestPath);
       
       for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
         String line = entry.getValue() + " " + getPathRelativeToDataDir(entry.getKey()) + System.lineSeparator();
@@ -168,6 +169,8 @@ public class BagWriter {
   public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Path outputDir, String charsetName) throws IOException{
     logger.debug("Writing bag-info.txt to [{}]", outputDir);
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
+
+    Files.deleteIfExists(bagInfoFilePath);
     
     for(Pair<String, String> entry : metadata){
       String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
