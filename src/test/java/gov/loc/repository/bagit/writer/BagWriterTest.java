@@ -151,7 +151,7 @@ public class BagWriterTest extends Assert {
   }
   
   @Test
-  public void testWriteEmptyBagStillCreatesDataDir() throws IOException{
+  public void testWriteEmptyBagStillCreatesDataDir() throws Exception{
     Bag bag = new Bag();
     Path output = Paths.get(folder.newFolder().toURI());
     Path dataDir = output.resolve("data");

@@ -7,6 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -18,6 +21,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.verify.BagVerifier;
 import javafx.util.Pair;
 
@@ -35,8 +39,9 @@ public class BagWriter {
    * @param bag the {@link Bag} object to write out
    * @param outputDir the output directory that will become the root of the bag
    * @throws IOException if there is a problem writing a file
+   * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} which is used during update.
    */
-  public static void write(Bag bag, Path outputDir) throws IOException{
+  public static void write(Bag bag, Path outputDir) throws IOException, NoSuchAlgorithmException{
     Path bagitDir = writeVersionDependentPayloadFiles(bag, outputDir);
     
     writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
@@ -49,10 +54,9 @@ public class BagWriter {
       writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getFileEncoding());
     }
     if(bag.getTagManifests().size() > 0){
-      //TODO update payload manifest(s) entries
-      //TODO update metadata info entries
-      //TODO update fetch entries
-      writeTagManifests(bag.getTagManifests(), bagitDir, bag.getFileEncoding());
+      Set<Manifest> updatedTagManifests = updateTagManifests(bag);
+      bag.setTagManifests(updatedTagManifests);
+      writeTagManifests(updatedTagManifests, bagitDir, bag.getFileEncoding());
     }
   }
   
@@ -128,6 +132,30 @@ public class BagWriter {
   public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, String charsetName) throws IOException{
     logger.info("Writing payload manifest(s)");
     writeManifests(manifests, outputDir, "manifest-", charsetName);
+  }
+  
+  protected static Set<Manifest> updateTagManifests(Bag bag) throws NoSuchAlgorithmException, IOException{
+    Set<Path> tagFilePaths = new HashSet<>();
+    
+    for(Manifest payloadManifest : bag.getPayLoadManifests()){
+      tagFilePaths.add(bag.getRootDir().resolve("manifest-" + payloadManifest.getAlgorithm().getBagitName() + ".txt"));
+    }
+    
+    tagFilePaths.add(bag.getRootDir().resolve("bag-info.txt"));
+    tagFilePaths.add(bag.getRootDir().resolve("package-info.txt"));
+    tagFilePaths.add(bag.getRootDir().resolve("fetch.txt"));
+    
+    for(Manifest tagManifest : bag.getTagManifests()){
+      Set<Path> pathsToUpdate = new HashSet<>(tagManifest.getFileToChecksumMap().keySet());
+      pathsToUpdate.retainAll(tagFilePaths);
+      for(Path pathToUpdate : pathsToUpdate){
+        MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
+        String newChecksum = Hasher.hash(Files.newInputStream(pathToUpdate), messageDigest);
+        tagManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
+      }
+    }
+    
+    return bag.getTagManifests();
   }
   
   /**
