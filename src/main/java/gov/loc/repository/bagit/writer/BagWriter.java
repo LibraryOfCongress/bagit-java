@@ -144,6 +144,7 @@ public class BagWriter {
     tagFilePaths.add(bag.getRootDir().resolve("bag-info.txt"));
     tagFilePaths.add(bag.getRootDir().resolve("package-info.txt"));
     tagFilePaths.add(bag.getRootDir().resolve("fetch.txt"));
+    tagFilePaths.add(bag.getRootDir().resolve("bagit.txt"));
     
     for(Manifest tagManifest : bag.getTagManifests()){
       Set<Path> pathsToUpdate = new HashSet<>(tagManifest.getFileToChecksumMap().keySet());
