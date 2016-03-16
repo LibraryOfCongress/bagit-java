@@ -64,6 +64,7 @@ public class BagWriter {
     }
     else{
       Path dataDir = outputDir.resolve("data");
+      Files.createDirectories(dataDir);
       writePayloadFiles(bag.getPayLoadManifests(), dataDir, bag.getRootDir());
     }
     

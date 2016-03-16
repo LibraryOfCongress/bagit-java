@@ -150,4 +150,14 @@ public class BagWriterTest extends Assert {
     BagWriter.writePayloadFiles(payloadManifests, Paths.get(outputDir.toURI()), rootDir);
     assertTrue(copiedFile.exists() && copiedFile.getParentFile().exists());
   }
+  
+  @Test
+  public void testWriteEmptyBagStillCreatesDataDir() throws IOException{
+    Bag bag = new Bag();
+    Path output = Paths.get(folder.newFolder().toURI());
+    Path dataDir = output.resolve("data");
+    
+    BagWriter.write(bag, output);
+    assertTrue(Files.exists(dataDir));
+  }
 }
