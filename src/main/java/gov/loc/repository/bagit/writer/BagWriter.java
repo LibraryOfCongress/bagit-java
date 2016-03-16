@@ -145,7 +145,9 @@ public class BagWriter {
       Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
       
-      Files.createFile(manifestPath);
+      if(!Files.exists(manifestPath)){
+        Files.createFile(manifestPath);
+      }
       
       for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
         String line = entry.getValue() + " " + getPathRelativeToDataDir(entry.getKey()) + System.lineSeparator();
