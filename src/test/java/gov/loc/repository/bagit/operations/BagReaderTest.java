@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.reader;
+package gov.loc.repository.bagit.operations;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,6 +19,7 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.operations.BagReader;
 import javafx.util.Pair;
 
 public class BagReaderTest extends Assert{

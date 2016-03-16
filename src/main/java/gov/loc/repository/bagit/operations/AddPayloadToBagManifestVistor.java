@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.creator;
+package gov.loc.repository.bagit.operations;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +18,7 @@ import gov.loc.repository.bagit.hash.Hasher;
 
 /**
  * An implementation of the {@link SimpleFileVisitor} class that optionally avoids hidden files.
- * Mainly used in {@link BagCreator}
+ * Mainly used in {@link BagManipulator}
  */
 public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   private static final Logger logger = LoggerFactory.getLogger(AddPayloadToBagManifestVistor.class);

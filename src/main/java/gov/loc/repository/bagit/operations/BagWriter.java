@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.writer;
+package gov.loc.repository.bagit.operations;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -64,6 +64,7 @@ public class BagWriter {
     }
     else{
       Path dataDir = outputDir.resolve("data");
+      Files.createDirectories(dataDir);
       writePayloadFiles(bag.getPayLoadManifests(), dataDir, bag.getRootDir());
     }
     
@@ -141,17 +142,21 @@ public class BagWriter {
   
   protected static void writeManifests(Set<Manifest> manifests, Path outputDir, String filenameBase, String charsetName) throws IOException{
     for(Manifest manifest : manifests){
-      Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
-      logger.debug("Writing manifest to [{}]", manifestPath);
-      
-      Files.createFile(manifestPath);
-      
-      for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        String line = entry.getValue() + " " + getPathRelativeToDataDir(entry.getKey()) + System.lineSeparator();
-        logger.debug("Writing [{}] to [{}]", line, manifestPath);
-        Files.write(manifestPath, line.getBytes(Charset.forName(charsetName)), 
-            StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-      }
+      writeManifest(manifest, outputDir, filenameBase, charsetName);
+    }
+  }
+  
+  protected static void writeManifest(Manifest manifest, Path outputDir, String filenameBase, String charsetName) throws IOException{
+    Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
+    logger.debug("Writing manifest to [{}]", manifestPath);
+    
+    Files.createFile(manifestPath);
+    
+    for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+      String line = entry.getValue() + " " + getPathRelativeToDataDir(entry.getKey()) + System.lineSeparator();
+      logger.debug("Writing [{}] to [{}]", line, manifestPath);
+      Files.write(manifestPath, line.getBytes(Charset.forName(charsetName)), 
+          StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
   }
   
