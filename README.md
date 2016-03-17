@@ -32,8 +32,7 @@ The "new" bagit interface is very intuitive, but here are some easy to follow ex
 File folder = new File("FolderYouWantToBag");
 StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 boolean includeHiddenFiles = false;
-BagCreator creator = new BagCreator();
-Bag bag = creator.bagInPlace(folder, algorithm, includeHiddenFiles);
+Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
 ```
 ##### Read an existing bag (version 0.93 and higher)
 ```java
