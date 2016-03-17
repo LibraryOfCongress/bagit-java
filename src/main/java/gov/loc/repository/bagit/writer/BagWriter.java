@@ -111,7 +111,7 @@ public class BagWriter {
       for(Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
         Path relativePayloadPath = bagRootDir.relativize(payloadFile); 
             
-        Path writeToPath = bagRootDir.resolve(relativePayloadPath);
+        Path writeToPath = outputDir.resolve(relativePayloadPath);
         logger.debug("Writing payload file [{}] to [{}]", payloadFile, writeToPath);
         Path parent = writeToPath.getParent();
         if(parent != null){
