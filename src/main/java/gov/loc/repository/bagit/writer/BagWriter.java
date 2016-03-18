@@ -22,14 +22,13 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.Hasher;
-import gov.loc.repository.bagit.verify.BagVerifier;
 import javafx.util.Pair;
 
 /**
  * responsible for writing out a bag.
  */
 public class BagWriter {
-  private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
+  private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
 
   private BagWriter(){}
   
@@ -71,7 +70,7 @@ public class BagWriter {
     else{
       Path dataDir = outputDir.resolve("data");
       Files.createDirectories(dataDir);
-      writePayloadFiles(bag.getPayLoadManifests(), dataDir, bag.getRootDir());
+      writePayloadFiles(bag.getPayLoadManifests(), dataDir, bag.getRootDir().resolve("data"));
     }
     
     return bagitDir;
@@ -102,14 +101,14 @@ public class BagWriter {
    * Write the payload <b>file(s)</b> to the output directory
    * @param payloadManifests the set of objects representing the payload manifests
    * @param outputDir the data directory of the bag
-   * @param bagRootDir the root directory of the bag
+   * @param bagDataDir the data directory of the bag
    * @throws IOException if there was a problem writing a file
    */
-  public static void writePayloadFiles(Set<Manifest> payloadManifests, Path outputDir, Path bagRootDir) throws IOException{
+  public static void writePayloadFiles(Set<Manifest> payloadManifests, Path outputDir, Path bagDataDir) throws IOException{
     logger.info("Writing payload files");
     for(Manifest payloadManifest : payloadManifests){
       for(Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
-        Path relativePayloadPath = bagRootDir.relativize(payloadFile); 
+        Path relativePayloadPath = bagDataDir.relativize(payloadFile); 
             
         Path writeToPath = outputDir.resolve(relativePayloadPath);
         logger.debug("Writing payload file [{}] to [{}]", payloadFile, writeToPath);

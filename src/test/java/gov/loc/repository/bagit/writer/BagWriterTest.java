@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import gov.loc.repository.bagit.creator.BagCreator;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
@@ -32,6 +33,22 @@ public class BagWriterTest extends Assert {
   public TemporaryFolder folder= new TemporaryFolder();
   
   private BagReader reader = new BagReader();
+  
+  @Test
+  public void testGetCorrectRelativeOuputPath() throws Exception{
+    Path root = Paths.get(folder.newFolder().toURI());
+    Bag bag = BagCreator.bagInPlace(root, StandardSupportedAlgorithms.MD5, false);
+    
+    Path testFile = root.resolve("data").resolve("fooFile.txt");
+    Files.createFile(testFile);
+    Manifest manifest = (Manifest) bag.getPayLoadManifests().toArray()[0];
+    manifest.getFileToChecksumMap().put(testFile, "CHECKSUM");
+    bag.getPayLoadManifests().add(manifest);
+    
+    Path newRoot = Paths.get(folder.newFolder().toURI());
+    BagWriter.write(bag, newRoot);
+    assertTrue(Files.exists(newRoot.resolve("data").resolve("fooFile.txt")));
+  }
   
   @Test
   public void testWriteVersion97() throws Exception{
@@ -153,10 +170,10 @@ public class BagWriterTest extends Assert {
   @Test
   public void testWriteEmptyBagStillCreatesDataDir() throws Exception{
     Bag bag = new Bag();
-    Path output = Paths.get(folder.newFolder().toURI());
-    Path dataDir = output.resolve("data");
+    bag.setRootDir(Paths.get(folder.newFolder().toURI()));
+    Path dataDir = bag.getRootDir().resolve("data");
     
-    BagWriter.write(bag, output);
+    BagWriter.write(bag, bag.getRootDir());
     assertTrue(Files.exists(dataDir));
   }
 }
