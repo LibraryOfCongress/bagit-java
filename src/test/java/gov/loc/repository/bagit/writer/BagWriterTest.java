@@ -82,10 +82,27 @@ public class BagWriterTest extends Assert {
   public void testWriteVersion98() throws Exception{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
     Bag bag = reader.read(rootDir);
-    File dotbagitDir = new File(folder.getRoot(), ".bagit");
     
-    BagWriter.write(bag, Paths.get(folder.getRoot().toURI()));
-    assertTrue(dotbagitDir.exists());
+    File bagitDir = folder.newFolder();
+    Path bagitDirPath = Paths.get(bagitDir.toURI());
+    List<Path> expectedPaths = Arrays.asList(bagitDirPath.resolve(".bagit"),
+        bagitDirPath.resolve(".bagit").resolve("manifest-md5.txt"),
+        bagitDirPath.resolve(".bagit").resolve("bagit.txt"),
+        bagitDirPath.resolve(".bagit").resolve("bag-info.txt"),
+        bagitDirPath.resolve(".bagit").resolve("tagmanifest-md5.txt"),
+        bagitDirPath.resolve("test1.txt"),
+        bagitDirPath.resolve("test2.txt"),
+        bagitDirPath.resolve("dir1"),
+        bagitDirPath.resolve("dir2"), 
+        bagitDirPath.resolve("dir1").resolve("test3.txt"),
+        bagitDirPath.resolve("dir2").resolve("test4.txt"),
+        bagitDirPath.resolve("dir2").resolve("dir3"),
+        bagitDirPath.resolve("dir2").resolve("dir3").resolve("test5.txt"));
+    
+    BagWriter.write(bag, bagitDirPath);
+    for(Path expectedPath : expectedPaths){
+      assertTrue("Expected " + expectedPath + " to exist!", Files.exists(expectedPath));
+    }
   }
   
   @Test
@@ -144,15 +161,6 @@ public class BagWriterTest extends Assert {
     assertFalse(fetch.exists());
     BagWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
     assertTrue(fetch.exists());
-  }
-  
-  @Test
-  public void testGetPathRelativeToDataDir(){
-    String expectedPath = "data/one/two/buckleMyShoe.txt";
-    Path file = Paths.get("/foo/bar/ham/", expectedPath);
-    
-    String actualPath = BagWriter.getPathRelativeToAnotherDir(file);
-    assertEquals(expectedPath + " should be equal to " + actualPath, expectedPath, actualPath);
   }
   
   @Test

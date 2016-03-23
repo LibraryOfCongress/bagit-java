@@ -16,6 +16,22 @@ repositories {
   jcenter()
 }
 
+sourceSets {
+  integrationTest {
+      java {
+          compileClasspath += main.output + test.output
+          runtimeClasspath += main.output + test.output
+          srcDir file('src/integration/java')
+      }
+//        resources.srcDir file('src/integration/resources')
+  }
+}
+
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
 dependencies {
   compile 'org.slf4j:slf4j-api:latest.integration'
     
@@ -31,6 +47,18 @@ test { //show test output
 jacoco {
   toolVersion = "0.7.5.201505241946" //needed for jenkins to report code coverage correctly
 }
+
+task integrationTest(type: Test) {
+  description "Runs the integration tests."
+  testClassesDir = sourceSets.integrationTest.output.classesDir
+  classpath = sourceSets.integrationTest.runtimeClasspath
+  testLogging.showStandardStreams = true
+}
+
+test.dependsOn integrationTest
+jacocoTestReport.dependsOn integrationTest
+build.dependsOn jacocoTestReport
+
 jacocoTestReport.dependsOn test
 check.dependsOn jacocoTestReport
 

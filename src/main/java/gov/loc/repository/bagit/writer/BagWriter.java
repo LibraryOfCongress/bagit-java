@@ -56,6 +56,7 @@ public class BagWriter {
       Set<Manifest> updatedTagManifests = updateTagManifests(bag);
       bag.setTagManifests(updatedTagManifests);
       writeTagManifests(updatedTagManifests, bagitDir, bag.getRootDir(), bag.getFileEncoding());
+      writeAdditionalTagPayloadFiles(updatedTagManifests, bagitDir, bag.getRootDir());
     }
   }
   
@@ -187,19 +188,17 @@ public class BagWriter {
     }
   }
   
-  protected static String getPathRelativeToAnotherDir(Path file){
-    logger.debug("getting path relative to data directory for [{}]", file);
-    String path = file.toString();
-    int index = path.indexOf("data");
-    
-    if(index == -1){
-      return file.toString();
+  protected static void writeAdditionalTagPayloadFiles(Set<Manifest> manifests, Path outputDir, Path bagRootDir) throws IOException{
+    for(Manifest manifest : manifests){
+      for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+        Path relativeLocation = bagRootDir.relativize(entry.getKey());
+        Path writeTo = outputDir.resolve(relativeLocation);
+        if(!Files.exists(writeTo)){
+          Files.createDirectories(writeTo.getParent());
+          Files.copy(entry.getKey(), writeTo);
+        }
+      }
     }
-    
-    String rel = path.substring(index, path.length());
-    logger.debug("Relative path for file [{}] to data directory is [{}]", file, rel);
-    
-    return rel;
   }
   
   /**
