@@ -29,20 +29,20 @@ The "new" bagit interface is very intuitive, but here are some easy to follow ex
 
 ##### Create a bag from a folder using version 0.97
 ```java
-File folder = new File("FolderYouWantToBag");
+Path folder = Paths.get("FolderYouWantToBag");
 StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 boolean includeHiddenFiles = false;
 Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
 ```
 ##### Read an existing bag (version 0.93 and higher)
 ```java
-File rootDir = new File("RootDirectoryOfExistingBag");
+Path rootDir = Paths.get("RootDirectoryOfExistingBag");
 BagReader reader = new BagReader();
 Bag bag = reader.read(rootDir);
 ```
 ##### Write a Bag object to disk
 ```java
-File outputDir = new File("WhereYouWantToWriteTheBagTo");
+Path outputDir = Paths.get("WhereYouWantToWriteTheBagTo");
 BagWriter.write(bag, outputDir); //where bag is a Bag object
 ```
 ##### Verify Complete
