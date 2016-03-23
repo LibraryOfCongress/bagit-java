@@ -55,9 +55,27 @@ public class BagWriterTest extends Assert {
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Bag bag = reader.read(rootDir); 
     File bagitDir = folder.newFolder();
+    Path bagitDirPath = Paths.get(bagitDir.toURI());
+    List<Path> expectedPaths = Arrays.asList(bagitDirPath.resolve("tagmanifest-md5.txt"),
+        bagitDirPath.resolve("manifest-md5.txt"),
+        bagitDirPath.resolve("bagit.txt"),
+        bagitDirPath.resolve("bag-info.txt"),
+        bagitDirPath.resolve("data"),
+        bagitDirPath.resolve("data").resolve("test1.txt"),
+        bagitDirPath.resolve("data").resolve("test2.txt"),
+        bagitDirPath.resolve("data").resolve("dir1"),
+        bagitDirPath.resolve("data").resolve("dir2"), 
+        bagitDirPath.resolve("data").resolve("dir1").resolve("test3.txt"),
+        bagitDirPath.resolve("data").resolve("dir2").resolve("test4.txt"),
+        bagitDirPath.resolve("data").resolve("dir2").resolve("dir3"),
+        bagitDirPath.resolve("data").resolve("dir2").resolve("dir3").resolve("test5.txt"),
+        bagitDirPath.resolve("addl_tags"),
+        bagitDirPath.resolve("addl_tags").resolve("tag1.txt"));
     
-    BagWriter.write(bag, Paths.get(bagitDir.toURI()));
-    assertTrue(bagitDir.exists());
+    BagWriter.write(bag, bagitDirPath);
+    for(Path expectedPath : expectedPaths){
+      assertTrue("Expected " + expectedPath + " to exist!", Files.exists(expectedPath));
+    }
   }
   
   @Test
@@ -133,7 +151,7 @@ public class BagWriterTest extends Assert {
     String expectedPath = "data/one/two/buckleMyShoe.txt";
     Path file = Paths.get("/foo/bar/ham/", expectedPath);
     
-    String actualPath = BagWriter.getPathRelativeToDataDir(file);
+    String actualPath = BagWriter.getPathRelativeToAnotherDir(file);
     assertEquals(expectedPath + " should be equal to " + actualPath, expectedPath, actualPath);
   }
   
@@ -147,7 +165,7 @@ public class BagWriterTest extends Assert {
     File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
     
     assertFalse(tagManifest.exists());
-    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), StandardCharsets.UTF_8.name());
+    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get(outputDir.toURI()), StandardCharsets.UTF_8.name());
     assertTrue(tagManifest.exists());
   }
   
@@ -175,5 +193,18 @@ public class BagWriterTest extends Assert {
     
     BagWriter.write(bag, bag.getRootDir());
     assertTrue(Files.exists(dataDir));
+  }
+  
+  @Test
+  public void foo(){
+    Path bagRootDir = Paths.get("/tmp/foo");
+    Path payloadFile = bagRootDir.resolve("data/bar/ham.txt");
+    Path tagFile = bagRootDir.resolve("addtionalTagFile.txt");
+    
+    System.err.println("payload relative to data dir : " + payloadFile.relativize(bagRootDir.resolve("data")));
+    System.err.println("tag file relative to root dir: " + tagFile.relativize(bagRootDir));
+    
+    System.err.println("data dir relative to payload file: " + bagRootDir.resolve("data").relativize(payloadFile));
+    System.err.println("root dir relative to tag file    : " + bagRootDir.relativize(tagFile));
   }
 }

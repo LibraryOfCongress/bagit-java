@@ -59,7 +59,7 @@ public class BagCreator {
     
     bag.getPayLoadManifests().add(manifest);
     BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
-    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), root, bag.getFileEncoding());
+    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
     
     return bag;
@@ -93,7 +93,7 @@ public class BagCreator {
     
     bag.getPayLoadManifests().add(manifest);
     BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
-    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, bag.getFileEncoding());
+    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
     
     return bag;
   }

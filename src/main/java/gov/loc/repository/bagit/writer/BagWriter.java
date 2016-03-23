@@ -44,7 +44,7 @@ public class BagWriter {
     Path bagitDir = writeVersionDependentPayloadFiles(bag, outputDir);
     
     writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
-    writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getFileEncoding());
+    writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
 
     if(bag.getMetadata().size() > 0){
       writeBagitInfoFile(bag.getMetadata(), bagitDir, bag.getFileEncoding());
@@ -55,7 +55,7 @@ public class BagWriter {
     if(bag.getTagManifests().size() > 0){
       Set<Manifest> updatedTagManifests = updateTagManifests(bag);
       bag.setTagManifests(updatedTagManifests);
-      writeTagManifests(updatedTagManifests, bagitDir, bag.getFileEncoding());
+      writeTagManifests(updatedTagManifests, bagitDir, bag.getRootDir(), bag.getFileEncoding());
     }
   }
   
@@ -128,9 +128,9 @@ public class BagWriter {
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file
    */
-  public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, String charsetName) throws IOException{
+  public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, Path bagitRootDir, String charsetName) throws IOException{
     logger.info("Writing payload manifest(s)");
-    writeManifests(manifests, outputDir, "manifest-", charsetName);
+    writeManifests(manifests, outputDir, bagitRootDir, "manifest-", charsetName);
   }
   
   protected static Set<Manifest> updateTagManifests(Bag bag) throws NoSuchAlgorithmException, IOException{
@@ -165,12 +165,12 @@ public class BagWriter {
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeTagManifests(Set<Manifest> tagManifests, Path outputDir, String charsetName) throws IOException{
+  public static void writeTagManifests(Set<Manifest> tagManifests, Path outputDir, Path bagitRootDir, String charsetName) throws IOException{
     logger.info("Writing tag manifest(s)");
-    writeManifests(tagManifests, outputDir, "tagmanifest-", charsetName);
+    writeManifests(tagManifests, outputDir, bagitRootDir, "tagmanifest-", charsetName);
   }
   
-  protected static void writeManifests(Set<Manifest> manifests, Path outputDir, String filenameBase, String charsetName) throws IOException{
+  protected static void writeManifests(Set<Manifest> manifests, Path outputDir, Path relativeTo, String filenameBase, String charsetName) throws IOException{
     for(Manifest manifest : manifests){
       Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
@@ -179,12 +179,27 @@ public class BagWriter {
       Files.createFile(manifestPath);
       
       for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        String line = entry.getValue() + " " + getPathRelativeToDataDir(entry.getKey()) + System.lineSeparator();
+        String line = entry.getValue() + " " + relativeTo.relativize(entry.getKey()) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(Charset.forName(charsetName)), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
       }
     }
+  }
+  
+  protected static String getPathRelativeToAnotherDir(Path file){
+    logger.debug("getting path relative to data directory for [{}]", file);
+    String path = file.toString();
+    int index = path.indexOf("data");
+    
+    if(index == -1){
+      return file.toString();
+    }
+    
+    String rel = path.substring(index, path.length());
+    logger.debug("Relative path for file [{}] to data directory is [{}]", file, rel);
+    
+    return rel;
   }
   
   /**
@@ -225,20 +240,5 @@ public class BagWriter {
       Files.write(fetchFilePath, line.getBytes(Charset.forName(charsetName)), 
           StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
-  }
-  
-  protected static String getPathRelativeToDataDir(Path file){
-    logger.debug("getting path relative to data directory for [{}]", file);
-    String path = file.toString();
-    int index = path.indexOf("data");
-    
-    if(index == -1){
-      return file.toString();
-    }
-    
-    String rel = path.substring(index, path.length());
-    logger.debug("Relative path for file [{}] to data directory is [{}]", file, rel);
-    
-    return rel;
   }
 }
