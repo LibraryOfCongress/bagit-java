@@ -1,7 +1,10 @@
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'findbugs'
-apply plugin: 'pmd'
+plugins {
+  id 'java'
+  id 'jacoco'
+  id 'findbugs'
+  id 'pmd'
+  id "com.github.kt3k.coveralls" version "2.5.0"
+}
 apply from: 'eclipse.gradle'
 apply from: 'maven-central.gradle'
 
