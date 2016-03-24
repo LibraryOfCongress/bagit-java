@@ -1,19 +1,36 @@
 package gov.loc.repository.bagit.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagInfoTxt;
-import gov.loc.repository.bagit.BagInfoTxtWriter;
-import gov.loc.repository.bagit.ManifestHelper;
-import gov.loc.repository.bagit.ManifestWriter;
 import gov.loc.repository.bagit.Bag.Format;
+import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFactory.LoadOption;
 import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.BagInfoTxtWriter;
 import gov.loc.repository.bagit.Manifest.Algorithm;
+import gov.loc.repository.bagit.ManifestHelper;
+import gov.loc.repository.bagit.ManifestWriter;
+import gov.loc.repository.bagit.PreBag;
 import gov.loc.repository.bagit.bag.CancelTriggeringBagDecorator;
 import gov.loc.repository.bagit.utilities.ResourceHelper;
 import gov.loc.repository.bagit.utilities.SimpleResult;
@@ -24,15 +41,10 @@ import gov.loc.repository.bagit.verify.impl.ParallelManifestChecksumVerifier;
 import gov.loc.repository.bagit.verify.impl.ValidVerifierImpl;
 import gov.loc.repository.bagit.writer.impl.FileSystemWriter;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public abstract class AbstractBagImplTest extends BaseBagImplTest {
+  @Rule
+  public TemporaryFolder folder = new TemporaryFolder();
 	
 	@Test
 	public void testFileSystemBagByPayloadManifests() throws Exception {
@@ -637,5 +649,80 @@ public abstract class AbstractBagImplTest extends BaseBagImplTest {
 		}
 		
 	}
-
+	
+	public abstract String getValidZipBag();
+	
+	@Test
+  public void testVerifyZipBagWhenValid(){
+    File zipFile = new File(getClass().getClassLoader().getResource(getValidZipBag()).getFile());
+    BagFactory bagFactory = new BagFactory();
+    Bag bag = bagFactory.createBag(zipFile);
+    
+    ValidVerifierImpl validVerifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+    SimpleResult result = validVerifier.verify(bag);
+    Assert.assertTrue(result.getErrorMessages().size() == 0);
+  }
+	
+	public abstract String getInvalidZipBag();
+  
+  @Test
+  public void testVerifyZipBagWhenInvalid(){
+    File zipFile = new File(getClass().getClassLoader().getResource(getInvalidZipBag()).getFile());
+    BagFactory bagFactory = new BagFactory();
+    Bag bag = bagFactory.createBag(zipFile);
+    
+    ValidVerifierImpl validVerifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+    SimpleResult result = validVerifier.verify(bag);
+    Assert.assertTrue(result.getErrorMessages().size() > 0);
+  }
+  
+  public abstract String getValidBagFolder();
+  
+  @Test
+  public void testVerifyBagWhenValid(){
+    File zipFile = new File(getClass().getClassLoader().getResource(getValidBagFolder()).getFile());
+    BagFactory bagFactory = new BagFactory();
+    Bag bag = bagFactory.createBag(zipFile);
+    
+    ValidVerifierImpl validVerifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+    SimpleResult result = validVerifier.verify(bag);
+    Assert.assertTrue(result.getErrorMessages().size() == 0);
+  }
+  
+  public abstract String getInvalidBagFolder();
+  
+  @Test
+  public void testVerifyBagWhenInvalid(){
+    File zipFile = new File(getClass().getClassLoader().getResource(getInvalidBagFolder()).getFile());
+    BagFactory bagFactory = new BagFactory();
+    Bag bag = bagFactory.createBag(zipFile);
+    
+    ValidVerifierImpl validVerifier = new ValidVerifierImpl(new CompleteVerifierImpl(), new ParallelManifestChecksumVerifier());
+    SimpleResult result = validVerifier.verify(bag);
+    Assert.assertTrue(result.getErrorMessages().size() > 0);
+  }
+  
+  @Test
+  public void testBagInPlaceWithDotKeepFiles() throws IOException{
+    File bagRoot = folder.newFolder("bagWithDotKeepFiles");
+    File emptyFolder = new File(bagRoot, "emptyFolder");
+    emptyFolder.mkdir();
+    File dotKeepFile = new File(emptyFolder, ".keep");
+    dotKeepFile.createNewFile();
+    
+    PreBag preBag = bagFactory.createPreBag(bagRoot);
+    Bag bag = preBag.makeBagInPlace(getVersion(), false);
+    assertTrue(bag.getPayloadManifest(Algorithm.MD5).containsKey("data/emptyFolder/.keep"));
+  }
+  
+  @Test
+  public void testBagInPlaceWithEmptyDirectories() throws IOException{
+    File bagRoot = folder.newFolder("bagWithDotKeepFiles");
+    File emptyFolder = new File(bagRoot, "emptyFolder");
+    emptyFolder.mkdir();
+    
+    PreBag preBag = bagFactory.createPreBag(bagRoot);
+    Bag bag = preBag.makeBagInPlace(getVersion(), false);
+    assertNull(bag.getPayloadManifest(Algorithm.MD5));
+  }
 }

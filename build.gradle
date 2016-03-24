@@ -129,6 +129,10 @@ signing {
 uploadArchives {
   repositories {
     mavenDeployer {
+      if(!project.hasProperty("ossrhUsername")){ //so travis CI doesn't break...
+        project.ext.ossrhUsername = "foo"
+        project.ext.ossrhPassword = "foo"
+      }
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {

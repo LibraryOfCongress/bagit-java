@@ -38,5 +38,24 @@ public class BagWithTagFilesInPayloadManifestTest extends AbstractBagImplTest {
 	public void performTestBagWithIgnoredTagDirectory(Bag bag) {
 		performTestBagWithIgnoredTagDirectoryPrev97(bag);		
 	}
+	
+	@Override
+  public String getValidZipBag() {
+    return "bags/v0_96/bag.zip";
+  }
 
+  @Override
+  public String getInvalidZipBag() {
+    return "bags/v0_96/invalidBag.zip";
+  }
+
+  @Override
+  public String getValidBagFolder() {
+    return "bags/v0_96/bag";
+  }
+
+  @Override
+  public String getInvalidBagFolder() {
+    return "bags/v0_96/invalidBag";
+  }
 }

@@ -1,10 +1,10 @@
 package gov.loc.repository.bagit.v0_93;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.BagFactory.Version;
+import gov.loc.repository.bagit.BagInfoTxt;
 import gov.loc.repository.bagit.impl.AbstractBagImplTest;
 
 public class BagImplTest extends AbstractBagImplTest {
@@ -31,4 +31,24 @@ public class BagImplTest extends AbstractBagImplTest {
 	public void performTestBagWithIgnoredTagDirectory(Bag bag) {
 		performTestBagWithIgnoredTagDirectoryPrev97(bag);		
 	}
+	
+	@Override
+  public String getValidZipBag() {
+    return "bags/v0_93/bag.zip";
+  }
+	
+	@Override
+  public String getInvalidZipBag() {
+    return "bags/v0_93/invalidBag.zip";
+  }
+
+  @Override
+  public String getValidBagFolder() {
+    return "bags/v0_93/bag";
+  }
+
+  @Override
+  public String getInvalidBagFolder() {
+    return "bags/v0_93/invalidBag";
+  }
 }
