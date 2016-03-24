@@ -77,6 +77,13 @@ pmd {
   ruleSets = ["java-basic", "java-braces", "java-empty"]
 }
 
+jacocoTestReport {
+  reports {
+      xml.enabled = true // coveralls plugin depends on xml format report
+      html.enabled = true
+  }
+}
+
 //Keep this for easy viewing of html findbugs report
 //tasks.withType(FindBugs) {
 //  reports {
