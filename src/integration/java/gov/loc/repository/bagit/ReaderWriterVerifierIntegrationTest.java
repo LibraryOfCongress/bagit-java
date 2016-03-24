@@ -11,22 +11,27 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 
-public class ReaderWriterIntegrationTest {
+public class ReaderWriterVerifierIntegrationTest {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
   @Test
   public void testReaderWriterVersion93() throws Exception{
+    BagVerifier verifier = new BagVerifier();
     BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_93/bag").toURI());
-    Bag bag = reader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
     
-    BagWriter.write(bag, outputDir);
+    Bag bag = reader.read(rootDir);
+    verifier.isValid(bag, true);
     
+    BagWriter.write(bag, outputDir);
     testBagsEqual(rootDir, outputDir);
+    
+    verifier.isValid(reader.read(outputDir), true);
   }
   
   @Test
@@ -39,6 +44,8 @@ public class ReaderWriterIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
+    BagVerifier verifier = new BagVerifier();
+    verifier.isValid(reader.read(outputDir), true);
   }
   
   @Test
@@ -51,6 +58,8 @@ public class ReaderWriterIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
+    BagVerifier verifier = new BagVerifier();
+    verifier.isValid(reader.read(outputDir), true);
   }
   
   @Test
@@ -63,6 +72,8 @@ public class ReaderWriterIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
+    BagVerifier verifier = new BagVerifier();
+    verifier.isValid(reader.read(outputDir), true);
   }
 
   @Test
@@ -75,6 +86,8 @@ public class ReaderWriterIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
+    BagVerifier verifier = new BagVerifier();
+    verifier.isValid(reader.read(outputDir), true);
   }
   
   @Test
@@ -87,6 +100,8 @@ public class ReaderWriterIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
+    BagVerifier verifier = new BagVerifier();
+    verifier.isValid(reader.read(outputDir), true);
   }
   
   private void testBagsEqual(Path originalBag, Path newBag) throws IOException{

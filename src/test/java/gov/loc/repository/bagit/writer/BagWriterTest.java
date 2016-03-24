@@ -139,14 +139,20 @@ public class BagWriterTest extends Assert {
   public void testWriteBagitInfoFile() throws IOException{
     File rootDir = folder.newFolder();
     File bagInfo = new File(rootDir, "bag-info.txt");
+    File packageInfo = new File(rootDir, "package-info.txt");
     List<Pair<String, String>> metadata = new ArrayList<>();
     metadata.add(new Pair<>("key1", "value1"));
     metadata.add(new Pair<>("key2", "value2"));
     metadata.add(new Pair<>("key3", "value3"));
     
     assertFalse(bagInfo.exists());
-    BagWriter.writeBagitInfoFile(metadata, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
+    assertFalse(packageInfo.exists());
+    
+    BagWriter.writeBagitInfoFile(metadata, new Version(0,96), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
     assertTrue(bagInfo.exists());
+    
+    BagWriter.writeBagitInfoFile(metadata, new Version(0,95), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
+    assertTrue(packageInfo.exists());
   }
   
   @Test

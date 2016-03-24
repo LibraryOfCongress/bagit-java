@@ -29,6 +29,8 @@ import javafx.util.Pair;
  */
 public class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
+  private static final Version VERSION_0_98 = new Version(0, 98);
+  private static final Version VERSION_0_95 = new Version(0, 95);
 
   private BagWriter(){}
   
@@ -47,23 +49,23 @@ public class BagWriter {
     writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
 
     if(bag.getMetadata().size() > 0){
-      writeBagitInfoFile(bag.getMetadata(), bagitDir, bag.getFileEncoding());
+      writeBagitInfoFile(bag.getMetadata(), bag.getVersion(), bagitDir, bag.getFileEncoding());
     }
     if(bag.getItemsToFetch().size() > 0){
       writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getFileEncoding());
     }
     if(bag.getTagManifests().size() > 0){
-      Set<Manifest> updatedTagManifests = updateTagManifests(bag);
+      writeAdditionalTagPayloadFiles(bag.getTagManifests(), bagitDir, bag.getRootDir());
+      Set<Manifest> updatedTagManifests = updateTagManifests(bag, outputDir);
       bag.setTagManifests(updatedTagManifests);
       writeTagManifests(updatedTagManifests, bagitDir, bag.getRootDir(), bag.getFileEncoding());
-      writeAdditionalTagPayloadFiles(updatedTagManifests, bagitDir, bag.getRootDir());
     }
   }
   
   protected static Path writeVersionDependentPayloadFiles(Bag bag, Path outputDir) throws IOException{
     Path bagitDir = outputDir;
     //@Incubating
-    if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){
+    if(VERSION_0_98.compareTo(bag.getVersion()) <= 0){
       bagitDir = outputDir.resolve(".bagit");
       Files.createDirectories(bagitDir);
       writePayloadFiles(bag.getPayLoadManifests(), outputDir, bag.getRootDir());
@@ -85,8 +87,9 @@ public class BagWriter {
    * @throws IOException if there was a problem writing the file
    */
   public static void writeBagitFile(Version version, String encoding, Path outputDir) throws IOException{
-    logger.debug("Writing bagit.txt file to [{}]", outputDir);
     Path bagitPath = outputDir.resolve("bagit.txt");
+    logger.debug("Writing bagit.txt file to [{}]", outputDir);
+    
     
     String firstLine = "BagIt-Version : " + version + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", firstLine, bagitPath);
@@ -134,29 +137,24 @@ public class BagWriter {
     writeManifests(manifests, outputDir, bagitRootDir, "manifest-", charsetName);
   }
   
-  protected static Set<Manifest> updateTagManifests(Bag bag) throws NoSuchAlgorithmException, IOException{
-    Set<Path> tagFilePaths = new HashSet<>();
-    
-    for(Manifest payloadManifest : bag.getPayLoadManifests()){
-      tagFilePaths.add(bag.getRootDir().resolve("manifest-" + payloadManifest.getAlgorithm().getBagitName() + ".txt"));
-    }
-    
-    tagFilePaths.add(bag.getRootDir().resolve("bag-info.txt"));
-    tagFilePaths.add(bag.getRootDir().resolve("package-info.txt"));
-    tagFilePaths.add(bag.getRootDir().resolve("fetch.txt"));
-    tagFilePaths.add(bag.getRootDir().resolve("bagit.txt"));
+  protected static Set<Manifest> updateTagManifests(Bag bag, Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
+    Set<Manifest> newManifests = new HashSet<>();
     
     for(Manifest tagManifest : bag.getTagManifests()){
-      Set<Path> pathsToUpdate = new HashSet<>(tagManifest.getFileToChecksumMap().keySet());
-      pathsToUpdate.retainAll(tagFilePaths);
-      for(Path pathToUpdate : pathsToUpdate){
+      Manifest newManifest = new Manifest(tagManifest.getAlgorithm());
+      
+      for(Path originalPath : tagManifest.getFileToChecksumMap().keySet()){
+        Path relativePath = bag.getRootDir().relativize(originalPath);
+        Path pathToUpdate = newBagRootDir.resolve(relativePath);
         MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
         String newChecksum = Hasher.hash(Files.newInputStream(pathToUpdate), messageDigest);
-        tagManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
+        newManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
       }
+      
+      newManifests.add(newManifest);
     }
     
-    return bag.getTagManifests();
+    return newManifests;
   }
   
   /**
@@ -208,9 +206,12 @@ public class BagWriter {
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Path outputDir, String charsetName) throws IOException{
-    logger.debug("Writing bag-info.txt to [{}]", outputDir);
+  public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Version version, Path outputDir, String charsetName) throws IOException{
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
+    if(VERSION_0_95.compareTo(version) >= 0){
+      bagInfoFilePath = outputDir.resolve("package-info.txt");
+    }
+    logger.debug("Writing {} to [{}]", bagInfoFilePath.getFileName(), outputDir);
 
     Files.deleteIfExists(bagInfoFilePath);
     
