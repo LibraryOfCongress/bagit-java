@@ -128,7 +128,8 @@ public class BagWriter {
   /**
    * Write the payload <b>manifest(s)</b> to the output directory
    * @param manifests the payload{@link Manifest}s to write out
-   * @param outputDir the root of the bag
+   * @param outputDir the root of where the manifest is being written to
+   * @param bagitRootDir the path to the root of the bag
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file
    */
@@ -160,7 +161,8 @@ public class BagWriter {
   /**
    * Write the tag <b>manifest(s)</b> to the output directory
    * @param tagManifests the tag{@link Manifest}s to write out
-   * @param outputDir the root of the bag
+   * @param outputDir the root of where the manifest is being written to
+   * @param bagitRootDir the path to the root of the bag
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file
    */
@@ -201,8 +203,9 @@ public class BagWriter {
   }
   
   /**
-   * Write the bag-info.txt file to the specified outputDir with specified encoding (charsetName)
+   * Write the bag-info.txt (or package-info.txt) file to the specified outputDir with specified encoding (charsetName)
    * @param metadata the key value pair info in the bag-info.txt file
+   * @param version the version of the bag you are writing
    * @param outputDir the root of the bag
    * @param charsetName the name of the encoding for the file
    * @throws IOException if there was a problem writing a file

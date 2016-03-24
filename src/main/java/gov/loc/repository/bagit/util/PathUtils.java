@@ -7,7 +7,7 @@ public class PathUtils {
   /**
    * Needed to get rid of findbugs "dodgy code warnings" in regards to getting the filename of a path as a string
    * 
-   * @param path
+   * @param path the path that you which to get the filename as a string
    * @return the filename or an empty string
    */
   public static String getFilename(Path path){
