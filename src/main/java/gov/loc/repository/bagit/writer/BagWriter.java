@@ -191,8 +191,9 @@ public class BagWriter {
       for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
         Path relativeLocation = bagRootDir.relativize(entry.getKey());
         Path writeTo = outputDir.resolve(relativeLocation);
-        if(!Files.exists(writeTo)){
-          Files.createDirectories(writeTo.getParent());
+        Path writeToParent = writeTo.getParent();
+        if(!Files.exists(writeTo) && writeToParent != null){
+          Files.createDirectories(writeToParent);
           Files.copy(entry.getKey(), writeTo);
         }
       }

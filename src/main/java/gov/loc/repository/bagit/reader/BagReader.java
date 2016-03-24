@@ -21,6 +21,7 @@ import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
+import gov.loc.repository.bagit.util.PathUtils;
 import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 import javafx.util.Pair;
 
@@ -129,11 +130,13 @@ public class BagReader {
     DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
     for (Path path : manifests){
-      if(path.getFileName().toString().startsWith("tagmanifest-")){
+      String filename = PathUtils.getFilename(path);
+      
+      if(filename.startsWith("tagmanifest-")){
         logger.debug("Found tag manifest [{}]", path);
         newBag.getTagManifests().add(readManifest(path, bag.getRootDir()));
       }
-      else if(path.getFileName().toString().startsWith("manifest-")){
+      else if(filename.startsWith("manifest-")){
         logger.debug("Found payload manifest [{}]", path);
         newBag.getPayLoadManifests().add(readManifest(path, bag.getRootDir()));
       }
@@ -145,7 +148,9 @@ public class BagReader {
   protected DirectoryStream<Path> getAllManifestFiles(Path rootDir) throws IOException{
     DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
       public boolean accept(Path file) throws IOException {
-        return file.getFileName().toString().startsWith("tagmanifest-") || file.getFileName().toString().startsWith("manifest-");
+        if(file == null || file.getFileName() == null){ return false;}
+        String filename = PathUtils.getFilename(file);
+        return filename.startsWith("tagmanifest-") || filename.startsWith("manifest-");
       }
     };
     
@@ -161,7 +166,7 @@ public class BagReader {
    */
   public Manifest readManifest(Path manifestFile, Path bagRootDir) throws IOException{
     logger.debug("Reading manifest [{}]", manifestFile);
-    String alg = manifestFile.getFileName().toString().split("[-\\.]")[1];
+    String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
     SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
     
     Manifest manifest = new Manifest(algorithm);

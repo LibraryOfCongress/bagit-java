@@ -73,3 +73,11 @@ pmdTest.enabled = false
 pmd {
   ruleSets = ["java-basic", "java-braces", "java-empty"]
 }
+
+//Keep this for easy viewing of html findbugs report
+//tasks.withType(FindBugs) {
+//  reports {
+//      xml.enabled = false
+//      html.enabled = true
+//  }
+//}

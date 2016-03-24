@@ -36,10 +36,15 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
 
   @Override
   public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException{
-    count++;
-    long size = Files.size(path);
-    logger.debug("File [{}] hash a size of [{}] bytes", path, size);
-    totalSize += size;
+    if(!ignoreHiddenFiles && Files.isHidden(path) && !path.endsWith(".keep")){
+      logger.debug("Skipping [{}] since we are ignoring hidden files", path);
+    }
+    else{
+      count++;
+      long size = Files.size(path);
+      logger.debug("File [{}] hash a size of [{}] bytes", path, size);
+      totalSize += size;
+    }
     
     return FileVisitResult.CONTINUE;
   }

@@ -50,7 +50,7 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
 
   @Override
   public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws IOException{
-    if(!includeHiddenFiles && Files.isHidden(path)){
+    if(!includeHiddenFiles && Files.isHidden(path) && !path.endsWith(".keep")){
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{

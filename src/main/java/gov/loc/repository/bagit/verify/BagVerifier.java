@@ -35,6 +35,7 @@ import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgori
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.tasks.CheckIfFileExistsTask;
 import gov.loc.repository.bagit.tasks.CheckManifestHashsTask;
+import gov.loc.repository.bagit.util.PathUtils;
 import javafx.util.Pair;
 
 /**
@@ -257,7 +258,7 @@ public class BagVerifier {
     }
     
     for(Path path : directoryStream){
-      if(path.getFileName().toString().startsWith("manifest-")){
+      if(PathUtils.getFilename(path).startsWith("manifest-")){
         logger.debug("Found payload manifest file [{}]", path.getFileName());
         hasAtLeastOneManifest = true;
       }
@@ -282,7 +283,8 @@ public class BagVerifier {
     BagReader reader = new BagReader(nameMapping);
     
     for(Path path : directoryStream){
-      if(path.getFileName().toString().startsWith("tagmanifest-") || path.getFileName().toString().startsWith("manifest-")){
+      String filename = PathUtils.getFilename(path);
+      if(filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")){
         logger.debug("Getting files and checksums listed in [{}]", path);
         Manifest manifest = reader.readManifest(path, bag.getRootDir());
         filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
