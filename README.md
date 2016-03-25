@@ -26,7 +26,7 @@ We no longer support directly serializing a bag. But if that is something you re
 ##### Fetching
 We no longer support fetching. This is due to the various protocalls that could be involved. Again, if this is something you need, there are much better java libraries out there that you can use to fill this functionality.
 
-### Examples
+### Examples of using the new bagit-java library
 The "new" bagit interface is very intuitive, but here are some easy to follow examples. Instead of returning messages like in the old interface, now it throws errors so you don't have to parse messages to understand what happened.
 
 ##### Create a bag from a folder using version 0.97
@@ -94,6 +94,9 @@ public class MyNewNameMapping implements BagitAlgorithmNameToSupportedAlgorithmM
 }
 ```
 and then add the implemented BagitAlgorithmNameToSupportedAlgorithmMapping class to your BagReader or bagVerifier object before using their methods
+
+### Examples of how to implement features that have been removed
+See the [examples](src/test/java/gov/loc/repository/bagit/examples) directory for examples of how to implement features that have been removed yourself. 
 
 ## Developing Bagit-Java
 Bagit-Java uses [Gradle](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.

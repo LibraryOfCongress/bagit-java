@@ -1,0 +1,73 @@
+//this build file is responsible for all the configuration of code quality items, such as code coverage, syntax style checking, static bug finding, etc.
+apply plugin: "jacoco"
+apply plugin: "findbugs"
+apply plugin: "pmd"
+
+sourceSets {
+  integrationTest {
+      java {
+          compileClasspath += main.output + test.output
+          runtimeClasspath += main.output + test.output
+          srcDir file('src/integration/java')
+      }
+  }
+}
+
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
+test { //show test output
+  testLogging.showStandardStreams = true
+}
+
+jacoco {
+  toolVersion = "0.7.5.201505241946" //needed for jenkins to report code coverage correctly
+}
+
+task integrationTest(type: Test) {
+  description "Runs the integration tests."
+  testClassesDir = sourceSets.integrationTest.output.classesDir
+  classpath = sourceSets.integrationTest.runtimeClasspath
+  testLogging.showStandardStreams = true
+}
+
+jacocoTestReport.dependsOn integrationTest
+jacocoTestReport.dependsOn test
+check.dependsOn integrationTest
+check.dependsOn jacocoTestReport
+
+findbugsTest.enabled = false
+
+findbugs {
+  ignoreFailures = true //don't fail the gradle build if bugs are found
+}
+
+pmdTest.enabled = false
+
+pmd {
+  ruleSets = ["java-basic", "java-braces", "java-empty"]
+}
+
+jacocoTestReport {
+  reports {
+      xml.enabled = true // coveralls plugin depends on xml format report
+      html.enabled = true
+  }
+  afterEvaluate {
+    classDirectories = files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: ['gov.loc.repository.bagit/domain/**',
+          'gov.loc.repository.bagit/annotation/**',
+          'gov.loc.repository.bagit/exceptions/**'])
+    })
+}
+}
+
+//Keep this for easy viewing of html findbugs report
+//tasks.withType(FindBugs) {
+//  reports {
+//      xml.enabled = false
+//      html.enabled = true
+//  }
+//}

@@ -1,12 +1,10 @@
 plugins {
   id 'java'
-  id 'jacoco'
-  id 'findbugs'
-  id 'pmd'
-  id "com.github.kt3k.coveralls" version "2.5.0"
+  id "com.github.kt3k.coveralls" version "2.5.0" //has to be in the main project for now see - https://discuss.gradle.org/t/how-do-i-include-buildscript-block-from-external-gradle-script/7016/2
 }
 apply from: 'eclipse.gradle'
 apply from: 'maven-central.gradle'
+apply from: 'code-quality.gradle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -19,82 +17,12 @@ repositories {
   jcenter()
 }
 
-sourceSets {
-  integrationTest {
-      java {
-          compileClasspath += main.output + test.output
-          runtimeClasspath += main.output + test.output
-          srcDir file('src/integration/java')
-      }
-//        resources.srcDir file('src/integration/resources')
-  }
-}
-
-configurations {
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-}
-
 dependencies {
   compile 'org.slf4j:slf4j-api:latest.integration'
     
   testCompile 'junit:junit:latest.integration', 
     'org.springframework.boot:spring-boot-starter-logging:latest.integration',
-    'org.bouncycastle:bcprov-jdk15on:latest.integration'
+    'org.bouncycastle:bcprov-jdk15on:latest.integration',
+    'net.lingala.zip4j:zip4j:latest.integration',
+    'org.kamranzafar:jtar:latest.integration'
 }
-
-test { //show test output
-  testLogging.showStandardStreams = true
-}
-
-jacoco {
-  toolVersion = "0.7.5.201505241946" //needed for jenkins to report code coverage correctly
-}
-
-task integrationTest(type: Test) {
-  description "Runs the integration tests."
-  testClassesDir = sourceSets.integrationTest.output.classesDir
-  classpath = sourceSets.integrationTest.runtimeClasspath
-  testLogging.showStandardStreams = true
-}
-
-test.dependsOn integrationTest
-jacocoTestReport.dependsOn integrationTest
-build.dependsOn jacocoTestReport
-
-jacocoTestReport.dependsOn test
-check.dependsOn jacocoTestReport
-
-findbugsTest.enabled = false
-
-findbugs {
-  ignoreFailures = true //don't fail the gradle build if bugs are found
-}
-
-pmdTest.enabled = false
-
-pmd {
-  ruleSets = ["java-basic", "java-braces", "java-empty"]
-}
-
-jacocoTestReport {
-  reports {
-      xml.enabled = true // coveralls plugin depends on xml format report
-      html.enabled = true
-  }
-  afterEvaluate {
-    classDirectories = files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: ['gov.loc.repository.bagit/domain/**',
-          'gov.loc.repository.bagit/annotation/**',
-          'gov.loc.repository.bagit/exceptions/**'])
-    })
-}
-}
-
-//Keep this for easy viewing of html findbugs report
-//tasks.withType(FindBugs) {
-//  reports {
-//      xml.enabled = false
-//      html.enabled = true
-//  }
-//}

@@ -1,7 +1,9 @@
 #### Changes in 5.0.0
 1. Complete rewrite of the library to remove bad practices and to allow for a much better design using java best practices.
-2. Removal of creating a zipped bag. There are many good zip (or other serialization) libraries in Java, please use one of them instead.
-3. Allow for ignoring hidden files except if specified in manifest
+2. Removal of creating a zipped bag. There are many good zip (or other serialization) libraries in Java, please use one of them instead. Please see the examples directory for how you might use third-party libraries to do zipping (or other serialization).
+3. Removal of fetching. It is impossible to account for all the protocols possible with fetching. Please see the examples directory for how you might use third-party libraries to do fetching.
+3. Allow for ignoring hidden files except if specified in manifest.
+4. Bagit now uses Java version 8 syntax, thus the minimum requirement for building and running is Java 8
 
 #### Changes in 4.10.0
 1. Fixes defect in SimpleResult.add*Message() methods.

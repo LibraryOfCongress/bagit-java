@@ -1,3 +1,4 @@
+//This build file is for all the configuration specifics of building and deploying to maven-central
 apply plugin: 'maven'
 apply plugin: 'signing'
 

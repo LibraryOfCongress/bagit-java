@@ -1,18 +1,20 @@
 apply plugin: 'eclipse'
 
-eclipse.classpath.file.withXml { xml ->
-  def node = xml.asNode()
-
-  //make resources lib instead of src kind
-  Node resources = node.find {it.@path == "src/main/resources"}
-  if(resources != null){
-    resources.attributes().put("kind", "lib")
-    resources.attributes().put("exported", "true")
-  }
-  resources = node.find {it.@path == "src/test/resources"}
-  if(resources != null){
-    resources.attributes().put("kind", "lib")
-    resources.attributes().put("exported", "false")
+eclipse.classpath.file{
+  withXml { xml ->
+    def node = xml.asNode()
+  
+    //make resources lib instead of src kind
+    Node resources = node.find {it.@path == "src/main/resources"}
+    if(resources != null){
+      resources.attributes().put("kind", "lib")
+      resources.attributes().put("exported", "true")
+    }
+    resources = node.find {it.@path == "src/test/resources"}
+    if(resources != null){
+      resources.attributes().put("kind", "lib")
+      resources.attributes().put("exported", "false")
+    }
   }
 }
 
