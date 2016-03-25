@@ -27,6 +27,7 @@ import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
+import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -63,6 +64,13 @@ public class BagVerifierTest extends Assert{
     Bag bag = reader.read(passingRootDir);
     
     sut.quicklyVerify(bag, true);
+  }
+  
+  @Test(expected=PayloadOxumDoesNotExistException.class)
+  public void testExceptionIsThrownWhenPayloadOxumDoesntExist() throws Exception{
+    Bag bag = reader.read(rootDir);
+    sut.quicklyVerify(bag, true);
+    
   }
   
   @Test(expected=InvalidPayloadOxumException.class)
