@@ -51,6 +51,32 @@ public class BagWriterTest extends Assert {
   }
   
   @Test
+  public void testWriteVersion95() throws Exception{
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_95/bag").toURI());
+    Bag bag = reader.read(rootDir); 
+    File bagitDir = folder.newFolder();
+    Path bagitDirPath = Paths.get(bagitDir.toURI());
+    List<Path> expectedPaths = Arrays.asList(bagitDirPath.resolve("tagmanifest-md5.txt"),
+        bagitDirPath.resolve("manifest-md5.txt"),
+        bagitDirPath.resolve("bagit.txt"),
+        bagitDirPath.resolve("package-info.txt"),
+        bagitDirPath.resolve("data"),
+        bagitDirPath.resolve("data").resolve("test1.txt"),
+        bagitDirPath.resolve("data").resolve("test2.txt"),
+        bagitDirPath.resolve("data").resolve("dir1"),
+        bagitDirPath.resolve("data").resolve("dir2"), 
+        bagitDirPath.resolve("data").resolve("dir1").resolve("test3.txt"),
+        bagitDirPath.resolve("data").resolve("dir2").resolve("test4.txt"),
+        bagitDirPath.resolve("data").resolve("dir2").resolve("dir3"),
+        bagitDirPath.resolve("data").resolve("dir2").resolve("dir3").resolve("test5.txt"));
+    
+    BagWriter.write(bag, bagitDirPath);
+    for(Path expectedPath : expectedPaths){
+      assertTrue("Expected " + expectedPath + " to exist!", Files.exists(expectedPath));
+    }
+  }
+  
+  @Test
   public void testWriteVersion97() throws Exception{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Bag bag = reader.read(rootDir); 
@@ -207,18 +233,5 @@ public class BagWriterTest extends Assert {
     
     BagWriter.write(bag, bag.getRootDir());
     assertTrue(Files.exists(dataDir));
-  }
-  
-  @Test
-  public void foo(){
-    Path bagRootDir = Paths.get("/tmp/foo");
-    Path payloadFile = bagRootDir.resolve("data/bar/ham.txt");
-    Path tagFile = bagRootDir.resolve("addtionalTagFile.txt");
-    
-    System.err.println("payload relative to data dir : " + payloadFile.relativize(bagRootDir.resolve("data")));
-    System.err.println("tag file relative to root dir: " + tagFile.relativize(bagRootDir));
-    
-    System.err.println("data dir relative to payload file: " + bagRootDir.resolve("data").relativize(payloadFile));
-    System.err.println("root dir relative to tag file    : " + bagRootDir.relativize(tagFile));
   }
 }
