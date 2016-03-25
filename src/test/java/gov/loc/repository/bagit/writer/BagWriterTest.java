@@ -205,7 +205,7 @@ public class BagWriterTest extends Assert {
     File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
     
     assertFalse(tagManifest.exists());
-    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get(outputDir.toURI()), StandardCharsets.UTF_8.name());
+    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8.name());
     assertTrue(tagManifest.exists());
   }
   
