@@ -230,7 +230,7 @@ public class BagReader {
       logger.debug("Found [{}] file", bagInfoFile);
       metadata = readKeyValuesFromFile(bagInfoFile, ":");
     }
-    Path packageInfoFile = rootDir.resolve("package-info.txt"); //onlu exists in versions 0.93 - 0.95
+    Path packageInfoFile = rootDir.resolve("package-info.txt"); //only exists in versions 0.93 - 0.95
     if(Files.exists(packageInfoFile)){
       logger.debug("Found [{}] file", packageInfoFile);
       metadata = readKeyValuesFromFile(packageInfoFile, ":");
