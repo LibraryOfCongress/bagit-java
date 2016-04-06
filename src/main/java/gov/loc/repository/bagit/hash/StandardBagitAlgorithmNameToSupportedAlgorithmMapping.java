@@ -10,5 +10,4 @@ public class StandardBagitAlgorithmNameToSupportedAlgorithmMapping
   public SupportedAlgorithm getMessageDigestName(String bagitAlgorithmName) {
     return StandardSupportedAlgorithms.valueOf(bagitAlgorithmName.toUpperCase());
   }
-
 }

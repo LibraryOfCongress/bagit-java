@@ -26,6 +26,7 @@ import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
+import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
@@ -60,7 +61,8 @@ public class BagVerifier {
   }
   
   /**
-   * Quickly verify by comparing the number of files and the total number of bytes expected
+   * Determine if we can quickly verify by comparing the number of files and the total number of bytes expected
+   * 
    * @param bag the {@link Bag} object you wish to check
    * @return true if the bag can be quickly verified
    */
@@ -80,9 +82,11 @@ public class BagVerifier {
   }
   
   /**
+   * Quickly verify by comparing the number of files and the total number of bytes expected
    * 
    * @param bag the bag to verify by payload-oxum
    * @param ignoreHiddenFiles ignore hidden files found in payload directory
+   * 
    * @throws IOException if there is an error reading a file
    * @throws InvalidPayloadOxumException if either the total bytes or the number of files 
    * calculated for the payload directory of the bag is different than the supplied values
@@ -118,6 +122,7 @@ public class BagVerifier {
    * See <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-3</a><br>
    *  A bag is <b>valid</b> if the bag is complete and every checksum has been 
    *  verified against the contents of its corresponding file.
+   * 
    * @param bag the {@link Bag} object to check
    * @param ignoreHiddenFiles ignore hidden files unless explicitly listed in manifest(s)
    * 
@@ -129,8 +134,9 @@ public class BagVerifier {
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
+   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public void isValid(Bag bag, boolean ignoreHiddenFiles) throws Exception{
+  public void isValid(Bag bag, boolean ignoreHiddenFiles) throws Exception, IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
@@ -149,6 +155,7 @@ public class BagVerifier {
    * Check the supplied checksum hashes against the generated checksum hashes
    * 
    * @param manifest list of file and their hash
+   * 
    * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum
    */
   protected void checkHashes(Manifest manifest) throws Exception{
@@ -178,18 +185,21 @@ public class BagVerifier {
    * <li>every file in the data directory must be listed in at least one payload manifest
    * <li>each element must comply with the bagit spec
    * </ul>
+   * 
    * @param bag the {@link Bag} object to check
    * @param ignoreHiddenFiles ignore hidden files unless explicitly listed in manifest(s)
+   * 
    * @throws IOException if there was an error with the file
    * @throws MissingPayloadManifestException if there is not at least one payload manifest
    * @throws MissingBagitFileException  if there is no bagit.txt file
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
+   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
   public void isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
-    FileNotInPayloadDirectoryException, InterruptedException{
+    FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
     Path dataDir = getDataDir(bag);
@@ -270,7 +280,7 @@ public class BagVerifier {
     
   }
   
-  protected Set<Path> getAllFilesListedInManifests(Bag bag) throws IOException{
+  protected Set<Path> getAllFilesListedInManifests(Bag bag) throws IOException, MaliciousManifestException{
     logger.debug("Getting all files listed in the manifest(s)");
     Set<Path> filesListedInManifests = new HashSet<>();
     

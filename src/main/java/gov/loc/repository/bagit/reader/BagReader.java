@@ -17,6 +17,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
@@ -43,12 +44,15 @@ public class BagReader {
   
   /**
    * Read the bag from the filesystem and create a bag object
+   * 
    * @param rootDir the root directory of the bag 
    * @throws IOException if there is a problem reading a file
    * @return a {@link Bag} object representing a bag on the filesystem
+   * 
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
+   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public Bag read(Path rootDir) throws IOException, UnparsableVersionException{
+  public Bag read(Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException{
     //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
     if(!Files.exists(bagitDir)){
@@ -74,9 +78,11 @@ public class BagReader {
   /**
    * Read the bagit.txt file and add it to the given bag. 
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * 
    * @param bagitFile the bagit.txt file
    * @param bag the bag to include in the newly generated bag
    * @return a new bag containing the bagit.txt info
+   * 
    * @throws IOException if there is a problem reading a file
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    */
@@ -119,12 +125,15 @@ public class BagReader {
   /**
    * Finds and reads all manifest files in the rootDir and adds them to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * 
    * @param rootDir the parent directory of the manifest(s)
    * @param bag the bag to include in the new bag
    * @return a new bag that contains all the manifest(s) information
+   * 
    * @throws IOException if there is a problem reading a file
+   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public Bag readAllManifests(Path rootDir, Bag bag) throws IOException{
+  public Bag readAllManifests(Path rootDir, Bag bag) throws IOException, MaliciousManifestException{
     logger.info("Attempting to find and read manifests");
     Bag newBag = new Bag(bag);
     DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
@@ -159,12 +168,15 @@ public class BagReader {
   
   /**
    * Reads a manifest file and converts it to a {@link Manifest} object.
+   * 
    * @param manifestFile a specific manifest file
    * @param bagRootDir the root directory of the bag
    * @return the converted manifest object from the file
+   * 
    * @throws IOException if there is a problem reading a file
+   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public Manifest readManifest(Path manifestFile, Path bagRootDir) throws IOException{
+  public Manifest readManifest(Path manifestFile, Path bagRootDir) throws IOException, MaliciousManifestException{
     logger.debug("Reading manifest [{}]", manifestFile);
     String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
     SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
@@ -177,7 +189,7 @@ public class BagReader {
     return manifest;
   }
   
-  protected HashMap<Path, String> readChecksumFileMap(Path manifestFile, Path bagRootDir) throws IOException{
+  protected HashMap<Path, String> readChecksumFileMap(Path manifestFile, Path bagRootDir) throws IOException, MaliciousManifestException{
     HashMap<Path, String> map = new HashMap<>();
     BufferedReader br = Files.newBufferedReader(manifestFile);
 
@@ -185,6 +197,10 @@ public class BagReader {
     while(line != null){
       String[] parts = line.split("\\s+", 2);
       Path file = bagRootDir.resolve(parts[1]);
+      if(!file.normalize().startsWith(bagRootDir)){
+        throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
+            "! This is not allowed according to the bagit specification!");
+      }
       logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[0], file, manifestFile);
       map.put(file, parts[0]);
       line = br.readLine();
@@ -196,12 +212,15 @@ public class BagReader {
   /**
    * Reads the bag metadata file (bag-info.txt or package-info.txt) and adds it to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * 
    * @param rootDir the root directory of the bag
    * @param bag the bag to include in the new bag
    * @return a new bag that contains the bag-info.txt (metadata) information
+   * 
    * @throws IOException if there is a problem reading a file
    */
   public Bag readBagMetadata(Path rootDir, Bag bag) throws IOException{
+    //TODO update for .bagit being yaml...
     logger.info("Attempting to read bag metadata file");
     Bag newBag = new Bag(bag);
     List<Pair<String, String>> metadata = new ArrayList<>();
@@ -225,9 +244,11 @@ public class BagReader {
   /**
    * Reads a fetch.txt file and adds {@link FetchItem} to the given bag.
    * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * 
    * @param fetchFile the specific fetch file
    * @param bag the bag to include in the new bag
    * @return a new bag that contains a list of items to fetch
+   * 
    * @throws IOException if there is a problem reading a file
    */
   public Bag readFetch(Path fetchFile, Bag bag) throws IOException{
@@ -251,7 +272,7 @@ public class BagReader {
     return newBag;
   }
   
-  protected static List<Pair<String, String>> readKeyValuesFromFile(Path file, String splitRegex) throws IOException{
+  protected List<Pair<String, String>> readKeyValuesFromFile(Path file, String splitRegex) throws IOException{
     List<Pair<String, String>> keyValues = new ArrayList<>();
     BufferedReader br = Files.newBufferedReader(file);
 

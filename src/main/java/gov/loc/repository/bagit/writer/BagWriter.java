@@ -37,8 +37,12 @@ public class BagWriter {
   /**
    * Write the bag out to the specified directory. 
    * If an error occurs some of the files may have been written out to the filesystem.
+   * tag manifest(s) are updated prior to writing to ensure bag is valid after completion, 
+   * it is therefore recommended if you are going to further interact with the bag to read it from specified outputDir path
+   * 
    * @param bag the {@link Bag} object to write out
    * @param outputDir the output directory that will become the root of the bag
+   * 
    * @throws IOException if there is a problem writing a file
    * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} which is used during update.
    */
@@ -81,9 +85,11 @@ public class BagWriter {
   
   /**
    * Write the bagit.txt file in required UTF-8 encoding.
+   * 
    * @param version the version of the bag to write out
    * @param encoding the encoding of the tag files
    * @param outputDir the root of the bag
+   * 
    * @throws IOException if there was a problem writing the file
    */
   public static void writeBagitFile(Version version, String encoding, Path outputDir) throws IOException{
@@ -103,9 +109,11 @@ public class BagWriter {
   
   /**
    * Write the payload <b>file(s)</b> to the output directory
+   * 
    * @param payloadManifests the set of objects representing the payload manifests
    * @param outputDir the data directory of the bag
    * @param bagDataDir the data directory of the bag
+   * 
    * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadFiles(Set<Manifest> payloadManifests, Path outputDir, Path bagDataDir) throws IOException{
@@ -127,10 +135,12 @@ public class BagWriter {
   
   /**
    * Write the payload <b>manifest(s)</b> to the output directory
+   * 
    * @param manifests the payload{@link Manifest}s to write out
    * @param outputDir the root of where the manifest is being written to
    * @param bagitRootDir the path to the root of the bag
    * @param charsetName the name of the encoding for the file
+   * 
    * @throws IOException if there was a problem writing a file
    */
   public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, Path bagitRootDir, String charsetName) throws IOException{
@@ -160,10 +170,12 @@ public class BagWriter {
   
   /**
    * Write the tag <b>manifest(s)</b> to the output directory
+   * 
    * @param tagManifests the tag{@link Manifest}s to write out
    * @param outputDir the root of where the manifest is being written to
    * @param bagitRootDir the path to the root of the bag
    * @param charsetName the name of the encoding for the file
+   * 
    * @throws IOException if there was a problem writing a file
    */
   public static void writeTagManifests(Set<Manifest> tagManifests, Path outputDir, Path bagitRootDir, String charsetName) throws IOException{
@@ -204,10 +216,12 @@ public class BagWriter {
   
   /**
    * Write the bag-info.txt (or package-info.txt) file to the specified outputDir with specified encoding (charsetName)
+   * 
    * @param metadata the key value pair info in the bag-info.txt file
    * @param version the version of the bag you are writing
    * @param outputDir the root of the bag
    * @param charsetName the name of the encoding for the file
+   * 
    * @throws IOException if there was a problem writing a file
    */
   public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Version version, Path outputDir, String charsetName) throws IOException{
@@ -229,9 +243,11 @@ public class BagWriter {
   
   /**
    * Write the fetch.txt file to the outputDir with the specified encoding (charsetName)
+   * 
    * @param itemsToFetch the list of {@link FetchItem}s to write into the fetch.txt
    * @param outputDir the root of the bag
    * @param charsetName the name of the encoding for the file
+   * 
    * @throws IOException if there was a problem writing a file
    */
   public static void writeFetchFile(List<FetchItem> itemsToFetch, Path outputDir, String charsetName) throws IOException{

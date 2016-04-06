@@ -69,6 +69,7 @@ public class BagCreator {
    * Creates a basic(only required elements) .bagit bag in place.
    * This creates files and directories, thus if an error is thrown during operation it may leave the filesystem 
    * in an unknown state of transition. Thus this is <b>not thread safe</b>
+   * 
    * @param root the directory that will become the base of the bag and where to start searching for content
    * @param algorithm an implementation of {@link SupportedAlgorithm}
    * @param includeHidden to include hidden files when generating the bagit files, like the manifests

@@ -12,6 +12,7 @@ import java.util.Formatter;
 public class Hasher {
   
   /**
+   * Create a HEX formatted string of the checksum hash
    * 
    * @param inputStream the stream that you wish to hash
    * @param messageDigest the {@link MessageDigest} object representing the hashing algorithm
