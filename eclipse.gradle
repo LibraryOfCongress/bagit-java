@@ -4,7 +4,7 @@ eclipse.project.file.withXml { provider ->
   ignoreDerivedResources(provider.asNode())
 }
 
-def ignoreDerivedResources(projectDescription, directories = ["build", ".gradle", ".github"]) {
+def ignoreDerivedResources(projectDescription, directories = ["build", ".gradle", ".git", ".settings"]) {
   def count = directories.count { file(it).exists() }
   if (count > 0) {
     def filter = projectDescription
@@ -17,11 +17,9 @@ def ignoreDerivedResources(projectDescription, directories = ["build", ".gradle"
     matcher.appendNode("id", "org.eclipse.ui.ide.orFilterMatcher")
     def arguments = matcher.appendNode("arguments")
     directories.each {
-      if (file(it).exists()) {
         def dirMatcher = arguments.appendNode("matcher")
         dirMatcher.appendNode("id", "org.eclipse.ui.ide.multiFilter")
         dirMatcher.appendNode("arguments", "1.0-projectRelativePath-matches-false-false-${it}")
-      }
     }
   }
 }
