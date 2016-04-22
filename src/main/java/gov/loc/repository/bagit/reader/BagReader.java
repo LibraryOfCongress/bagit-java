@@ -290,7 +290,7 @@ public class BagReader {
         logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
       }
       else{
-        String[] parts = line.split(splitRegex);
+        String[] parts = line.split(splitRegex, 2);
         if(parts.length != 2){
           StringBuilder message = new StringBuilder();
           message.append("Line ").append('[').append(line)
