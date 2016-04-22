@@ -1,28 +1,10 @@
 apply plugin: 'eclipse'
 
-eclipse.classpath.file{
-  withXml { xml ->
-    def node = xml.asNode()
-  
-    //make resources lib instead of src kind
-    Node resources = node.find {it.@path == "src/main/resources"}
-    if(resources != null){
-      resources.attributes().put("kind", "lib")
-      resources.attributes().put("exported", "true")
-    }
-    resources = node.find {it.@path == "src/test/resources"}
-    if(resources != null){
-      resources.attributes().put("kind", "lib")
-      resources.attributes().put("exported", "false")
-    }
-  }
-}
-
 eclipse.project.file.withXml { provider ->
   ignoreDerivedResources(provider.asNode())
 }
 
-def ignoreDerivedResources(projectDescription, directories = ["build", "target", "test-output"]) {
+def ignoreDerivedResources(projectDescription, directories = ["build", ".gradle", ".github"]) {
   def count = directories.count { file(it).exists() }
   if (count > 0) {
     def filter = projectDescription
