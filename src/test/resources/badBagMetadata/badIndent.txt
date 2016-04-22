@@ -1,0 +1,2 @@
+key: some value
+This line should have been indented by a space or tab to continue it from above

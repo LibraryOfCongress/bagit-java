@@ -18,6 +18,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import javafx.util.Pair;
@@ -245,5 +246,17 @@ public class BagReaderTest extends Assert{
   public void testReadMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/manifest-md5.txt").toURI());
     sut.readChecksumFileMap(manifestFile, Paths.get("/foo"));
+  }
+  
+  @Test(expected=InvalidBagMetadataException.class)
+  public void testReadInproperIndentedBagMetadataFileThrowsException() throws Exception{
+    Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badIndent.txt").toURI());
+    sut.readKeyValuesFromFile(baginfo, ":");
+  }
+  
+  @Test(expected=InvalidBagMetadataException.class)
+  public void testReadInproperBagMetadataKeyValueSeparatorThrowsException() throws Exception{
+    Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badKeyValueSeparator.txt").toURI());
+    sut.readKeyValuesFromFile(baginfo, ":");
   }
 }

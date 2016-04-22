@@ -17,6 +17,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
@@ -51,8 +52,9 @@ public class BagReader {
    * 
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws InvalidBagMetadataException if the metadata or bagit.txt file does not conform to the bagit spec
    */
-  public Bag read(Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException{
+  public Bag read(Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException{
     //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
     if(!Files.exists(bagitDir)){
@@ -85,8 +87,9 @@ public class BagReader {
    * 
    * @throws IOException if there is a problem reading a file
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  public Bag readBagitTextFile(Path bagitFile, Bag bag) throws IOException, UnparsableVersionException{
+  public Bag readBagitTextFile(Path bagitFile, Bag bag) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
     logger.debug("Reading bagit.txt file");
     List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
     
@@ -218,8 +221,9 @@ public class BagReader {
    * @return a new bag that contains the bag-info.txt (metadata) information
    * 
    * @throws IOException if there is a problem reading a file
+   * @throws InvalidBagMetadataException if the metadata file does not conform to the bagit spec
    */
-  public Bag readBagMetadata(Path rootDir, Bag bag) throws IOException{
+  public Bag readBagMetadata(Path rootDir, Bag bag) throws IOException, InvalidBagMetadataException{
     //TODO update for .bagit being yaml...
     logger.info("Attempting to read bag metadata file");
     Bag newBag = new Bag(bag);
@@ -272,14 +276,13 @@ public class BagReader {
     return newBag;
   }
   
-  protected List<Pair<String, String>> readKeyValuesFromFile(Path file, String splitRegex) throws IOException{
+  protected List<Pair<String, String>> readKeyValuesFromFile(Path file, String splitRegex) throws IOException, InvalidBagMetadataException{
     List<Pair<String, String>> keyValues = new ArrayList<>();
     BufferedReader br = Files.newBufferedReader(file);
 
     String line = br.readLine();
     while(line != null){
       if(line.matches("^\\s+.*")){
-        
         Pair<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
         Pair<String, String> newKeyValue = new Pair<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
         keyValues.add(newKeyValue);
@@ -288,6 +291,16 @@ public class BagReader {
       }
       else{
         String[] parts = line.split(splitRegex);
+        if(parts.length != 2){
+          StringBuilder message = new StringBuilder();
+          message.append("Line ").append('[').append(line)
+            .append("] does not meet the bagit specification for a bag tag file. Perhaps you meant to indent it ")
+            .append("by a space or a tab? Or perhaps you didn't use a colon to separate the key from the value?")
+            .append("It must follow the form of <key>:<value> or if continuing from another line must be indented ")
+            .append("by a space or a tab.");
+          
+          throw new InvalidBagMetadataException(message.toString());
+        }
         String key = parts[0].trim();
         String value = parts[1].trim();
         logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", key, value, file, splitRegex);
