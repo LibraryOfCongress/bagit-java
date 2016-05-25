@@ -6,6 +6,7 @@ import java.util.List;
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.filesystem.FileSystemNodeFilter;
+import gov.loc.repository.bagit.filesystem.filter.NotHiddenFileSystemNodeFilter;
 import gov.loc.repository.bagit.impl.PreBagImpl;
 
 /**
@@ -90,6 +91,11 @@ public class BagFactory  {
 		this.defaultNodeFilter = null;
 	}
 
+	/**
+	 * 
+	 * @param defaultNodeFilter the node filter that you want applied.
+	 * For example, {@link NotHiddenFileSystemNodeFilter} to exclude hidden files/folders during bag operations
+	 */
 	public BagFactory(FileSystemNodeFilter defaultNodeFilter) {
 		this.defaultNodeFilter = defaultNodeFilter;
 	}
