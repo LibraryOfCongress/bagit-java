@@ -145,7 +145,7 @@ public class CommandLineBagDriver {
 	public static final String PARAM_FAIL_MODE = "failmode";
 	public static final String PARAM_COMPRESSION_LEVEL = "compressionlevel";
 	public static final String PARAM_MOVE = "move";
-	public static final String PARAM_INCLUDE_HIDDEN = "includehiddenfiles";
+	public static final String PARAM_EXCLUDE_HIDDEN = "excludehiddenfiles";
 
 	public static final String VALUE_WRITER_FILESYSTEM = Format.FILESYSTEM.name().toLowerCase();
 	public static final String VALUE_WRITER_ZIP = Format.ZIP.name().toLowerCase();
@@ -374,7 +374,7 @@ public class CommandLineBagDriver {
 		jsap.registerParameter(new Switch( PARAM_HELP, JSAP.NO_SHORTFLAG, PARAM_HELP, "Prints help." ));
 		jsap.registerParameter(new Switch(PARAM_VERBOSE, JSAP.NO_SHORTFLAG, PARAM_VERBOSE, "Reports progress of the operation to the console."));
 		jsap.registerParameter(new Switch(PARAM_LOG_VERBOSE, JSAP.NO_SHORTFLAG, PARAM_LOG_VERBOSE, "Reports progress of the operation to the log."));
-        jsap.registerParameter(new Switch( PARAM_INCLUDE_HIDDEN, JSAP.NO_SHORTFLAG, PARAM_INCLUDE_HIDDEN, "Include hidden files." ));
+        jsap.registerParameter(new Switch( PARAM_EXCLUDE_HIDDEN, JSAP.NO_SHORTFLAG, PARAM_EXCLUDE_HIDDEN, "Exclude hidden files." ));
 
 		this.operationMap.put(name, new Operation(name, jsap, help, examples));
 	}
@@ -616,12 +616,11 @@ public class CommandLineBagDriver {
 			}
 
 			BagFactory bagFactory = null;
-			if (config.getBoolean(PARAM_INCLUDE_HIDDEN)) {
+			if (config.getBoolean(PARAM_EXCLUDE_HIDDEN)) {
+				bagFactory = new BagFactory(new NotHiddenFileSystemNodeFilter());
+			} else {
 				// null filter will include all nodes, including hidden ones
 				bagFactory = new BagFactory(null);
-			} else {
-                // The default should filter out hidden files
-				bagFactory = new BagFactory(new NotHiddenFileSystemNodeFilter());
 			}
 
 			Writer writer = null;

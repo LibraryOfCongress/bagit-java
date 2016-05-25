@@ -1,13 +1,12 @@
 package gov.loc.repository.bagit;
 
+import java.io.File;
+import java.util.List;
+
 import gov.loc.repository.bagit.Bag.BagConstants;
 import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.filesystem.FileSystemNodeFilter;
-import gov.loc.repository.bagit.filesystem.filter.NotHiddenFileSystemNodeFilter;
 import gov.loc.repository.bagit.impl.PreBagImpl;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * <p>Provides all methods for instantiating new {@link Bag} objects, as well
@@ -88,7 +87,7 @@ public class BagFactory  {
 	 * Creates an instance of a bag factory.
 	 */
 	public BagFactory() {
-		this.defaultNodeFilter = new NotHiddenFileSystemNodeFilter();
+		this.defaultNodeFilter = null;
 	}
 
 	public BagFactory(FileSystemNodeFilter defaultNodeFilter) {
