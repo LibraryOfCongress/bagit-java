@@ -168,6 +168,7 @@ public class BagVerifier {
     }
     
     latch.await();
+    executor.shutdown();
     
     if(exceptions.size() > 0){
       logger.debug("[{}] hashes don't match, but I can only return one exception", exceptions.size());
@@ -315,6 +316,7 @@ public class BagVerifier {
     }
     
     latch.await();
+    executor.shutdown();
     
     String missingFilesMessage = messageBuilder.toString();
     if(!missingFilesMessage.isEmpty()){
