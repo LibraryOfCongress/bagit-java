@@ -205,7 +205,7 @@ public class BagVerifier {
     
     Path dataDir = getDataDir(bag);
     
-    checkFetchItemsExist(bag.getItemsToFetch(), dataDir);
+    checkFetchItemsExist(bag.getItemsToFetch(), bag.getRootDir());
     
     checkBagitFileExists(bag.getRootDir(), bag.getVersion());
     
@@ -226,10 +226,10 @@ public class BagVerifier {
     return bag.getRootDir().resolve(PAYLOAD_DIR_NAME);
   }
   
-  protected void checkFetchItemsExist(List<FetchItem> items, Path dataDir) throws FileNotInPayloadDirectoryException{
-    logger.info("Checking if all [{}] items in fetch.txt exist in the [{}]", items.size(), dataDir);
+  protected void checkFetchItemsExist(List<FetchItem> items, Path bagDir) throws FileNotInPayloadDirectoryException{
+    logger.info("Checking if all [{}] items in fetch.txt exist in the [{}]", items.size(), bagDir);
     for(FetchItem item : items){
-      Path file = dataDir.resolve(item.path);
+      Path file = bagDir.resolve(item.path);
       if(!Files.exists(file)){
         throw new FileNotInPayloadDirectoryException("Fetch item " + item + " has not been fetched!");
       }

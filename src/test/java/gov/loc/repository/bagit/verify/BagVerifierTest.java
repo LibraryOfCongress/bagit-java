@@ -131,7 +131,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenFetchItemsDontExist() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/holey-bag").toURI());
+    rootDir = Paths.get(getClass().getClassLoader().getResource("bad-fetch-bag").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isComplete(bag, true);
