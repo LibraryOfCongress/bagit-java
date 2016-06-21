@@ -26,3 +26,7 @@ dependencies {
     'net.lingala.zip4j:zip4j:latest.integration',
     'org.kamranzafar:jtar:latest.integration'
 }
+
+test { //show test output
+  testLogging.showStandardStreams = true
+}
