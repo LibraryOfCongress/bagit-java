@@ -41,7 +41,6 @@ public class BagCreator {
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     
-    
     Path dataDir = root.resolve("data");
     Files.createDirectory(dataDir);
     DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root);
