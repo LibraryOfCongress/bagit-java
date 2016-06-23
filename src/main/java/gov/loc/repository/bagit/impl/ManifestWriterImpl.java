@@ -30,8 +30,13 @@ public class ManifestWriterImpl implements ManifestWriter {
 	}
 			
 	public void write(String file, String fixityValue) {
-		this.writer.println(fixityValue + separator + file);
+		this.writer.println(fixityValue + separator + encode(file));
 		log.debug(MessageFormat.format("Wrote to manifest:  Filename is {0}.  Fixity is {1}.", file, fixityValue));		
+	}
+	
+	//percent encode \r and \n
+	protected String encode(String file){
+	  return file.replaceAll("\n", "%0A").replaceAll("\r", "%0D");
 	}
 	
 	public void write(String file, String fixityValue, String _separator) {

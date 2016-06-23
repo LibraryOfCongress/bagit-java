@@ -71,7 +71,7 @@ public class ManifestReaderImpl implements ManifestReader {
 					} else if (filepath.indexOf('\\') != -1) {
 						throw new UnsupportedOperationException(MessageFormat.format("This Library does not support \\ in filepaths: {0}. See README.txt.", filepath));
 					}
-					filepath = FilenameHelper.normalizePath(filepath);
+					filepath = decode(FilenameHelper.normalizePath(filepath));
 					log.trace("Filepath after normalization: " + filepath);
 					this.next = new FilenameFixity(filepath, splitString[0]);
 					log.debug("Read: " + this.next);
@@ -85,6 +85,11 @@ public class ManifestReaderImpl implements ManifestReader {
 			throw new RuntimeException(ex);
 		}
 				
+	}
+	
+	//decode percent encoded \r and \n
+	protected String decode(String filepath){
+	  return filepath.replaceAll("%0A", "\n").replaceAll("%0D", "\r");
 	}
 	
 	public FilenameFixity next() {
