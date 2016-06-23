@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.domain;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class Bag {
   private Version version = new Version(-1, -1);
   
   //from the bagit.txt or UTF-8 for new bags
-  private String fileEncoding = StandardCharsets.UTF_8.name();
+  private Charset fileEncoding = StandardCharsets.UTF_8;
   
   //equivalent to the manifest-<ALG>.txt files
   private Set<Manifest> payLoadManifests = new HashSet<>();
@@ -88,11 +89,11 @@ public class Bag {
     this.metadata = metadata;
   }
 
-  public String getFileEncoding() {
+  public Charset getFileEncoding() {
     return fileEncoding;
   }
 
-  public void setFileEncoding(String fileEncoding) {
+  public void setFileEncoding(Charset fileEncoding) {
     this.fileEncoding = fileEncoding;
   }
 

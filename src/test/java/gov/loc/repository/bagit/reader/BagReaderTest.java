@@ -207,7 +207,7 @@ public class BagReaderTest extends Assert{
     Path bagitFile = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").toURI());
     Bag returnedBag = sut.readBagitTextFile(bagitFile, new Bag(new Version(0, 96)));
     assertEquals(new Version(0, 97), returnedBag.getVersion());
-    assertEquals(StandardCharsets.UTF_8.name(), returnedBag.getFileEncoding());
+    assertEquals(StandardCharsets.UTF_8, returnedBag.getFileEncoding());
   }
   
   @Test

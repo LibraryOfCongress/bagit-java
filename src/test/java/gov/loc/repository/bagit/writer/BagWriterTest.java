@@ -148,13 +148,13 @@ public class BagWriterTest extends Assert {
     Path bagit = rootDirPath.resolve("bagit.txt");
     
     assertFalse(Files.exists(bagit));
-    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8.name(), rootDirPath);
+    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
     assertTrue(Files.exists(bagit));
     
     //test truncating existing
     long originalModified = Files.getLastModifiedTime(bagit).toMillis();
     long size = Files.size(bagit);
-    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8.name(), rootDirPath);
+    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
     assertTrue(Files.exists(bagit));
     assertTrue(Files.getLastModifiedTime(bagit) + " should be >= " + originalModified, 
         Files.getLastModifiedTime(bagit).toMillis() >= originalModified);
@@ -174,10 +174,10 @@ public class BagWriterTest extends Assert {
     assertFalse(bagInfo.exists());
     assertFalse(packageInfo.exists());
     
-    BagWriter.writeBagitInfoFile(metadata, new Version(0,96), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
+    BagWriter.writeBagitInfoFile(metadata, new Version(0,96), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(bagInfo.exists());
     
-    BagWriter.writeBagitInfoFile(metadata, new Version(0,95), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
+    BagWriter.writeBagitInfoFile(metadata, new Version(0,95), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(packageInfo.exists());
   }
   
@@ -191,7 +191,7 @@ public class BagWriterTest extends Assert {
     
     
     assertFalse(fetch.exists());
-    BagWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8.name());
+    BagWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(fetch.exists());
   }
   
@@ -205,7 +205,7 @@ public class BagWriterTest extends Assert {
     File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
     
     assertFalse(tagManifest.exists());
-    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8.name());
+    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
     assertTrue(tagManifest.exists());
   }
   

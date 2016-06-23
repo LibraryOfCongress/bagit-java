@@ -3,6 +3,8 @@ package gov.loc.repository.bagit.reader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -94,14 +96,14 @@ public class BagReader {
     List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
     
     String version = "";
-    String encoding = "";
+    Charset encoding = StandardCharsets.UTF_8;
     for(Pair<String, String> pair : pairs){
       if("BagIt-Version".equals(pair.getKey())){
         version = pair.getValue();
         logger.debug("BagIt-Version is [{}]", version);
       }
       if("Tag-File-Character-Encoding".equals(pair.getKey())){
-        encoding = pair.getValue();
+        encoding = Charset.forName(pair.getValue());
         logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
       }
     }
@@ -199,7 +201,7 @@ public class BagReader {
     String line = br.readLine();
     while(line != null){
       String[] parts = line.split("\\s+", 2);
-      Path file = bagRootDir.resolve(parts[1]);
+      Path file = bagRootDir.resolve(PathUtils.decodeFilname(parts[1]));
       if(!file.normalize().startsWith(bagRootDir)){
         throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
             "! This is not allowed according to the bagit specification!");

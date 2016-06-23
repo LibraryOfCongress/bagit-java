@@ -22,6 +22,7 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.util.PathUtils;
 import javafx.util.Pair;
 
 /**
@@ -92,7 +93,7 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing the file
    */
-  public static void writeBagitFile(Version version, String encoding, Path outputDir) throws IOException{
+  public static void writeBagitFile(Version version, Charset encoding, Path outputDir) throws IOException{
     Path bagitPath = outputDir.resolve("bagit.txt");
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
     
@@ -143,7 +144,7 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, Path bagitRootDir, String charsetName) throws IOException{
+  public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, Path bagitRootDir, Charset charsetName) throws IOException{
     logger.info("Writing payload manifest(s)");
     writeManifests(manifests, outputDir, bagitRootDir, "manifest-", charsetName);
   }
@@ -178,12 +179,12 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeTagManifests(Set<Manifest> tagManifests, Path outputDir, Path bagitRootDir, String charsetName) throws IOException{
+  public static void writeTagManifests(Set<Manifest> tagManifests, Path outputDir, Path bagitRootDir, Charset charsetName) throws IOException{
     logger.info("Writing tag manifest(s)");
     writeManifests(tagManifests, outputDir, bagitRootDir, "tagmanifest-", charsetName);
   }
   
-  protected static void writeManifests(Set<Manifest> manifests, Path outputDir, Path relativeTo, String filenameBase, String charsetName) throws IOException{
+  protected static void writeManifests(Set<Manifest> manifests, Path outputDir, Path relativeTo, String filenameBase, Charset charsetName) throws IOException{
     for(Manifest manifest : manifests){
       Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
@@ -192,9 +193,10 @@ public class BagWriter {
       Files.createFile(manifestPath);
       
       for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        String line = entry.getValue() + " " + relativeTo.relativize(entry.getKey()) + System.lineSeparator();
+        String line = entry.getValue() + " " + 
+            PathUtils.encodeFilename(relativeTo.relativize(entry.getKey())) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
-        Files.write(manifestPath, line.getBytes(Charset.forName(charsetName)), 
+        Files.write(manifestPath, line.getBytes(charsetName), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
       }
     }
@@ -224,7 +226,7 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Version version, Path outputDir, String charsetName) throws IOException{
+  public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Version version, Path outputDir, Charset charsetName) throws IOException{
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
     if(VERSION_0_95.compareTo(version) >= 0){
       bagInfoFilePath = outputDir.resolve("package-info.txt");
@@ -236,7 +238,7 @@ public class BagWriter {
     for(Pair<String, String> entry : metadata){
       String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, bagInfoFilePath);
-      Files.write(bagInfoFilePath, line.getBytes(Charset.forName(charsetName)), 
+      Files.write(bagInfoFilePath, line.getBytes(charsetName), 
           StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
   }
@@ -250,15 +252,14 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeFetchFile(List<FetchItem> itemsToFetch, Path outputDir, String charsetName) throws IOException{
+  public static void writeFetchFile(List<FetchItem> itemsToFetch, Path outputDir, Charset charsetName) throws IOException{
     logger.debug("Writing fetch.txt to [{}]", outputDir);
     Path fetchFilePath = outputDir.resolve("fetch.txt");
     
     for(FetchItem item : itemsToFetch){
       String line = item.toString();
       logger.debug("Writing [{}] to [{}]", line, fetchFilePath);
-      Files.write(fetchFilePath, line.getBytes(Charset.forName(charsetName)), 
-          StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+      Files.write(fetchFilePath, line.getBytes(charsetName), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
   }
 }
