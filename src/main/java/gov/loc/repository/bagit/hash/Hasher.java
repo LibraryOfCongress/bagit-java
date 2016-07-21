@@ -9,7 +9,11 @@ import java.util.Formatter;
 /**
  * Convenience class for generating a HEX formatted string of the checksum hash. 
  */
-public class Hasher {
+public final class Hasher {
+  
+  private Hasher(){
+    //intentionall left empty
+  }
   
   /**
    * Create a HEX formatted string of the checksum hash
@@ -20,7 +24,7 @@ public class Hasher {
    * @throws IOException if there is a problem reading the file
    */
   public static String hash(final InputStream inputStream, final MessageDigest messageDigest) throws IOException {
-    InputStream is = new BufferedInputStream(inputStream);
+    final InputStream is = new BufferedInputStream(inputStream);
     final byte[] buffer = new byte[1024];
     
     int read = is.read(buffer);
@@ -34,14 +38,14 @@ public class Hasher {
   }
   
   //Convert the byte to hex format
-  protected static String formatMessageDigest(final MessageDigest messageDigest){
-    Formatter formatter = new Formatter();
+  private static String formatMessageDigest(final MessageDigest messageDigest){
+    final Formatter formatter = new Formatter();
     
     for (final byte b : messageDigest.digest()) {
       formatter.format("%02x", b);
     }
     
-    String hash = formatter.toString();
+    final String hash = formatter.toString();
     formatter.close();
     
     return hash;

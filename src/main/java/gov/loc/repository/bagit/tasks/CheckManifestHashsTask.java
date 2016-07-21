@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
@@ -20,15 +21,16 @@ import gov.loc.repository.bagit.hash.Hasher;
  * Checks a give file to make sure the given checksum hash matches the computed checksum hash.
  * This is thread safe so you can call many at a time.
  */
+@SuppressWarnings("PMD.DoNotUseThreads")
 public class CheckManifestHashsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashsTask.class);
   
-  private final Entry<Path, String> entry;
-  private final CountDownLatch latch;
-  private final List<Exception> exceptions;
-  private final String algorithm;
+  private transient final Entry<Path, String> entry;
+  private transient final CountDownLatch latch;
+  private transient final List<Exception> exceptions;
+  private transient final String algorithm;
   
-  public CheckManifestHashsTask(Entry<Path, String> entry, String algorithm, CountDownLatch latch, List<Exception> exceptions) {
+  public CheckManifestHashsTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
     this.entry = entry;
     this.algorithm = algorithm;
     this.latch = latch;
@@ -38,19 +40,19 @@ public class CheckManifestHashsTask implements Runnable {
   @Override
   public void run() {
     try {
-      MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+      final MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
       checkManifestEntry(entry, messageDigest, algorithm);
-    } catch (Exception e) {
+    } catch (IOException | CorruptChecksumException | NoSuchAlgorithmException e) {
       exceptions.add(e);
     }
     latch.countDown();
   }
   
-  protected static void checkManifestEntry(Entry<Path, String> entry, MessageDigest messageDigest, String algorithm) throws IOException, CorruptChecksumException{
+  protected static void checkManifestEntry(final Entry<Path, String> entry, final MessageDigest messageDigest, final String algorithm) throws IOException, CorruptChecksumException{
     if(Files.exists(entry.getKey())){
       logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
-      InputStream inputStream = Files.newInputStream(entry.getKey(), StandardOpenOption.READ);
-      String hash = Hasher.hash(inputStream, messageDigest);
+      final InputStream inputStream = Files.newInputStream(entry.getKey(), StandardOpenOption.READ);
+      final String hash = Hasher.hash(inputStream, messageDigest);
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){
         throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 

@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import javafx.util.Pair;
 /**
  * Responsible for reading a bag from the filesystem.
  */
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 public class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   
@@ -41,7 +43,7 @@ public class BagReader {
     this.nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
   }
   
-  public BagReader(BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
+  public BagReader(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     this.nameMapping = nameMapping;
   }
   
@@ -56,14 +58,14 @@ public class BagReader {
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws InvalidBagMetadataException if the metadata or bagit.txt file does not conform to the bagit spec
    */
-  public Bag read(Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException{
+  public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException{
     //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
     if(!Files.exists(bagitDir)){
       bagitDir = rootDir;
     }
     
-    Path bagitFile = bagitDir.resolve("bagit.txt");
+    final Path bagitFile = bagitDir.resolve("bagit.txt");
     Bag bag = readBagitTextFile(bagitFile, new Bag());
     bag.setRootDir(rootDir);
     
@@ -71,7 +73,7 @@ public class BagReader {
     
     bag = readBagMetadata(bagitDir, bag);
     
-    Path fetchFile = bagitDir.resolve("fetch.txt");
+    final Path fetchFile = bagitDir.resolve("fetch.txt");
     if(Files.exists(fetchFile)){
       bag = readFetch(fetchFile, bag);
     }
@@ -91,13 +93,13 @@ public class BagReader {
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  public Bag readBagitTextFile(Path bagitFile, Bag bag) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
+  public Bag readBagitTextFile(final Path bagitFile, final Bag bag) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
     logger.debug("Reading bagit.txt file");
-    List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
+    final List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
     
     String version = "";
     Charset encoding = StandardCharsets.UTF_8;
-    for(Pair<String, String> pair : pairs){
+    for(final Pair<String, String> pair : pairs){
       if("BagIt-Version".equals(pair.getKey())){
         version = pair.getValue();
         logger.debug("BagIt-Version is [{}]", version);
@@ -108,21 +110,21 @@ public class BagReader {
       }
     }
     
-    Bag newBag = new Bag(bag);
+    final Bag newBag = new Bag(bag);
     newBag.setVersion(parseVersion(version));
     newBag.setFileEncoding(encoding);
     
     return newBag;
   }
   
-  protected Version parseVersion(String version) throws UnparsableVersionException{
+  protected Version parseVersion(final String version) throws UnparsableVersionException{
     if(!version.contains(".")){
       throw new UnparsableVersionException("Version must be in format MAJOR.MINOR but was " + version);
     }
     
-    String[] parts = version.split("\\.");
-    int major = Integer.parseInt(parts[0]);
-    int minor = Integer.parseInt(parts[1]);
+    final String[] parts = version.split("\\.");
+    final int major = Integer.parseInt(parts[0]);
+    final int minor = Integer.parseInt(parts[1]);
     
     return new Version(major, minor);
   }
@@ -138,13 +140,13 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public Bag readAllManifests(Path rootDir, Bag bag) throws IOException, MaliciousManifestException{
+  public Bag readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousManifestException{
     logger.info("Attempting to find and read manifests");
-    Bag newBag = new Bag(bag);
-    DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
+    final Bag newBag = new Bag(bag);
+    final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
-    for (Path path : manifests){
-      String filename = PathUtils.getFilename(path);
+    for (final Path path : manifests){
+      final String filename = PathUtils.getFilename(path);
       
       if(filename.startsWith("tagmanifest-")){
         logger.debug("Found tag manifest [{}]", path);
@@ -159,11 +161,11 @@ public class BagReader {
     return newBag;
   }
   
-  protected DirectoryStream<Path> getAllManifestFiles(Path rootDir) throws IOException{
-    DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
-      public boolean accept(Path file) throws IOException {
+  protected DirectoryStream<Path> getAllManifestFiles(final Path rootDir) throws IOException{
+    final DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+      public boolean accept(final Path file) throws IOException {
         if(file == null || file.getFileName() == null){ return false;}
-        String filename = PathUtils.getFilename(file);
+        final String filename = PathUtils.getFilename(file);
         return filename.startsWith("tagmanifest-") || filename.startsWith("manifest-");
       }
     };
@@ -181,27 +183,27 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public Manifest readManifest(Path manifestFile, Path bagRootDir) throws IOException, MaliciousManifestException{
+  public Manifest readManifest(final Path manifestFile, final Path bagRootDir) throws IOException, MaliciousManifestException{
     logger.debug("Reading manifest [{}]", manifestFile);
-    String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
-    SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
+    final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
+    final SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
     
-    Manifest manifest = new Manifest(algorithm);
+    final Manifest manifest = new Manifest(algorithm);
     
-    HashMap<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
+    final Map<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
     manifest.setFileToChecksumMap(filetToChecksumMap);
     
     return manifest;
   }
   
-  protected HashMap<Path, String> readChecksumFileMap(Path manifestFile, Path bagRootDir) throws IOException, MaliciousManifestException{
-    HashMap<Path, String> map = new HashMap<>();
-    BufferedReader br = Files.newBufferedReader(manifestFile);
+  protected Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir) throws IOException, MaliciousManifestException{
+    final HashMap<Path, String> map = new HashMap<>();
+    final BufferedReader br = Files.newBufferedReader(manifestFile);
 
     String line = br.readLine();
     while(line != null){
-      String[] parts = line.split("\\s+", 2);
-      Path file = bagRootDir.resolve(PathUtils.decodeFilname(parts[1]));
+      final String[] parts = line.split("\\s+", 2);
+      final Path file = bagRootDir.resolve(PathUtils.decodeFilname(parts[1]));
       if(!file.normalize().startsWith(bagRootDir)){
         throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
             "! This is not allowed according to the bagit specification!");
@@ -225,18 +227,18 @@ public class BagReader {
    * @throws IOException if there is a problem reading a file
    * @throws InvalidBagMetadataException if the metadata file does not conform to the bagit spec
    */
-  public Bag readBagMetadata(Path rootDir, Bag bag) throws IOException, InvalidBagMetadataException{
+  public Bag readBagMetadata(final Path rootDir, final Bag bag) throws IOException, InvalidBagMetadataException{
     //TODO update for .bagit being yaml...
     logger.info("Attempting to read bag metadata file");
-    Bag newBag = new Bag(bag);
+    final Bag newBag = new Bag(bag);
     List<Pair<String, String>> metadata = new ArrayList<>();
     
-    Path bagInfoFile = rootDir.resolve("bag-info.txt");
+    final Path bagInfoFile = rootDir.resolve("bag-info.txt");
     if(Files.exists(bagInfoFile)){
       logger.debug("Found [{}] file", bagInfoFile);
       metadata = readKeyValuesFromFile(bagInfoFile, ":");
     }
-    Path packageInfoFile = rootDir.resolve("package-info.txt"); //only exists in versions 0.93 - 0.95
+    final Path packageInfoFile = rootDir.resolve("package-info.txt"); //only exists in versions 0.93 - 0.95
     if(Files.exists(packageInfoFile)){
       logger.debug("Found [{}] file", packageInfoFile);
       metadata = readKeyValuesFromFile(packageInfoFile, ":");
@@ -257,19 +259,22 @@ public class BagReader {
    * 
    * @throws IOException if there is a problem reading a file
    */
-  public Bag readFetch(Path fetchFile, Bag bag) throws IOException{
+  public Bag readFetch(final Path fetchFile, final Bag bag) throws IOException{
     logger.info("Attempting to read [{}]", fetchFile);
-    Bag newBag = new Bag(bag);
-    BufferedReader br = Files.newBufferedReader(fetchFile);
+    final Bag newBag = new Bag(bag);
+    final BufferedReader br = Files.newBufferedReader(fetchFile);
 
     String line = br.readLine();
+    String[] parts = null;
+    long length = 0;
+    URL url = null;
     while(line != null){
-      String[] parts = line.split("\\s+", 3);
-      long length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
-      URL url = new URL(parts[0]);
+      parts = line.split("\\s+", 3);
+      length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
+      url = new URL(parts[0]);
       
       logger.debug("Read URL [{}] length [{}] path [{}] from fetch file [{}]", url, length, parts[2], fetchFile);
-      FetchItem itemToFetch = new FetchItem(url, length, parts[2]);
+      final FetchItem itemToFetch = new FetchItem(url, length, parts[2]);
       newBag.getItemsToFetch().add(itemToFetch);
       
       line = br.readLine();
@@ -278,33 +283,33 @@ public class BagReader {
     return newBag;
   }
   
-  protected List<Pair<String, String>> readKeyValuesFromFile(Path file, String splitRegex) throws IOException, InvalidBagMetadataException{
-    List<Pair<String, String>> keyValues = new ArrayList<>();
-    BufferedReader br = Files.newBufferedReader(file);
+  protected List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex) throws IOException, InvalidBagMetadataException{
+    final List<Pair<String, String>> keyValues = new ArrayList<>();
+    final BufferedReader br = Files.newBufferedReader(file);
 
     String line = br.readLine();
     while(line != null){
       if(line.matches("^\\s+.*")){
-        Pair<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
-        Pair<String, String> newKeyValue = new Pair<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
+        final Pair<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
+        final Pair<String, String> newKeyValue = new Pair<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
         keyValues.add(newKeyValue);
         
         logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
       }
       else{
-        String[] parts = line.split(splitRegex, 2);
+        final String[] parts = line.split(splitRegex, 2);
         if(parts.length != 2){
-          StringBuilder message = new StringBuilder();
-          message.append("Line ").append('[').append(line)
-            .append("] does not meet the bagit specification for a bag tag file. Perhaps you meant to indent it ")
-            .append("by a space or a tab? Or perhaps you didn't use a colon to separate the key from the value?")
-            .append("It must follow the form of <key>:<value> or if continuing from another line must be indented ")
-            .append("by a space or a tab.");
+          final StringBuilder message = new StringBuilder(300);
+          message.append("Line [").append(line)
+            .append("] does not meet the bagit specification for a bag tag file. Perhaps you meant to indent it " +
+            "by a space or a tab? Or perhaps you didn't use a colon to separate the key from the value?" +
+            "It must follow the form of <key>:<value> or if continuing from another line must be indented " +
+            "by a space or a tab.");
           
           throw new InvalidBagMetadataException(message.toString());
         }
-        String key = parts[0].trim();
-        String value = parts[1].trim();
+        final String key = parts[0].trim();
+        final String value = parts[1].trim();
         logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", key, value, file, splitRegex);
         keyValues.add(new Pair<String, String>(key, value));
       }
@@ -313,5 +318,13 @@ public class BagReader {
     }
     
     return keyValues;
+  }
+
+  protected BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
+    return nameMapping;
+  }
+
+  protected void setNameMapping(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
+    this.nameMapping = nameMapping;
   }
 }

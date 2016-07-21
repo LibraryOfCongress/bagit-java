@@ -21,8 +21,10 @@ import gov.loc.repository.bagit.writer.BagWriter;
 /**
  * Responsible for creating a bag in place.
  */
-public class BagCreator {
+public final class BagCreator {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
+  
+  private BagCreator(){}
   
   /**
    * Creates a basic(only required elements) bag in place for version 0.97.
@@ -36,24 +38,24 @@ public class BagCreator {
    * @throws IOException if there is a problem writing or moving file(s)
    * @return a {@link Bag} object representing the newly created bagit bag
    */
-  public static Bag bagInPlace(Path root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
-    Bag bag = new Bag(new Version(0, 97));
+  public static Bag bagInPlace(final Path root, final SupportedAlgorithm algorithm, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+    final Bag bag = new Bag(new Version(0, 97));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     
-    Path dataDir = root.resolve("data");
+    final Path dataDir = root.resolve("data");
     Files.createDirectory(dataDir);
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root);
-    for(Path path : directoryStream){
+    final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root);
+    for(final Path path : directoryStream){
       if(!path.equals(dataDir) && !Files.isHidden(path) || includeHidden){
         Files.move(path, dataDir.resolve(path.getFileName()));
       }
     }
     
     logger.info("Creating payload manifest");
-    Manifest manifest = new Manifest(algorithm);
-    MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
-    AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
+    final Manifest manifest = new Manifest(algorithm);
+    final MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
+    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
     Files.walkFileTree(dataDir, visitor);
     
     bag.getPayLoadManifests().add(manifest);
@@ -77,18 +79,18 @@ public class BagCreator {
    * @throws IOException if there is a problem writing files or .bagit directory
    */
   @Incubating
-  public static Bag createDotBagit(Path root, SupportedAlgorithm algorithm, boolean includeHidden) throws NoSuchAlgorithmException, IOException{
-    Bag bag = new Bag(new Version(0, 98));
+  public static Bag createDotBagit(final Path root, final SupportedAlgorithm algorithm, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+    final Bag bag = new Bag(new Version(0, 98));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     
-    Path dotbagitDir = root.resolve(".bagit");
+    final Path dotbagitDir = root.resolve(".bagit");
     Files.createDirectories(dotbagitDir);
     
     logger.info("Creating payload manifest");
-    Manifest manifest = new Manifest(algorithm);
-    MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
-    AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
+    final Manifest manifest = new Manifest(algorithm);
+    final MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
+    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
     Files.walkFileTree(root, visitor);
     
     bag.getPayLoadManifests().add(manifest);

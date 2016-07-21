@@ -2,7 +2,11 @@ package gov.loc.repository.bagit.util;
 
 import java.nio.file.Path;
 
-public class PathUtils {
+public final class PathUtils {
+  
+  private PathUtils(){
+    //intentionally left blank
+  }
 
   /**
    * Needed to get rid of findbugs "dodgy code warnings" in regards to getting the filename of a path as a string
@@ -10,10 +14,10 @@ public class PathUtils {
    * @param path the path that you which to get the filename as a string
    * @return the filename or an empty string
    */
-  public static String getFilename(Path path){
+  public static String getFilename(final Path path){
     String filename = "";
     if(path != null){
-      Path filenamePath = path.getFileName();
+      final Path filenamePath = path.getFileName();
       if(filenamePath != null){
         filename = filenamePath.toString();
       }
@@ -27,7 +31,7 @@ public class PathUtils {
    * @param encoded the encoded filename
    * @return the decoded filename 
    */
-  public static String decodeFilname(String encoded){
+  public static String decodeFilname(final String encoded){
     return encoded.replaceAll("%0A", "\n").replaceAll("%0D", "\r");
   }
   
@@ -36,7 +40,7 @@ public class PathUtils {
    * @param path the path to encode
    * @return the encoded filename
    */
-  public static String encodeFilename(Path path){
+  public static String encodeFilename(final Path path){
     return path.toString().replaceAll("\n", "%0A").replaceAll("\r", "%0D");
   }
 }

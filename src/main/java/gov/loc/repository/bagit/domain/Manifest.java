@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.domain;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 
@@ -11,17 +12,17 @@ import gov.loc.repository.bagit.hash.SupportedAlgorithm;
  */
 public class Manifest {
   private final SupportedAlgorithm algorithm;
-  private HashMap<Path, String> fileToChecksumMap = new HashMap<>();
+  private Map<Path, String> fileToChecksumMap = new HashMap<>();
   
-  public Manifest(SupportedAlgorithm algorithm){
+  public Manifest(final SupportedAlgorithm algorithm){
     this.algorithm = algorithm;
   }
 
-  public HashMap<Path, String> getFileToChecksumMap() {
+  public Map<Path, String> getFileToChecksumMap() {
     return fileToChecksumMap;
   }
 
-  public void setFileToChecksumMap(HashMap<Path, String> fileToChecksumMap) {
+  public void setFileToChecksumMap(final Map<Path, String> fileToChecksumMap) {
     this.fileToChecksumMap = fileToChecksumMap;
   }
 

@@ -6,7 +6,7 @@ package gov.loc.repository.bagit.exceptions;
 public class UnsupportedAlgorithmException extends Exception {
   private static final long serialVersionUID = 1L;
 
-  public UnsupportedAlgorithmException(String message){
+  public UnsupportedAlgorithmException(final String message){
     super(message);
   }
 }

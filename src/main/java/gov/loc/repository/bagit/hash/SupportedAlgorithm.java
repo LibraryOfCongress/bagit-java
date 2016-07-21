@@ -7,6 +7,6 @@ import java.security.MessageDigest;
  * See {@link StandardSupportedAlgorithms} for a list of defaults
  */
 public interface SupportedAlgorithm {
-  public String getMessageDigestName();
-  public String getBagitName();
+  String getMessageDigestName();
+  String getBagitName();
 }

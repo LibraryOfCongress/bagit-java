@@ -36,14 +36,28 @@ public class Bag {
   //the current location of the bag on the filesystem
   private Path rootDir;
   
+  /**
+   * empty bag with an invalid version
+   */
   public Bag(){
+    //intentionally empty
   }
   
-  public Bag(Version version){
+  /**
+   * empty bag with the specified bag version
+   * 
+   * @param version the version of the bag
+   */
+  public Bag(final Version version){
     this.version = version;
   }
   
-  public Bag(Bag bag){
+  /**
+   * Create a new bag with the same values as the supplied bag
+   * 
+   * @param bag the bag to clone
+   */
+  public Bag(final Bag bag){
     this.version = bag.getVersion();
     this.fileEncoding = bag.fileEncoding;
     this.itemsToFetch = bag.getItemsToFetch();
@@ -61,7 +75,7 @@ public class Bag {
     return payLoadManifests;
   }
 
-  public void setPayLoadManifests(Set<Manifest> payLoadManifests) {
+  public void setPayLoadManifests(final Set<Manifest> payLoadManifests) {
     this.payLoadManifests = payLoadManifests;
   }
 
@@ -69,7 +83,7 @@ public class Bag {
     return tagManifests;
   }
 
-  public void setTagManifests(Set<Manifest> tagManifests) {
+  public void setTagManifests(final Set<Manifest> tagManifests) {
     this.tagManifests = tagManifests;
   }
 
@@ -77,7 +91,7 @@ public class Bag {
     return itemsToFetch;
   }
 
-  public void setItemsToFetch(List<FetchItem> itemsToFetch) {
+  public void setItemsToFetch(final List<FetchItem> itemsToFetch) {
     this.itemsToFetch = itemsToFetch;
   }
 
@@ -85,7 +99,7 @@ public class Bag {
     return metadata;
   }
 
-  public void setMetadata(List<Pair<String, String>> metadata) {
+  public void setMetadata(final List<Pair<String, String>> metadata) {
     this.metadata = metadata;
   }
 
@@ -93,25 +107,25 @@ public class Bag {
     return fileEncoding;
   }
 
-  public void setFileEncoding(Charset fileEncoding) {
+  public void setFileEncoding(final Charset fileEncoding) {
     this.fileEncoding = fileEncoding;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Bag [version=").append(version);
-    sb.append(", fileEncoding=").append(fileEncoding);
-    sb.append(", payLoadManifests=[");
-    for(Manifest payloadManifest : payLoadManifests){
+    final StringBuilder sb = new StringBuilder(95);
+    sb.append("Bag [version=").append(version).
+    append(", fileEncoding=").append(fileEncoding).
+    append(", payLoadManifests=[");
+    for(final Manifest payloadManifest : payLoadManifests){
       sb.append(payloadManifest).append(' ');
     }
     sb.append("], tagManifests=[");
-    for(Manifest tagManifest : tagManifests){
+    for(final Manifest tagManifest : tagManifests){
       sb.append(tagManifest).append(' ');
     }
-    sb.append("], itemsToFetch=").append(itemsToFetch);
-    sb.append(", metadata=").append(metadata).append(']');
+    sb.append("], itemsToFetch=").append(itemsToFetch).
+    append(", metadata=").append(metadata).append(']');
     
     return sb.toString();
   }
@@ -123,7 +137,7 @@ public class Bag {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj){
       return true;
     }
@@ -134,7 +148,7 @@ public class Bag {
       return false;
     }
     
-    Bag other = (Bag) obj;
+    final Bag other = (Bag) obj;
     return Objects.equals(this.version, other.getVersion()) && 
         Objects.equals(this.fileEncoding, other.getFileEncoding()) &&
         Objects.equals(this.payLoadManifests, other.getPayLoadManifests()) && 
@@ -147,11 +161,11 @@ public class Bag {
     return rootDir;
   }
 
-  public void setRootDir(Path rootDir) {
+  public void setRootDir(final Path rootDir) {
     this.rootDir = rootDir;
   }
 
-  public void setVersion(Version version) {
+  public void setVersion(final Version version) {
     this.version = version;
   }
 }

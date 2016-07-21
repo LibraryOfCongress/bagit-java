@@ -23,18 +23,18 @@ import gov.loc.repository.bagit.hash.Hasher;
 public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   private static final Logger logger = LoggerFactory.getLogger(AddPayloadToBagManifestVistor.class);
   
-  private final Manifest manifest;
-  private final MessageDigest messageDigest;
-  private final boolean includeHiddenFiles;
+  private transient final Manifest manifest;
+  private transient final MessageDigest messageDigest;
+  private transient final boolean includeHiddenFiles;
   
-  public AddPayloadToBagManifestVistor(Manifest manifest, MessageDigest messageDigest, boolean includeHiddenFiles){
+  public AddPayloadToBagManifestVistor(final Manifest manifest, final MessageDigest messageDigest, final boolean includeHiddenFiles){
     this.manifest = manifest;
     this.messageDigest = messageDigest;
     this.includeHiddenFiles = includeHiddenFiles;
   }
   
   @Override
-  public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+  public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     if(!includeHiddenFiles && Files.isHidden(dir)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
@@ -49,13 +49,13 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   }
 
   @Override
-  public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws IOException{
+  public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs)throws IOException{
     if(!includeHiddenFiles && Files.isHidden(path) && !path.endsWith(".keep")){
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{
-      InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
-      String hash = Hasher.hash(inputStream, messageDigest);
+      final InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
+      final String hash = Hasher.hash(inputStream, messageDigest);
       logger.debug("Adding [{}] to manifest with hash [{}]", path, hash);
       manifest.getFileToChecksumMap().put(path, hash); 
     }

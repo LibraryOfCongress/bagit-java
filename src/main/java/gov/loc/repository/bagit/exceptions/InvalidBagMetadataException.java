@@ -11,7 +11,7 @@ package gov.loc.repository.bagit.exceptions;
 public class InvalidBagMetadataException extends Exception {
   private static final long serialVersionUID = 1L;
 
-  public InvalidBagMetadataException(String message){
+  public InvalidBagMetadataException(final String message){
     super(message);
   }
 }

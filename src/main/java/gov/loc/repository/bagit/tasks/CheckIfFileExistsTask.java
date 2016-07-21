@@ -7,12 +7,13 @@ import java.util.concurrent.CountDownLatch;
 /**
  * A simple task to check if a file exists on the filesystem. This is thread safe, so many can be called at once.
  */
+@SuppressWarnings(value = {"PMD.DoNotUseThreads", "PMD.AvoidStringBufferField"})
 public class CheckIfFileExistsTask implements Runnable {
-  private final Path file;
-  private final StringBuilder messageBuilder;
-  private final CountDownLatch latch;
+  private transient final Path file;
+  private transient final StringBuilder messageBuilder;
+  private transient final CountDownLatch latch;
   
-  public CheckIfFileExistsTask(Path file, StringBuilder messageBuilder, CountDownLatch latch) {
+  public CheckIfFileExistsTask(final Path file, final StringBuilder messageBuilder, final CountDownLatch latch) {
     this.file = file;
     this.messageBuilder = messageBuilder;
     this.latch = latch;

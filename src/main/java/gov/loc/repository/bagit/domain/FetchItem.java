@@ -22,7 +22,7 @@ public class FetchItem {
    */
   public final String path;
   
-  public FetchItem(URL url, Long length, String path){
+  public FetchItem(final URL url, final Long length, final String path){
     this.url = url;
     this.length = length;
     this.path = path;
@@ -30,11 +30,11 @@ public class FetchItem {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append(url).append(' ');
     
     if(length < 0){
-      sb.append('-').append(' ');
+      sb.append("- ");
     }
     else{
       sb.append(length).append(' ');
@@ -43,5 +43,17 @@ public class FetchItem {
     sb.append(path).append(System.lineSeparator());
       
     return sb.toString();
+  }
+
+  public URL getUrl() {
+    return url;
+  }
+
+  public Long getLength() {
+    return length;
+  }
+
+  public String getPath() {
+    return path;
   }
 }

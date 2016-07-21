@@ -7,7 +7,7 @@ package gov.loc.repository.bagit.exceptions;
 public class MaliciousManifestException extends Exception {
   private static final long serialVersionUID = 1L;
 
-  public MaliciousManifestException(String message){
+  public MaliciousManifestException(final String message){
     super(message);
   }
 }

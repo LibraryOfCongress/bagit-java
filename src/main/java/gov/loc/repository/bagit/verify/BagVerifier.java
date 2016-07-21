@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
+import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.reader.BagReader;
@@ -42,6 +43,7 @@ import javafx.util.Pair;
 /**
  * Responsible for verifying if a bag is valid, complete
  */
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 public class BagVerifier {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   
@@ -50,13 +52,13 @@ public class BagVerifier {
   private static final String DOT_BAGIT_DIR_NAME = ".bagit";
   private static final String PAYLOAD_OXUM_REGEX = "\\d+\\.\\d+";
   
-  private BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
   
   public BagVerifier(){
     nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
   }
   
-  public BagVerifier(BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
+  public BagVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     this.nameMapping = nameMapping;
   }
   
@@ -66,14 +68,14 @@ public class BagVerifier {
    * @param bag the {@link Bag} object you wish to check
    * @return true if the bag can be quickly verified
    */
-  public boolean canQuickVerify(Bag bag){
-    String payloadOxum = getPayloadOxum(bag);
+  public boolean canQuickVerify(final Bag bag){
+    final String payloadOxum = getPayloadOxum(bag);
     logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
     return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
   }
   
-  protected String getPayloadOxum(Bag bag){
-    for(Pair<String,String> keyValue : bag.getMetadata()){
+  protected String getPayloadOxum(final Bag bag){
+    for(final Pair<String,String> keyValue : bag.getMetadata()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         return keyValue.getValue();
       }
@@ -93,20 +95,20 @@ public class BagVerifier {
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public void quicklyVerify(Bag bag, boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
-    String payloadOxum = getPayloadOxum(bag);
+  public void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+    final String payloadOxum = getPayloadOxum(bag);
     if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
       throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
     }
 
-    String[] parts = payloadOxum.split("\\.");
+    final String[] parts = payloadOxum.split("\\.");
     logger.debug("Parsing [{}] for the total byte size of the payload oxum", parts[0]);
-    long totalSize = Long.parseLong(parts[0]);
+    final long totalSize = Long.parseLong(parts[0]);
     logger.debug("Parsing [{}] for the number of files to find in the payload directory", parts[1]);
-    long numberOfFiles = Long.parseLong(parts[1]);
+    final long numberOfFiles = Long.parseLong(parts[1]);
     
-    Path payloadDir = getDataDir(bag);
-    FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
+    final Path payloadDir = getDataDir(bag);
+    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
     Files.walkFileTree(payloadDir, vistor);
     logger.info("supplied payload-oxum: [{}], Calculated payload-oxum: [{}.{}], for payload directory [{}]", payloadOxum, vistor.getTotalSize(), vistor.getCount(), payloadDir);
     
@@ -135,18 +137,19 @@ public class BagVerifier {
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws VerificationException some other exception happened during processing so capture it here.
    */
-  public void isValid(Bag bag, boolean ignoreHiddenFiles) throws Exception, IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException{
+  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, NoSuchAlgorithmException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException, CorruptChecksumException, VerificationException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
     logger.debug("Checking payload manifest(s) checksums");
-    for(Manifest payloadManifest : bag.getPayLoadManifests()){
+    for(final Manifest payloadManifest : bag.getPayLoadManifests()){
       checkHashes(payloadManifest);
     }
     
     logger.debug("Checking tag manifest(s) checksums");
-    for(Manifest tagManifest : bag.getTagManifests()){
+    for(final Manifest tagManifest : bag.getTagManifests()){
       checkHashes(tagManifest);
     }
   }
@@ -157,22 +160,29 @@ public class BagVerifier {
    * @param manifest list of file and their hash
    * 
    * @throws CorruptChecksumException if any of the files computed checksum is different than the manifest supplied checksum
+   * @throws InterruptedException if the thread is interrupted
+   * @throws VerificationException if there is some other exception while checking the checksum(s)
    */
-  protected void checkHashes(Manifest manifest) throws Exception{
-    ExecutorService executor = Executors.newCachedThreadPool();
+  protected void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
+    final ExecutorService executor = Executors.newCachedThreadPool();
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
     
-    for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+    for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
       executor.execute(new CheckManifestHashsTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));
     }
     
     latch.await();
     executor.shutdown();
     
-    if(exceptions.size() > 0){
-      logger.debug("[{}] hashes don't match, but I can only return one exception", exceptions.size());
-      throw exceptions.get(0);
+    if(!exceptions.isEmpty()){
+      final Exception e = exceptions.get(0);
+      if(e instanceof CorruptChecksumException){
+        logger.debug("[{}] hashes don't match, but I can only return one exception", exceptions.size());
+        throw (CorruptChecksumException)e;
+      }
+      
+      throw new VerificationException(e);
     }
   }
   
@@ -198,12 +208,12 @@ public class BagVerifier {
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    */
-  public void isComplete(Bag bag, boolean ignoreHiddenFiles) throws 
+  public void isComplete(final Bag bag, final boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
     FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
-    Path dataDir = getDataDir(bag);
+    final Path dataDir = getDataDir(bag);
     
     checkFetchItemsExist(bag.getItemsToFetch(), bag.getRootDir());
     
@@ -213,12 +223,12 @@ public class BagVerifier {
     
     checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), bag.getVersion());
     
-    Set<Path> allFilesListedInManifests = getAllFilesListedInManifests(bag);
+    final Set<Path> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     checkAllFilesListedInManifestExist(allFilesListedInManifests);
     checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, dataDir, ignoreHiddenFiles);
   }
   
-  protected Path getDataDir(Bag bag){
+  protected Path getDataDir(final Bag bag){
     if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
       return bag.getRootDir();
     }
@@ -226,17 +236,17 @@ public class BagVerifier {
     return bag.getRootDir().resolve(PAYLOAD_DIR_NAME);
   }
   
-  protected void checkFetchItemsExist(List<FetchItem> items, Path bagDir) throws FileNotInPayloadDirectoryException{
+  protected void checkFetchItemsExist(final List<FetchItem> items, final Path bagDir) throws FileNotInPayloadDirectoryException{
     logger.info("Checking if all [{}] items in fetch.txt exist in the [{}]", items.size(), bagDir);
-    for(FetchItem item : items){
-      Path file = bagDir.resolve(item.path);
+    for(final FetchItem item : items){
+      final Path file = bagDir.resolve(item.path);
       if(!Files.exists(file)){
         throw new FileNotInPayloadDirectoryException("Fetch item " + item + " has not been fetched!");
       }
     }
   }
   
-  protected void checkBagitFileExists(Path rootDir, Version version) throws MissingBagitFileException{
+  protected void checkBagitFileExists(final Path rootDir, final Version version) throws MissingBagitFileException{
     logger.info("Checking if bagit.txt file exists");
     Path bagitFile = rootDir.resolve("bagit.txt");
     //@Incubating
@@ -249,16 +259,16 @@ public class BagVerifier {
     }
   }
   
-  protected void checkPayloadDirectoryExists(Bag bag) throws MissingPayloadDirectoryException{
+  protected void checkPayloadDirectoryExists(final Bag bag) throws MissingPayloadDirectoryException{
     logger.info("Checking if special payload directory exists (only for version 0.97 and earlier)");
-    Path dataDir = getDataDir(bag);
+    final Path dataDir = getDataDir(bag);
     
     if(!Files.exists(dataDir)){
       throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");
     }
   }
   
-  protected void checkIfAtLeastOnePayloadManifestsExist(Path rootDir, Version version) throws MissingPayloadManifestException, IOException{
+  protected void checkIfAtLeastOnePayloadManifestsExist(final Path rootDir, final Version version) throws MissingPayloadManifestException, IOException{
     logger.info("Checking if there is at least one payload manifest in [{}]", rootDir);
     boolean hasAtLeastOneManifest = false;
     
@@ -268,7 +278,7 @@ public class BagVerifier {
       directoryStream = Files.newDirectoryStream(rootDir.resolve(DOT_BAGIT_DIR_NAME));
     }
     
-    for(Path path : directoryStream){
+    for(final Path path : directoryStream){
       if(PathUtils.getFilename(path).startsWith("manifest-")){
         logger.debug("Found payload manifest file [{}]", path.getFileName());
         hasAtLeastOneManifest = true;
@@ -281,9 +291,9 @@ public class BagVerifier {
     
   }
   
-  protected Set<Path> getAllFilesListedInManifests(Bag bag) throws IOException, MaliciousManifestException{
+  protected Set<Path> getAllFilesListedInManifests(final Bag bag) throws IOException, MaliciousManifestException{
     logger.debug("Getting all files listed in the manifest(s)");
-    Set<Path> filesListedInManifests = new HashSet<>();
+    final Set<Path> filesListedInManifests = new HashSet<>();
     
     DirectoryStream<Path> directoryStream = Files.newDirectoryStream(bag.getRootDir());
     //@Incubating
@@ -291,13 +301,13 @@ public class BagVerifier {
       directoryStream = Files.newDirectoryStream(bag.getRootDir().resolve(DOT_BAGIT_DIR_NAME));
     }
     
-    BagReader reader = new BagReader(nameMapping);
+    final BagReader reader = new BagReader(nameMapping);
     
-    for(Path path : directoryStream){
-      String filename = PathUtils.getFilename(path);
+    for(final Path path : directoryStream){
+      final String filename = PathUtils.getFilename(path);
       if(filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")){
         logger.debug("Getting files and checksums listed in [{}]", path);
-        Manifest manifest = reader.readManifest(path, bag.getRootDir());
+        final Manifest manifest = reader.readManifest(path, bag.getRootDir());
         filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
       }
     }
@@ -305,29 +315,33 @@ public class BagVerifier {
     return filesListedInManifests;
   }
   
-  protected void checkAllFilesListedInManifestExist(Set<Path> files) throws FileNotInPayloadDirectoryException, InterruptedException{
-    ExecutorService executor = Executors.newCachedThreadPool();
+  protected void checkAllFilesListedInManifestExist(final Set<Path> files) throws FileNotInPayloadDirectoryException, InterruptedException{
+    final ExecutorService executor = Executors.newCachedThreadPool();
     final CountDownLatch latch = new CountDownLatch(files.size());
     final StringBuilder messageBuilder = new StringBuilder();
     
     logger.debug("Checking if all files listed in the manifest(s) exist");
-    for(Path file : files){
+    for(final Path file : files){
       executor.execute(new CheckIfFileExistsTask(file, messageBuilder, latch));
     }
     
     latch.await();
     executor.shutdown();
     
-    String missingFilesMessage = messageBuilder.toString();
+    final String missingFilesMessage = messageBuilder.toString();
     if(!missingFilesMessage.isEmpty()){
       throw new FileNotInPayloadDirectoryException(missingFilesMessage);
     }
   }
   
-  protected void checkAllFilesInPayloadDirAreListedInAManifest(Set<Path> filesListedInManifests, Path payloadDir, boolean ignoreHiddenFiles) throws IOException{
+  protected void checkAllFilesInPayloadDirAreListedInAManifest(final Set<Path> filesListedInManifests, final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException{
     logger.debug("Checking if all payload files (files in {} dir) are listed in at least one manifest", payloadDir);
     if(Files.exists(payloadDir)){
       Files.walkFileTree(payloadDir, new PayloadFileExistsInManifestVistor(filesListedInManifests, ignoreHiddenFiles));
     }
+  }
+
+  protected BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
+    return nameMapping;
   }
 }

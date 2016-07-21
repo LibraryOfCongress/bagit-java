@@ -9,7 +9,7 @@ import gov.loc.repository.bagit.domain.Bag;
 public class PayloadOxumDoesNotExistException extends RuntimeException {
   private static final long serialVersionUID = 1L;
 
-  public PayloadOxumDoesNotExistException(String message){
+  public PayloadOxumDoesNotExistException(final String message){
     super(message);
   }
 }

@@ -34,16 +34,36 @@ jacocoTestReport.dependsOn test
 check.dependsOn integrationTest
 check.dependsOn jacocoTestReport
 
+findbugsIntegrationTest.enabled = false
 findbugsTest.enabled = false
 
 findbugs {
   ignoreFailures = true //don't fail the gradle build if bugs are found
 }
 
+pmdIntegrationTest.enabled = false
 pmdTest.enabled = false
 
 pmd {
-  ruleSets = ["java-basic", "java-braces", "java-empty"]
+  ruleSets = [
+    "java-basic", 
+    "java-braces",
+    "java-clone",
+    "java-codesize",
+    "java-design",
+    "java-empty",
+    "java-finalizers",
+    "java-imports",
+    "java-j2ee",
+    "java-javabeans",
+    "java-optimizations",
+    "java-strictexception",
+    "java-strings",
+    "java-sunsecure",
+    "java-typeresolution",
+    "java-unnecessary",
+    "java-unusedcode"
+  ]
 }
 
 jacocoTestReport {
@@ -57,7 +77,7 @@ jacocoTestReport {
           'gov.loc.repository.bagit/annotation/**',
           'gov.loc.repository.bagit/exceptions/**'])
     })
-}
+  }
 }
 
 //Keep this for easy viewing of html findbugs report

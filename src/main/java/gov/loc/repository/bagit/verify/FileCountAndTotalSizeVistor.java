@@ -16,16 +16,16 @@ import org.slf4j.LoggerFactory;
 public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(FileCountAndTotalSizeVistor.class);
   
-  private final boolean ignoreHiddenFiles;
-  private long totalSize = 0;
-  private long count = 0;
+  private transient final boolean ignoreHiddenFiles;
+  private transient long totalSize;
+  private transient long count;
 
-  public FileCountAndTotalSizeVistor(boolean ignoreHiddenFiles) {
+  public FileCountAndTotalSizeVistor(final boolean ignoreHiddenFiles) {
     this.ignoreHiddenFiles = ignoreHiddenFiles;
   }
   
   @Override
-  public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+  public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     if(ignoreHiddenFiles && Files.isHidden(dir)){
       logger.debug("Skipping {} cause ignore hidden files/directories", dir);
       return FileVisitResult.SKIP_SUBTREE;
@@ -35,13 +35,13 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   }
 
   @Override
-  public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException{
+  public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException{
     if(!ignoreHiddenFiles && Files.isHidden(path) && !path.endsWith(".keep")){
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{
       count++;
-      long size = Files.size(path);
+      final long size = Files.size(path);
       logger.debug("File [{}] hash a size of [{}] bytes", path, size);
       totalSize += size;
     }

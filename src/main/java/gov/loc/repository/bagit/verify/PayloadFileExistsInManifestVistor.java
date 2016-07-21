@@ -18,16 +18,16 @@ import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
  */
 public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
-  private final Set<Path> filesListedInManifests;
-  private final boolean ignoreHiddenFiles;
+  private transient final Set<Path> filesListedInManifests;
+  private transient final boolean ignoreHiddenFiles;
 
-  public PayloadFileExistsInManifestVistor(Set<Path> filesListedInManifests, boolean ignoreHiddenFiles) {
+  public PayloadFileExistsInManifestVistor(final Set<Path> filesListedInManifests, final boolean ignoreHiddenFiles) {
     this.filesListedInManifests = filesListedInManifests;
     this.ignoreHiddenFiles = ignoreHiddenFiles;
   }
   
   @Override
-  public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+  public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     if(ignoreHiddenFiles && Files.isHidden(dir)){
       logger.debug("Skipping [{}] cause it is a hidden folder", dir);
       return FileVisitResult.SKIP_SUBTREE;
@@ -37,7 +37,7 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   }
 
   @Override
-  public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)throws FileNotInManifestException{
+  public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs)throws FileNotInManifestException{
     if(Files.isRegularFile(path) && !filesListedInManifests.contains(path)){
       throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in any of the manifests");
     }

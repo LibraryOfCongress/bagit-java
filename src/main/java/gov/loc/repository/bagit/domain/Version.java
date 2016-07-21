@@ -6,9 +6,9 @@ public class Version implements Comparable<Version>{
   public final int major;
   public final int minor;
   
-  private final String cachedToString;
+  private transient final String cachedToString;
   
-  public Version(int major, int minor){
+  public Version(final int major, final int minor){
     this.major = major;
     this.minor = minor;
     this.cachedToString = major + "." + minor;
@@ -20,7 +20,7 @@ public class Version implements Comparable<Version>{
   }
 
   @Override
-  public int compareTo(Version o) {
+  public int compareTo(final Version o) {
     //a negative integer - this is less than specified object
     //zero - equal to specified object
     //positive - greater than the specified object
@@ -40,7 +40,7 @@ public class Version implements Comparable<Version>{
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (this == obj){
       return true;
     }
@@ -51,8 +51,16 @@ public class Version implements Comparable<Version>{
       return false;
     }
     
-    Version other = (Version) obj;
+    final Version other = (Version) obj;
     
     return Objects.equals(major, other.major) && Objects.equals(minor, other.minor); 
+  }
+
+  public int getMajor() {
+    return major;
+  }
+
+  public int getMinor() {
+    return minor;
   }
 }

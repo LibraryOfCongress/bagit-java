@@ -7,7 +7,7 @@ package gov.loc.repository.bagit.exceptions;
 public class InvalidPayloadOxumException extends Exception {
   private static final long serialVersionUID = 1L;
 
-  public InvalidPayloadOxumException(String message){
+  public InvalidPayloadOxumException(final String message){
     super(message);
   }
 }

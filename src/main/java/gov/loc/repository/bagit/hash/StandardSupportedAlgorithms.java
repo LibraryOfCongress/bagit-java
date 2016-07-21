@@ -11,7 +11,7 @@ public enum StandardSupportedAlgorithms implements SupportedAlgorithm{
 
   private final String messageDigestName;
   
-  private StandardSupportedAlgorithms(String messageDigestName){
+  private StandardSupportedAlgorithms(final String messageDigestName){
     this.messageDigestName = messageDigestName;
   }
 

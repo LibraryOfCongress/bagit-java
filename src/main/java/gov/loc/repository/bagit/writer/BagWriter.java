@@ -28,12 +28,15 @@ import javafx.util.Pair;
 /**
  * responsible for writing out a bag.
  */
-public class BagWriter {
+@SuppressWarnings(value = {"PMD.TooManyMethods", "PMD.AvoidInstantiatingObjectsInLoops"}) //TODO refactor to remove methods?
+public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
   private static final Version VERSION_0_98 = new Version(0, 98);
   private static final Version VERSION_0_95 = new Version(0, 95);
 
-  private BagWriter(){}
+  private BagWriter(){
+    //intentionally left empty
+  }
   
   /**
    * Write the bag out to the specified directory. 
@@ -47,8 +50,8 @@ public class BagWriter {
    * @throws IOException if there is a problem writing a file
    * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} which is used during update.
    */
-  public static void write(Bag bag, Path outputDir) throws IOException, NoSuchAlgorithmException{
-    Path bagitDir = writeVersionDependentPayloadFiles(bag, outputDir);
+  public static void write(final Bag bag, final Path outputDir) throws IOException, NoSuchAlgorithmException{
+    final Path bagitDir = writeVersionDependentPayloadFiles(bag, outputDir);
     
     writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
     writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
@@ -61,13 +64,13 @@ public class BagWriter {
     }
     if(bag.getTagManifests().size() > 0){
       writeAdditionalTagPayloadFiles(bag.getTagManifests(), bagitDir, bag.getRootDir());
-      Set<Manifest> updatedTagManifests = updateTagManifests(bag, outputDir);
+      final Set<Manifest> updatedTagManifests = updateTagManifests(bag, outputDir);
       bag.setTagManifests(updatedTagManifests);
       writeTagManifests(updatedTagManifests, bagitDir, outputDir, bag.getFileEncoding());
     }
   }
   
-  protected static Path writeVersionDependentPayloadFiles(Bag bag, Path outputDir) throws IOException{
+  private static Path writeVersionDependentPayloadFiles(final Bag bag, final Path outputDir) throws IOException{
     Path bagitDir = outputDir;
     //@Incubating
     if(VERSION_0_98.compareTo(bag.getVersion()) <= 0){
@@ -76,7 +79,7 @@ public class BagWriter {
       writePayloadFiles(bag.getPayLoadManifests(), outputDir, bag.getRootDir());
     }
     else{
-      Path dataDir = outputDir.resolve("data");
+      final Path dataDir = outputDir.resolve("data");
       Files.createDirectories(dataDir);
       writePayloadFiles(bag.getPayLoadManifests(), dataDir, bag.getRootDir().resolve("data"));
     }
@@ -93,17 +96,17 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing the file
    */
-  public static void writeBagitFile(Version version, Charset encoding, Path outputDir) throws IOException{
-    Path bagitPath = outputDir.resolve("bagit.txt");
+  public static void writeBagitFile(final Version version, final Charset encoding, final Path outputDir) throws IOException{
+    final Path bagitPath = outputDir.resolve("bagit.txt");
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
     
     
-    String firstLine = "BagIt-Version : " + version + System.lineSeparator();
+    final String firstLine = "BagIt-Version : " + version + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", firstLine, bagitPath);
     Files.write(bagitPath, firstLine.getBytes(StandardCharsets.UTF_8), 
         StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     
-    String secondLine = "Tag-File-Character-Encoding : " + encoding + System.lineSeparator();
+    final String secondLine = "Tag-File-Character-Encoding : " + encoding + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", secondLine, bagitPath);
     Files.write(bagitPath, secondLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
   }
@@ -117,15 +120,15 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writePayloadFiles(Set<Manifest> payloadManifests, Path outputDir, Path bagDataDir) throws IOException{
+  public static void writePayloadFiles(final Set<Manifest> payloadManifests, final Path outputDir, final Path bagDataDir) throws IOException{
     logger.info("Writing payload files");
-    for(Manifest payloadManifest : payloadManifests){
-      for(Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
-        Path relativePayloadPath = bagDataDir.relativize(payloadFile); 
+    for(final Manifest payloadManifest : payloadManifests){
+      for(final Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
+        final Path relativePayloadPath = bagDataDir.relativize(payloadFile); 
             
-        Path writeToPath = outputDir.resolve(relativePayloadPath);
+        final Path writeToPath = outputDir.resolve(relativePayloadPath);
         logger.debug("Writing payload file [{}] to [{}]", payloadFile, writeToPath);
-        Path parent = writeToPath.getParent();
+        final Path parent = writeToPath.getParent();
         if(parent != null){
           Files.createDirectories(parent);
         }
@@ -144,22 +147,22 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writePayloadManifests(Set<Manifest> manifests, Path outputDir, Path bagitRootDir, Charset charsetName) throws IOException{
+  public static void writePayloadManifests(final Set<Manifest> manifests, final Path outputDir, final Path bagitRootDir, final Charset charsetName) throws IOException{
     logger.info("Writing payload manifest(s)");
     writeManifests(manifests, outputDir, bagitRootDir, "manifest-", charsetName);
   }
   
-  protected static Set<Manifest> updateTagManifests(Bag bag, Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
-    Set<Manifest> newManifests = new HashSet<>();
+  private static Set<Manifest> updateTagManifests(final Bag bag, final Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
+    final Set<Manifest> newManifests = new HashSet<>();
     
-    for(Manifest tagManifest : bag.getTagManifests()){
-      Manifest newManifest = new Manifest(tagManifest.getAlgorithm());
+    for(final Manifest tagManifest : bag.getTagManifests()){
+      final Manifest newManifest = new Manifest(tagManifest.getAlgorithm());
       
-      for(Path originalPath : tagManifest.getFileToChecksumMap().keySet()){
-        Path relativePath = bag.getRootDir().relativize(originalPath);
-        Path pathToUpdate = newBagRootDir.resolve(relativePath);
-        MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
-        String newChecksum = Hasher.hash(Files.newInputStream(pathToUpdate), messageDigest);
+      for(final Path originalPath : tagManifest.getFileToChecksumMap().keySet()){
+        final Path relativePath = bag.getRootDir().relativize(originalPath);
+        final Path pathToUpdate = newBagRootDir.resolve(relativePath);
+        final MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
+        final String newChecksum = Hasher.hash(Files.newInputStream(pathToUpdate), messageDigest);
         newManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
       }
       
@@ -179,21 +182,21 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeTagManifests(Set<Manifest> tagManifests, Path outputDir, Path bagitRootDir, Charset charsetName) throws IOException{
+  public static void writeTagManifests(final Set<Manifest> tagManifests, final Path outputDir, final Path bagitRootDir, final Charset charsetName) throws IOException{
     logger.info("Writing tag manifest(s)");
     writeManifests(tagManifests, outputDir, bagitRootDir, "tagmanifest-", charsetName);
   }
   
-  protected static void writeManifests(Set<Manifest> manifests, Path outputDir, Path relativeTo, String filenameBase, Charset charsetName) throws IOException{
-    for(Manifest manifest : manifests){
-      Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
+  private static void writeManifests(final Set<Manifest> manifests, final Path outputDir, final Path relativeTo, final String filenameBase, final Charset charsetName) throws IOException{
+    for(final Manifest manifest : manifests){
+      final Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
 
       Files.deleteIfExists(manifestPath);
       Files.createFile(manifestPath);
       
-      for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        String line = entry.getValue() + " " + 
+      for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+        final String line = entry.getValue() + " " + 
             PathUtils.encodeFilename(relativeTo.relativize(entry.getKey())) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(charsetName), 
@@ -202,12 +205,12 @@ public class BagWriter {
     }
   }
   
-  protected static void writeAdditionalTagPayloadFiles(Set<Manifest> manifests, Path outputDir, Path bagRootDir) throws IOException{
-    for(Manifest manifest : manifests){
-      for(Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        Path relativeLocation = bagRootDir.relativize(entry.getKey());
-        Path writeTo = outputDir.resolve(relativeLocation);
-        Path writeToParent = writeTo.getParent();
+  private static void writeAdditionalTagPayloadFiles(final Set<Manifest> manifests, final Path outputDir, final Path bagRootDir) throws IOException{
+    for(final Manifest manifest : manifests){
+      for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+        final Path relativeLocation = bagRootDir.relativize(entry.getKey());
+        final Path writeTo = outputDir.resolve(relativeLocation);
+        final Path writeToParent = writeTo.getParent();
         if(!Files.exists(writeTo) && writeToParent != null){
           Files.createDirectories(writeToParent);
           Files.copy(entry.getKey(), writeTo);
@@ -226,7 +229,7 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeBagitInfoFile(List<Pair<String, String>> metadata, Version version, Path outputDir, Charset charsetName) throws IOException{
+  public static void writeBagitInfoFile(final List<Pair<String, String>> metadata, final Version version, final Path outputDir, final Charset charsetName) throws IOException{
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
     if(VERSION_0_95.compareTo(version) >= 0){
       bagInfoFilePath = outputDir.resolve("package-info.txt");
@@ -235,8 +238,8 @@ public class BagWriter {
 
     Files.deleteIfExists(bagInfoFilePath);
     
-    for(Pair<String, String> entry : metadata){
-      String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
+    for(final Pair<String, String> entry : metadata){
+      final String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, bagInfoFilePath);
       Files.write(bagInfoFilePath, line.getBytes(charsetName), 
           StandardOpenOption.APPEND, StandardOpenOption.CREATE);
@@ -252,12 +255,12 @@ public class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeFetchFile(List<FetchItem> itemsToFetch, Path outputDir, Charset charsetName) throws IOException{
+  public static void writeFetchFile(final List<FetchItem> itemsToFetch, final Path outputDir, final Charset charsetName) throws IOException{
     logger.debug("Writing fetch.txt to [{}]", outputDir);
-    Path fetchFilePath = outputDir.resolve("fetch.txt");
+    final Path fetchFilePath = outputDir.resolve("fetch.txt");
     
-    for(FetchItem item : itemsToFetch){
-      String line = item.toString();
+    for(final FetchItem item : itemsToFetch){
+      final String line = item.toString();
       logger.debug("Writing [{}] to [{}]", line, fetchFilePath);
       Files.write(fetchFilePath, line.getBytes(charsetName), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }

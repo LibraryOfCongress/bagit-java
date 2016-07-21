@@ -6,7 +6,7 @@ package gov.loc.repository.bagit.exceptions;
 public class UnparsableVersionException extends Exception {
   private static final long serialVersionUID = 1L;
 
-  public UnparsableVersionException(String message){
+  public UnparsableVersionException(final String message){
     super(message);
   }
 }
