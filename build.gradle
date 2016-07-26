@@ -10,7 +10,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 if(project.version == "unspecified"){
-  project.version = "5.0-SNAPSHOT"
+  String now = new Date().format( 'MMM-dd-yyyy_HH-mm-ss' )
+  project.version = "5.0.0-${now}-SNAPSHOT"
 }
 
 repositories {
