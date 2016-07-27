@@ -260,7 +260,7 @@ public final class BagWriter {
     final Path fetchFilePath = outputDir.resolve("fetch.txt");
     
     for(final FetchItem item : itemsToFetch){
-      final String line = item.toString();
+      final String line = item.toString() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, fetchFilePath);
       Files.write(fetchFilePath, line.getBytes(charsetName), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }

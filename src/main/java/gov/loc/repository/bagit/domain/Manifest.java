@@ -4,6 +4,7 @@ package gov.loc.repository.bagit.domain;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 
@@ -33,5 +34,27 @@ public class Manifest {
   @Override
   public String toString() {
     return "Manifest [algorithm=" + algorithm + ", fileToChecksumMap=" + fileToChecksumMap + "]";
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(algorithm) + fileToChecksumMap.hashCode();
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj){
+      return true;
+    }
+    if (obj == null){
+      return false;
+    }
+    if (!(obj instanceof Manifest)){
+      return false;
+    }
+    
+    final Manifest other = (Manifest) obj;
+    
+    return Objects.equals(algorithm, other.algorithm) && fileToChecksumMap.equals(other.getFileToChecksumMap()); 
   }
 }

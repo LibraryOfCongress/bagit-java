@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.domain;
 
 import java.net.URL;
+import java.util.Objects;
 
 /**
  * An individual item to fetch as specified by 
@@ -22,14 +23,15 @@ public class FetchItem {
    */
   public final String path;
   
+  private transient String cachedString;
+  
   public FetchItem(final URL url, final Long length, final String path){
     this.url = url;
     this.length = length;
     this.path = path;
   }
-
-  @Override
-  public String toString() {
+  
+  private String internalToString() {
     final StringBuilder sb = new StringBuilder();
     sb.append(url).append(' ');
     
@@ -40,9 +42,18 @@ public class FetchItem {
       sb.append(length).append(' ');
     }
     
-    sb.append(path).append(System.lineSeparator());
+    sb.append(path);
       
     return sb.toString();
+  }
+
+  @Override
+  public String toString() {
+    if(cachedString == null){
+      cachedString = internalToString();
+    }
+    
+    return cachedString;
   }
 
   public URL getUrl() {
@@ -55,5 +66,27 @@ public class FetchItem {
 
   public String getPath() {
     return path;
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(url) + Objects.hash(length) + Objects.hash(path);
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj){
+      return true;
+    }
+    if (obj == null){
+      return false;
+    }
+    if (!(obj instanceof FetchItem)){
+      return false;
+    }
+    
+    final FetchItem other = (FetchItem) obj;
+    
+    return Objects.equals(url, other.getUrl()) && Objects.equals(length, other.getLength()) && Objects.equals(path, other.getPath()); 
   }
 }
