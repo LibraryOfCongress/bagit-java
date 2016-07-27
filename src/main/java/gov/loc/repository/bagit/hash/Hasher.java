@@ -12,7 +12,7 @@ import java.util.Formatter;
 public final class Hasher {
   
   private Hasher(){
-    //intentionall left empty
+    //intentionally left empty
   }
   
   /**

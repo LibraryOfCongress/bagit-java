@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.writer;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -14,11 +15,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.creator.BagCreator;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
@@ -28,11 +29,16 @@ import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
 import javafx.util.Pair;
 
-public class BagWriterTest extends Assert {
+public class BagWriterTest extends PrivateConstructorTest {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
   private BagReader reader = new BagReader();
+  
+  @Test
+  public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
+    assertUtilityClassWellDefined(BagWriter.class);
+  }
   
   @Test
   public void testGetCorrectRelativeOuputPath() throws Exception{

@@ -1,12 +1,19 @@
 package gov.loc.repository.bagit.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-public class PathUtilsTest extends Assert {
+import gov.loc.repository.bagit.PrivateConstructorTest;
+
+public class PathUtilsTest extends PrivateConstructorTest {
+  
+  @Test
+  public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
+    assertUtilityClassWellDefined(PathUtils.class);
+  }
 
   @Test
   public void testDecode(){
