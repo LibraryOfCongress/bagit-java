@@ -133,12 +133,15 @@ public class BagWriterTest extends Assert {
   
   @Test
   public void testWriteHoley() throws Exception{
-    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/bag").toURI());
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/holey-bag").toURI());
     Bag bag = reader.read(rootDir); 
     File bagitDir = folder.newFolder();
     
     BagWriter.write(bag, Paths.get(bagitDir.toURI()));
     assertTrue(bagitDir.exists());
+    
+    File fetchFile = new File(bagitDir, "fetch.txt");
+    assertTrue(fetchFile.exists());
   }
   
   @Test
