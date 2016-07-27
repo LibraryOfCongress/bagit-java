@@ -80,6 +80,10 @@ jacocoTestReport {
   }
 }
 
+cpdCheck {
+    source = sourceSets.main.allJava
+}
+
 //Keep this for easy viewing of html findbugs report
 //tasks.withType(FindBugs) {
 //  reports {

@@ -1,6 +1,10 @@
 plugins {
   id 'java'
-  id "com.github.kt3k.coveralls" version "2.5.0" //has to be in the main project for now see - https://discuss.gradle.org/t/how-do-i-include-buildscript-block-from-external-gradle-script/7016/2
+  
+  //these have to be in the main project for now see - https://discuss.gradle.org/t/how-do-i-include-buildscript-block-from-external-gradle-script/7016/2
+  id "com.github.kt3k.coveralls" version "2.5.0" 
+  id "de.aaschmid.cpd" version "1.0"
+  
 }
 apply from: 'eclipse.gradle'
 apply from: 'maven-central.gradle'
