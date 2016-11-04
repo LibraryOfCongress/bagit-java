@@ -1,3 +1,4 @@
+import org.gradle.plugins.ide.eclipse.model.AccessRule
 apply plugin: 'eclipse'
 
 eclipse.project.file.withXml { provider ->
@@ -22,4 +23,16 @@ def ignoreDerivedResources(projectDescription, directories = ["build", ".gradle"
         dirMatcher.appendNode("arguments", "1.0-projectRelativePath-matches-false-false-${it}")
     }
   }
+}
+
+eclipse.classpath.file{
+  whenMerged { classpath ->
+      classpath.getEntries().each{ entry ->
+        if(entry.getKind().equals("con")){ //there should only ever be one container, the JDK
+          //println("DEBUG: entry is: " + entry)
+          AccessRule javafxRule = new AccessRule("accessible", "javafx/**")
+          entry.getAccessRules().add(javafxRule)
+        }
+      }
+    }
 }
