@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
 import java.security.MessageDigest;
 
 import org.slf4j.Logger;
@@ -36,6 +37,12 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     if(!includeHiddenFiles && Files.isHidden(dir)){
+      logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
+      return FileVisitResult.SKIP_SUBTREE;
+    }
+    //needed because Files.isHidden() doesn't work if the file is a directory
+    if(!includeHiddenFiles && System.getProperty("os.name").contains("Windows") && 
+        Files.readAttributes(dir, DosFileAttributes.class).isHidden()){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
