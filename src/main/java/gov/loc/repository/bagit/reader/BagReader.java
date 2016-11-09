@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
@@ -57,8 +58,9 @@ public class BagReader {
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws InvalidBagMetadataException if the metadata or bagit.txt file does not conform to the bagit spec
+   * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
-  public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException{
+  public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException, UnsupportedAlgorithmException{
     //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
     if(!Files.exists(bagitDir)){
@@ -139,8 +141,9 @@ public class BagReader {
    * 
    * @throws IOException if there is a problem reading a file
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
-  public Bag readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousManifestException{
+  public Bag readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.info("Attempting to find and read manifests");
     final Bag newBag = new Bag(bag);
     final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
@@ -182,8 +185,9 @@ public class BagReader {
    * 
    * @throws IOException if there is a problem reading a file
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
-  public Manifest readManifest(final Path manifestFile, final Path bagRootDir) throws IOException, MaliciousManifestException{
+  public Manifest readManifest(final Path manifestFile, final Path bagRootDir) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
     final SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);

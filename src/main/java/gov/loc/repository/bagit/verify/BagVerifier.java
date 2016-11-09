@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
@@ -138,8 +139,9 @@ public class BagVerifier {
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws VerificationException some other exception happened during processing so capture it here.
+   * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
-  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, NoSuchAlgorithmException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException, CorruptChecksumException, VerificationException{
+  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, NoSuchAlgorithmException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
@@ -207,10 +209,11 @@ public class BagVerifier {
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
   public void isComplete(final Bag bag, final boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
-    FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException{
+    FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
     final Path dataDir = getDataDir(bag);
@@ -291,7 +294,7 @@ public class BagVerifier {
     
   }
   
-  protected Set<Path> getAllFilesListedInManifests(final Bag bag) throws IOException, MaliciousManifestException{
+  protected Set<Path> getAllFilesListedInManifests(final Bag bag) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.debug("Getting all files listed in the manifest(s)");
     final Set<Path> filesListedInManifests = new HashSet<>();
     

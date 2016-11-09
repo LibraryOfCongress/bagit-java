@@ -9,4 +9,8 @@ public class UnsupportedAlgorithmException extends Exception {
   public UnsupportedAlgorithmException(final String message){
     super(message);
   }
+  
+  public UnsupportedAlgorithmException(final String message, final Throwable cause) {
+    super(message, cause);
+  }
 }

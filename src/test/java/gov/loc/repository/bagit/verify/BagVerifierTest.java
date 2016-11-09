@@ -28,6 +28,7 @@ import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -195,6 +196,15 @@ public class BagVerifierTest extends Assert{
     Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
     manifestFile.delete();
+    
+    sut.isValid(bag, true);
+  }
+  
+  @Test(expected=UnsupportedAlgorithmException.class)
+  public void testErrorWhenUnspportedAlgorithmException() throws Exception{
+    Path sha3BagDir = Paths.get(getClass().getClassLoader().getResource("sha3Bag").toURI());
+    BagReader extendedReader = new BagReader();
+    Bag bag = extendedReader.read(sha3BagDir);
     
     sut.isValid(bag, true);
   }
