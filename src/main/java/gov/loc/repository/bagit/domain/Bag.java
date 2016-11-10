@@ -114,9 +114,9 @@ public class Bag {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(95);
-    sb.append("Bag [version=").append(version).
-    append(", fileEncoding=").append(fileEncoding).
-    append(", payLoadManifests=[");
+    sb.append("Bag [version=").append(version)
+    .append(", fileEncoding=").append(fileEncoding)
+    .append(", payLoadManifests=[");
     for(final Manifest payloadManifest : payLoadManifests){
       sb.append(payloadManifest).append(' ');
     }
@@ -124,8 +124,8 @@ public class Bag {
     for(final Manifest tagManifest : tagManifests){
       sb.append(tagManifest).append(' ');
     }
-    sb.append("], itemsToFetch=").append(itemsToFetch).
-    append(", metadata=").append(metadata).append(']');
+    sb.append("], itemsToFetch=").append(itemsToFetch)
+    .append(", metadata=").append(metadata).append(']');
     
     return sb.toString();
   }

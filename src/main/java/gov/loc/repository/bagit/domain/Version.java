@@ -2,6 +2,9 @@ package gov.loc.repository.bagit.domain;
 
 import java.util.Objects;
 
+/**
+ * The version of the bagit specification used to create the bag.
+ */
 public class Version implements Comparable<Version>{
   public final int major;
   public final int minor;
