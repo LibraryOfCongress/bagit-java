@@ -38,22 +38,43 @@ public class PathUtilsTest extends PrivateConstructorTest {
   
   @Test
   public void testEncode(){
-    //just carriage return
-    Path testPath = Paths.get("/foo/bar/ham\r");
-    String expectedEncoded = "/foo/bar/ham%0D";
-    String actualEncoded = PathUtils.encodeFilename(testPath);
-    assertEquals(expectedEncoded, actualEncoded);
-    
-    //just new line
-    testPath = Paths.get("/foo/bar/ham\n");
-    expectedEncoded = "/foo/bar/ham%0A";
-    actualEncoded = PathUtils.encodeFilename(testPath);
-    assertEquals(expectedEncoded, actualEncoded);
-    
-    //both carriage return and new line
-    testPath = Paths.get("/foo/bar/ham\r\n");
-    expectedEncoded = "/foo/bar/ham%0D%0A";
-    actualEncoded = PathUtils.encodeFilename(testPath);
-    assertEquals(expectedEncoded, actualEncoded);
+	if (System.getProperty("os.name").contains("Windows")){
+	    //just carriage return
+	    String testPath = "\\foo\\bar\\ham\r";
+	    String expectedEncoded = "\\foo\\bar\\ham%0D";
+	    String actualEncoded = PathUtils.encodeFilename(testPath);
+	    assertEquals(expectedEncoded, actualEncoded);
+		    
+	    //just new line
+	    testPath = "\\foo\\bar\\ham\n";
+	    expectedEncoded = "\\foo\\bar\\ham%0A";
+	    actualEncoded = PathUtils.encodeFilename(testPath);
+	    assertEquals(expectedEncoded, actualEncoded);
+	    
+	    //both carriage return and new line
+	    testPath = "\\foo\\bar\\ham\r\n";
+	    expectedEncoded = "\\foo\\bar\\ham%0D%0A";
+	    actualEncoded = PathUtils.encodeFilename(testPath);
+	    assertEquals(expectedEncoded, actualEncoded);		
+	}
+	else {
+	    //just carriage return
+	    Path testPath = Paths.get("/foo/bar/ham\r");
+	    String expectedEncoded = "/foo/bar/ham%0D";
+	    String actualEncoded = PathUtils.encodeFilename(testPath);
+	    assertEquals(expectedEncoded, actualEncoded);
+		    
+	    //just new line
+	    testPath = Paths.get("/foo/bar/ham\n");
+	    expectedEncoded = "/foo/bar/ham%0A";
+	    actualEncoded = PathUtils.encodeFilename(testPath);
+	    assertEquals(expectedEncoded, actualEncoded);
+	    
+	    //both carriage return and new line
+	    testPath = Paths.get("/foo/bar/ham\r\n");
+	    expectedEncoded = "/foo/bar/ham%0D%0A";
+	    actualEncoded = PathUtils.encodeFilename(testPath);
+	    assertEquals(expectedEncoded, actualEncoded);
+	}
   }
 }

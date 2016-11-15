@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,12 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     if(ignoreHiddenFiles && Files.isHidden(dir)){
       logger.debug("Skipping {} cause ignore hidden files/directories", dir);
+      return FileVisitResult.SKIP_SUBTREE;
+    }
+    //needed because Files.isHidden() doesn't work if the file is a directory
+    if(ignoreHiddenFiles && System.getProperty("os.name").contains("Windows") && 
+        Files.readAttributes(dir, DosFileAttributes.class).isHidden()){
+      logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
     

@@ -56,14 +56,25 @@ public class BagCreatorTest extends Assert {
     Path file2Path = Paths.get(file2.toURI());
     file2.createNewFile();
     
+    
+    boolean isWindows = System.getProperty("os.name").contains("Windows");
     File hiddenFile = folder.newFile(".hiddentFile.txt");
+    if (isWindows){
+    	Files.setAttribute(Paths.get(hiddenFile.toURI()), "dos:hidden", true);
+    }
     assertTrue(hiddenFile.isHidden());
     
     File hiddenDirectory = folder.newFolder(".hiddenFolder");
+    if (isWindows){
+    	Files.setAttribute(Paths.get(hiddenDirectory.toURI()), "dos:hidden", true);
+    }
     assertTrue(hiddenDirectory + " should be hidden unless on windows", hiddenDirectory.isHidden());
     
     File hiddenFile2 = new File(hiddenDirectory, ".hiddenFile2.txt");
     hiddenFile2.createNewFile();
+    if (isWindows){
+    	Files.setAttribute(Paths.get(hiddenFile2.toURI()), "dos:hidden", true);
+    }
     File file3 = new File(hiddenDirectory, "file3.txt");
     file3.createNewFile();
     

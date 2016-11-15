@@ -41,6 +41,16 @@ public final class PathUtils {
    * @return the encoded filename
    */
   public static String encodeFilename(final Path path){
-    return path.toString().replaceAll("\n", "%0A").replaceAll("\r", "%0D");
+    return PathUtils.encodeFilename(path.toString());
+  }
+  /**
+   * Encode a string with percent notation
+   * (NOTE:  both this method an decodeFilename should be expanded to handle all pct-encoded characters, and the
+   * percent-encoding of all unreserved characters, as per RFC 3986 (https://tools.ietf.org/html/rfc3986)
+   * @param path the String to be encoded
+   * @return the encoded String
+   */
+  public static String encodeFilename(final String path){	  
+	  return path.replaceAll("\n", "%0A").replaceAll("\r", "%0D");
   }
 }

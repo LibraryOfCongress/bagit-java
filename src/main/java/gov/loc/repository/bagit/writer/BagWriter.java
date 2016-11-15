@@ -188,7 +188,7 @@ public final class BagWriter {
   }
   
   private static void writeManifests(final Set<Manifest> manifests, final Path outputDir, final Path relativeTo, final String filenameBase, final Charset charsetName) throws IOException{
-    for(final Manifest manifest : manifests){
+     for(final Manifest manifest : manifests){
       final Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
 
@@ -196,13 +196,31 @@ public final class BagWriter {
       Files.createFile(manifestPath);
       
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+    	final Path relativeFilePath = relativeTo.relativize(entry.getKey());
+    	final String encodedFileString = PathUtils.encodeFilename(relativeFilePath);
+    	final String normalizedFileString = normalizePathDelimiters(encodedFileString);
         final String line = entry.getValue() + " " + 
-            PathUtils.encodeFilename(relativeTo.relativize(entry.getKey())) + System.lineSeparator();
+        		normalizedFileString + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(charsetName), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
       }
     }
+  }
+  /**
+   * The Bagit specification states that The slash character (’/’) MUST be used as a path separator in FILENAMEs in 
+   * payload manifests (Section 2.1.3) and in tag manifest files (Section 2.2.1)
+   * This method replaces backslash path separator if the current file system is Windows (and therefore constructing
+   * Path strings with backslash path separator)
+   * @param path
+   * @return
+   */
+  private static String normalizePathDelimiters (String path){
+	  String normalizedPath = path;
+	  if (System.getProperty("os.name").contains("Windows")){
+		  normalizedPath = normalizedPath.replace('\\', '/');
+	  }
+	  return normalizedPath;
   }
   
   private static void writeAdditionalTagPayloadFiles(final Set<Manifest> manifests, final Path outputDir, final Path bagRootDir) throws IOException{

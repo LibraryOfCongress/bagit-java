@@ -2,11 +2,13 @@ package gov.loc.repository.bagit.verify;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Security;
 import java.util.Arrays;
@@ -42,7 +44,8 @@ public class BagVerifierTest extends Assert{
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
-  private Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+ // private Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+  private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   
   private BagVerifier sut = new BagVerifier();
   private BagReader reader = new BagReader();
@@ -118,6 +121,10 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testVersion0_98IsValid() throws Exception{
     rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
+    if (System.getProperty("os.name").contains("Windows")){
+    	Path bagitDir = rootDir.resolve(".bagit");
+    	Files.setAttribute(bagitDir, "dos:hidden", Boolean.TRUE);
+    }
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -194,9 +201,14 @@ public class BagVerifierTest extends Assert{
   public void testErrorWhenMissingPayloadManifest() throws Exception{
     copyBagToTestFolder();
     Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
-    File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
-    manifestFile.delete();
-    
+    File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");  
+    if (System.getProperty("os.name").contains("Windows")){    	
+    	Path manifestPath = FileSystems.getDefault().getPath(manifestFile.getAbsolutePath());	
+    	Files.move(manifestPath, manifestPath.resolveSibling("renamedManifext"));
+    }
+    else {
+    	manifestFile.delete();
+    }
     sut.isValid(bag, true);
   }
   

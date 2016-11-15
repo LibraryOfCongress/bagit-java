@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.hash;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -23,7 +24,9 @@ public class HasherTest extends PrivateConstructorTest {
   
   @Test
   public void testBasicHash() throws IOException, NoSuchAlgorithmException{
-    Path path = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").getFile());
+//    Path path = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").getFile());
+    Path rootBag = Paths.get(new File("src/test/resources/bagitFiles").toURI());
+    Path path = rootBag.resolve("bagit-0.97.txt");
     InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
     String expectedHash = "41b89090f32a9ef33226b48f1b98dddf";
