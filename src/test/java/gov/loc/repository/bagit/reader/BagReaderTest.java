@@ -213,7 +213,6 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadVersion0_97Bag() throws Exception{
- //   Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
     Path rootBag = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
     Path[] payloadFiles = new Path[]{rootBag.resolve("data/dir1/test3.txt"), rootBag.resolve("data/dir2/dir3/test5.txt"), 
         rootBag.resolve("data/dir2/test4.txt"), rootBag.resolve("data/test1.txt"), rootBag.resolve("data/test2.txt")};

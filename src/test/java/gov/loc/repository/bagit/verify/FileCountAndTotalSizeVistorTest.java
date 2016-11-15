@@ -17,7 +17,6 @@ import org.junit.Test;
  */
 public class FileCountAndTotalSizeVistorTest extends Assert {
   
-//  private Path payloadDir = Paths.get(getClass().getClassLoader().getResource("hiddenFoldersAndFiles").getFile());
   private Path payloadDir = Paths.get(new File("src/test/resources/hiddenFoldersAndFiles").toURI());
   
   @Before

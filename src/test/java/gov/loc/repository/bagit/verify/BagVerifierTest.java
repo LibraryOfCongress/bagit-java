@@ -44,7 +44,6 @@ public class BagVerifierTest extends Assert{
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
- // private Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
   private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   
   private BagVerifier sut = new BagVerifier();
