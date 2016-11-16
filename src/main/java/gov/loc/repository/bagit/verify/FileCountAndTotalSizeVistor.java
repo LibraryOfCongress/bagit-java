@@ -10,6 +10,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.util.PathUtils;
+
 /**
  * Implements {@link SimpleFileVisitor} to ensure that the encountered file is in one of the manifests.
  */
@@ -28,6 +30,11 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     if(ignoreHiddenFiles && Files.isHidden(dir)){
       logger.debug("Skipping {} cause ignore hidden files/directories", dir);
+      return FileVisitResult.SKIP_SUBTREE;
+    }
+    //needed because Files.isHidden() doesn't work if the file is a directory
+    if(ignoreHiddenFiles && PathUtils.isHiddenWindowsFile(dir)){
+      logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
     

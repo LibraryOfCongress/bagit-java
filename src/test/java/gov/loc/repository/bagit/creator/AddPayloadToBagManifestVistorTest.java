@@ -15,6 +15,7 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.util.PathUtils;
 
 public class AddPayloadToBagManifestVistorTest extends Assert {
   
@@ -70,7 +71,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   private Path createHiddenDirectory() throws IOException{
     Path hiddenDirectory = Paths.get(folder.newFolder(".someHiddenDir").toURI());
     
-    if(System.getProperty("os.name").contains("Windows")){
+    if(PathUtils.isWindows()){
       Files.setAttribute(hiddenDirectory, "dos:hidden", Boolean.TRUE);
     }
     
@@ -80,7 +81,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   private Path createHiddenFile() throws IOException{
     Path hiddenDirectory = Paths.get(folder.newFile(".someHiddenFile").toURI());
     
-    if(System.getProperty("os.name").contains("Windows")){
+    if(PathUtils.isWindows()){
       Files.setAttribute(hiddenDirectory, "dos:hidden", Boolean.TRUE);
     }
     

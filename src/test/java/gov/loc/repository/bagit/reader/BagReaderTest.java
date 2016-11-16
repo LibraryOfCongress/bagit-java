@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.reader;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -174,7 +175,7 @@ public class BagReaderTest extends Assert{
     expectedValues.add(new Pair<>("Contact-Name", "Edna Janssen"));
     expectedValues.add(new Pair<>("Contact-Phone", "+1 408-555-1212"));
     expectedValues.add(new Pair<>("Contact-Email", "ej@spengler.edu"));
-    expectedValues.add(new Pair<>("External-Description", "Uncompressed greyscale TIFF images from the\n" + 
+    expectedValues.add(new Pair<>("External-Description", "Uncompressed greyscale TIFF images from the" + System.lineSeparator() +
         "         Yoshimuri papers collection."));
     expectedValues.add(new Pair<>("Bagging-Date", "2008-01-15"));
     expectedValues.add(new Pair<>("External-Identifier", "spengler_yoshimuri_001"));
@@ -182,7 +183,7 @@ public class BagReaderTest extends Assert{
     expectedValues.add(new Pair<>("Bag-Group-Identifier", "spengler_yoshimuri"));
     expectedValues.add(new Pair<>("Bag-Count", "1 of 15"));
     expectedValues.add(new Pair<>("Internal-Sender-Identifier", "/storage/images/yoshimuri"));
-    expectedValues.add(new Pair<>("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from\n" + 
+    expectedValues.add(new Pair<>("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from" + System.lineSeparator() +
         "         microfilm."));
     expectedValues.add(new Pair<>("Bag-Count", "1 of 15")); //test duplicate
     
@@ -212,7 +213,7 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadVersion0_97Bag() throws Exception{
-    Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+    Path rootBag = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
     Path[] payloadFiles = new Path[]{rootBag.resolve("data/dir1/test3.txt"), rootBag.resolve("data/dir2/dir3/test5.txt"), 
         rootBag.resolve("data/dir2/test4.txt"), rootBag.resolve("data/test1.txt"), rootBag.resolve("data/test2.txt")};
     

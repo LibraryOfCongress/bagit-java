@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.examples.serialization;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
@@ -31,7 +32,7 @@ public class CreateZipBagExample extends Assert{
   
   @Before
   public void setup() throws IOException{
-    bagRoot = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+    bagRoot = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
     zippedBagPath = Paths.get(folder.newFile("bag.zip").toURI());
     outputStream = Files.newOutputStream(zippedBagPath, StandardOpenOption.CREATE);
   }
