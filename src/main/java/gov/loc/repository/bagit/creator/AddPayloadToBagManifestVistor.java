@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.DosFileAttributes;
 import java.security.MessageDigest;
 
 import org.slf4j.Logger;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.util.PathUtils;
 
 /**
  * An implementation of the {@link SimpleFileVisitor} class that optionally avoids hidden files.
@@ -40,9 +40,8 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
-    //needed because Files.isHidden() doesn't work if the file is a directory
-    if(!includeHiddenFiles && System.getProperty("os.name").contains("Windows") && 
-        Files.readAttributes(dir, DosFileAttributes.class).isHidden()){
+    //needed because Files.isHidden() doesn't work if the file is a directory on Windows
+    if(!includeHiddenFiles && PathUtils.isHiddenWindowsFile(dir)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }

@@ -1,8 +1,13 @@
 package gov.loc.repository.bagit.util;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.DosFileAttributes;
 
 public final class PathUtils {
+	
+  private static final boolean isWindows = System.getProperty("os.name").contains("Windows");
   
   private PathUtils(){
     //intentionally left blank
@@ -41,6 +46,34 @@ public final class PathUtils {
    * @return the encoded filename
    */
   public static String encodeFilename(final Path path){
-    return path.toString().replaceAll("\n", "%0A").replaceAll("\r", "%0D");
+    return PathUtils.encodeFilenameString(path.toString());
   }
+  /**
+   * Encode a string with percent notation
+   * (NOTE:  both this method an decodeFilename should be expanded to handle all pct-encoded characters, and the
+   * percent-encoding of all unreserved characters, as per RFC 3986 (https://tools.ietf.org/html/rfc3986)
+   * @param path the String to be encoded
+   * @return the encoded String
+   */
+  public static String encodeFilenameString(final String path){	  
+	  return path.replaceAll("\n", "%0A").replaceAll("\r", "%0D");
+  }
+  /**
+   * Determine if we are running on Windows OS
+   * @return true if running on Windows OS, else false
+   */
+  public static boolean isWindows() {
+	  return PathUtils.isWindows;
+  }
+  /**
+   * Determine if Path represents a hidden file on a Windows FileSystem
+   * @param dir Path to be tested
+   * @return true if we are running on Windows, and Path represents hidden file
+   * @throws IOException
+   */
+  public static boolean isHiddenWindowsFile(final Path dir) throws IOException{
+	  return (PathUtils.isWindows() && 
+		        Files.readAttributes(dir, DosFileAttributes.class).isHidden());
+  }
+
 }

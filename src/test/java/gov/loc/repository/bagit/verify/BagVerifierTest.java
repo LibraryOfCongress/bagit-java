@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.verify;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +32,7 @@ import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.util.PathUtils;
 
 public class BagVerifierTest extends Assert{
   static {
@@ -42,7 +44,7 @@ public class BagVerifierTest extends Assert{
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
-  private Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+  private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   
   private BagVerifier sut = new BagVerifier();
   private BagReader reader = new BagReader();
@@ -116,6 +118,9 @@ public class BagVerifierTest extends Assert{
   }
   
   @Test
+  // NOTE this test will fail on Windows,
+  // The PayloadFileExistsInManifestVistor does not know to exclude the .bagit directory as part of the 
+  // payload directory. @see Issue #55 https://github.com/LibraryOfCongress/bagit-java/issues/55
   public void testVersion0_98IsValid() throws Exception{
     rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
     Bag bag = reader.read(rootDir);
@@ -194,9 +199,14 @@ public class BagVerifierTest extends Assert{
   public void testErrorWhenMissingPayloadManifest() throws Exception{
     copyBagToTestFolder();
     Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
-    File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
-    manifestFile.delete();
-    
+    File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");  
+    if (PathUtils.isWindows()){    	
+    	Path manifestPath = FileSystems.getDefault().getPath(manifestFile.getAbsolutePath());	
+    	Files.move(manifestPath, manifestPath.resolveSibling("renamedManifext"));
+    }
+    else {
+    	manifestFile.delete();
+    }
     sut.isValid(bag, true);
   }
   
