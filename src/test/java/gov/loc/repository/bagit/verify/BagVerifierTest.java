@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Security;
 import java.util.Arrays;
@@ -33,6 +32,7 @@ import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.util.PathUtils;
 
 public class BagVerifierTest extends Assert{
   static {
@@ -118,12 +118,11 @@ public class BagVerifierTest extends Assert{
   }
   
   @Test
+  // NOTE this test will fail on Windows,
+  // The PayloadFileExistsInManifestVistor does not know to exclude the .bagit directory as part of the 
+  // payload directory. @see Issue #55 https://github.com/LibraryOfCongress/bagit-java/issues/55
   public void testVersion0_98IsValid() throws Exception{
     rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
-    if (System.getProperty("os.name").contains("Windows")){
-    	Path bagitDir = rootDir.resolve(".bagit");
-    	Files.setAttribute(bagitDir, "dos:hidden", Boolean.TRUE);
-    }
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -201,7 +200,7 @@ public class BagVerifierTest extends Assert{
     copyBagToTestFolder();
     Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");  
-    if (System.getProperty("os.name").contains("Windows")){    	
+    if (PathUtils.isWindows()){    	
     	Path manifestPath = FileSystems.getDefault().getPath(manifestFile.getAbsolutePath());	
     	Files.move(manifestPath, manifestPath.resolveSibling("renamedManifext"));
     }

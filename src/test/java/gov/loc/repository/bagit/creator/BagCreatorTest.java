@@ -18,6 +18,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.util.PathUtils;
 
 public class BagCreatorTest extends Assert {
   @Rule
@@ -42,39 +43,48 @@ public class BagCreatorTest extends Assert {
       }
     }
   }
+  /**
+   * Windows-safe method for creating new empty file in temp folder and returning Path
+   * @param folder TemporaryFolder where new file is to be created
+   * @param fileName name of new file
+   * @return Path to new file
+   * @throws IOException
+   */
+  private Path createEmptyFile(TemporaryFolder folder, String fileName) throws IOException{
+	  Path filePath = null;
+	  File file = folder.newFile(fileName);
+	  filePath = Paths.get(file.toURI());
+	  file.createNewFile();
+	  return filePath;
+  }
+  
+  private void hideIfWindows(File file) throws IOException{
+	  if (PathUtils.isWindows()){
+		  Files.setAttribute(Paths.get(file.toURI()), "dos:hidden", true);
+	  }
+	  return;
+  }
   
   private List<Path> createTestStructure() throws IOException{
     Path rootDir = Paths.get(folder.getRoot().toURI());
     Path dataDir = rootDir.resolve("data");
     
-    File file1 = folder.newFile("file1.txt");
-    Path file1Path = Paths.get(file1.toURI());
-    file1.createNewFile();
+    Path file1Path = createEmptyFile(folder, "file1.txt");
     File dir1 = folder.newFolder("folder1");
     dir1.mkdir();
-    File file2 = folder.newFile("file2.txt");
-    Path file2Path = Paths.get(file2.toURI());
-    file2.createNewFile();
+    Path file2Path = createEmptyFile(folder, "file2.txt");
     
-    
-    boolean isWindows = System.getProperty("os.name").contains("Windows");
     File hiddenFile = folder.newFile(".hiddentFile.txt");
-    if (isWindows){
-    	Files.setAttribute(Paths.get(hiddenFile.toURI()), "dos:hidden", true);
-    }
+    hideIfWindows(hiddenFile);
     assertTrue(hiddenFile.isHidden());
     
     File hiddenDirectory = folder.newFolder(".hiddenFolder");
-    if (isWindows){
-    	Files.setAttribute(Paths.get(hiddenDirectory.toURI()), "dos:hidden", true);
-    }
+    hideIfWindows(hiddenDirectory);
     assertTrue(hiddenDirectory + " should be hidden unless on windows", hiddenDirectory.isHidden());
     
     File hiddenFile2 = new File(hiddenDirectory, ".hiddenFile2.txt");
     hiddenFile2.createNewFile();
-    if (isWindows){
-    	Files.setAttribute(Paths.get(hiddenFile2.toURI()), "dos:hidden", true);
-    }
+    hideIfWindows(hiddenFile2);
     File file3 = new File(hiddenDirectory, "file3.txt");
     file3.createNewFile();
     

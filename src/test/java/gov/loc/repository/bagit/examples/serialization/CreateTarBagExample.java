@@ -29,7 +29,7 @@ public class CreateTarBagExample extends Assert {
   
   @Before
   public void setup() throws IOException{
-    bagRoot =  Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
+    bagRoot = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
     tarredBagPath = Paths.get(folder.newFile("bag.tar").toURI());
     outputStream = Files.newOutputStream(tarredBagPath, StandardOpenOption.CREATE);
   }

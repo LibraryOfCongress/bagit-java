@@ -91,6 +91,9 @@ public class ReaderWriterVerifierIntegrationTest {
   }
   
   @Test
+  // NOTE this test will fail on Windows,
+  // The PayloadFileExistsInManifestVistor does not know to exclude the .bagit directory as part of the 
+  // payload directory. @see Issue #55 https://github.com/LibraryOfCongress/bagit-java/issues/55
   public void testReaderWriterVersion98() throws Exception{
     BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());

@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.util;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -38,43 +39,47 @@ public class PathUtilsTest extends PrivateConstructorTest {
   
   @Test
   public void testEncode(){
-	if (System.getProperty("os.name").contains("Windows")){
-	    //just carriage return
-	    String testPath = "\\foo\\bar\\ham\r";
-	    String expectedEncoded = "\\foo\\bar\\ham%0D";
-	    String actualEncoded = PathUtils.encodeFilename(testPath);
-	    assertEquals(expectedEncoded, actualEncoded);
-		    
-	    //just new line
-	    testPath = "\\foo\\bar\\ham\n";
-	    expectedEncoded = "\\foo\\bar\\ham%0A";
-	    actualEncoded = PathUtils.encodeFilename(testPath);
-	    assertEquals(expectedEncoded, actualEncoded);
-	    
-	    //both carriage return and new line
-	    testPath = "\\foo\\bar\\ham\r\n";
-	    expectedEncoded = "\\foo\\bar\\ham%0D%0A";
-	    actualEncoded = PathUtils.encodeFilename(testPath);
-	    assertEquals(expectedEncoded, actualEncoded);		
-	}
-	else {
-	    //just carriage return
-	    Path testPath = Paths.get("/foo/bar/ham\r");
-	    String expectedEncoded = "/foo/bar/ham%0D";
-	    String actualEncoded = PathUtils.encodeFilename(testPath);
-	    assertEquals(expectedEncoded, actualEncoded);
-		    
-	    //just new line
-	    testPath = Paths.get("/foo/bar/ham\n");
-	    expectedEncoded = "/foo/bar/ham%0A";
-	    actualEncoded = PathUtils.encodeFilename(testPath);
-	    assertEquals(expectedEncoded, actualEncoded);
-	    
-	    //both carriage return and new line
-	    testPath = Paths.get("/foo/bar/ham\r\n");
-	    expectedEncoded = "/foo/bar/ham%0D%0A";
-	    actualEncoded = PathUtils.encodeFilename(testPath);
-	    assertEquals(expectedEncoded, actualEncoded);
-	}
+      String actualEncoded;
+      Path testPath;
+      	  String fileSeparator = FileSystems.getDefault().getSeparator();
+	  StringBuilder sb = new StringBuilder(fileSeparator);
+      String basePathString = sb.append("foo").append(fileSeparator).append("bar").
+    		  append(fileSeparator).append("ham").toString();
+      
+    //just carriage return 
+      String testPathString = basePathString.concat("\r");
+      String expectedEncoded = basePathString.concat("%0D");
+      if (PathUtils.isWindows()){
+    	  actualEncoded = PathUtils.encodeFilenameString(testPathString);
+      }
+      else {
+    	  testPath = Paths.get(testPathString);
+    	  actualEncoded = PathUtils.encodeFilename(testPath);
+      }
+	  assertEquals(expectedEncoded, actualEncoded);
+
+	  //just new line
+	  testPathString = basePathString.concat("\n");
+	  expectedEncoded = basePathString.concat("%0A");
+	  if (PathUtils.isWindows()){
+		  actualEncoded = PathUtils.encodeFilenameString(testPathString);
+	  }
+	  else {
+		  testPath = Paths.get(testPathString);
+		  actualEncoded = PathUtils.encodeFilename(testPath);	  
+	  }
+	  assertEquals(expectedEncoded, actualEncoded);
+
+	  //both carriage return and new line
+	  testPathString = basePathString.concat("\r\n");
+	  expectedEncoded = basePathString.concat("%0D%0A");
+	  if (PathUtils.isWindows()){
+		  actualEncoded = PathUtils.encodeFilenameString(testPathString);
+	  }
+	  else {
+		  testPath = Paths.get(testPathString);
+		  actualEncoded = PathUtils.encodeFilename(testPath);	  
+	  }
+	  assertEquals(expectedEncoded, actualEncoded);
   }
 }

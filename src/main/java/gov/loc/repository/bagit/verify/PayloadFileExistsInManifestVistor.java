@@ -6,13 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.DosFileAttributes;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
+import gov.loc.repository.bagit.util.PathUtils;
 
 /**
  * Implements {@link SimpleFileVisitor} to ensure that the encountered file is in one of the manifests.
@@ -34,8 +34,7 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
       return FileVisitResult.SKIP_SUBTREE;
     }
     //needed because Files.isHidden() doesn't work if the file is a directory
-    if(ignoreHiddenFiles && System.getProperty("os.name").contains("Windows") && 
-        Files.readAttributes(dir, DosFileAttributes.class).isHidden()){
+    if(ignoreHiddenFiles && PathUtils.isHiddenWindowsFile(dir)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }

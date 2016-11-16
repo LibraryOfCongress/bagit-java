@@ -7,9 +7,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.DosFileAttributes;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import gov.loc.repository.bagit.util.PathUtils;
 
 /**
  * Tests the include or ignore functionality of hidden files while walking the file tree. 
@@ -18,18 +21,28 @@ import org.junit.Test;
 public class FileCountAndTotalSizeVistorTest extends Assert {
   
   private Path payloadDir = Paths.get(new File("src/test/resources/hiddenFoldersAndFiles").toURI());
+  private Path fooDir = payloadDir.resolve(".foo");
+  private Path barPath = payloadDir.resolve("bar");
+  private Path keepPath = barPath.resolve(".keep");
   
   @Before
   public void makeFoldersAndFilesHidden() throws IOException {
-	  Path fooDir = payloadDir.resolve(".foo");
-	  DosFileAttributes attrs = Files.readAttributes(fooDir, DosFileAttributes.class);
-	  if (!attrs.isHidden()){
-		  Files.setAttribute(fooDir, "dos:hidden", true);
+	  if (PathUtils.isWindows()){		  
+		  DosFileAttributes attrs = Files.readAttributes(fooDir, DosFileAttributes.class);
+		  if (!attrs.isHidden()){
+			  Files.setAttribute(fooDir, "dos:hidden", true);
+		  }		  
+		  attrs = Files.readAttributes(keepPath, DosFileAttributes.class);
+		  if (!attrs.isHidden()){
+			  Files.setAttribute(keepPath, "dos:hidden", true);
+		  }
 	  }
-	  Path barPath = payloadDir.resolve("bar");
-	  Path keepPath = barPath.resolve(".keep");
-	  attrs = Files.readAttributes(keepPath, DosFileAttributes.class);
-	  if (!attrs.isHidden()){
+  }
+  
+  @After
+  public void unhideFoldersAndFiles() throws IOException {
+	  if (PathUtils.isWindows()){
+		  Files.setAttribute(fooDir, "dos:hidden", false);
 		  Files.setAttribute(keepPath, "dos:hidden", true);
 	  }
   }

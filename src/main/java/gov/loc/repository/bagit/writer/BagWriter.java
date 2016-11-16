@@ -188,24 +188,24 @@ public final class BagWriter {
   }
   
   private static void writeManifests(final Set<Manifest> manifests, final Path outputDir, final Path relativeTo, final String filenameBase, final Charset charsetName) throws IOException{
-     for(final Manifest manifest : manifests){
-      final Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
-      logger.debug("Writing manifest to [{}]", manifestPath);
+	  for(final Manifest manifest : manifests){
+		  final Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
+		  logger.debug("Writing manifest to [{}]", manifestPath);
 
-      Files.deleteIfExists(manifestPath);
-      Files.createFile(manifestPath);
-      
-      for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-    	final Path relativeFilePath = relativeTo.relativize(entry.getKey());
-    	final String encodedFileString = PathUtils.encodeFilename(relativeFilePath);
-    	final String normalizedFileString = normalizePathDelimiters(encodedFileString);
-        final String line = entry.getValue() + " " + 
-        		normalizedFileString + System.lineSeparator();
-        logger.debug("Writing [{}] to [{}]", line, manifestPath);
-        Files.write(manifestPath, line.getBytes(charsetName), 
-            StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-      }
-    }
+		  Files.deleteIfExists(manifestPath);
+		  Files.createFile(manifestPath);
+
+		  for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
+			  final Path relativeFilePath = relativeTo.relativize(entry.getKey());
+			  final String encodedFileString = PathUtils.encodeFilename(relativeFilePath);
+			  final String normalizedFileString = normalizePathDelimiters(encodedFileString);
+			  final String line = entry.getValue() + " " + 
+					  normalizedFileString + System.lineSeparator();
+			  logger.debug("Writing [{}] to [{}]", line, manifestPath);
+			  Files.write(manifestPath, line.getBytes(charsetName), 
+					  StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+		  }
+	  }
   }
   /**
    * The Bagit specification states that The slash character (’/’) MUST be used as a path separator in FILENAMEs in 
@@ -217,7 +217,7 @@ public final class BagWriter {
    */
   private static String normalizePathDelimiters (String path){
 	  String normalizedPath = path;
-	  if (System.getProperty("os.name").contains("Windows")){
+	  if (PathUtils.isWindows()){
 		  normalizedPath = normalizedPath.replace('\\', '/');
 	  }
 	  return normalizedPath;
