@@ -42,7 +42,7 @@ public class BagVerifierTest extends Assert{
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
-  private Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").getFile());
+  private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   
   private BagVerifier sut = new BagVerifier();
   private BagReader reader = new BagReader();
@@ -53,7 +53,7 @@ public class BagVerifierTest extends Assert{
     boolean canQuickVerify = sut.canQuickVerify(bag);
     assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
     
-    Path passingRootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_94/bag").toURI());
+    Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     bag = reader.read(passingRootDir);
     canQuickVerify = sut.canQuickVerify(bag);
     assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
@@ -61,7 +61,7 @@ public class BagVerifierTest extends Assert{
   
   @Test 
   public void testQuickVerify() throws Exception{
-    Path passingRootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_94/bag").toURI());
+    Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     Bag bag = reader.read(passingRootDir);
     
     sut.quicklyVerify(bag, true);
@@ -76,7 +76,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=InvalidPayloadOxumException.class)
   public void testInvalidByteSizeForQuickVerify() throws Exception{
-    Path badRootDir = Paths.get(getClass().getClassLoader().getResource("badPayloadOxumByteSize/bag").toURI());
+    Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumByteSize/bag").toURI());
     Bag bag = reader.read(badRootDir);
     
     sut.quicklyVerify(bag, true);
@@ -84,7 +84,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=InvalidPayloadOxumException.class)
   public void testInvalidFileCountForQuickVerify() throws Exception{
-    Path badRootDir = Paths.get(getClass().getClassLoader().getResource("badPayloadOxumFileCount/bag").toURI());
+    Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumFileCount/bag").toURI());
     Bag bag = reader.read(badRootDir);
     
     sut.quicklyVerify(bag, true);
@@ -102,7 +102,7 @@ public class BagVerifierTest extends Assert{
   
   @Test
   public void testBagWithTagFilesInPayloadIsValid() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/bag-with-tagfiles-in-payload-manifest").toURI());
+    rootDir = Paths.get(new File("src/test/resources/bags/v0_96/bag-with-tagfiles-in-payload-manifest").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -117,7 +117,7 @@ public class BagVerifierTest extends Assert{
   
   @Test
   public void testVersion0_98IsValid() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
+    rootDir = Paths.get(new File("src/test/resources/bags/v0_98/bag").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -132,7 +132,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenFetchItemsDontExist() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("bad-fetch-bag").toURI());
+    rootDir = Paths.get(new File("src/test/resources/bad-fetch-bag").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isComplete(bag, true);
@@ -140,7 +140,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenManifestListFileThatDoesntExist() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("filesInManifestDontExist").toURI());
+    rootDir = Paths.get(new File("src/test/resources/filesInManifestDontExist").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isComplete(bag, true);
@@ -148,7 +148,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=FileNotInManifestException.class)
   public void testErrorWhenFileIsntInManifest() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("filesInPayloadDirAreNotInManifest").toURI());
+    rootDir = Paths.get(new File("src/test/resources/filesInPayloadDirAreNotInManifest").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isComplete(bag, true);
@@ -156,7 +156,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=CorruptChecksumException.class)
   public void testCorruptPayloadFile() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("corruptPayloadFile").toURI());
+    rootDir = Paths.get(new File("src/test/resources/corruptPayloadFile").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -164,7 +164,7 @@ public class BagVerifierTest extends Assert{
   
   @Test(expected=CorruptChecksumException.class)
   public void testCorruptTagFile() throws Exception{
-    rootDir = Paths.get(getClass().getClassLoader().getResource("corruptTagFile").toURI());
+    rootDir = Paths.get(new File("src/test/resources/corruptTagFile").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -211,7 +211,7 @@ public class BagVerifierTest extends Assert{
   
   @Test
   public void testAddSHA3SupportViaExtension() throws Exception{
-    Path sha3BagDir = Paths.get(getClass().getClassLoader().getResource("sha3Bag").toURI());
+    Path sha3BagDir = Paths.get(new File("src/test/resources/sha3Bag").toURI());
     MySupportedNameToAlgorithmMapping mapping = new MySupportedNameToAlgorithmMapping();
     BagReader extendedReader = new BagReader(mapping);
     Bag bag = extendedReader.read(sha3BagDir);

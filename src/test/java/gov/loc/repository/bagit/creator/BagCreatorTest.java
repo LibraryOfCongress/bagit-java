@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
@@ -57,10 +58,12 @@ public class BagCreatorTest extends Assert {
     file2.createNewFile();
     
     File hiddenFile = folder.newFile(".hiddentFile.txt");
-    assertTrue(hiddenFile.isHidden());
-    
     File hiddenDirectory = folder.newFolder(".hiddenFolder");
-    assertTrue(hiddenDirectory + " should be hidden unless on windows", hiddenDirectory.isHidden());
+    
+    TestUtils.makeFilesHiddenOnWindows(Paths.get(folder.getRoot().toURI()));
+    
+    assertTrue(hiddenFile.isHidden());
+    assertTrue( hiddenDirectory.isHidden());
     
     File hiddenFile2 = new File(hiddenDirectory, ".hiddenFile2.txt");
     hiddenFile2.createNewFile();

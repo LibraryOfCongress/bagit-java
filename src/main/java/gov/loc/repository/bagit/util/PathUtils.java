@@ -1,6 +1,9 @@
 package gov.loc.repository.bagit.util;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.DosFileAttributes;
 
 public final class PathUtils {
   
@@ -42,5 +45,21 @@ public final class PathUtils {
    */
   public static String encodeFilename(final Path path){
     return path.toString().replaceAll("\n", "%0A").replaceAll("\r", "%0D");
+  }
+  
+  /**
+   * Due to the way that windows handles hidden files vs. *nix 
+   * we use this method to determine if a file or folder is really hidden
+   * @param path the file or folder to check if hidden
+   * @return if the file or folder is hidden
+   * @throws IOException if there is an error reading the file/folder
+   */
+  public static boolean isHidden(final Path path) throws IOException{
+    //cause Files.isHidden() doesn't work properly for windows...
+    if (System.getProperty("os.name").contains("Windows")){
+      return Files.readAttributes(path, DosFileAttributes.class).isHidden();
+    }
+
+    return Files.isHidden(path);
   }
 }

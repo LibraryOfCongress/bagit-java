@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import org.junit.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
+import gov.loc.repository.bagit.TestUtils;
 
 public class PathUtilsTest extends PrivateConstructorTest {
   
@@ -38,22 +39,24 @@ public class PathUtilsTest extends PrivateConstructorTest {
   
   @Test
   public void testEncode(){
-    //just carriage return
-    Path testPath = Paths.get("/foo/bar/ham\r");
-    String expectedEncoded = "/foo/bar/ham%0D";
-    String actualEncoded = PathUtils.encodeFilename(testPath);
-    assertEquals(expectedEncoded, actualEncoded);
-    
-    //just new line
-    testPath = Paths.get("/foo/bar/ham\n");
-    expectedEncoded = "/foo/bar/ham%0A";
-    actualEncoded = PathUtils.encodeFilename(testPath);
-    assertEquals(expectedEncoded, actualEncoded);
-    
-    //both carriage return and new line
-    testPath = Paths.get("/foo/bar/ham\r\n");
-    expectedEncoded = "/foo/bar/ham%0D%0A";
-    actualEncoded = PathUtils.encodeFilename(testPath);
-    assertEquals(expectedEncoded, actualEncoded);
+    if(!TestUtils.isExecutingOnWindows()){
+      //just carriage return
+      Path testPath = Paths.get("foo/bar/ham\r");
+      String expectedEncoded = "foo/bar/ham%0D";
+      String actualEncoded = PathUtils.encodeFilename(testPath);
+      assertEquals(expectedEncoded, actualEncoded);
+      
+      //just new line
+      testPath = Paths.get("foo/bar/ham\n");
+      expectedEncoded = "foo/bar/ham%0A";
+      actualEncoded = PathUtils.encodeFilename(testPath);
+      assertEquals(expectedEncoded, actualEncoded);
+      
+      //both carriage return and new line
+      testPath = Paths.get("foo/bar/ham\r\n");
+      expectedEncoded = "foo/bar/ham%0D%0A";
+      actualEncoded = PathUtils.encodeFilename(testPath);
+      assertEquals(expectedEncoded, actualEncoded);
+    }
   }
 }

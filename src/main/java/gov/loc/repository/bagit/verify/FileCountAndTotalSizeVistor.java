@@ -10,6 +10,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.util.PathUtils;
+
 /**
  * Implements {@link SimpleFileVisitor} to ensure that the encountered file is in one of the manifests.
  */
@@ -26,7 +28,7 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-    if(ignoreHiddenFiles && Files.isHidden(dir)){
+    if(ignoreHiddenFiles && PathUtils.isHidden(dir)){
       logger.debug("Skipping {} cause ignore hidden files/directories", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
@@ -36,7 +38,7 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
 
   @Override
   public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException{
-    if(!ignoreHiddenFiles && Files.isHidden(path) && !path.endsWith(".keep")){
+    if(!ignoreHiddenFiles && PathUtils.isHidden(path) && !path.endsWith(".keep")){
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.util.PathUtils;
 
 /**
  * An implementation of the {@link SimpleFileVisitor} class that optionally avoids hidden files.
@@ -36,7 +37,7 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-    if(!includeHiddenFiles && Files.isHidden(dir)){
+    if(!includeHiddenFiles && PathUtils.isHidden(dir)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }

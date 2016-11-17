@@ -217,6 +217,8 @@ public class BagReader {
       line = br.readLine();
     }
     
+    br.close();
+    
     return map;
   }
   
