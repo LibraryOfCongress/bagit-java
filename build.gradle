@@ -23,13 +23,12 @@ repositories {
 }
 
 dependencies {
-  compile 'org.slf4j:slf4j-api:latest.integration'
+  compile 'org.slf4j:slf4j-api:1.7.21'
     
-  testCompile 'junit:junit:latest.integration', 
-    'org.springframework.boot:spring-boot-starter-logging:latest.integration',
-    'org.bouncycastle:bcprov-jdk15on:latest.integration',
-    'net.lingala.zip4j:zip4j:latest.integration',
-    'org.kamranzafar:jtar:latest.integration'
+  testCompile 'junit:junit:4.12', 
+    'org.springframework.boot:spring-boot-starter-logging:1.4.2.RELEASE',
+    'org.bouncycastle:bcprov-jdk15on:1.55',
+    'org.kamranzafar:jtar:2.3'
 }
 
 test { //show test output
