@@ -43,6 +43,9 @@ uploadArchives {
         authentication(userName: ossrhUsername, password: ossrhPassword)
       }
 
+      pom.whenConfigured { pom ->
+        pom.dependencies = pom.dependencies.findAll { dep -> dep.scope != 'test' } // removes the test scoped ones
+      }
       pom.project {
         name 'bagit-java'
         packaging 'jar'
