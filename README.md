@@ -1,13 +1,12 @@
 # BagIt Library (BIL)
 [![Master Branch Build Status](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
-
 [![Coverage Status](https://coveralls.io/repos/github/LibraryOfCongress/bagit-java/badge.svg?branch=master)](https://coveralls.io/github/LibraryOfCongress/bagit-java?branch=master)
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit/badge.svg)](https://maven-badges.herokuapp.com/maven-central/gov.loc/bagit)
-
+[![Maven Central](https://img.shields.io/badge/maven%20central-4.12.1-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Cgov.loc%7Cbagit%7C4.12.1%7Cjar)
 [![License](https://img.shields.io/badge/License-Public--Domain-blue.svg)](https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt)
+[![javadoc.io](https://img.shields.io/badge/javadoc.io-4.12.1-blue.svg)](http://www.javadoc.io/doc/gov.loc/bagit/4.12.1)
 
-[![javadoc.io](https://img.shields.io/badge/javadoc.io-Latest-blue.svg)](https://javadocio-badges.herokuapp.com/gov.loc/bagit)
+[//]: # (see https://github.com/jirutka/maven-badges once you have deployed past 5.0-BETA on maven central so that it will automatically update)
+[//]: # (see https://github.com/moznion/javadocio-badges for automatic javadoc)
 
 ## Description
 The BAGIT LIBRARY is a software library intended to support the creation, 
@@ -18,17 +17,26 @@ supported version being 0.93.
 * Java 8
 * gradle (for development only)
 
+## Support
+1. The Digital Curation Google Group (https://groups.google.com/d/forum/digital-curation) is an open discussion list that reaches many of the contributors to and users of this open-source project
+2. If you have found a bug please create a new issue on [the issues page](https://github.com/LibraryOfCongress/bagit-java/issues)
+3. To contact a developer at the Library of Congress please email repo-dev@listserv.loc.gov
+4. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
+
 ## Major differences between version 5 and 4.*
 ##### Commandline
-We no longer support a command line interface for the java version of bagit. If you would like a command line interface for bagging, verifying, and other actions please check out our [bagit-python implementation](https://github.com/LibraryOfCongress/bagit-python) or the [ruby based implementation](https://github.com/tipr/bagit) 
+The 4.x versions of the bagit command line are still available for [download](https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.1/bagit-4.12.1.zip). However, starting with the 5.x versions we will not longer be creating a java command line application. If you would like to use a currently supported command line application please see our [bagit-python implementation](https://github.com/LibraryOfCongress/bagit-python)
+
 ##### Serialization
-We no longer support directly serializing a bag. But if that is something you require there are plenty of great libraries that offer this capability
+Starting with the 5.x versions we no longer support directly serializing a bag. Check out the [zip](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/serialization/CreateZipBagExample.java) or [tar](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/serialization/CreateTarBagExample.java) examples for implementing it yourself.
+
 ##### Fetching
-We no longer support fetching. This is due to the various protocalls that could be involved. Again, if this is something you need, there are much better java libraries out there that you can use to fill this functionality.
+Starting with the 5.x versions we no longer support fetching. Check out the [standard java library](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/fetching/FetchHttpFileExample.java) example as one way you could implement it yourself. 
+
+##### New Interfaces
+The 5.x version is a complete rewrite of the bagit-java library. Because we were rewriting it, we decided it would be a good time to update the interface to be more intuitive. As such, there are some breaking changes and code will need to be migrated.
 
 ### Examples of using the new bagit-java library
-The "new" bagit interface is very intuitive, but here are some easy to follow examples. Instead of returning messages like in the old interface, now it throws errors so you don't have to parse messages to understand what happened.
-
 ##### Create a bag from a folder using version 0.97
 ```java
 Path folder = Paths.get("FolderYouWantToBag");
@@ -95,9 +103,6 @@ public class MyNewNameMapping implements BagitAlgorithmNameToSupportedAlgorithmM
 ```
 and then add the implemented BagitAlgorithmNameToSupportedAlgorithmMapping class to your BagReader or bagVerifier object before using their methods
 
-### Examples of how to implement features that have been removed
-See the [examples](src/test/java/gov/loc/repository/bagit/examples) directory for examples of how to implement features that have been removed yourself. 
-
 ## Developing Bagit-Java
 Bagit-Java uses [Gradle](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.
 ##### Running tests and code quality checks
@@ -112,13 +117,7 @@ Inside the bagit-java root directory, run `gradle check`.
 ### Note if using with Eclipse
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
-### Roadmap
+### Roadmap for this library
 * Further refine reading and writing of bags version 0.93-0.97
-* Integrate new proposed specification we are calling "dot bagit"
 * Fix bugs/issues reported with new library (on going)
-
-### Support
-1. The Digital Curation Google Group (https://groups.google.com/d/forum/digital-curation) is an open discussion list that reaches many of the contributors to and users of this open-source project
-2. If you have found a bug please create a new issue on [the issues page](https://github.com/LibraryOfCongress/bagit-java/issues)
-3. To contact a developer at the Library of Congress please email repo-dev@listserv.loc.gov
-4. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
+* CI for windows
