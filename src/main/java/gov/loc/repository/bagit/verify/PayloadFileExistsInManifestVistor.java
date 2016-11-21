@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
   
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-    if(ignoreHiddenFiles && Files.isHidden(dir) || dir.getFileName().toString().startsWith(".bagit")){
+    if(ignoreHiddenFiles && Files.isHidden(dir) || dir.endsWith(Paths.get(".bagit"))){
       logger.debug("Skipping [{}] cause it is a hidden folder", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
