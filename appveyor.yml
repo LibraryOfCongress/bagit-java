@@ -7,6 +7,11 @@ install:
 build_script:
 - cmd: gradle check dependencycheck
 
+cache:
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - '%USERPROFILE%\.gradle'
+
 notifications:
 - provider: Email
   to:
