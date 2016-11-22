@@ -1,5 +1,6 @@
 ---
 version: {build}
+
 install:
 - cmd: choco install gradle
 
