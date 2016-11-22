@@ -162,7 +162,7 @@ public final class BagWriter {
         final Path relativePath = bag.getRootDir().relativize(originalPath);
         final Path pathToUpdate = newBagRootDir.resolve(relativePath);
         final MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
-        final String newChecksum = Hasher.hash(Files.newInputStream(pathToUpdate), messageDigest);
+        final String newChecksum = Hasher.hash(pathToUpdate, messageDigest);
         newManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
       }
       

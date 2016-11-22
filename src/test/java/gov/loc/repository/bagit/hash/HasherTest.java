@@ -2,12 +2,9 @@ package gov.loc.repository.bagit.hash;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -25,11 +22,10 @@ public class HasherTest extends PrivateConstructorTest {
   @Test
   public void testBasicHash() throws IOException, NoSuchAlgorithmException{
     Path path = Paths.get(new File("src/test/resources/bagitFiles/bagit-0.97.txt").toURI());
-    InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
     String expectedHash = "41b89090f32a9ef33226b48f1b98dddf";
     
-    String hash = Hasher.hash(inputStream, messageDigest);
+    String hash = Hasher.hash(path, messageDigest);
     assertEquals(expectedHash, hash);
   }
 }

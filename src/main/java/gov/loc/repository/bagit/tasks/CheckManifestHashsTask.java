@@ -1,10 +1,8 @@
 package gov.loc.repository.bagit.tasks;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -51,8 +49,7 @@ public class CheckManifestHashsTask implements Runnable {
   protected static void checkManifestEntry(final Entry<Path, String> entry, final MessageDigest messageDigest, final String algorithm) throws IOException, CorruptChecksumException{
     if(Files.exists(entry.getKey())){
       logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
-      final InputStream inputStream = Files.newInputStream(entry.getKey(), StandardOpenOption.READ);
-      final String hash = Hasher.hash(inputStream, messageDigest);
+      final String hash = Hasher.hash(entry.getKey(), messageDigest);
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){
         throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 
