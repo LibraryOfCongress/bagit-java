@@ -10,7 +10,7 @@ build_script:
 cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
-  - '%USERPROFILE%\.gradle'
+  - '%USERPROFILE%\.gradle\caches'
 
 notifications:
 - provider: Email
