@@ -10,13 +10,14 @@ import java.util.Formatter;
  * Convenience class for generating a HEX formatted string of the checksum hash. 
  */
 public final class Hasher {
+  private static final int _64_KB = 1024 * 64;
   
   private Hasher(){
     //intentionally left empty
   }
   
   /**
-   * Create a HEX formatted string of the checksum hash
+   * Create a HEX formatted string of the checksum hash of the file
    * 
    * @param inputStream the stream that you wish to hash
    * @param messageDigest the {@link MessageDigest} object representing the hashing algorithm
@@ -25,7 +26,7 @@ public final class Hasher {
    */
   public static String hash(final InputStream inputStream, final MessageDigest messageDigest) throws IOException {
     final InputStream is = new BufferedInputStream(inputStream);
-    final byte[] buffer = new byte[1024];
+    final byte[] buffer = new byte[_64_KB];
     
     int read = is.read(buffer);
     
@@ -38,7 +39,7 @@ public final class Hasher {
   }
   
   //Convert the byte to hex format
-  private static String formatMessageDigest(final MessageDigest messageDigest){
+  public static String formatMessageDigest(final MessageDigest messageDigest){
     final Formatter formatter = new Formatter();
     
     for (final byte b : messageDigest.digest()) {
