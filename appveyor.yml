@@ -1,15 +1,15 @@
 ---
+version: {build}
 install:
-  - choco install gradle
+- cmd: choco install gradle
 
 build_script:
-  - gradle check
-
-cache:
-  - C:\ProgramData\chocolatey
-  - C:\Users\appveyor\.gradle
+- cmd: gradle check dependencycheck
 
 notifications:
-  - provider: Email
-    to:
-      - jsca@loc.gov
+- provider: Email
+  to:
+  - jsca@loc.gov
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true
