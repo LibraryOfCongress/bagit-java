@@ -1,0 +1,15 @@
+---
+install:
+  - choco install gradle
+
+build_script:
+  - gradle check
+
+cache:
+  - C:\ProgramData\chocolatey
+  - C:\Users\appveyor\.gradle
+
+notifications:
+  - provider: Email
+    to:
+      - jsca@loc.gov
