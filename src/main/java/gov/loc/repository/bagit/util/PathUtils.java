@@ -55,7 +55,7 @@ public final class PathUtils {
    * @throws IOException if there is an error reading the file/folder
    */
   public static boolean isHidden(final Path path) throws IOException{
-    //cause Files.isHidden() doesn't work properly for windows...
+    //cause Files.isHidden() doesn't work properly for windows if the file is a directory
     if (System.getProperty("os.name").contains("Windows")){
       return Files.readAttributes(path, DosFileAttributes.class).isHidden();
     }
