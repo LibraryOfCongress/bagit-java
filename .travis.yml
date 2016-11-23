@@ -1,5 +1,10 @@
-jdk:
-  - oraclejdk8
+matrix:
+  include:
+    - os: linux
+      jdk: oraclejdk8
+    - os: osx
+      osx_image: xcode8
+
 language: java
 install: /bin/true #skip having travis-ci trying to run assemble
 script: "gradle clean check"
