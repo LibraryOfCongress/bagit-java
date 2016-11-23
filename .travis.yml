@@ -6,7 +6,7 @@ matrix:
       osx_image: xcode8
 
 language: java
-install: /bin/true #skip having travis-ci trying to run assemble
+install: true #skip having travis-ci trying to run assemble
 script: "gradle clean check"
 after_success: "gradle coveralls"
 env:
