@@ -219,6 +219,17 @@ public class BagVerifierTest extends Assert{
     extendedSut.isValid(bag, true);
   }
   
+  /*
+   * Technically valid but highly discouraged
+   */
+  @Test
+  public void testManifestsWithLeadingDotSlash() throws Exception{
+    Path bagPath = Paths.get(new File("src/test/resources/bag-with-leading-dot-slash-in-manifest").toURI());
+    Bag bag = reader.read(bagPath);
+    
+    sut.isValid(bag, true);
+  }
+  
   private void copyBagToTestFolder() throws Exception{
     Files.walk(rootDir).forEach(path ->{
       try {

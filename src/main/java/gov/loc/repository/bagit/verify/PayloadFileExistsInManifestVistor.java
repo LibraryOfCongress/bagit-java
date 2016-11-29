@@ -39,7 +39,7 @@ public class PayloadFileExistsInManifestVistor extends SimpleFileVisitor<Path> {
 
   @Override
   public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs)throws FileNotInManifestException{
-    if(Files.isRegularFile(path) && !filesListedInManifests.contains(path)){
+    if(Files.isRegularFile(path) && !filesListedInManifests.contains(path.normalize())){
       throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in any of the manifests");
     }
     logger.debug("[{}] is in at least one manifest", path);
