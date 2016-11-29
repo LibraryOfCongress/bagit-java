@@ -26,6 +26,7 @@ import gov.loc.repository.bagit.domain.Manifest;
 public final class Hasher {
   private static final Logger logger = LoggerFactory.getLogger(Hasher.class);
   private static final int _64_KB = 1024 * 64;
+  private static final int CHUNK_SIZE = _64_KB;
   
   private Hasher(){
     //intentionally left empty
@@ -60,7 +61,7 @@ public final class Hasher {
   private static void updateMessageDigests(final Path path, final Collection<MessageDigest> messageDigests) throws IOException{
     final InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
     final InputStream is = new BufferedInputStream(inputStream);
-    final byte[] buffer = new byte[_64_KB];
+    final byte[] buffer = new byte[CHUNK_SIZE];
     int read = is.read(buffer);
     
     while(read != -1) {
