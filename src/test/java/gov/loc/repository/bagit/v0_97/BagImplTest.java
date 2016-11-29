@@ -48,5 +48,23 @@ public class BagImplTest extends AbstractBagImplTest {
 		
 	}
 
+	@Override
+  public String getValidZipBag() {
+    return "bags/v0_97/bag.zip";
+  }
 
+	@Override
+  public String getInvalidZipBag() {
+    return "bags/v0_97/invalidBag.zip";
+  }
+	
+	@Override
+  public String getValidBagFolder() {
+    return "bags/v0_97/bag";
+  }
+
+  @Override
+  public String getInvalidBagFolder() {
+    return "bags/v0_97/invalidBag";
+  }
 }
