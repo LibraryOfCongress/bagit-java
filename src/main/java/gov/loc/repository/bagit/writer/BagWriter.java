@@ -28,7 +28,7 @@ import javafx.util.Pair;
 /**
  * responsible for writing out a bag.
  */
-@SuppressWarnings(value = {"PMD.TooManyMethods", "PMD.AvoidInstantiatingObjectsInLoops"}) //TODO refactor to remove methods?
+@SuppressWarnings("PMD.TooManyMethods")
 public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
   private static final Version VERSION_0_98 = new Version(0, 98);
@@ -152,6 +152,7 @@ public final class BagWriter {
     writeManifests(manifests, outputDir, bagitRootDir, "manifest-", charsetName);
   }
   
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private static Set<Manifest> updateTagManifests(final Bag bag, final Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
     final Set<Manifest> newManifests = new HashSet<>();
     
@@ -162,7 +163,7 @@ public final class BagWriter {
         final Path relativePath = bag.getRootDir().relativize(originalPath);
         final Path pathToUpdate = newBagRootDir.resolve(relativePath);
         final MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
-        final String newChecksum = Hasher.hash(Files.newInputStream(pathToUpdate), messageDigest);
+        final String newChecksum = Hasher.hash(pathToUpdate, messageDigest);
         newManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
       }
       

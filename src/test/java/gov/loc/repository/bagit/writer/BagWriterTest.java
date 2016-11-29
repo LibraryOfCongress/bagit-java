@@ -43,7 +43,7 @@ public class BagWriterTest extends PrivateConstructorTest {
   @Test
   public void testGetCorrectRelativeOuputPath() throws Exception{
     Path root = Paths.get(folder.newFolder().toURI());
-    Bag bag = BagCreator.bagInPlace(root, StandardSupportedAlgorithms.MD5, false);
+    Bag bag = BagCreator.bagInPlace(root, Arrays.asList(StandardSupportedAlgorithms.MD5), false);
     
     Path testFile = root.resolve("data").resolve("fooFile.txt");
     Files.createFile(testFile);

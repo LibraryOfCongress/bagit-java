@@ -44,7 +44,6 @@ import javafx.util.Pair;
 /**
  * Responsible for verifying if a bag is valid, complete
  */
-@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 public class BagVerifier {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   
@@ -165,6 +164,7 @@ public class BagVerifier {
    * @throws InterruptedException if the thread is interrupted
    * @throws VerificationException if there is some other exception while checking the checksum(s)
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   protected void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
     final ExecutorService executor = Executors.newCachedThreadPool();
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
@@ -318,22 +318,22 @@ public class BagVerifier {
     return filesListedInManifests;
   }
   
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   protected void checkAllFilesListedInManifestExist(final Set<Path> files) throws FileNotInPayloadDirectoryException, InterruptedException{
     final ExecutorService executor = Executors.newCachedThreadPool();
     final CountDownLatch latch = new CountDownLatch(files.size());
-    final StringBuilder messageBuilder = new StringBuilder();
+    final List<Path> missingFiles = new ArrayList<>();
     
     logger.debug("Checking if all files listed in the manifest(s) exist");
     for(final Path file : files){
-      executor.execute(new CheckIfFileExistsTask(file, messageBuilder, latch));
+      executor.execute(new CheckIfFileExistsTask(file, missingFiles, latch));
     }
     
     latch.await();
     executor.shutdown();
     
-    final String missingFilesMessage = messageBuilder.toString();
-    if(!missingFilesMessage.isEmpty()){
-      throw new FileNotInPayloadDirectoryException(missingFilesMessage);
+    if(!missingFiles.isEmpty()){
+      throw new FileNotInPayloadDirectoryException("Manifest(s) contains file(s) " + missingFiles + " but they don't exist!");
     }
   }
   

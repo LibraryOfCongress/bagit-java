@@ -34,7 +34,6 @@ import javafx.util.Pair;
 /**
  * Responsible for reading a bag from the filesystem.
  */
-@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 public class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
   
@@ -265,6 +264,7 @@ public class BagReader {
    * 
    * @throws IOException if there is a problem reading a file
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   public Bag readFetch(final Path fetchFile, final Bag bag) throws IOException{
     logger.info("Attempting to read [{}]", fetchFile);
     final Bag newBag = new Bag(bag);
@@ -289,6 +289,7 @@ public class BagReader {
     return newBag;
   }
   
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   protected List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex) throws IOException, InvalidBagMetadataException{
     final List<Pair<String, String>> keyValues = new ArrayList<>();
     final BufferedReader br = Files.newBufferedReader(file);

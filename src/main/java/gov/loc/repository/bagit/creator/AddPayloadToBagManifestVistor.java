@@ -1,14 +1,13 @@
 package gov.loc.repository.bagit.creator;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +23,11 @@ import gov.loc.repository.bagit.util.PathUtils;
 public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
   private static final Logger logger = LoggerFactory.getLogger(AddPayloadToBagManifestVistor.class);
   
-  private transient final Manifest manifest;
-  private transient final MessageDigest messageDigest;
+  private transient final Map<Manifest, MessageDigest> manifestToMessageDigestMap;
   private transient final boolean includeHiddenFiles;
   
-  public AddPayloadToBagManifestVistor(final Manifest manifest, final MessageDigest messageDigest, final boolean includeHiddenFiles){
-    this.manifest = manifest;
-    this.messageDigest = messageDigest;
+  public AddPayloadToBagManifestVistor(final Map<Manifest, MessageDigest> manifestToMessageDigestMap, final boolean includeHiddenFiles){
+    this.manifestToMessageDigestMap = manifestToMessageDigestMap;
     this.includeHiddenFiles = includeHiddenFiles;
   }
   
@@ -55,10 +52,7 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{
-      final InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
-      final String hash = Hasher.hash(inputStream, messageDigest);
-      logger.debug("Adding [{}] to manifest with hash [{}]", path, hash);
-      manifest.getFileToChecksumMap().put(path, hash); 
+      Hasher.hash(path, manifestToMessageDigestMap);
     }
     
     return FileVisitResult.CONTINUE;

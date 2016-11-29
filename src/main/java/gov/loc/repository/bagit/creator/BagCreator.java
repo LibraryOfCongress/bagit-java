@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import gov.loc.repository.bagit.annotation.Incubating;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.writer.BagWriter;
@@ -32,13 +35,13 @@ public final class BagCreator {
    * in an unknown state of transition. Thus this is <b>not thread safe</b>
    * 
    * @param root the directory that will become the base of the bag and where to start searching for content
-   * @param algorithm an implementation of {@link SupportedAlgorithm}
+   * @param algorithms an collection of {@link SupportedAlgorithm} implementations
    * @param includeHidden to include hidden files when generating the bagit files, like the manifests
    * @throws NoSuchAlgorithmException if {@link MessageDigest} can't find the algorithm
    * @throws IOException if there is a problem writing or moving file(s)
    * @return a {@link Bag} object representing the newly created bagit bag
    */
-  public static Bag bagInPlace(final Path root, final SupportedAlgorithm algorithm, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+  public static Bag bagInPlace(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     final Bag bag = new Bag(new Version(0, 97));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
@@ -52,13 +55,12 @@ public final class BagCreator {
       }
     }
     
-    logger.info("Creating payload manifest");
-    final Manifest manifest = new Manifest(algorithm);
-    final MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
-    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
+    logger.info("Creating payload manifest(s)");
+    final Map<Manifest, MessageDigest> map = Hasher.createManifestToMessageDigestMap(algorithms);
+    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(map, includeHidden);
     Files.walkFileTree(dataDir, visitor);
     
-    bag.getPayLoadManifests().add(manifest);
+    bag.getPayLoadManifests().addAll(map.keySet());
     BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
     BagWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
@@ -72,14 +74,14 @@ public final class BagCreator {
    * in an unknown state of transition. Thus this is <b>not thread safe</b>
    * 
    * @param root the directory that will become the base of the bag and where to start searching for content
-   * @param algorithm an implementation of {@link SupportedAlgorithm}
+   * @param algorithms an collection of {@link SupportedAlgorithm} implementations
    * @param includeHidden to include hidden files when generating the bagit files, like the manifests
    * @return a {@link Bag} object representing the newly created bagit bag
    * @throws NoSuchAlgorithmException if {@link MessageDigest} can't find the algorithm
    * @throws IOException if there is a problem writing files or .bagit directory
    */
   @Incubating
-  public static Bag createDotBagit(final Path root, final SupportedAlgorithm algorithm, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+  public static Bag createDotBagit(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     final Bag bag = new Bag(new Version(0, 98));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
@@ -88,12 +90,11 @@ public final class BagCreator {
     Files.createDirectories(dotbagitDir);
     
     logger.info("Creating payload manifest");
-    final Manifest manifest = new Manifest(algorithm);
-    final MessageDigest messageDigest = MessageDigest.getInstance(algorithm.getMessageDigestName());
-    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHidden);
+    final Map<Manifest, MessageDigest> map = Hasher.createManifestToMessageDigestMap(algorithms);
+    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(map, includeHidden);
     Files.walkFileTree(root, visitor);
     
-    bag.getPayLoadManifests().add(manifest);
+    bag.getPayLoadManifests().addAll(map.keySet());
     BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
     BagWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
     

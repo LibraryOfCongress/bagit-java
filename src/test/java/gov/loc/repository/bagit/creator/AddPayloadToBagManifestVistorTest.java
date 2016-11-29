@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -25,10 +27,12 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   public void includeDotKeepFilesInManifest() throws Exception{
     Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+    Map<Manifest, MessageDigest> map = new HashMap<>();
+    map.put(manifest, messageDigest);
     boolean includeHiddenFiles = false;
     Path start = Paths.get(new File("src/test/resources/dotKeepExampleBag").toURI()).resolve("data");
     
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(manifest, messageDigest, includeHiddenFiles);
+    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(map, includeHiddenFiles);
     Files.walkFileTree(start, sut);
     
     assertEquals(1, manifest.getFileToChecksumMap().size());
@@ -38,7 +42,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testSkipDotBagitDir() throws IOException{
     Path dotBagitDirectory = Paths.get(folder.newFolder(".bagit").toURI());
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, null, true);
+    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, true);
     FileVisitResult returned = sut.preVisitDirectory(dotBagitDirectory, null);
     assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
   }
@@ -46,7 +50,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testSkipHiddenDirectory() throws IOException{
     Path hiddenDirectory = createHiddenDirectory();
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, null, false);
+    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, false);
     FileVisitResult returned = sut.preVisitDirectory(hiddenDirectory, null);
     assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
   }
@@ -54,7 +58,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testIncludeHiddenDirectory() throws IOException{
     Path hiddenDirectory = createHiddenDirectory();
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, null, true);
+    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, true);
     FileVisitResult returned = sut.preVisitDirectory(hiddenDirectory, null);
     assertEquals(FileVisitResult.CONTINUE, returned);
   }
@@ -62,7 +66,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testSkipHiddenFile() throws IOException{
     Path hiddenFile = createHiddenFile();
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, null, false);
+    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, false);
     FileVisitResult returned = sut.visitFile(hiddenFile, null);
     assertEquals(FileVisitResult.CONTINUE, returned);
   }
