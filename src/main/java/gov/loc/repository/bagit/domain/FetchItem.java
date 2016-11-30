@@ -7,7 +7,7 @@ import java.util.Objects;
  * An individual item to fetch as specified by 
  * <a href="https://tools.ietf.org/html/draft-kunze-bagit-13#section-2.2.3">https://tools.ietf.org/html/draft-kunze-bagit-13#section-2.2.3</a>
  */
-public class FetchItem {
+public final class FetchItem {
   /**
    * The url from which the item can be downloaded
    */

@@ -195,7 +195,7 @@ public class BagReader {
     final Manifest manifest = new Manifest(algorithm);
     
     final Map<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir, charset);
-    manifest.setFileToChecksumMap(filetToChecksumMap);
+    manifest.getFileToChecksumMap().putAll(filetToChecksumMap);
     
     return manifest;
   }
@@ -250,7 +250,7 @@ public class BagReader {
       metadata = readKeyValuesFromFile(packageInfoFile, ":", bag.getFileEncoding());
     }
     
-    newBag.setMetadata(metadata);
+    newBag.getMetadata().addAll(metadata);
     
     return newBag;
   }
