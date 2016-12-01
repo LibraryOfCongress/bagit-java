@@ -228,11 +228,15 @@ public class BagReaderTest extends Assert{
     expectedMetaData.add(new Pair<String, String>("Contact-Name","Chris Adams"));
     expectedMetaData.add(new Pair<String, String>("Payload-Oxum","58.2"));
     
+    List<FetchItem> expectedFetchItems = new ArrayList<>();
+    expectedFetchItems.add(new FetchItem(new URL("http://localhost/foo/data/dir1/test3.txt"), -1l, "data/dir1/test3.txt"));
+    
     Path bagPath = Paths.get(new File("src/test/resources/UTF-16-encoded-tag-files").toURI());
     Bag bag = sut.read(bagPath);
     assertNotNull(bag);
     assertEquals(StandardCharsets.UTF_16, bag.getFileEncoding());
     assertEquals(expectedMetaData, bag.getMetadata());
+    assertEquals(expectedFetchItems, bag.getItemsToFetch());
   }
   
   @Test
