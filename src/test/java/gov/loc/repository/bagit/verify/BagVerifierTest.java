@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.sha3.MySupportedNameToAlgorithmMapping;
 
 public class BagVerifierTest extends Assert{
   static {
