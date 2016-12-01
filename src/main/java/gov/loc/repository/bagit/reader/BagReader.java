@@ -269,7 +269,7 @@ public class BagReader {
   public Bag readFetch(final Path fetchFile, final Bag bag) throws IOException{
     logger.info("Attempting to read [{}]", fetchFile);
     final Bag newBag = new Bag(bag);
-    final BufferedReader br = Files.newBufferedReader(fetchFile);
+    final BufferedReader br = Files.newBufferedReader(fetchFile, bag.getFileEncoding());
 
     String line = br.readLine();
     String[] parts = null;
