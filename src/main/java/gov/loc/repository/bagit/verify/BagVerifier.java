@@ -310,7 +310,7 @@ public class BagVerifier {
       final String filename = PathUtils.getFilename(path);
       if(filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")){
         logger.debug("Getting files and checksums listed in [{}]", path);
-        final Manifest manifest = reader.readManifest(path, bag.getRootDir());
+        final Manifest manifest = reader.readManifest(path, bag.getRootDir(), bag.getFileEncoding());
         filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
       }
     }

@@ -96,7 +96,7 @@ public class BagReader {
    */
   public Bag readBagitTextFile(final Path bagitFile, final Bag bag) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
     logger.debug("Reading bagit.txt file");
-    final List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":");
+    final List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":", bag.getFileEncoding());
     
     String version = "";
     Charset encoding = StandardCharsets.UTF_8;
@@ -152,11 +152,11 @@ public class BagReader {
       
       if(filename.startsWith("tagmanifest-")){
         logger.debug("Found tag manifest [{}]", path);
-        newBag.getTagManifests().add(readManifest(path, bag.getRootDir()));
+        newBag.getTagManifests().add(readManifest(path, bag.getRootDir(), bag.getFileEncoding()));
       }
       else if(filename.startsWith("manifest-")){
         logger.debug("Found payload manifest [{}]", path);
-        newBag.getPayLoadManifests().add(readManifest(path, bag.getRootDir()));
+        newBag.getPayLoadManifests().add(readManifest(path, bag.getRootDir(), bag.getFileEncoding()));
       }
     }
     
@@ -180,28 +180,29 @@ public class BagReader {
    * 
    * @param manifestFile a specific manifest file
    * @param bagRootDir the root directory of the bag
+   * @param charset the encoding to use when reading the manifest file
    * @return the converted manifest object from the file
    * 
    * @throws IOException if there is a problem reading a file
    * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
-  public Manifest readManifest(final Path manifestFile, final Path bagRootDir) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
+  public Manifest readManifest(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
     final SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
     
     final Manifest manifest = new Manifest(algorithm);
     
-    final Map<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir);
+    final Map<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir, charset);
     manifest.setFileToChecksumMap(filetToChecksumMap);
     
     return manifest;
   }
   
-  protected Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir) throws IOException, MaliciousManifestException{
+  protected Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException{
     final HashMap<Path, String> map = new HashMap<>();
-    final BufferedReader br = Files.newBufferedReader(manifestFile);
+    final BufferedReader br = Files.newBufferedReader(manifestFile, charset);
 
     String line = br.readLine();
     while(line != null){
@@ -241,12 +242,12 @@ public class BagReader {
     final Path bagInfoFile = rootDir.resolve("bag-info.txt");
     if(Files.exists(bagInfoFile)){
       logger.debug("Found [{}] file", bagInfoFile);
-      metadata = readKeyValuesFromFile(bagInfoFile, ":");
+      metadata = readKeyValuesFromFile(bagInfoFile, ":", bag.getFileEncoding());
     }
     final Path packageInfoFile = rootDir.resolve("package-info.txt"); //only exists in versions 0.93 - 0.95
     if(Files.exists(packageInfoFile)){
       logger.debug("Found [{}] file", packageInfoFile);
-      metadata = readKeyValuesFromFile(packageInfoFile, ":");
+      metadata = readKeyValuesFromFile(packageInfoFile, ":", bag.getFileEncoding());
     }
     
     newBag.setMetadata(metadata);
@@ -290,9 +291,9 @@ public class BagReader {
   }
   
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  protected List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex) throws IOException, InvalidBagMetadataException{
+  protected List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex, final Charset charset) throws IOException, InvalidBagMetadataException{
     final List<Pair<String, String>> keyValues = new ArrayList<>();
-    final BufferedReader br = Files.newBufferedReader(file);
+    final BufferedReader br = Files.newBufferedReader(file, charset);
 
     String line = br.readLine();
     while(line != null){

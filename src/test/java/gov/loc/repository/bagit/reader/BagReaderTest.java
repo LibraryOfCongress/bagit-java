@@ -204,6 +204,38 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
+  public void testReadISO_8859_1Encoding() throws Exception{
+    List<Pair<String, String>> expectedMetaData = new ArrayList<>();
+    expectedMetaData.add(new Pair<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
+    expectedMetaData.add(new Pair<String, String>("Bagging-Date","2016-02-26"));
+    expectedMetaData.add(new Pair<String, String>("Contact-Email","cadams@loc.gov"));
+    expectedMetaData.add(new Pair<String, String>("Contact-Name","Chris Adams"));
+    expectedMetaData.add(new Pair<String, String>("Payload-Oxum","58.2"));
+    
+    Path bagPath = Paths.get(new File("src/test/resources/ISO-8859-1-encodedBag").toURI());
+    Bag bag = sut.read(bagPath);
+    assertNotNull(bag);
+    assertEquals(StandardCharsets.ISO_8859_1, bag.getFileEncoding());
+    assertEquals(expectedMetaData, bag.getMetadata());
+  }
+  
+  @Test
+  public void testReadUTF_16_Encoding() throws Exception{
+    List<Pair<String, String>> expectedMetaData = new ArrayList<>();
+    expectedMetaData.add(new Pair<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
+    expectedMetaData.add(new Pair<String, String>("Bagging-Date","2016-02-26"));
+    expectedMetaData.add(new Pair<String, String>("Contact-Email","cadams@loc.gov"));
+    expectedMetaData.add(new Pair<String, String>("Contact-Name","Chris Adams"));
+    expectedMetaData.add(new Pair<String, String>("Payload-Oxum","58.2"));
+    
+    Path bagPath = Paths.get(new File("src/test/resources/UTF-16-encoded-tag-files").toURI());
+    Bag bag = sut.read(bagPath);
+    assertNotNull(bag);
+    assertEquals(StandardCharsets.UTF_16, bag.getFileEncoding());
+    assertEquals(expectedMetaData, bag.getMetadata());
+  }
+  
+  @Test
   public void testReadBagitFile()throws Exception{
     Path bagitFile = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").toURI());
     Bag returnedBag = sut.readBagitTextFile(bagitFile, new Bag(new Version(0, 96)));
@@ -246,18 +278,18 @@ public class BagReaderTest extends Assert{
   @Test(expected=MaliciousManifestException.class)
   public void testReadMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/manifest-md5.txt").toURI());
-    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"));
+    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
   @Test(expected=InvalidBagMetadataException.class)
   public void testReadInproperIndentedBagMetadataFileThrowsException() throws Exception{
     Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badIndent.txt").toURI());
-    sut.readKeyValuesFromFile(baginfo, ":");
+    sut.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
   }
   
   @Test(expected=InvalidBagMetadataException.class)
   public void testReadInproperBagMetadataKeyValueSeparatorThrowsException() throws Exception{
     Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badKeyValueSeparator.txt").toURI());
-    sut.readKeyValuesFromFile(baginfo, ":");
+    sut.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
   }
 }

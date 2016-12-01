@@ -1,0 +1,5 @@
+Bag-Software-Agent: bagit.py <http://github.com/libraryofcongress/bagit-python>
+Bagging-Date: 2016-02-26
+Contact-Email: cadams@loc.gov
+Contact-Name: Chris Adams
+Payload-Oxum: 58.2
