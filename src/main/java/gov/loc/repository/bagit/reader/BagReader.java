@@ -205,7 +205,7 @@ public class BagReader {
     String line = br.readLine();
     while(line != null){
       final String[] parts = line.split("\\s+", 2);
-      final Path file = bagRootDir.resolve(PathUtils.decodeFilname(parts[1]));
+      final Path file = bagRootDir.resolve(PathUtils.decodeFilname(parts[1])).normalize();
       if(!file.normalize().startsWith(bagRootDir)){
         throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
             "! This is not allowed according to the bagit specification!");

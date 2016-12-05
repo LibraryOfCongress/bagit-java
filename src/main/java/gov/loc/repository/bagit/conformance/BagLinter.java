@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.conformance;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -9,12 +10,12 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
@@ -103,42 +104,45 @@ public class BagLinter extends BagReader {
   }
   
   /*
-   * Check for all the manifest specific potentional problems
+   * Check for all the manifest specific potential problems
    */
   private void checkManifests(final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
       final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     
     final DirectoryStream<Path> manifestPaths = getAllManifestFiles(bagitDir);
     for(final Path manifestPath : manifestPaths){
-      final Manifest manifest = readManifest(manifestPath, bagitDir, encoding);
       final String filename = PathUtils.getFilename(manifestPath);
       
       if(filename.startsWith("manifest-")){
-        checkData(manifest.getFileToChecksumMap().keySet(), warnings, warningsToIgnore, true);
+        checkData(manifestPath, encoding, warnings, warningsToIgnore, true);
       }
       else{
-        checkData(manifest.getFileToChecksumMap().keySet(), warnings, warningsToIgnore, false);
+        checkData(manifestPath, encoding, warnings, warningsToIgnore, false);
       }
-      checkAlgorthm(manifest.getAlgorithm().getMessageDigestName(), warnings, warningsToIgnore);
+      
+      final String algorithm = filename.split("[-\\.]")[1];
+      checkAlgorthm(algorithm, warnings, warningsToIgnore);
     }
   }
   
   /*
    * Check for a "bag within a bag" and for relative paths in the manifests
    */
-  private void checkData(final Set<Path> data, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest){
-    for(final Path dataPath : data){
-      final String path = dataPath.toString();
-      
-      if(!warningsToIgnore.contains(BagitWarning.BAG_WITHIN_A_BAG) && isPayloadManifest && path.contains("manifest-")){
+  private void checkData(final Path manifestFile, final Charset encoding, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest) throws IOException{
+    final BufferedReader reader = Files.newBufferedReader(manifestFile, encoding);
+    
+    String line = reader.readLine();
+    while(line != null){
+      if(!warningsToIgnore.contains(BagitWarning.BAG_WITHIN_A_BAG) && isPayloadManifest && line.contains("manifest-")){
         logger.warn("We stronger recommend not storing a bag within a bag as it is known to cause problems.");
         warnings.add(BagitWarning.BAG_WITHIN_A_BAG);
       }
       
-      if(!warningsToIgnore.contains(BagitWarning.LEADING_DOT_SLASH) && path.contains("./")){
-        logger.warn("Found path [{}] which contains a non-normalized path(i.e. a leading ./ for the relative path)", path);
+      if(!warningsToIgnore.contains(BagitWarning.LEADING_DOT_SLASH) && line.contains("./")){
+        logger.warn("In manifest [{}] line [{}] is a non-normalized path.", manifestFile, line);
         warnings.add(BagitWarning.LEADING_DOT_SLASH);
       }
+      line = reader.readLine();
     }
   }
   
@@ -146,15 +150,15 @@ public class BagLinter extends BagReader {
    * Check for anything weaker than SHA-512
    */
   private void checkAlgorthm(final String algorithm, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
-    
+    final String upperCaseAlg = algorithm.toUpperCase(Locale.getDefault());
     if(!warningsToIgnore.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM) && 
-        (algorithm.startsWith("MD") || algorithm.matches("SHA(-224|-256|-384)?"))){
+        (upperCaseAlg.startsWith("MD") || upperCaseAlg.matches("SHA(-224|-256|-384)?"))){
       logger.warn("Detected a known weak algorithm [{}]. With the great advances in computer hardware there is little penalty "
           + "to using more bits to calculate the checksum.", algorithm);
       warnings.add(BagitWarning.WEAK_CHECKSUM_ALGORITHM);
     }
     
-    else if(!warningsToIgnore.contains(BagitWarning.NON_STANDARD_ALGORITHM) && !"SHA-512".equals(algorithm)){
+    else if(!warningsToIgnore.contains(BagitWarning.NON_STANDARD_ALGORITHM) && !"SHA-512".equals(upperCaseAlg)){
       logger.warn("Detected algorithm [{}] which is not included by default in Java. This will make it more difficult "
           + "to read this bag on some systems. Consider changing it to SHA-512.", algorithm);
       warnings.add(BagitWarning.NON_STANDARD_ALGORITHM);

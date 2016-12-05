@@ -34,7 +34,7 @@ public class BagLinterTest extends Assert{
   @Test
   public void testLintBag() throws Exception{
     Set<BagitWarning> warnings = sut.lintBag(rootDir, Collections.emptyList());
-    
+
     assertEquals(7, warnings.size());
   }
   
