@@ -37,10 +37,6 @@ check.dependsOn jacocoTestReport
 findbugsIntegrationTest.enabled = false
 findbugsTest.enabled = false
 
-findbugs {
-  ignoreFailures = true //don't fail the gradle build if bugs are found
-}
-
 pmdIntegrationTest.enabled = false
 pmdTest.enabled = false
 

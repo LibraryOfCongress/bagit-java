@@ -59,16 +59,16 @@ public final class Hasher {
   }
   
   private static void updateMessageDigests(final Path path, final Collection<MessageDigest> messageDigests) throws IOException{
-    final InputStream inputStream = Files.newInputStream(path, StandardOpenOption.READ);
-    final InputStream is = new BufferedInputStream(inputStream);
-    final byte[] buffer = new byte[CHUNK_SIZE];
-    int read = is.read(buffer);
-    
-    while(read != -1) {
-      for(final MessageDigest messageDigest : messageDigests){
-        messageDigest.update(buffer, 0, read);
+    try(final InputStream is = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ))){
+      final byte[] buffer = new byte[CHUNK_SIZE];
+      int read = is.read(buffer);
+      
+      while(read != -1) {
+        for(final MessageDigest messageDigest : messageDigests){
+          messageDigest.update(buffer, 0, read);
+        }
+        read = is.read(buffer);
       }
-      read = is.read(buffer);
     }
   }
   
