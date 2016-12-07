@@ -34,7 +34,7 @@ public class BagLinterTest extends Assert{
   public void testLintBag() throws Exception{
     Set<BagitWarning> warnings = sut.lintBag(rootDir, Collections.emptyList());
 
-    assertEquals(7, warnings.size());
+    assertEquals(8, warnings.size()); //TODO add OS specific files
   }
   
   @Test
@@ -84,5 +84,12 @@ public class BagLinterTest extends Assert{
     Set<BagitWarning> warnings = sut.lintBag(rootDir, Arrays.asList(BagitWarning.OLD_BAGIT_VERSION));
     
     assertFalse(warnings.contains(BagitWarning.OLD_BAGIT_VERSION));
+  }
+  
+  @Test
+  public void testLinterIgnoreOSSpecificFiles() throws Exception{
+    Set<BagitWarning> warnings = sut.lintBag(rootDir, Arrays.asList(BagitWarning.OS_SPECIFIC_FILES));
+    
+    assertFalse(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
   }
 }

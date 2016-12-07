@@ -33,6 +33,9 @@ import javafx.util.Pair;
 public class BagLinter extends BagReader {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   private static final Version LATEST_BAGIT_VERSION = new Version(0, 97);
+  private static final String THUMBS_DB_FILE = "[Tt][Hh][Uu][Mm][Bb][Ss]\\.[Dd][Bb]";
+  private static final String DS_STORE_FILE = "\\.[Dd][Ss]_[Ss][Tt][Oo][Rr][Ee]";
+  private static final String OS_FILES_REGEX = ".*data/(" + THUMBS_DB_FILE + "|" + DS_STORE_FILE + ")";
   
   public BagLinter(){
     super();
@@ -140,6 +143,11 @@ public class BagLinter extends BagReader {
       if(!warningsToIgnore.contains(BagitWarning.LEADING_DOT_SLASH) && line.contains("./")){
         logger.warn("In manifest [{}] line [{}] is a non-normalized path.", manifestFile, line);
         warnings.add(BagitWarning.LEADING_DOT_SLASH);
+      }
+      
+      if(!warningsToIgnore.contains(BagitWarning.OS_SPECIFIC_FILES) && line.matches(OS_FILES_REGEX)){
+        logger.warn("In manifest [{}] line [{}] contains a OS specific file.", manifestFile, line);
+        warnings.add(BagitWarning.OS_SPECIFIC_FILES);
       }
       line = reader.readLine();
     }
