@@ -8,10 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
 import java.security.Security;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -32,8 +30,8 @@ import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
-import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.reader.BagReader;
 
 public class BagVerifierTest extends Assert{
@@ -214,15 +212,20 @@ public class BagVerifierTest extends Assert{
   }
   
   @Test(expected=VerificationException.class)
-  public void testVerificationExceptionIsThrownForIOException() throws Exception{
+  public void testVerificationExceptionIsThrownForNoSuchAlgorithmException() throws Exception{
     Path unreadableFile = Paths.get(folder.newFile().toURI());
-    String hash = Hasher.hash(unreadableFile, MessageDigest.getInstance("MD5"));
     
-    //remove all permissions which should cause a IOException
-    Files.setPosixFilePermissions(unreadableFile, new HashSet<>());
-    
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
-    manifest.getFileToChecksumMap().put(unreadableFile, hash);
+    Manifest manifest = new Manifest(new SupportedAlgorithm() {
+      @Override
+      public String getMessageDigestName() {
+        return "FOO";
+      }
+      @Override
+      public String getBagitName() {
+        return "foo";
+      }
+    });
+    manifest.getFileToChecksumMap().put(unreadableFile, "foo");
     
     sut.checkHashes(manifest);
   }
