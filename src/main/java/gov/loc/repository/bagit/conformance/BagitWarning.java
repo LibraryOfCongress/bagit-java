@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.warning;
+package gov.loc.repository.bagit.conformance;
 
 /**
  * The BagIt specification is very flexible in what it allows. 

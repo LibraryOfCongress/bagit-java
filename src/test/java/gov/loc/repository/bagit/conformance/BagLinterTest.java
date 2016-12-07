@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import gov.loc.repository.bagit.sha3.MySupportedNameToAlgorithmMapping;
-import gov.loc.repository.bagit.warning.BagitWarning;
 
 public class BagLinterTest extends Assert{
   static { //add support for sha3

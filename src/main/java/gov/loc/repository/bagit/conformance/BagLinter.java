@@ -25,7 +25,6 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.util.PathUtils;
 import gov.loc.repository.bagit.verify.BagVerifier;
-import gov.loc.repository.bagit.warning.BagitWarning;
 import javafx.util.Pair;
 
 /**
