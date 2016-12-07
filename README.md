@@ -121,4 +121,3 @@ Simply run `gradle eclipse` and it will automatically create a eclipse project f
 ### Roadmap for this library
 * Further refine reading and writing of bags version 0.93-0.97
 * Fix bugs/issues reported with new library (on going)
-* CI for windows
