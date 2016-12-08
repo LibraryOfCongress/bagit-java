@@ -11,7 +11,7 @@ public class StandardBagitAlgorithmNameToSupportedAlgorithmMapping
     implements BagitAlgorithmNameToSupportedAlgorithmMapping {
 
   @Override
-  public SupportedAlgorithm getMessageDigestName(final String bagitAlgorithmName) throws UnsupportedAlgorithmException {
+  public SupportedAlgorithm getSupportedAlgorithm(final String bagitAlgorithmName) throws UnsupportedAlgorithmException {
     try{
       return StandardSupportedAlgorithms.valueOf(bagitAlgorithmName.toUpperCase(Locale.getDefault()));
     }

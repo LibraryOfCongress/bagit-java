@@ -28,14 +28,13 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.util.PathUtils;
-import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 import javafx.util.Pair;
 
 /**
  * Responsible for reading a bag from the filesystem.
  */
 public class BagReader {
-  private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
+  private static final Logger logger = LoggerFactory.getLogger(BagReader.class);
   
   private BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
   
@@ -60,19 +59,22 @@ public class BagReader {
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    */
   public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException, UnsupportedAlgorithmException{
+    Bag bag = new Bag();
     //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
     if(!Files.exists(bagitDir)){
       bagitDir = rootDir;
     }
-    
-    final Path bagitFile = bagitDir.resolve("bagit.txt");
-    Bag bag = readBagitTextFile(bagitFile, new Bag());
     bag.setRootDir(rootDir);
     
+    final Path bagitFile = bagitDir.resolve("bagit.txt");
+    final Pair<Version, Charset> bagitInfo = readBagitTextFile(bagitFile);
+    bag.setVersion(bagitInfo.getKey());
+    bag.setFileEncoding(bagitInfo.getValue());
+
     bag = readAllManifests(bagitDir, bag);
     
-    bag = readBagMetadata(bagitDir, bag);
+    bag.getMetadata().addAll(readBagMetadata(bagitDir, bag.getFileEncoding()));
     
     final Path fetchFile = bagitDir.resolve("fetch.txt");
     if(Files.exists(fetchFile)){
@@ -88,15 +90,15 @@ public class BagReader {
    * 
    * @param bagitFile the bagit.txt file
    * @param bag the bag to include in the newly generated bag
-   * @return a new bag containing the bagit.txt info
+   * @return the bag {@link Version} and tag file {@link Charset} encoding
    * 
    * @throws IOException if there is a problem reading a file
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  public Bag readBagitTextFile(final Path bagitFile, final Bag bag) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
+  public Pair<Version, Charset> readBagitTextFile(final Path bagitFile) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
     logger.debug("Reading bagit.txt file");
-    final List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":", bag.getFileEncoding());
+    final List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
     
     String version = "";
     Charset encoding = StandardCharsets.UTF_8;
@@ -111,11 +113,7 @@ public class BagReader {
       }
     }
     
-    final Bag newBag = new Bag(bag);
-    newBag.setVersion(parseVersion(version));
-    newBag.setFileEncoding(encoding);
-    
-    return newBag;
+    return new Pair<Version, Charset>(parseVersion(version), encoding);
   }
   
   protected Version parseVersion(final String version) throws UnparsableVersionException{
@@ -190,12 +188,12 @@ public class BagReader {
   public Manifest readManifest(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
-    final SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
+    final SupportedAlgorithm algorithm = nameMapping.getSupportedAlgorithm(alg);
     
     final Manifest manifest = new Manifest(algorithm);
     
     final Map<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir, charset);
-    manifest.setFileToChecksumMap(filetToChecksumMap);
+    manifest.getFileToChecksumMap().putAll(filetToChecksumMap);
     
     return manifest;
   }
@@ -223,36 +221,31 @@ public class BagReader {
   }
   
   /**
-   * Reads the bag metadata file (bag-info.txt or package-info.txt) and adds it to the given bag.
-   * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * Reads the bag metadata file (bag-info.txt or package-info.txt) and returns it.
    * 
    * @param rootDir the root directory of the bag
-   * @param bag the bag to include in the new bag
-   * @return a new bag that contains the bag-info.txt (metadata) information
+   * @param the encoding of the metadata file
+   * @return list of key value pairs
    * 
    * @throws IOException if there is a problem reading a file
    * @throws InvalidBagMetadataException if the metadata file does not conform to the bagit spec
    */
-  public Bag readBagMetadata(final Path rootDir, final Bag bag) throws IOException, InvalidBagMetadataException{
-    //TODO update for .bagit being yaml...
+  public List<Pair<String, String>> readBagMetadata(final Path rootDir, final Charset encoding) throws IOException, InvalidBagMetadataException{
     logger.info("Attempting to read bag metadata file");
-    final Bag newBag = new Bag(bag);
     List<Pair<String, String>> metadata = new ArrayList<>();
     
     final Path bagInfoFile = rootDir.resolve("bag-info.txt");
     if(Files.exists(bagInfoFile)){
       logger.debug("Found [{}] file", bagInfoFile);
-      metadata = readKeyValuesFromFile(bagInfoFile, ":", bag.getFileEncoding());
+      metadata = readKeyValuesFromFile(bagInfoFile, ":", encoding);
     }
     final Path packageInfoFile = rootDir.resolve("package-info.txt"); //only exists in versions 0.93 - 0.95
     if(Files.exists(packageInfoFile)){
       logger.debug("Found [{}] file", packageInfoFile);
-      metadata = readKeyValuesFromFile(packageInfoFile, ":", bag.getFileEncoding());
+      metadata = readKeyValuesFromFile(packageInfoFile, ":", encoding);
     }
     
-    newBag.setMetadata(metadata);
-    
-    return newBag;
+    return metadata;
   }
   
   /**

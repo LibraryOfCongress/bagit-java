@@ -11,9 +11,9 @@ import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 /**
  * A manifest is a list of files and their corresponding checksum with the algorithm used to generate that checksum
  */
-public class Manifest {
+public final class Manifest {
   private final SupportedAlgorithm algorithm;
-  private Map<Path, String> fileToChecksumMap = new HashMap<>();
+  private final Map<Path, String> fileToChecksumMap = new HashMap<>();
   
   public Manifest(final SupportedAlgorithm algorithm){
     this.algorithm = algorithm;
@@ -21,10 +21,6 @@ public class Manifest {
 
   public Map<Path, String> getFileToChecksumMap() {
     return fileToChecksumMap;
-  }
-
-  public void setFileToChecksumMap(final Map<Path, String> fileToChecksumMap) {
-    this.fileToChecksumMap = fileToChecksumMap;
   }
 
   public SupportedAlgorithm getAlgorithm() {

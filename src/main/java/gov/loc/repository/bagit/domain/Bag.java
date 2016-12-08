@@ -14,7 +14,7 @@ import javafx.util.Pair;
 /**
  * The main representation of the bagit spec.
  */
-public class Bag {
+public final class Bag {
   //The original version of the bag
   private Version version = new Version(-1, -1);
   
@@ -22,16 +22,16 @@ public class Bag {
   private Charset fileEncoding = StandardCharsets.UTF_8;
   
   //equivalent to the manifest-<ALG>.txt files
-  private Set<Manifest> payLoadManifests = new HashSet<>();
+  private final Set<Manifest> payLoadManifests = new HashSet<>();
   
   //equivalent to the tagmanifest-<ALG>.txt  files
-  private Set<Manifest> tagManifests = new HashSet<>();
+  private final Set<Manifest> tagManifests = new HashSet<>();
   
   //equivalent to the fetch.txt
-  private List<FetchItem> itemsToFetch = new ArrayList<>();
+  private final List<FetchItem> itemsToFetch = new ArrayList<>();
   
   //equivalent to the bag-info.txt 
-  private List<Pair<String, String>> metadata = new ArrayList<>();
+  private final List<Pair<String, String>> metadata = new ArrayList<>();
   
   //the current location of the bag on the filesystem
   private Path rootDir;
@@ -58,49 +58,21 @@ public class Bag {
    * @param bag the bag to clone
    */
   public Bag(final Bag bag){
-    this.version = bag.getVersion();
-    this.fileEncoding = bag.fileEncoding;
-    this.itemsToFetch = bag.getItemsToFetch();
-    this.metadata = bag.getMetadata();
-    this.payLoadManifests = bag.getPayLoadManifests();
-    this.tagManifests = bag.getTagManifests();
+    version = bag.getVersion();
+    fileEncoding = bag.fileEncoding;
+    itemsToFetch.addAll(bag.getItemsToFetch());
+    metadata.addAll(bag.getMetadata());
+    payLoadManifests.addAll(bag.getPayLoadManifests());
+    tagManifests.addAll(bag.getTagManifests());
     this.rootDir = bag.getRootDir();
   }
-  
-  public Version getVersion(){
+
+  public Version getVersion() {
     return version;
   }
 
-  public Set<Manifest> getPayLoadManifests() {
-    return payLoadManifests;
-  }
-
-  public void setPayLoadManifests(final Set<Manifest> payLoadManifests) {
-    this.payLoadManifests = payLoadManifests;
-  }
-
-  public Set<Manifest> getTagManifests() {
-    return tagManifests;
-  }
-
-  public void setTagManifests(final Set<Manifest> tagManifests) {
-    this.tagManifests = tagManifests;
-  }
-
-  public List<FetchItem> getItemsToFetch() {
-    return itemsToFetch;
-  }
-
-  public void setItemsToFetch(final List<FetchItem> itemsToFetch) {
-    this.itemsToFetch = itemsToFetch;
-  }
-
-  public List<Pair<String, String>> getMetadata() {
-    return metadata;
-  }
-
-  public void setMetadata(final List<Pair<String, String>> metadata) {
-    this.metadata = metadata;
+  public void setVersion(final Version version) {
+    this.version = version;
   }
 
   public Charset getFileEncoding() {
@@ -111,6 +83,30 @@ public class Bag {
     this.fileEncoding = fileEncoding;
   }
 
+  public Path getRootDir() {
+    return rootDir;
+  }
+
+  public void setRootDir(final Path rootDir) {
+    this.rootDir = rootDir;
+  }
+
+  public Set<Manifest> getPayLoadManifests() {
+    return payLoadManifests;
+  }
+
+  public Set<Manifest> getTagManifests() {
+    return tagManifests;
+  }
+
+  public List<FetchItem> getItemsToFetch() {
+    return itemsToFetch;
+  }
+
+  public List<Pair<String, String>> getMetadata() {
+    return metadata;
+  }
+  
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(95);
@@ -155,17 +151,5 @@ public class Bag {
         Objects.equals(this.tagManifests, other.getTagManifests()) &&
         Objects.equals(this.itemsToFetch, other.getItemsToFetch()) &&
         Objects.equals(this.metadata, other.getMetadata());
-  }
-
-  public Path getRootDir() {
-    return rootDir;
-  }
-
-  public void setRootDir(final Path rootDir) {
-    this.rootDir = rootDir;
-  }
-
-  public void setVersion(final Version version) {
-    this.version = version;
   }
 }

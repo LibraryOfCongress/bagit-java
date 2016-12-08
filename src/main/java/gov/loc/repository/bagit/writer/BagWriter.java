@@ -65,7 +65,7 @@ public final class BagWriter {
     if(bag.getTagManifests().size() > 0){
       writeAdditionalTagPayloadFiles(bag.getTagManifests(), bagitDir, bag.getRootDir());
       final Set<Manifest> updatedTagManifests = updateTagManifests(bag, outputDir);
-      bag.setTagManifests(updatedTagManifests);
+      bag.getTagManifests().addAll(updatedTagManifests);
       writeTagManifests(updatedTagManifests, bagitDir, outputDir, bag.getFileEncoding());
     }
   }

@@ -33,6 +33,7 @@ import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.sha3.MySupportedNameToAlgorithmMapping;
 
 public class BagVerifierTest extends Assert{
   static {

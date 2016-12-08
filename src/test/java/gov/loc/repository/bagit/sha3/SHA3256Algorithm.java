@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.verify;
+package gov.loc.repository.bagit.sha3;
 
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 
