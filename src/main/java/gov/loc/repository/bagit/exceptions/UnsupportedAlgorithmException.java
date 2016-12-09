@@ -1,7 +1,9 @@
 package gov.loc.repository.bagit.exceptions;
 
+import java.security.MessageDigest;
+
 /**
- * When there is no class for the named algorithm
+ * When the bag uses an checksum algorithm that is not supported by {@link MessageDigest}.
  */
 public class UnsupportedAlgorithmException extends Exception {
   private static final long serialVersionUID = 1L;

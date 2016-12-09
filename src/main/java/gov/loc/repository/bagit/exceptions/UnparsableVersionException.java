@@ -1,7 +1,7 @@
 package gov.loc.repository.bagit.exceptions;
 
 /**
- * A bagit bag needs at least one payload manifest. This class represents the error if at least one payload manifest isn't found.
+ * If the version string in the bagit.txt file was not in the form &lt;MAJOR&gt;.&lt;MINOR&gt; 
  */
 public class UnparsableVersionException extends Exception {
   private static final long serialVersionUID = 1L;

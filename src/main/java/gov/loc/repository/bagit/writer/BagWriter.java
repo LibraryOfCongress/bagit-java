@@ -63,13 +63,16 @@ public final class BagWriter {
       writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getFileEncoding());
     }
     if(bag.getTagManifests().size() > 0){
-      writeAdditionalTagPayloadFiles(bag.getTagManifests(), bagitDir, bag.getRootDir());
+      writeTagManifestFiles(bag.getTagManifests(), bagitDir, bag.getRootDir());
       final Set<Manifest> updatedTagManifests = updateTagManifests(bag, outputDir);
       bag.setTagManifests(updatedTagManifests);
       writeTagManifests(updatedTagManifests, bagitDir, outputDir, bag.getFileEncoding());
     }
   }
   
+  /*
+   * Write the payload files in the data directory or under the root directory depending on the version
+   */
   private static Path writeVersionDependentPayloadFiles(final Bag bag, final Path outputDir) throws IOException{
     Path bagitDir = outputDir;
     //@Incubating
@@ -152,6 +155,9 @@ public final class BagWriter {
     writeManifests(manifests, outputDir, bagitRootDir, "manifest-", charsetName);
   }
   
+  /*
+   * Update the tag manifest cause the checksum of the other tag files will have changed since we just wrote them out to disk
+   */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private static Set<Manifest> updateTagManifests(final Bag bag, final Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
     final Set<Manifest> newManifests = new HashSet<>();
@@ -188,6 +194,9 @@ public final class BagWriter {
     writeManifests(tagManifests, outputDir, bagitRootDir, "tagmanifest-", charsetName);
   }
   
+  /*
+   * Generic method to write manifests
+   */
   private static void writeManifests(final Set<Manifest> manifests, final Path outputDir, final Path relativeTo, final String filenameBase, final Charset charsetName) throws IOException{
     for(final Manifest manifest : manifests){
       final Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
@@ -206,7 +215,10 @@ public final class BagWriter {
     }
   }
   
-  private static void writeAdditionalTagPayloadFiles(final Set<Manifest> manifests, final Path outputDir, final Path bagRootDir) throws IOException{
+  /*
+   * Write the tag manifest files
+   */
+  private static void writeTagManifestFiles(final Set<Manifest> manifests, final Path outputDir, final Path bagRootDir) throws IOException{
     for(final Manifest manifest : manifests){
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
         final Path relativeLocation = bagRootDir.relativize(entry.getKey());

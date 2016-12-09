@@ -1,7 +1,7 @@
 package gov.loc.repository.bagit.exceptions;
 
 /**
- * Class to represent an error when the manifest has been crafted to point to a directory outside the bag.
+ * Class to represent an error when the manifest has been crafted to point to a file or directory outside the bag.
  * Most likely to try and overwrite an important system file.
  */
 public class MaliciousManifestException extends Exception {

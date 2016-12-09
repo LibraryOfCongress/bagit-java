@@ -1,4 +1,4 @@
-package gov.loc.repository.bagit.tasks;
+package gov.loc.repository.bagit.verify;
 
 import java.io.IOException;
 import java.nio.file.Files;

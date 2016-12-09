@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.reader;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -188,9 +189,9 @@ public class BagReaderTest extends Assert{
     expectedValues.add(new Pair<>("Bag-Count", "1 of 15")); //test duplicate
     
     Path bagInfoFile = Paths.get(getClass().getClassLoader().getResource("baginfoFiles").toURI());
-    Bag returnedBag = sut.readBagMetadata(bagInfoFile, new Bag());
+    List<Pair<String, String>> actualMetadata = sut.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
     
-    assertEquals(expectedValues, returnedBag.getMetadata());
+    assertEquals(expectedValues, actualMetadata);
   }
   
   @Test
@@ -198,9 +199,9 @@ public class BagReaderTest extends Assert{
     Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Bag bag = new Bag();
     bag.setRootDir(rootBag);
-    Bag returnedBag = sut.readAllManifests(rootBag, bag);
-    assertEquals(1, returnedBag.getPayLoadManifests().size());
-    assertEquals(1, returnedBag.getTagManifests().size());
+    sut.readAllManifests(rootBag, bag);
+    assertEquals(1, bag.getPayLoadManifests().size());
+    assertEquals(1, bag.getTagManifests().size());
   }
   
   @Test
@@ -242,9 +243,9 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagitFile()throws Exception{
     Path bagitFile = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").toURI());
-    Bag returnedBag = sut.readBagitTextFile(bagitFile, new Bag(new Version(0, 96)));
-    assertEquals(new Version(0, 97), returnedBag.getVersion());
-    assertEquals(StandardCharsets.UTF_8, returnedBag.getFileEncoding());
+    Pair<Version, Charset> actualBagitInfo = sut.readBagitTextFile(bagitFile);
+    assertEquals(new Version(0, 97), actualBagitInfo.getKey());
+    assertEquals(StandardCharsets.UTF_8, actualBagitInfo.getValue());
   }
   
   @Test
