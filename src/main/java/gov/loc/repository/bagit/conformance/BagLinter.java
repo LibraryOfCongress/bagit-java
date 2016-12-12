@@ -7,10 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -30,6 +30,7 @@ import javafx.util.Pair;
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
  */
+@SuppressWarnings("PMD.UseLocaleWithCaseConversions")
 public class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   private static final Version LATEST_BAGIT_VERSION = new Version(0, 97);
@@ -135,24 +136,73 @@ public class BagLinter {
    */
   private void checkData(final Path manifestFile, final Charset encoding, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest) throws IOException{
     final BufferedReader reader = Files.newBufferedReader(manifestFile, encoding);
+    final Set<String> paths = new HashSet<>();
     
     String line = reader.readLine();
     while(line != null){
-      if(!warningsToIgnore.contains(BagitWarning.BAG_WITHIN_A_BAG) && isPayloadManifest && line.contains("manifest-")){
-        logger.warn("We stronger recommend not storing a bag within a bag as it is known to cause problems.");
-        warnings.add(BagitWarning.BAG_WITHIN_A_BAG);
+      final String path = line.split("\\s+", 2)[1];
+      if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_CASE) && paths.contains(path.toLowerCase())){
+        logger.warn("In manifest [{}], path [{}] is the same as another path except for the case. This can cause problems if moving the bag to a filesystem that is case insensitive.", manifestFile, path);
+        warnings.add(BagitWarning.DIFFERENT_CASE);
       }
+      paths.add(path.toLowerCase());
       
-      if(!warningsToIgnore.contains(BagitWarning.LEADING_DOT_SLASH) && line.contains("./")){
-        logger.warn("In manifest [{}] line [{}] is a non-normalized path.", manifestFile, line);
-        warnings.add(BagitWarning.LEADING_DOT_SLASH);
-      }
+      checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
       
-      if(!warningsToIgnore.contains(BagitWarning.OS_SPECIFIC_FILES) && line.matches(OS_FILES_REGEX)){
-        logger.warn("In manifest [{}] line [{}] contains a OS specific file.", manifestFile, line);
-        warnings.add(BagitWarning.OS_SPECIFIC_FILES);
-      }
+      checkForBagWithinBag(line, warnings, warningsToIgnore, isPayloadManifest);
+      
+      checkForRelativePaths(line, warnings, warningsToIgnore, manifestFile);
+      
+      checkForOSSpecificFiles(line, warnings, warningsToIgnore, manifestFile);
+      
       line = reader.readLine();
+    }
+  }
+  
+  /*
+   * Check that the file specified has not changed its normalization (i.e. have the bytes changed but it still looks the same?)
+   */
+  private void checkNormalization(final String path, final Path rootDir, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore) throws IOException{
+    if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_NORMALIZATION)){
+      final Path fileToCheck = rootDir.resolve(path).normalize();
+      final Path dirToCheck = fileToCheck.getParent();
+      final String normalizedFileToCheck = Normalizer.normalize(fileToCheck.getFileName().toString(), Normalizer.Form.NFD);
+      
+      for(Path file : Files.newDirectoryStream(dirToCheck)){
+        final String normalizedFile = Normalizer.normalize(file.getFileName().toString(), Normalizer.Form.NFD);
+        
+        if(!file.getFileName().equals(fileToCheck.getFileName()) && normalizedFileToCheck.equals(normalizedFile)){
+          logger.warn("File [{}] has a different normalization then what is specified in the manifest.", fileToCheck);
+          warnings.add(BagitWarning.DIFFERENT_NORMALIZATION);
+        }
+      }
+    }
+  }
+  
+  /*
+   * check for a bag within a bag
+   */
+  private void checkForBagWithinBag(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest){
+    if(!warningsToIgnore.contains(BagitWarning.BAG_WITHIN_A_BAG) && isPayloadManifest && line.contains("manifest-")){
+      logger.warn("We stronger recommend not storing a bag within a bag as it is known to cause problems.");
+      warnings.add(BagitWarning.BAG_WITHIN_A_BAG);
+    }
+  }
+  
+  /*
+   * Check for relative paths (i.e. ./) in the manifest
+   */
+  private void checkForRelativePaths(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final Path manifestFile){
+    if(!warningsToIgnore.contains(BagitWarning.LEADING_DOT_SLASH) && line.contains("./")){
+      logger.warn("In manifest [{}] line [{}] is a non-normalized path.", manifestFile, line);
+      warnings.add(BagitWarning.LEADING_DOT_SLASH);
+    }
+  }
+  
+  private void checkForOSSpecificFiles(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final Path manifestFile){
+    if(!warningsToIgnore.contains(BagitWarning.OS_SPECIFIC_FILES) && line.matches(OS_FILES_REGEX)){
+      logger.warn("In manifest [{}] line [{}] contains a OS specific file.", manifestFile, line);
+      warnings.add(BagitWarning.OS_SPECIFIC_FILES);
     }
   }
   
@@ -160,7 +210,7 @@ public class BagLinter {
    * Check for anything weaker than SHA-512
    */
   private void checkAlgorthm(final String algorithm, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
-    final String upperCaseAlg = algorithm.toUpperCase(Locale.getDefault());
+    final String upperCaseAlg = algorithm.toUpperCase();
     if(!warningsToIgnore.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM) && 
         (upperCaseAlg.startsWith("MD") || upperCaseAlg.matches("SHA(-224|-256|-384)?"))){
       logger.warn("Detected a known weak algorithm [{}]. With the great advances in computer hardware there is little penalty "

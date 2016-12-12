@@ -34,7 +34,21 @@ public class BagLinterTest extends Assert{
   public void testLintBag() throws Exception{
     Set<BagitWarning> warnings = sut.lintBag(rootDir, Collections.emptyList());
 
-    assertEquals(8, warnings.size()); //TODO add OS specific files
+    assertEquals(BagitWarning.values().length, warnings.size());
+  }
+  
+  @Test
+  public void testLinterNormalization() throws Exception{
+    Set<BagitWarning> warnings = sut.lintBag(rootDir, Arrays.asList(BagitWarning.DIFFERENT_NORMALIZATION));
+    
+    assertFalse(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
+  }
+  
+  @Test
+  public void testLinterIgnoreCase() throws Exception{
+    Set<BagitWarning> warnings = sut.lintBag(rootDir, Arrays.asList(BagitWarning.DIFFERENT_CASE));
+    
+    assertFalse(warnings.contains(BagitWarning.DIFFERENT_CASE));
   }
   
   @Test

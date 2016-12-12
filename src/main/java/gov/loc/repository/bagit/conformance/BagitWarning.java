@@ -8,6 +8,10 @@ package gov.loc.repository.bagit.conformance;
 public enum BagitWarning {
   BAG_WITHIN_A_BAG("A data directory can contain anything,"
       + " including another bag. However it would be better to merge the bags together."),
+  DIFFERENT_CASE("The bag contains two files that differ only in case. "
+      + "This can cause problems on a filesystem like the one used by apple (HFS)."),
+  DIFFERENT_NORMALIZATION("The bag contains two files that differ only in the normalization. "
+      + "This can cause verification to fail on some systems, and general user confusion."),
   LEADING_DOT_SLASH("A manifest lists all data files as relative to the bag root directory,"
       + " it is superfluous to therefore specify it with a dot."),
   NON_STANDARD_ALGORITHM("The checksum algorithm used does not come standard with the Java runtime. Consider using SHA512 instead."),
