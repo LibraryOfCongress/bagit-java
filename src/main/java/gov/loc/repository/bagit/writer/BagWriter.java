@@ -206,13 +206,21 @@ public final class BagWriter {
       Files.createFile(manifestPath);
       
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        final String line = entry.getValue() + " " + 
-            PathUtils.encodeFilename(relativeTo.relativize(entry.getKey())) + "/";
+        final String line = entry.getValue() + " " + formatManifestString(relativeTo, entry.getKey()) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(charsetName), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
       }
     }
+  }
+  
+  /*
+   * Create a relative path that has \ (windows) path separator replaced with / and encodes newlines
+   */
+  private static String formatManifestString(final Path relativeTo, final Path entry){
+    final String encodedPath = PathUtils.encodeFilename(relativeTo.relativize(entry));
+    
+    return encodedPath.replace('\\', '/');
   }
   
   /*
