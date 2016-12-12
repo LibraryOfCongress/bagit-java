@@ -33,7 +33,7 @@ import javafx.util.Pair;
 /**
  * Responsible for reading a bag from the filesystem.
  */
-public class BagReader {
+public final class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(BagReader.class);
   
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
@@ -118,7 +118,7 @@ public class BagReader {
   /*
    * parses the version string into a {@link Version} object
    */
-  protected Version parseVersion(final String version) throws UnparsableVersionException{
+  Version parseVersion(final String version) throws UnparsableVersionException{
     if(!version.contains(".")){
       throw new UnparsableVersionException("Version must be in format MAJOR.MINOR but was " + version);
     }
@@ -133,7 +133,7 @@ public class BagReader {
   /*
    * Finds and reads all manifest files in the rootDir and adds them to the given bag.
    */
-  protected void readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
+  void readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.info("Attempting to find and read manifests");
     final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
@@ -154,7 +154,7 @@ public class BagReader {
   /*
    * Get a list of all the tag and payload manifests
    */
-  protected DirectoryStream<Path> getAllManifestFiles(final Path rootDir) throws IOException{
+  private DirectoryStream<Path> getAllManifestFiles(final Path rootDir) throws IOException{
     final DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
       public boolean accept(final Path file) throws IOException {
         if(file == null || file.getFileName() == null){ return false;}
@@ -181,7 +181,7 @@ public class BagReader {
   public Manifest readManifest(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
-    final SupportedAlgorithm algorithm = nameMapping.getMessageDigestName(alg);
+    final SupportedAlgorithm algorithm = nameMapping.getSupportedAlgorithm(alg);
     
     final Manifest manifest = new Manifest(algorithm);
     
@@ -194,7 +194,7 @@ public class BagReader {
   /*
    * read the manifest file into a map of files and checksums
    */
-  protected Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException{
+  Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException{
     final HashMap<Path, String> map = new HashMap<>();
     final BufferedReader br = Files.newBufferedReader(manifestFile, charset);
 
@@ -283,7 +283,7 @@ public class BagReader {
    * Generic method to read key value pairs from the bagit files, like bagit.txt or bag-info.txt
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  protected List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex, final Charset charset) throws IOException, InvalidBagMetadataException{
+  List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex, final Charset charset) throws IOException, InvalidBagMetadataException{
     final List<Pair<String, String>> keyValues = new ArrayList<>();
     final BufferedReader br = Files.newBufferedReader(file, charset);
 

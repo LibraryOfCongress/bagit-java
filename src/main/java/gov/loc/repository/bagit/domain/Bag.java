@@ -14,7 +14,7 @@ import javafx.util.Pair;
 /**
  * The main representation of the bagit spec.
  */
-public class Bag {
+public final class Bag {
   //The original version of the bag
   private Version version = new Version(-1, -1);
   

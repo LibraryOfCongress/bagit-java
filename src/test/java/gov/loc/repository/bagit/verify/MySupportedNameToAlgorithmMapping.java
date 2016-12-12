@@ -7,7 +7,7 @@ import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 public class MySupportedNameToAlgorithmMapping implements BagitAlgorithmNameToSupportedAlgorithmMapping {
 
   @Override
-  public SupportedAlgorithm getMessageDigestName(String bagitAlgorithmName) {
+  public SupportedAlgorithm getSupportedAlgorithm(String bagitAlgorithmName) {
     if("sha3256".equals(bagitAlgorithmName)){
       return new SHA3256Algorithm();
     }
