@@ -219,6 +219,24 @@ public class BagWriterTest extends PrivateConstructorTest {
   }
   
   @Test
+  public void testManifestsDontContainWindowsFilePathSeparator() throws IOException{
+    Set<Manifest> tagManifests = new HashSet<>();
+    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
+    manifest.getFileToChecksumMap().put(Paths.get("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
+    tagManifests.add(manifest);
+    File outputDir = folder.newFolder();
+    File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
+    
+    assertFalse(tagManifest.exists());
+    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
+    
+    List<String> lines = Files.readAllLines(Paths.get(tagManifest.toURI()));
+    for(String line : lines){
+      assertFalse("Line [" + line + "] contains \\ which is not allowed by the bagit specification", line.contains("\\"));
+    }
+  }
+  
+  @Test
   public void testWritePayloadFiles() throws IOException, URISyntaxException{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Path testFile = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").toURI());
