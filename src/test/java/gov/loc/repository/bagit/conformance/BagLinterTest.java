@@ -37,8 +37,8 @@ public class BagLinterTest extends Assert{
     expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
     Set<BagitWarning> warnings = sut.lintBag(rootDir, Collections.emptyList());
 
-    if(!System.getProperty("os.name").equals("Linux")){
-      expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization unless on linux
+    if(System.getProperty("os.name").equals("Mac OS X")){
+      expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
     }
     
     assertEquals(expectedWarnings, warnings);

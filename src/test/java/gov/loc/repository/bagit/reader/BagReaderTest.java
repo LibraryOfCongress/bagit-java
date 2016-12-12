@@ -282,7 +282,7 @@ public class BagReaderTest extends Assert{
   
   @Test(expected=MaliciousManifestException.class)
   public void testReadMaliciousManifestThrowsException() throws Exception{
-    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/manifest-md5.txt").toURI());
+    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/upAdirectoryReference.txt").toURI());
     sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
