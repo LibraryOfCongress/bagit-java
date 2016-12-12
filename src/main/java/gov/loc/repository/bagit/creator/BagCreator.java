@@ -18,14 +18,13 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
-import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.writer.BagWriter;
 
 /**
  * Responsible for creating a bag in place.
  */
 public final class BagCreator {
-  private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
+  private static final Logger logger = LoggerFactory.getLogger(BagCreator.class);
   
   private BagCreator(){}
   

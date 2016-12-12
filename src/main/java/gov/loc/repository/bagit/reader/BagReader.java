@@ -28,14 +28,13 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.util.PathUtils;
-import gov.loc.repository.bagit.verify.PayloadFileExistsInManifestVistor;
 import javafx.util.Pair;
 
 /**
  * Responsible for reading a bag from the filesystem.
  */
 public class BagReader {
-  private static final Logger logger = LoggerFactory.getLogger(PayloadFileExistsInManifestVistor.class);
+  private static final Logger logger = LoggerFactory.getLogger(BagReader.class);
   
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
   
