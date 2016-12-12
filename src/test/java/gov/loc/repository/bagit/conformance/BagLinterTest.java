@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -32,9 +33,15 @@ public class BagLinterTest extends Assert{
   
   @Test
   public void testLintBag() throws Exception{
+    Set<BagitWarning> expectedWarnings = new HashSet<>();
+    expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
     Set<BagitWarning> warnings = sut.lintBag(rootDir, Collections.emptyList());
 
-    assertEquals(BagitWarning.values().length, warnings.size());
+    if(!System.getProperty("os.name").equals("Linux")){
+      expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization unless on linux
+    }
+    
+    assertEquals(expectedWarnings, warnings);
   }
   
   @Test

@@ -30,7 +30,7 @@ import javafx.util.Pair;
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
  */
-@SuppressWarnings("PMD.UseLocaleWithCaseConversions")
+@SuppressWarnings({"PMD.UseLocaleWithCaseConversions", "PMD.TooManyMethods"})
 public class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   private static final Version LATEST_BAGIT_VERSION = new Version(0, 97);
@@ -147,7 +147,9 @@ public class BagLinter {
       }
       paths.add(path.toLowerCase());
       
-      checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
+      if(encoding.name().startsWith("UTF")){
+        checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
+      }
       
       checkForBagWithinBag(line, warnings, warningsToIgnore, isPayloadManifest);
       
@@ -164,19 +166,32 @@ public class BagLinter {
    */
   private void checkNormalization(final String path, final Path rootDir, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore) throws IOException{
     if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_NORMALIZATION)){
+      
       final Path fileToCheck = rootDir.resolve(path).normalize();
       final Path dirToCheck = fileToCheck.getParent();
-      final String normalizedFileToCheck = Normalizer.normalize(fileToCheck.getFileName().toString(), Normalizer.Form.NFD);
+      if(dirToCheck == null){ throw new IOException("Could not access parent folder of " + fileToCheck);} //to satisfy findbugs
+      final String normalizedFileToCheck = normalizePathToNFD(fileToCheck);
       
-      for(Path file : Files.newDirectoryStream(dirToCheck)){
-        final String normalizedFile = Normalizer.normalize(file.getFileName().toString(), Normalizer.Form.NFD);
+      final DirectoryStream<Path> files = Files.newDirectoryStream(dirToCheck);
+      
+      for(final Path file : files){
+        final String normalizedFile = normalizePathToNFD(file);
         
-        if(!file.getFileName().equals(fileToCheck.getFileName()) && normalizedFileToCheck.equals(normalizedFile)){
+        if(!file.equals(fileToCheck) && normalizedFileToCheck.equals(normalizedFile)){
           logger.warn("File [{}] has a different normalization then what is specified in the manifest.", fileToCheck);
           warnings.add(BagitWarning.DIFFERENT_NORMALIZATION);
         }
       }
     }
+  }
+  
+  private String normalizePathToNFD(final Path path){
+    final Path filename = path.getFileName();
+    if(filename != null){
+      return Normalizer.normalize(filename.toString(), Normalizer.Form.NFD);
+    }
+    
+    return Normalizer.normalize(path.toString(), Normalizer.Form.NFD);
   }
   
   /*
