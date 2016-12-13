@@ -36,6 +36,12 @@ public class CheckIfFileExistsTask implements Runnable {
     latch.countDown();
   }
   
+  /**
+   * if a file is parially normalized or of a different normalization then the manifest specifies it will fail the existence test.
+   * This method checks for that by normalizing what is on disk with the normalized filename and see if they match.
+   * 
+   * @return true if the normalized filename matches one on disk in the specified folder
+   */
   private boolean existsNormalized(){
     final String normalizedFile = Normalizer.normalize(file.toString(), Normalizer.Form.NFD);
     final Path parent = file.getParent();
