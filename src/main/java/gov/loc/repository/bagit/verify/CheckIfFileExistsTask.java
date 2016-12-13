@@ -1,8 +1,9 @@
 package gov.loc.repository.bagit.verify;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -36,12 +37,21 @@ public class CheckIfFileExistsTask implements Runnable {
   }
   
   private boolean existsNormalized(){
-    for(Normalizer.Form form : Normalizer.Form.values()){
-      final String normalizedName = Normalizer.normalize(file.toString(), form);
-      if(Files.exists(Paths.get(normalizedName))){
-        logger.warn("File [{}] had to be normalized to [{}]. Consider fixing manifest so that it uses the same "
-            + "form as the filesystem.", file, form);
-        return true;
+    final String normalizedFile = Normalizer.normalize(file.toString(), Normalizer.Form.NFD);
+    final Path parent = file.getParent();
+    if(parent != null){
+      try{
+        final DirectoryStream<Path> files = Files.newDirectoryStream(parent);
+        for(final Path fileToCheck : files){
+          final String normalizedFileToCheck = Normalizer.normalize(fileToCheck.toString(), Normalizer.Form.NFD);
+          if(normalizedFile.equals(normalizedFileToCheck)){
+            return true;
+          }
+        }
+      }
+      catch(IOException e){
+        logger.error("Error while trying to read [{}] to see if any files in that directory match the normalized "
+            + "filename of [{}]", parent, normalizedFile, e);
       }
     }
     

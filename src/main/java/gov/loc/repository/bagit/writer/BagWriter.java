@@ -206,7 +206,9 @@ public final class BagWriter {
       Files.createFile(manifestPath);
       
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        final String line = entry.getValue() + " " + formatManifestString(relativeTo, entry.getKey()) + System.lineSeparator();
+        //there are 2 spaces between the checksum and the path so that the manifests are compatible with the md5sum tools available on most unix systems.
+        //This may cause problems on windows due to it being text mode, in which case either replace with a * or try verifying in binary mode with --binary
+        final String line = entry.getValue() + "  " + formatManifestString(relativeTo, entry.getKey()) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(charsetName), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
