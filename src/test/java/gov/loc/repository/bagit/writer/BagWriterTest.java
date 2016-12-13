@@ -216,6 +216,8 @@ public class BagWriterTest extends PrivateConstructorTest {
     assertFalse(tagManifest.exists());
     BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
     assertTrue(tagManifest.exists());
+    List<String> lines = Files.readAllLines(tagManifest.toPath());
+    assertTrue("someHashValue  data/one/two/buckleMyShoe.txt".equals(lines.get(0)));
   }
   
   @Test

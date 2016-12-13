@@ -206,7 +206,7 @@ public final class BagWriter {
       Files.createFile(manifestPath);
       
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        final String line = entry.getValue() + " " + formatManifestString(relativeTo, entry.getKey()) + System.lineSeparator();
+        final String line = entry.getValue() + "  " + formatManifestString(relativeTo, entry.getKey()) + System.lineSeparator();
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(charsetName), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
