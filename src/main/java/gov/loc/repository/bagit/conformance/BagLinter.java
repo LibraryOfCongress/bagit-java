@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
-import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
@@ -30,7 +30,7 @@ import javafx.util.Pair;
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
  */
-@SuppressWarnings({"PMD.UseLocaleWithCaseConversions", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.UseLocaleWithCaseConversions", "PMD.TooManyMethods", "PMD.GodClass"}) //TODO refactor
 public class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   private static final Version LATEST_BAGIT_VERSION = new Version(0, 97);
@@ -63,9 +63,9 @@ public class BagLinter {
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
    * @throws UnsupportedAlgorithmException if the {@link BagReader} does not support reading the manifest 
-   * @throws MaliciousManifestException If the manifest was crafted to try and access a file outside the bag directory
+   * @throws MaliciousPathException If the manifest was crafted to try and access a file outside the bag directory
    */
-  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousManifestException, UnsupportedAlgorithmException{
+  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException{
     final Set<BagitWarning> warnings = new HashSet<>();
     
     //@Incubating
@@ -112,7 +112,7 @@ public class BagLinter {
    * Check for all the manifest specific potential problems
    */
   private void checkManifests(final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
-      final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
+      final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousPathException, UnsupportedAlgorithmException{
         
     final DirectoryStream<Path> files = Files.newDirectoryStream(bagitDir);
     for(final Path file : files){
@@ -140,7 +140,10 @@ public class BagLinter {
     
     String line = reader.readLine();
     while(line != null){
-      final String path = line.split("\\s+", 2)[1];
+      String path = line.split("\\s+", 2)[1];
+      
+      path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
+      
       if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_CASE) && paths.contains(path.toLowerCase())){
         logger.warn("In manifest [{}], path [{}] is the same as another path except for the case. This can cause problems if moving the bag to a filesystem that is case insensitive.", manifestFile, path);
         warnings.add(BagitWarning.DIFFERENT_CASE);
@@ -150,8 +153,6 @@ public class BagLinter {
       if(encoding.name().startsWith("UTF")){
         checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
       }
-      
-      checkForManifestCreatedWithMD5SumTools(line, warnings, warningsToIgnore);
       
       checkForBagWithinBag(line, warnings, warningsToIgnore, isPayloadManifest);
       
@@ -199,12 +200,21 @@ public class BagLinter {
     return Normalizer.normalize(path.toString(), Normalizer.Form.NFD);
   }
   
-  private void checkForManifestCreatedWithMD5SumTools(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
-    if(!warningsToIgnore.contains(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST) && line.contains("*")){
-      logger.warn("Line [{}] contains a *, which means it was generated with a non-bagit tool. "
-          + "It is recommended to remove the * in order to conform to the bagit specification.", line);
+  private String checkForManifestCreatedWithMD5SumTools(final String path, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
+    String fixedPath = path;
+    final boolean startsWithStar = path.charAt(0) == '*';
+    
+    if(startsWithStar){
+      fixedPath = path.substring(1);
+    }
+    
+    if(!warningsToIgnore.contains(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST) && startsWithStar){
+      logger.warn("Path [{}] starts with a *, which means it was generated with a non-bagit tool. "
+          + "It is recommended to remove the * in order to conform to the bagit specification.", path);
       warnings.add(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST);
     }
+    
+    return fixedPath;
   }
   
   /*

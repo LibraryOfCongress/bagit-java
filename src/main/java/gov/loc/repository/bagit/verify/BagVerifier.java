@@ -25,8 +25,9 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.InvalidManifestFormatException;
 import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
-import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
@@ -137,11 +138,12 @@ public final class BagVerifier {
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
-   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws MaliciousPathException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws VerificationException some other exception happened during processing so capture it here.
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
+   * @throws InvalidManifestFormatException if the manifest is not formatted properly
    */
-  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, NoSuchAlgorithmException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException{
+  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, NoSuchAlgorithmException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidManifestFormatException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
@@ -203,12 +205,13 @@ public final class BagVerifier {
    * @throws MissingPayloadDirectoryException if there is no /data directory
    * @throws FileNotInPayloadDirectoryException if a manifest lists a file but it is not in the payload directory
    * @throws InterruptedException if the threads are interrupted when checking if all files are listed in manifest(s)
-   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws MaliciousPathException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
+   * @throws InvalidManifestFormatException if the manifest is not formatted properly 
    */
   public void isComplete(final Bag bag, final boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
-    FileNotInPayloadDirectoryException, InterruptedException, MaliciousManifestException, UnsupportedAlgorithmException{
+    FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, UnsupportedAlgorithmException, InvalidManifestFormatException{
     logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
     
     final Path dataDir = getDataDir(bag);
@@ -307,7 +310,7 @@ public final class BagVerifier {
   /*
    * get all the files listed in all the manifests
    */
-  private Set<Path> getAllFilesListedInManifests(final Bag bag) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
+  private Set<Path> getAllFilesListedInManifests(final Bag bag) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidManifestFormatException{
     logger.debug("Getting all files listed in the manifest(s)");
     final Set<Path> filesListedInManifests = new HashSet<>();
     

@@ -21,7 +21,9 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
-import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
+import gov.loc.repository.bagit.exceptions.InvalidFetchFormatException;
+import gov.loc.repository.bagit.exceptions.InvalidManifestFormatException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
@@ -33,8 +35,10 @@ import javafx.util.Pair;
 /**
  * Responsible for reading a bag from the filesystem.
  */
+@SuppressWarnings("PMD.TooManyMethods")
 public final class BagReader {
   private static final Logger logger = LoggerFactory.getLogger(BagReader.class);
+  private static final String ERROR_PREFIX = "Path [";
   
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
   
@@ -54,12 +58,14 @@ public final class BagReader {
    * @return a {@link Bag} object representing a bag on the filesystem
    * 
    * @throws UnparsableVersionException If there is a problem parsing the bagit version
-   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws MaliciousPathException if there is path that is referenced in the manifest or fetch file that is outside the bag root directory
    * @throws InvalidBagMetadataException if the metadata or bagit.txt file does not conform to the bagit spec
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
+   * @throws InvalidManifestFormatException if the manifest is not formatted properly
+   * @throws InvalidFetchFormatException if the fetch format does not follow the bagit specification
    */
-  public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousManifestException, InvalidBagMetadataException, UnsupportedAlgorithmException{
-    Bag bag = new Bag();
+  public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousPathException, InvalidBagMetadataException, UnsupportedAlgorithmException, InvalidManifestFormatException, InvalidFetchFormatException{
+    final Bag bag = new Bag();
     
     //@Incubating
     Path bagitDir = rootDir.resolve(".bagit");
@@ -79,7 +85,7 @@ public final class BagReader {
     
     final Path fetchFile = bagitDir.resolve("fetch.txt");
     if(Files.exists(fetchFile)){
-      bag = readFetch(fetchFile, bag);
+      bag.getItemsToFetch().addAll(readFetch(fetchFile, bag.getFileEncoding(), bag.getRootDir()));
     }
     
     return bag;
@@ -133,7 +139,7 @@ public final class BagReader {
   /*
    * Finds and reads all manifest files in the rootDir and adds them to the given bag.
    */
-  void readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
+  void readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidManifestFormatException{
     logger.info("Attempting to find and read manifests");
     final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
@@ -175,10 +181,11 @@ public final class BagReader {
    * @return the converted manifest object from the file
    * 
    * @throws IOException if there is a problem reading a file
-   * @throws MaliciousManifestException if there is path that is referenced in the manifest that is outside the bag root directory
+   * @throws MaliciousPathException if there is path that is referenced in the manifest that is outside the bag root directory
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
+   * @throws InvalidManifestFormatException if the manifest is not formatted properly
    */
-  public Manifest readManifest(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException, UnsupportedAlgorithmException{
+  public Manifest readManifest(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidManifestFormatException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
     final SupportedAlgorithm algorithm = nameMapping.getSupportedAlgorithm(alg);
@@ -194,7 +201,7 @@ public final class BagReader {
   /*
    * read the manifest file into a map of files and checksums
    */
-  Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousManifestException{
+  Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousPathException, InvalidManifestFormatException{
     final HashMap<Path, String> map = new HashMap<>();
     final BufferedReader br = Files.newBufferedReader(manifestFile, charset);
 
@@ -215,16 +222,25 @@ public final class BagReader {
   /*
    * Create the file and check it for various things, like starting with a *
    */
-  private Path createFileFromManifest(final Path bagRootDir, String path) throws MaliciousManifestException{
-    if(path.startsWith("*")){
+  private Path createFileFromManifest(final Path bagRootDir, final String path) throws MaliciousPathException, InvalidManifestFormatException{
+    String fixedPath = path;
+    if(path.charAt(0) == '*'){
       logger.warn("Encountered path that was created by non-bagit tool. Removing * from path. Please remove all * from manifest files!");
-      path = path.substring(1); //remove the * from the path
+      fixedPath = path.substring(1); //remove the * from the path
     }
     
-    final Path file = bagRootDir.resolve(PathUtils.decodeFilname(path)).normalize();
+    if(path.contains("\\")){
+      throw new InvalidManifestFormatException(ERROR_PREFIX + path + "] is invalid due to the use of the path separactor [\\]");
+    }
+    
+    if(path.contains("~/")){
+      throw new MaliciousPathException(ERROR_PREFIX + path + "] is trying to be malicious and access a file outside the bag");
+    }
+
+    final Path file = bagRootDir.resolve(PathUtils.decodeFilname(fixedPath)).normalize();
     
     if(!file.normalize().startsWith(bagRootDir)){
-      throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
+      throw new MaliciousPathException(ERROR_PREFIX + file + "] is outside the bag root directory of " + bagRootDir + 
           "! This is not allowed according to the bagit specification!");
     }
     
@@ -260,20 +276,22 @@ public final class BagReader {
   }
   
   /**
-   * Reads a fetch.txt file and adds {@link FetchItem} to the given bag.
-   * Returns a <b>new</b> {@link Bag} object so that it is thread safe.
+   * Reads a fetch.txt file
    * 
    * @param fetchFile the specific fetch file
-   * @param bag the bag to include in the new bag
-   * @return a new bag that contains a list of items to fetch
+   * @param encoding the encoding to read the file with
+   * @param bagRootDir the root directory of the bag
+   * @return a list of items to fetch
    * 
    * @throws IOException if there is a problem reading a file
+   * @throws InvalidFetchFormatException if the fetch format does not follow the bagit specification
+   * @throws MaliciousPathException if the path was crafted to point outside the bag directory
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  public Bag readFetch(final Path fetchFile, final Bag bag) throws IOException{
+  public List<FetchItem> readFetch(final Path fetchFile, final Charset encoding, final Path bagRootDir) throws IOException, MaliciousPathException, InvalidFetchFormatException{
     logger.info("Attempting to read [{}]", fetchFile);
-    final Bag newBag = new Bag(bag);
-    final BufferedReader br = Files.newBufferedReader(fetchFile, bag.getFileEncoding());
+    final BufferedReader br = Files.newBufferedReader(fetchFile, encoding);
+    final List<FetchItem> itemsToFetch = new ArrayList<>();
 
     String line = br.readLine();
     String[] parts = null;
@@ -281,17 +299,38 @@ public final class BagReader {
     URL url = null;
     while(line != null){
       parts = line.split("\\s+", 3);
+      checkPath(parts[2], bagRootDir);
       length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
       url = new URL(parts[0]);
       
       logger.debug("Read URL [{}] length [{}] path [{}] from fetch file [{}]", url, length, parts[2], fetchFile);
       final FetchItem itemToFetch = new FetchItem(url, length, parts[2]);
-      newBag.getItemsToFetch().add(itemToFetch);
+      itemsToFetch.add(itemToFetch);
       
       line = br.readLine();
     }
 
-    return newBag;
+    return itemsToFetch;
+  }
+  
+  /*
+   * Check for malicious paths as well as invalid format
+   */
+  private void checkPath(final String path, final Path bagRoot) throws MaliciousPathException, InvalidFetchFormatException{
+    if(path.contains("\\")){
+      logger.warn("Path [{}] contains [\\] which is not allowed by the bagit specification. Use [/] instead.", path);
+      throw new InvalidFetchFormatException(ERROR_PREFIX + path + "] uses invalid path separator [\\]. Use [/] instead.");
+    }
+    
+    if(path.contains("~/")){
+      throw new MaliciousPathException(ERROR_PREFIX + path + "] is trying to be malicious by accessing a file outside the bag");
+    }
+    
+    final Path finalPath = bagRoot.resolve(path).normalize();
+    if(!finalPath.startsWith(bagRoot)){
+      throw new MaliciousPathException(ERROR_PREFIX + path + "] is outside the bag root directory of " + bagRoot + 
+          "! This is not allowed according to the bagit specification!");
+    }
   }
   
   /*

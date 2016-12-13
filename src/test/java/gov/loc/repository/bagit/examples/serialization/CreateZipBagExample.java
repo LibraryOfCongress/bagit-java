@@ -37,6 +37,9 @@ public class CreateZipBagExample extends Assert{
     outputStream = Files.newOutputStream(zippedBagPath, StandardOpenOption.CREATE);
   }
 
+  /**
+   * <b> THIS IS JUST AN EXAMPLE. DO NOT USE IN PRODUCTION!</b>
+   */
   @Test
   public void createZipBagWithJavaStandardLibrary(){
     try(ZipOutputStream zip = new ZipOutputStream(outputStream)){

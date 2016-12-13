@@ -18,6 +18,11 @@ public class FetchHttpFileExample extends Assert {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
 
+  /**
+   * <b> THIS IS JUST AN EXAMPLE. DO NOT USE IN PRODUCTION!</b>
+   * 
+   * @throws IOException if there is a problem getting the file
+   */
   @Test
   public void fetchFileUsingJavaStandardLibrary() throws IOException{
     //in actual usage you would iterate over the list of FetchItem in the Bag

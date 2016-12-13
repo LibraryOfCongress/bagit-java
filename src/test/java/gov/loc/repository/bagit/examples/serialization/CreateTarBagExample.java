@@ -34,6 +34,9 @@ public class CreateTarBagExample extends Assert {
     outputStream = Files.newOutputStream(tarredBagPath, StandardOpenOption.CREATE);
   }
   
+  /**
+   * <b> THIS IS JUST AN EXAMPLE. DO NOT USE IN PRODUCTION!</b>
+   */
   @Test
   public void createTarBagWithJTar(){
     try(TarOutputStream out = new TarOutputStream(outputStream);) {

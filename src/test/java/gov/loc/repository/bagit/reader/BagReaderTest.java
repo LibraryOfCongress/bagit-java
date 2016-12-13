@@ -21,7 +21,9 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
-import gov.loc.repository.bagit.exceptions.MaliciousManifestException;
+import gov.loc.repository.bagit.exceptions.InvalidFetchFormatException;
+import gov.loc.repository.bagit.exceptions.InvalidManifestFormatException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import javafx.util.Pair;
 
@@ -141,8 +143,8 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithNoSizeSpecified() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithNoSizeSpecified.txt").toURI());
-    Bag returnedBag = sut.readFetch(fetchFile, new Bag());
-    for(FetchItem item : returnedBag.getItemsToFetch()){
+    List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    for(FetchItem item : returnedItems){
       assertNotNull(item.url);
       assertTrue(urls.contains(item.url));
       
@@ -156,8 +158,8 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithSizeSpecified() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithSizeSpecified.txt").toURI());
-    Bag returnedBag = sut.readFetch(fetchFile, new Bag());
-    for(FetchItem item : returnedBag.getItemsToFetch()){
+    List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    for(FetchItem item : returnedItems){
       assertNotNull(item.url);
       assertTrue(urls.contains(item.url));
       
@@ -280,10 +282,40 @@ public class BagReaderTest extends Assert{
     }
   }
   
-  @Test(expected=MaliciousManifestException.class)
-  public void testReadMaliciousManifestThrowsException() throws Exception{
+  @Test(expected=MaliciousPathException.class)
+  public void testReadUpDirectoryMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/upAdirectoryReference.txt").toURI());
     sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
+  }
+  
+  @Test(expected=MaliciousPathException.class)
+  public void testReadTildeMaliciousManifestThrowsException() throws Exception{
+    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/tildeReference.txt").toURI());
+    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
+  }
+  
+  @Test(expected=InvalidManifestFormatException.class)
+  public void testReadWindowsSpecialDirMaliciousManifestThrowsException() throws Exception{
+    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/windowsSpecialDirectoryName.txt").toURI());
+    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
+  }
+  
+  @Test(expected=InvalidFetchFormatException.class)
+  public void testReadWindowsSpecialDirMaliciousFetchThrowsException() throws Exception{
+    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/windowsSpecialDirectoryName.txt").toURI());
+    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+  }
+  
+  @Test(expected=MaliciousPathException.class)
+  public void testReadUpADirMaliciousFetchThrowsException() throws Exception{
+    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/upAdirectoryReference.txt").toURI());
+    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+  }
+  
+  @Test(expected=MaliciousPathException.class)
+  public void testReadTildeFetchThrowsException() throws Exception{
+    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/tildeReference.txt").toURI());
+    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
   }
   
   @Test(expected=InvalidBagMetadataException.class)
