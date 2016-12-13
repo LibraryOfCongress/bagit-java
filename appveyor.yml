@@ -5,7 +5,7 @@ install:
 - cmd: choco install gradle
 
 build_script:
-- cmd: gradle check dependencycheck
+- cmd: gradle check
 
 cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
