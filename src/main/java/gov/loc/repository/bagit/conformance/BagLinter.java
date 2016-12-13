@@ -151,6 +151,8 @@ public class BagLinter {
         checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
       }
       
+      checkForManifestCreatedWithMD5SumTools(line, warnings, warningsToIgnore);
+      
       checkForBagWithinBag(line, warnings, warningsToIgnore, isPayloadManifest);
       
       checkForRelativePaths(line, warnings, warningsToIgnore, manifestFile);
@@ -185,6 +187,9 @@ public class BagLinter {
     }
   }
   
+  /*
+   * Normalize to Canonical decomposition.
+   */
   private String normalizePathToNFD(final Path path){
     final Path filename = path.getFileName();
     if(filename != null){
@@ -192,6 +197,14 @@ public class BagLinter {
     }
     
     return Normalizer.normalize(path.toString(), Normalizer.Form.NFD);
+  }
+  
+  private void checkForManifestCreatedWithMD5SumTools(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
+    if(!warningsToIgnore.contains(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST) && line.contains("*")){
+      logger.warn("Line [{}] contains a *, which means it was generated with a non-bagit tool. "
+          + "It is recommended to remove the * in order to conform to the bagit specification.", line);
+      warnings.add(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST);
+    }
   }
   
   /*

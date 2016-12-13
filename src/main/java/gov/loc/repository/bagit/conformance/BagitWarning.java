@@ -15,6 +15,9 @@ public enum BagitWarning {
   LEADING_DOT_SLASH("A manifest lists all data files as relative to the bag root directory,"
       + " it is superfluous to therefore specify it with a dot."),
   NON_STANDARD_ALGORITHM("The checksum algorithm used does not come standard with the Java runtime. Consider using SHA512 instead."),
+  MD5SUM_TOOL_GENERATED_MANIFEST("The manifest was created using a using checksum utilities such as those\n" + 
+      "contained in the GNU Coreutils package (md5sum, sha1sum, etc.), collectively referred to here as 'md5sum'. "
+      + "This creates slight differences in generated manifests that can cause problems in some implementations."),
   OLD_BAGIT_VERSION("The bagit specification version is not the newest. Consider converting to the latest version."),
   OS_SPECIFIC_FILES("Files created by the operating system (OS) for its own use. They are non-protable across OS versions "
       + "and should not be included in any manifest. Examples Thumbs.db on Windows or .DS_Store on OSX"),

@@ -201,11 +201,7 @@ public final class BagReader {
     String line = br.readLine();
     while(line != null){
       final String[] parts = line.split("\\s+", 2);
-      final Path file = bagRootDir.resolve(PathUtils.decodeFilname(parts[1])).normalize();
-      if(!file.normalize().startsWith(bagRootDir)){
-        throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
-            "! This is not allowed according to the bagit specification!");
-      }
+      final Path file = createFileFromManifest(bagRootDir, parts[1]);
       logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[0], file, manifestFile);
       map.put(file, parts[0]);
       line = br.readLine();
@@ -214,6 +210,25 @@ public final class BagReader {
     br.close();
     
     return map;
+  }
+  
+  /*
+   * Create the file and check it for various things, like starting with a *
+   */
+  private Path createFileFromManifest(final Path bagRootDir, String path) throws MaliciousManifestException{
+    if(path.startsWith("*")){
+      logger.warn("Encountered path that was created by non-bagit tool. Removing * from path. Please remove all * from manifest files!");
+      path = path.substring(1); //remove the * from the path
+    }
+    
+    final Path file = bagRootDir.resolve(PathUtils.decodeFilname(path)).normalize();
+    
+    if(!file.normalize().startsWith(bagRootDir)){
+      throw new MaliciousManifestException("Path " + file + " is outside the bag root directory of " + bagRootDir + 
+          "! This is not allowed according to the bagit specification!");
+    }
+    
+    return file;
   }
   
   /**
