@@ -2,6 +2,8 @@ package gov.loc.repository.bagit.verify;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -26,10 +28,23 @@ public class CheckIfFileExistsTask implements Runnable {
 
   @Override
   public void run() {
-    if(!Files.exists(file)){
+    if(!Files.exists(file) && !existsNormalized()){
       logger.error("File [{}] does not exist!", file);
       missingFiles.add(file);
     }
     latch.countDown();
+  }
+  
+  private boolean existsNormalized(){
+    for(Normalizer.Form form : Normalizer.Form.values()){
+      final String normalizedName = Normalizer.normalize(file.toString(), form);
+      if(Files.exists(Paths.get(normalizedName))){
+        logger.warn("File [{}] had to be normalized to [{}]. Consider fixing manifest so that it uses the same "
+            + "form as the filesystem.", file, form);
+        return true;
+      }
+    }
+    
+    return false;
   }
 }
