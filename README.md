@@ -104,6 +104,21 @@ public class MyNewNameMapping implements BagitAlgorithmNameToSupportedAlgorithmM
 ```
 and then add the implemented BagitAlgorithmNameToSupportedAlgorithmMapping class to your BagReader or bagVerifier object before using their methods
 
+#### Check for potential problems
+The BagIt format is extremely flexible, and allows for many different implementations. While something may technically be correct there are known issues that can be avoided. That is why we created a Bag Linter, which checks for very well known issues that can occur. Here is an example where we check for all known issues:
+```java
+Path rootDir = Paths.get("RootDirectoryOfExistingBag");
+BagLinter linter = new BagLinter();
+List<BagitWarning> warnings = linter.lintBag(rootDir, Collections.emptyList());
+```
+
+You can also ignore any of the warnings by passing them into the list like so:
+```java
+dependencycheckth rootDir = Paths.get("RootDirectoryOfExistingBag");
+BagLinter linter = new BagLinter();
+List<BagitWarning> warnings = linter.lintBag(rootDir, Arrays.asList(BagitWarning.OLD_BAGIT_VERSION);
+```
+
 ## Developing Bagit-Java
 Bagit-Java uses [Gradle](https://gradle.org/) for its build system. Check out the great [documentation](https://docs.gradle.org/current/userguide/userguide_single.html) to learn more.
 ##### Running tests and code quality checks
