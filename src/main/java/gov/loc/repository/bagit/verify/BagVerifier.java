@@ -52,13 +52,26 @@ public final class BagVerifier {
   private static final String PAYLOAD_OXUM_REGEX = "\\d+\\.\\d+";
   
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  private final ExecutorService executor;
   
   public BagVerifier(){
     nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
+    executor = Executors.newCachedThreadPool();
   }
   
   public BagVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     this.nameMapping = nameMapping;
+    executor = Executors.newCachedThreadPool();
+  }
+  
+  public BagVerifier(final ExecutorService executor){
+    nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
+    this.executor = executor;
+  }
+  
+  public BagVerifier(final ExecutorService executor, final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
+    this.nameMapping = nameMapping;
+    this.executor = executor;
   }
   
   /**
@@ -163,7 +176,6 @@ public final class BagVerifier {
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
-    final ExecutorService executor = Executors.newCachedThreadPool();
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
     
@@ -172,7 +184,6 @@ public final class BagVerifier {
     }
     
     latch.await();
-    executor.shutdown();
     
     if(!exceptions.isEmpty()){
       final Exception e = exceptions.get(0);
@@ -368,5 +379,9 @@ public final class BagVerifier {
 
   public BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
     return nameMapping;
+  }
+
+  public ExecutorService getExecutor() {
+    return executor;
   }
 }
