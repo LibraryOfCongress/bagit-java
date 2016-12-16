@@ -193,10 +193,11 @@ public class BagWriterTest extends PrivateConstructorTest {
   @Test
   public void testWriteFetchFile() throws Exception{
     File rootDir = folder.newFolder();
+    Path rootPath = rootDir.toPath();
     File fetch = new File(rootDir, "fetch.txt");
     URL url = new URL("http://localhost:/foo/bar");
-    List<FetchItem> itemsToFetch = Arrays.asList(new FetchItem(url, -1l, "/data/foo/bar"),
-        new FetchItem(url, 100l, "/data/foo/bar"));
+    List<FetchItem> itemsToFetch = Arrays.asList(new FetchItem(url, -1l, rootPath.resolve("/data/foo/bar")),
+        new FetchItem(url, 100l, rootPath.resolve("/data/foo/bar")));
     
     
     assertFalse(fetch.exists());

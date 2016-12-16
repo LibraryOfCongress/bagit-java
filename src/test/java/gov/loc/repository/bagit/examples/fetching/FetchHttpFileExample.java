@@ -3,8 +3,6 @@ package gov.loc.repository.bagit.examples.fetching;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.junit.Assert;
@@ -26,12 +24,10 @@ public class FetchHttpFileExample extends Assert {
   @Test
   public void fetchFileUsingJavaStandardLibrary() throws IOException{
     //in actual usage you would iterate over the list of FetchItem in the Bag
-    FetchItem item = new FetchItem(new URL("https://en.wikipedia.org/wiki/Main_Page"), 0l, folder.newFile("Main_page.html").toString());
+    FetchItem item = new FetchItem(new URL("https://en.wikipedia.org/wiki/Main_Page"), 0l, folder.newFile("Main_page.html").toPath());
     try{
-      Path path = Paths.get(item.path);
-      
-      Files.copy(item.url.openStream(), path, StandardCopyOption.REPLACE_EXISTING);
-      assertTrue(Files.exists(path));
+      Files.copy(item.url.openStream(), item.path, StandardCopyOption.REPLACE_EXISTING);
+      assertTrue(Files.exists(item.path));
     }
     catch(Exception e){
       e.printStackTrace();

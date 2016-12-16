@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.domain;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,7 +19,7 @@ public class FetchItemTest extends Assert {
 
   @Test
   public void testToString() throws MalformedURLException{
-    FetchItem item = new FetchItem(url, 1l, "/foo");
+    FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     String expected = "https://github.com/LibraryOfCongress/bagit-java 1 /foo";
     
     assertEquals(expected, item.toString());
@@ -26,53 +27,53 @@ public class FetchItemTest extends Assert {
   
   @Test
   public void testHashCodeReturnsSameValueForEqualObjects(){
-    FetchItem item1 = new FetchItem(url, 1l, "/foo");
-    FetchItem item2 = new FetchItem(url, 1l, "/foo");
+    FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
+    FetchItem item2 = new FetchItem(url, 1l, Paths.get("/foo"));
     
     assertEquals(item1.hashCode(), item2.hashCode());
   }
   
   @Test
   public void testHashCodeReturnsDifferentValueForDifferentObjects(){
-    FetchItem item1 = new FetchItem(url, 1l, "/foo");
-    FetchItem item2 = new FetchItem(url, 1l, "/bar");
+    FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
+    FetchItem item2 = new FetchItem(url, 1l, Paths.get("/bar"));
     
     assertNotEquals(item1.hashCode(), item2.hashCode());
   }
   
   @Test
   public void testEqualsReturnsTrueWhenSameObject(){
-    FetchItem item = new FetchItem(url, 1l, "/foo");
+    FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     
     assertTrue(item.equals(item));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenNull(){
-    FetchItem item = new FetchItem(url, 1l, "/foo");
+    FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     
     assertFalse(item.equals(null));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenDifferentTypes(){
-    FetchItem item = new FetchItem(url, 1l, "/foo");
+    FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     
     assertFalse(item.equals("foo"));
   }
   
   @Test
   public void testEqualsReturnsTrueWhenSameValues(){
-    FetchItem item1 = new FetchItem(url, 1l, "/foo");
-    FetchItem item2 = new FetchItem(url, 1l, "/foo");
+    FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
+    FetchItem item2 = new FetchItem(url, 1l, Paths.get("/foo"));
     
     assertTrue(item1.equals(item2));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenDifferentValues(){
-    FetchItem item1 = new FetchItem(url, 1l, "/foo");
-    FetchItem item2 = new FetchItem(url, 1l, "/bar");
+    FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
+    FetchItem item2 = new FetchItem(url, 1l, Paths.get("/bar"));
     
     assertFalse(item1.equals(item2));
   }

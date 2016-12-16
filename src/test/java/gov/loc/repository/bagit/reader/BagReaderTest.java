@@ -22,16 +22,12 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
-import gov.loc.repository.bagit.exceptions.InvalidFetchFormatException;
-import gov.loc.repository.bagit.exceptions.InvalidManifestFormatException;
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
-  private static final List<String> paths = Arrays.asList("data/dir1/test3.txt", "data/dir2/dir3/test5.txt", 
-      "data/dir2/test4.txt", "data/test 1.txt", "data/test2.txt");
-  
   private BagReader sut;
   
   @Before
@@ -143,7 +139,8 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithNoSizeSpecified() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithNoSizeSpecified.txt").toURI());
-    List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, fetchFile.getParent());
+    
     for(FetchItem item : returnedItems){
       assertNotNull(item.url);
       assertTrue(urls.contains(item.url));
@@ -151,7 +148,6 @@ public class BagReaderTest extends Assert{
       assertEquals(Long.valueOf(-1), item.length);
       
       assertNotNull(item.path);
-      assertTrue(paths.contains(item.path));
     }
   }
   
@@ -159,6 +155,7 @@ public class BagReaderTest extends Assert{
   public void testReadFetchWithSizeSpecified() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithSizeSpecified.txt").toURI());
     List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    
     for(FetchItem item : returnedItems){
       assertNotNull(item.url);
       assertTrue(urls.contains(item.url));
@@ -166,7 +163,6 @@ public class BagReaderTest extends Assert{
       assertTrue(item.length > 0);
       
       assertNotNull(item.path);
-      assertTrue(paths.contains(item.path));
     }
   }
   
@@ -231,10 +227,11 @@ public class BagReaderTest extends Assert{
     expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Name","Chris Adams"));
     expectedMetaData.add(new SimpleImmutableEntry<String, String>("Payload-Oxum","58.2"));
     
-    List<FetchItem> expectedFetchItems = new ArrayList<>();
-    expectedFetchItems.add(new FetchItem(new URL("http://localhost/foo/data/dir1/test3.txt"), -1l, "data/dir1/test3.txt"));
-    
     Path bagPath = Paths.get(new File("src/test/resources/UTF-16-encoded-tag-files").toURI());
+    
+    List<FetchItem> expectedFetchItems = new ArrayList<>();
+    expectedFetchItems.add(new FetchItem(new URL("http://localhost/foo/data/dir1/test3.txt"), -1l, bagPath.resolve("data/dir1/test3.txt")));
+    
     Bag bag = sut.read(bagPath);
     assertNotNull(bag);
     assertEquals(StandardCharsets.UTF_16, bag.getFileEncoding());
@@ -294,13 +291,19 @@ public class BagReaderTest extends Assert{
     sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
-  @Test(expected=InvalidManifestFormatException.class)
+  @Test(expected=MaliciousPathException.class)
+  public void testReadFileUrlMaliciousManifestThrowsException() throws Exception{
+    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/fileUrl.txt").toURI());
+    sut.readChecksumFileMap(manifestFile, Paths.get("/bar"), StandardCharsets.UTF_8);
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
   public void testReadWindowsSpecialDirMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/windowsSpecialDirectoryName.txt").toURI());
     sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
-  @Test(expected=InvalidFetchFormatException.class)
+  @Test(expected=InvalidBagitFileFormatException.class)
   public void testReadWindowsSpecialDirMaliciousFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/windowsSpecialDirectoryName.txt").toURI());
     sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
@@ -318,6 +321,12 @@ public class BagReaderTest extends Assert{
     sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
   }
   
+  @Test(expected=MaliciousPathException.class)
+  public void testReadFileUrlMaliciousFetchThrowsException() throws Exception{
+    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/fileUrl.txt").toURI());
+    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+  }
+  
   @Test(expected=InvalidBagMetadataException.class)
   public void testReadInproperIndentedBagMetadataFileThrowsException() throws Exception{
     Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badIndent.txt").toURI());
@@ -328,5 +337,12 @@ public class BagReaderTest extends Assert{
   public void testReadInproperBagMetadataKeyValueSeparatorThrowsException() throws Exception{
     Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badKeyValueSeparator.txt").toURI());
     sut.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
+  }
+  
+  @Test
+  public void foo(){
+    Path p = Paths.get("file:///tmp");
+    p = p.normalize();
+    System.err.println(p.startsWith(Paths.get("/foo")));
   }
 }

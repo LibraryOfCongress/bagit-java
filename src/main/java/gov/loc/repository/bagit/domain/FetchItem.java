@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.domain;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -19,13 +20,13 @@ public final class FetchItem {
   public final Long length; 
   
   /**
-   * The path relative to the /data directory
+   * The path where the fetched item should be put
    */
-  public final String path;
+  public final Path path;
   
   private transient String cachedString;
   
-  public FetchItem(final URL url, final Long length, final String path){
+  public FetchItem(final URL url, final Long length, final Path path){
     this.url = url;
     this.length = length;
     this.path = path;
@@ -64,7 +65,7 @@ public final class FetchItem {
     return length;
   }
 
-  public String getPath() {
+  public Path getPath() {
     return path;
   }
   
