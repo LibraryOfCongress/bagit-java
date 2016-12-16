@@ -1,9 +1,13 @@
 #### Changes in 5.0.0
-1. Complete rewrite of the library to remove bad practices and to allow for a much better design using java best practices.
-2. Removal of creating a zipped bag. There are many good zip (or other serialization) libraries in Java, please use one of them instead. Please see the examples directory for how you might use third-party libraries to do zipping (or other serialization).
-3. Removal of fetching. It is impossible to account for all the protocols possible with fetching. Please see the examples directory for how you might use third-party libraries to do fetching.
+1. Complete rewrite using Java 8 and modern Java best practices
+2. Bagging directly into a ZIP file is no longer a core feature. The examples
+   directory shows how to support the serialization format and options of
+   your choice.
+3. Integrated support for `fetch.txt` has been removed as a core feature. The
+   examples directory includes an implementation using the standard library
+   which can serve as a reference for the more advanced implementations which
+   most users will require.
 3. Allow for ignoring hidden files except if specified in manifest.
-4. Bagit now uses Java version 8 syntax, thus the minimum requirement for building and running is Java 8
 
 #### Changes in 4.10.0
 1. Fixes defect in SimpleResult.add*Message() methods.
@@ -28,15 +32,15 @@
 
 #### Changes in 4.7
 1. Handle NPE when encountering improperly formatted bag-info.txt.
-2. Added progress reports to bag fetch. 
+2. Added progress reports to bag fetch.
 
 #### Changes in 4.6
-1. Added tag file fetch-progress.txt to support progressive fetch and verification.  The file 
+1. Added tag file fetch-progress.txt to support progressive fetch and verification.  The file
         will be removed once the bag is successfully fetched.  In BagFetcher, added verification
-        of a fetched file against the checksum in the manifest file.  Added switch verify to fill 
-        holey bag and fetch remote bag command-line operations.  This option enables bag verification 
+        of a fetched file against the checksum in the manifest file.  Added switch verify to fill
+        holey bag and fetch remote bag command-line operations.  This option enables bag verification
         before the fetch is resumed.
-        
+
 #### Changes in 4.5.1
 1. Added missing braces to conditional blocks in ValidHoleyBagVerifier.  This caused false
         error message when verifying a holey bag.
@@ -46,7 +50,7 @@
 
 #### Changes in 4.4
 1. Attempt to correct for unicode normalization form in filepaths. Note: Java has
-    problems dealing with differences in unicode normalization form 
+    problems dealing with differences in unicode normalization form
     (http://www.unicode.org/reports/tr15/tr15-23.html) in filepaths.
     In particular, it is sometimes the case that a java.io.File is that produced
     by java.io.File.listFiles() will fail java.io.File.exists(). This attempts to
@@ -57,7 +61,7 @@
         is now to copy (instead of writing the stream exposed by BagFile).  Added support
         for specifying move in CommandLineBagDriver (--move).
 4. Added setUsername()/setPassword() interfaces to all bag fetchers to support
-        concurrent clients; each client's credentials will be local to each instance of bag fetcher.    
+        concurrent clients; each client's credentials will be local to each instance of bag fetcher.
 
 #### Changes in 4.3.1
 1. Changes to pom for maven 3.
@@ -87,7 +91,7 @@
 2. Removes Commons VFS.
 3. Deprecates support for reading/writing tar, tar bz2, and tar gz.
 4. Deprecates support for transferring SWORD and BOB.
-5. Added close() method to Bag for closing IO resources. 
+5. Added close() method to Bag for closing IO resources.
 6. Clarified logging messages for CompleteVerifier and ValidVerifier.
 7. Changed so that bagging-in-place throws an exception if a prebag contains a data directory and tag directories
         for pre-0.97 bags.
@@ -164,7 +168,7 @@
 3. Changed socket timeout from infinity to 20 seconds for http fetches.
 4. Made adding data to payload progress monitorable and cancellable (AddFilesToPayloadOperation)
 5. Made whitespace used in creating manifests configurable.
-6. Smarter handling of relative paths in manifests. 
+6. Smarter handling of relative paths in manifests.
 
 #### Changes in 3.2
 1. Fixed handling of bag-info.txt with colons in the value.
@@ -218,4 +222,4 @@
 3. Made bag-info.txt labels case-insensitive.
 4. Added additional bag-info.txt methods for Bagging-Date, Bag-Count, Bag-Size, and Payload-Oxum.
 5. Changed to only include the tar-related classes from Ant, rather than the entire dependency.
-6. Added version-aware handling of filepath delimiters. 
+6. Added version-aware handling of filepath delimiters.

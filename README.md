@@ -10,7 +10,7 @@
 [//]: # (see https://github.com/moznion/javadocio-badges for automatic javadoc)
 
 ## Description
-The BAGIT LIBRARY is a software library intended to support the creation, 
+The BAGIT LIBRARY is a software library intended to support the creation,
 manipulation, and validation of bags. Its current version is 0.97. It is version aware with the earliest
 supported version being 0.93.
 
@@ -25,19 +25,38 @@ supported version being 0.93.
 4. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
 
 ## Major differences between version 5 and 4.*
-##### Commandline
-The 4.x versions of the bagit command line are still available for [download](https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.1/bagit-4.12.1.zip). However, starting with the 5.x versions we will not longer be creating a java command line application. If you would like to use a currently supported command line application please see our [bagit-python implementation](https://github.com/LibraryOfCongress/bagit-python)
+##### Command Line Interface
+
+The 5.x versions do not include a command-line interface.
+Users who need a command-line utility can continue to use the latest 4.x release
+([download 4.12.1](https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.1/bagit-4.12.1.zip)
+or switch to an alternative implementation such as
+[bagit-python](https://github.com/LibraryOfCongress/bagit-python) or
+[BagIt for Ruby](https://github.com/tipr/bagit).
 
 ##### Serialization
-Starting with the 5.x versions we no longer support directly serializing a bag. Check out the [zip](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/serialization/CreateZipBagExample.java) or [tar](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/serialization/CreateTarBagExample.java) examples for implementing it yourself.
+Starting with the 5.x versions bagit-java no longer supports directly
+serializing a bag to an archive file. The examples show how to implement a
+custom serializer for the
+[zip](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/serialization/CreateZipBagExample.java)
+and
+[tar](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/serialization/CreateTarBagExample.java)
+formats.
 
 ##### Fetching
-Starting with the 5.x versions we no longer support fetching. Check out the [standard java library](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/fetching/FetchHttpFileExample.java) example as one way you could implement it yourself. 
+The 5.x versions do not include a core `fetch.txt` implementation. If you need
+this functionality, the
+[`FetchHttpFileExample` example](https://github.com/LibraryOfCongress/bagit-java/blob/master/src/test/java/gov/loc/repository/bagit/examples/fetching/FetchHttpFileExample.java)
+demonstrates how you can implement this feature with your additional application
+and workflow requirements.
 
 ##### New Interfaces
-The 5.x version is a complete rewrite of the bagit-java library. Because we were rewriting it, we decided it would be a good time to update the interface to be more intuitive. As such, there are some breaking changes and code will need to be migrated.
+
+The 5.x version is a complete rewrite of the bagit-java library which attempts
+to follow modern Java practices and will require some changes to existing code:
 
 ### Examples of using the new bagit-java library
+
 ##### Create a bag from a folder using version 0.97
 ```java
 Path folder = Paths.get("FolderYouWantToBag");
@@ -45,29 +64,34 @@ StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 boolean includeHiddenFiles = false;
 Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
 ```
+
 ##### Read an existing bag (version 0.93 and higher)
 ```java
 Path rootDir = Paths.get("RootDirectoryOfExistingBag");
 BagReader reader = new BagReader();
 Bag bag = reader.read(rootDir);
 ```
+
 ##### Write a Bag object to disk
 ```java
 Path outputDir = Paths.get("WhereYouWantToWriteTheBagTo");
 BagWriter.write(bag, outputDir); //where bag is a Bag object
 ```
+
 ##### Verify Complete
 ```java
 boolean ignoreHiddenFiles = true;
 BagVerifier verifier = new BagVerifier();
 verifier.isComplete(bag, ignoreHiddenFiles);
 ```
+
 ##### Verify Valid
 ```java
 boolean ignoreHiddenFiles = true;
 BagVerifier verifier = new BagVerifier();
 verifier.isValid(bag, ignoreHiddenFiles);
 ```
+
 ##### Quickly verify by payload-oxum
 ```java
 boolean ignoreHiddenFiles = true;
@@ -77,8 +101,11 @@ if(verifier.canQuickVerify(bag)){
   verifier.quicklyVerify(bag, ignoreHiddenFiles);
 }
 ```
+
 ##### Add other checksum algorithms
-You only need to implement 2 interfaces
+
+You only need to implement 2 interfaces:
+
 ```java
 public class MyNewSupportedAlgorithm implements SupportedAlgorithm {
   @Override
@@ -97,22 +124,30 @@ public class MyNewNameMapping implements BagitAlgorithmNameToSupportedAlgorithmM
     if("sha3256".equals(bagitAlgorithmName)){
       return new MyNewSupportedAlgorithm();
     }
-    
+
     return StandardSupportedAlgorithms.valueOf(bagitAlgorithmName.toUpperCase());
   }
 }
 ```
-and then add the implemented BagitAlgorithmNameToSupportedAlgorithmMapping class to your BagReader or bagVerifier object before using their methods
+
+and then add the implemented `BagitAlgorithmNameToSupportedAlgorithmMapping`
+class to your `BagReader` or `bagVerifier` object before using their methods.
 
 #### Check for potential problems
-The BagIt format is extremely flexible, and allows for many different implementations. While something may technically be correct there are known issues that can be avoided. That is why we created a Bag Linter, which checks for very well known issues that can occur. Here is an example where we check for all known issues:
+
+The BagIt format is extremely flexible and allows for some conditions which are
+technically allowed but should be avoided to minimize confusion and maximize
+portability. The `BagLinter` class allows you to easily check a bag for
+warnings:
+
 ```java
 Path rootDir = Paths.get("RootDirectoryOfExistingBag");
 BagLinter linter = new BagLinter();
 List<BagitWarning> warnings = linter.lintBag(rootDir, Collections.emptyList());
 ```
 
-You can also ignore any of the warnings by passing them into the list like so:
+You can provide a list of specific warnings to ignore:
+
 ```java
 dependencycheckth rootDir = Paths.get("RootDirectoryOfExistingBag");
 BagLinter linter = new BagLinter();
@@ -127,8 +162,8 @@ Inside the bagit-java root directory, run `gradle check`.
 1. Follow their guides
   1. http://central.sonatype.org/pages/releasing-the-deployment.html
   2. https://issues.sonatype.org/secure/Dashboard.jspa
-2. Once you have access, to create an office release and upload it you should specify the version by running `gradle -Pversion=<VERSION> uploadArchives` 
-  1. *Don't forget to tag the repository!* 
+2. Once you have access, to create an office release and upload it you should specify the version by running `gradle -Pversion=<VERSION> uploadArchives`
+  1. *Don't forget to tag the repository!*
 
 ### Note if using with Eclipse
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
