@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,6 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.util.PathUtils;
-import javafx.util.Pair;
 
 /**
  * Responsible for reading a bag from the filesystem.
@@ -75,7 +75,7 @@ public final class BagReader {
     bag.setRootDir(rootDir);
     
     final Path bagitFile = bagitDir.resolve("bagit.txt");
-    final Pair<Version, Charset> bagitInfo = readBagitTextFile(bagitFile);
+    final SimpleImmutableEntry<Version, Charset> bagitInfo = readBagitTextFile(bagitFile);
     bag.setVersion(bagitInfo.getKey());
     bag.setFileEncoding(bagitInfo.getValue());
     
@@ -101,13 +101,13 @@ public final class BagReader {
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
    * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  public Pair<Version, Charset> readBagitTextFile(final Path bagitFile) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
+  public SimpleImmutableEntry<Version, Charset> readBagitTextFile(final Path bagitFile) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
     logger.debug("Reading bagit.txt file");
-    final List<Pair<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
+    final List<SimpleImmutableEntry<String, String>> pairs = readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
     
     String version = "";
     Charset encoding = StandardCharsets.UTF_8;
-    for(final Pair<String, String> pair : pairs){
+    for(final SimpleImmutableEntry<String, String> pair : pairs){
       if("BagIt-Version".equals(pair.getKey())){
         version = pair.getValue();
         logger.debug("BagIt-Version is [{}]", version);
@@ -118,7 +118,7 @@ public final class BagReader {
       }
     }
     
-    return new Pair<Version, Charset>(parseVersion(version), encoding);
+    return new SimpleImmutableEntry<Version, Charset>(parseVersion(version), encoding);
   }
   
   /*
@@ -257,9 +257,9 @@ public final class BagReader {
    * @throws IOException if there is a problem reading a file
    * @throws InvalidBagMetadataException if the metadata file does not conform to the bagit spec
    */
-  public List<Pair<String, String>> readBagMetadata(final Path rootDir, final Charset encoding) throws IOException, InvalidBagMetadataException{
+  public List<SimpleImmutableEntry<String, String>> readBagMetadata(final Path rootDir, final Charset encoding) throws IOException, InvalidBagMetadataException{
     logger.info("Attempting to read bag metadata file");
-    List<Pair<String, String>> metadata = new ArrayList<>();
+    List<SimpleImmutableEntry<String, String>> metadata = new ArrayList<>();
     
     final Path bagInfoFile = rootDir.resolve("bag-info.txt");
     if(Files.exists(bagInfoFile)){
@@ -337,15 +337,15 @@ public final class BagReader {
    * Generic method to read key value pairs from the bagit files, like bagit.txt or bag-info.txt
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  List<Pair<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex, final Charset charset) throws IOException, InvalidBagMetadataException{
-    final List<Pair<String, String>> keyValues = new ArrayList<>();
+  List<SimpleImmutableEntry<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex, final Charset charset) throws IOException, InvalidBagMetadataException{
+    final List<SimpleImmutableEntry<String, String>> keyValues = new ArrayList<>();
     final BufferedReader br = Files.newBufferedReader(file, charset);
 
     String line = br.readLine();
     while(line != null){
       if(line.matches("^\\s+.*")){
-        final Pair<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
-        final Pair<String, String> newKeyValue = new Pair<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
+        final SimpleImmutableEntry<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
+        final SimpleImmutableEntry<String, String> newKeyValue = new SimpleImmutableEntry<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
         keyValues.add(newKeyValue);
         
         logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
@@ -365,7 +365,7 @@ public final class BagReader {
         final String key = parts[0].trim();
         final String value = parts[1].trim();
         logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", key, value, file, splitRegex);
-        keyValues.add(new Pair<String, String>(key, value));
+        keyValues.add(new SimpleImmutableEntry<String, String>(key, value));
       }
        
       line = br.readLine();

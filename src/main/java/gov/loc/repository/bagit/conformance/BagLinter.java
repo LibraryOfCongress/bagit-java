@@ -8,6 +8,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,7 +27,6 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.util.PathUtils;
 import gov.loc.repository.bagit.verify.BagVerifier;
-import javafx.util.Pair;
 
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
@@ -96,7 +96,7 @@ public class BagLinter {
     }
     
     final Path bagitFile = bagitDir.resolve("bagit.txt");
-    final Pair<Version, Charset> bagitInfo = reader.readBagitTextFile(bagitFile);
+    final SimpleImmutableEntry<Version, Charset> bagitInfo = reader.readBagitTextFile(bagitFile);
     
     checkEncoding(bagitInfo.getValue(), warnings, warningsToIgnore);
     
@@ -290,10 +290,10 @@ public class BagLinter {
   private void checkForPayloadOxumMetadata(final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
       final Collection<BagitWarning> warningsToIgnore) throws IOException, InvalidBagMetadataException{
     if(!warningsToIgnore.contains(BagitWarning.PAYLOAD_OXUM_MISSING)){
-      final List<Pair<String, String>> metadata = reader.readBagMetadata(bagitDir, encoding);
+      final List<SimpleImmutableEntry<String, String>> metadata = reader.readBagMetadata(bagitDir, encoding);
       boolean containsPayloadOxum = false;
       
-      for(final Pair<String, String> pair : metadata){
+      for(final SimpleImmutableEntry<String, String> pair : metadata){
         if("Payload-Oxum".equals(pair.getKey())){
           containsPayloadOxum = true;
         }

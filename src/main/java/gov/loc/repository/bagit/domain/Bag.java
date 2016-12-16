@@ -3,13 +3,12 @@ package gov.loc.repository.bagit.domain;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import javafx.util.Pair;
 
 /**
  * The main representation of the bagit spec.
@@ -31,7 +30,7 @@ public final class Bag {
   private List<FetchItem> itemsToFetch = new ArrayList<>();
   
   //equivalent to the bag-info.txt 
-  private List<Pair<String, String>> metadata = new ArrayList<>();
+  private List<SimpleImmutableEntry<String, String>> metadata = new ArrayList<>();
   
   //the current location of the bag on the filesystem
   private Path rootDir;
@@ -95,11 +94,11 @@ public final class Bag {
     this.itemsToFetch = itemsToFetch;
   }
 
-  public List<Pair<String, String>> getMetadata() {
+  public List<SimpleImmutableEntry<String, String>> getMetadata() {
     return metadata;
   }
 
-  public void setMetadata(final List<Pair<String, String>> metadata) {
+  public void setMetadata(final List<SimpleImmutableEntry<String, String>> metadata) {
     this.metadata = metadata;
   }
 

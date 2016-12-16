@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,7 +28,6 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
-import javafx.util.Pair;
 
 public class BagWriterTest extends PrivateConstructorTest {
   @Rule
@@ -175,10 +175,10 @@ public class BagWriterTest extends PrivateConstructorTest {
     File rootDir = folder.newFolder();
     File bagInfo = new File(rootDir, "bag-info.txt");
     File packageInfo = new File(rootDir, "package-info.txt");
-    List<Pair<String, String>> metadata = new ArrayList<>();
-    metadata.add(new Pair<>("key1", "value1"));
-    metadata.add(new Pair<>("key2", "value2"));
-    metadata.add(new Pair<>("key3", "value3"));
+    List<SimpleImmutableEntry<String, String>> metadata = new ArrayList<>();
+    metadata.add(new SimpleImmutableEntry<>("key1", "value1"));
+    metadata.add(new SimpleImmutableEntry<>("key2", "value2"));
+    metadata.add(new SimpleImmutableEntry<>("key3", "value3"));
     
     assertFalse(bagInfo.exists());
     assertFalse(packageInfo.exists());

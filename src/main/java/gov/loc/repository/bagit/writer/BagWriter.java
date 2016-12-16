@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -23,7 +24,6 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.util.PathUtils;
-import javafx.util.Pair;
 
 /**
  * responsible for writing out a bag.
@@ -252,7 +252,7 @@ public final class BagWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeBagitInfoFile(final List<Pair<String, String>> metadata, final Version version, final Path outputDir, final Charset charsetName) throws IOException{
+  public static void writeBagitInfoFile(final List<SimpleImmutableEntry<String, String>> metadata, final Version version, final Path outputDir, final Charset charsetName) throws IOException{
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
     if(VERSION_0_95.compareTo(version) >= 0){
       bagInfoFilePath = outputDir.resolve("package-info.txt");
@@ -261,7 +261,7 @@ public final class BagWriter {
 
     Files.deleteIfExists(bagInfoFilePath);
     
-    for(final Pair<String, String> entry : metadata){
+    for(final SimpleImmutableEntry<String, String> entry : metadata){
       final String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, bagInfoFilePath);
       Files.write(bagInfoFilePath, line.getBytes(charsetName), 

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,6 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.util.PathUtils;
-import javafx.util.Pair;
 
 /**
  * Responsible for verifying if a bag is valid, complete
@@ -90,7 +90,7 @@ public final class BagVerifier {
    * Get the Payload-Oxum value from the key value pairs
    */
   private String getPayloadOxum(final Bag bag){
-    for(final Pair<String,String> keyValue : bag.getMetadata()){
+    for(final SimpleImmutableEntry<String,String> keyValue : bag.getMetadata()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         return keyValue.getValue();
       }

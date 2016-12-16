@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,6 @@ import gov.loc.repository.bagit.exceptions.InvalidFetchFormatException;
 import gov.loc.repository.bagit.exceptions.InvalidManifestFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
-import javafx.util.Pair;
 
 public class BagReaderTest extends Assert{
   private List<URL> urls;
@@ -109,7 +109,7 @@ public class BagReaderTest extends Assert{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_93/bag").toURI());
     Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 93), bag.getVersion());
-    for(Pair<String, String> keyValue : bag.getMetadata()){
+    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         assertEquals("25.5", keyValue.getValue());
       }
@@ -121,7 +121,7 @@ public class BagReaderTest extends Assert{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_94/bag").toURI());
     Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 94), bag.getVersion());
-    for(Pair<String, String> keyValue : bag.getMetadata()){
+    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         assertEquals("25.5", keyValue.getValue());
       }
@@ -133,7 +133,7 @@ public class BagReaderTest extends Assert{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_95/bag").toURI());
     Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 95), bag.getVersion());
-    for(Pair<String, String> keyValue : bag.getMetadata()){
+    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata()){
       if("Package-Size".equals(keyValue.getKey())){
         assertEquals("260 GB", keyValue.getValue());
       }
@@ -172,26 +172,26 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadBagMetadata() throws Exception{
-    List<Pair<String, String>> expectedValues = new ArrayList<>();
-    expectedValues.add(new Pair<>("Source-Organization", "Spengler University"));
-    expectedValues.add(new Pair<>("Organization-Address", "1400 Elm St., Cupertino, California, 95014"));
-    expectedValues.add(new Pair<>("Contact-Name", "Edna Janssen"));
-    expectedValues.add(new Pair<>("Contact-Phone", "+1 408-555-1212"));
-    expectedValues.add(new Pair<>("Contact-Email", "ej@spengler.edu"));
-    expectedValues.add(new Pair<>("External-Description", "Uncompressed greyscale TIFF images from the" + System.lineSeparator() + 
+    List<SimpleImmutableEntry<String, String>> expectedValues = new ArrayList<>();
+    expectedValues.add(new SimpleImmutableEntry<>("Source-Organization", "Spengler University"));
+    expectedValues.add(new SimpleImmutableEntry<>("Organization-Address", "1400 Elm St., Cupertino, California, 95014"));
+    expectedValues.add(new SimpleImmutableEntry<>("Contact-Name", "Edna Janssen"));
+    expectedValues.add(new SimpleImmutableEntry<>("Contact-Phone", "+1 408-555-1212"));
+    expectedValues.add(new SimpleImmutableEntry<>("Contact-Email", "ej@spengler.edu"));
+    expectedValues.add(new SimpleImmutableEntry<>("External-Description", "Uncompressed greyscale TIFF images from the" + System.lineSeparator() + 
         "         Yoshimuri papers collection."));
-    expectedValues.add(new Pair<>("Bagging-Date", "2008-01-15"));
-    expectedValues.add(new Pair<>("External-Identifier", "spengler_yoshimuri_001"));
-    expectedValues.add(new Pair<>("Bag-Size", "260 GB"));
-    expectedValues.add(new Pair<>("Bag-Group-Identifier", "spengler_yoshimuri"));
-    expectedValues.add(new Pair<>("Bag-Count", "1 of 15"));
-    expectedValues.add(new Pair<>("Internal-Sender-Identifier", "/storage/images/yoshimuri"));
-    expectedValues.add(new Pair<>("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from" + System.lineSeparator() + 
+    expectedValues.add(new SimpleImmutableEntry<>("Bagging-Date", "2008-01-15"));
+    expectedValues.add(new SimpleImmutableEntry<>("External-Identifier", "spengler_yoshimuri_001"));
+    expectedValues.add(new SimpleImmutableEntry<>("Bag-Size", "260 GB"));
+    expectedValues.add(new SimpleImmutableEntry<>("Bag-Group-Identifier", "spengler_yoshimuri"));
+    expectedValues.add(new SimpleImmutableEntry<>("Bag-Count", "1 of 15"));
+    expectedValues.add(new SimpleImmutableEntry<>("Internal-Sender-Identifier", "/storage/images/yoshimuri"));
+    expectedValues.add(new SimpleImmutableEntry<>("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from" + System.lineSeparator() + 
         "         microfilm."));
-    expectedValues.add(new Pair<>("Bag-Count", "1 of 15")); //test duplicate
+    expectedValues.add(new SimpleImmutableEntry<>("Bag-Count", "1 of 15")); //test duplicate
     
     Path bagInfoFile = Paths.get(getClass().getClassLoader().getResource("baginfoFiles").toURI());
-    List<Pair<String, String>> actualMetadata = sut.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
+    List<SimpleImmutableEntry<String, String>> actualMetadata = sut.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
     
     assertEquals(expectedValues, actualMetadata);
   }
@@ -208,12 +208,12 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadISO_8859_1Encoding() throws Exception{
-    List<Pair<String, String>> expectedMetaData = new ArrayList<>();
-    expectedMetaData.add(new Pair<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
-    expectedMetaData.add(new Pair<String, String>("Bagging-Date","2016-02-26"));
-    expectedMetaData.add(new Pair<String, String>("Contact-Email","cadams@loc.gov"));
-    expectedMetaData.add(new Pair<String, String>("Contact-Name","Chris Adams"));
-    expectedMetaData.add(new Pair<String, String>("Payload-Oxum","58.2"));
+    List<SimpleImmutableEntry<String, String>> expectedMetaData = new ArrayList<>();
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bagging-Date","2016-02-26"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Email","cadams@loc.gov"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Name","Chris Adams"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Payload-Oxum","58.2"));
     
     Path bagPath = Paths.get(new File("src/test/resources/ISO-8859-1-encodedBag").toURI());
     Bag bag = sut.read(bagPath);
@@ -224,12 +224,12 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadUTF_16_Encoding() throws Exception{
-    List<Pair<String, String>> expectedMetaData = new ArrayList<>();
-    expectedMetaData.add(new Pair<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
-    expectedMetaData.add(new Pair<String, String>("Bagging-Date","2016-02-26"));
-    expectedMetaData.add(new Pair<String, String>("Contact-Email","cadams@loc.gov"));
-    expectedMetaData.add(new Pair<String, String>("Contact-Name","Chris Adams"));
-    expectedMetaData.add(new Pair<String, String>("Payload-Oxum","58.2"));
+    List<SimpleImmutableEntry<String, String>> expectedMetaData = new ArrayList<>();
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bagging-Date","2016-02-26"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Email","cadams@loc.gov"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Name","Chris Adams"));
+    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Payload-Oxum","58.2"));
     
     List<FetchItem> expectedFetchItems = new ArrayList<>();
     expectedFetchItems.add(new FetchItem(new URL("http://localhost/foo/data/dir1/test3.txt"), -1l, "data/dir1/test3.txt"));
@@ -245,7 +245,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadBagitFile()throws Exception{
     Path bagitFile = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").toURI());
-    Pair<Version, Charset> actualBagitInfo = sut.readBagitTextFile(bagitFile);
+    SimpleImmutableEntry<Version, Charset> actualBagitInfo = sut.readBagitTextFile(bagitFile);
     assertEquals(new Version(0, 97), actualBagitInfo.getKey());
     assertEquals(StandardCharsets.UTF_8, actualBagitInfo.getValue());
   }
