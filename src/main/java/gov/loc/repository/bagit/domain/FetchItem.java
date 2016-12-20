@@ -43,7 +43,7 @@ public final class FetchItem {
       sb.append(length).append(' ');
     }
     
-    sb.append(path);
+    sb.append(path.toString().replaceAll("\\\\", "/"));
       
     return sb.toString();
   }

@@ -22,7 +22,7 @@ public class FetchItemTest extends Assert {
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     String expected = "https://github.com/LibraryOfCongress/bagit-java 1 /foo";
     
-    assertEquals(expected, item.toString());
+    assertEquals("expected [" + expected + "] but got [" + item.toString() + "]", expected, item.toString());
   }
   
   @Test
