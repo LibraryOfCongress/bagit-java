@@ -32,6 +32,17 @@ public class BagLinterTest extends Assert{
   }
   
   @Test
+  public void testOSSpecificFilesRegex(){
+    String regex = BagLinter.getOsFilesRegex();
+    String[] osFilesToTest = new String[]{"data/Thumbs.db", "data/.DS_Store", "data/.Spotlight-V100", "data/.Trashes", 
+        "data/._.Trashes", "data/.fseventsd"};
+    
+    for(String osFileToTest : osFilesToTest){
+      assertTrue(osFileToTest + " should match regex but it doesn't", osFileToTest.matches(regex));
+    }
+  }
+  
+  @Test
   public void testLintBag() throws Exception{
     Set<BagitWarning> expectedWarnings = new HashSet<>();
     expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));

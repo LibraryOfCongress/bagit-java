@@ -37,7 +37,10 @@ public class BagLinter {
   private static final Version LATEST_BAGIT_VERSION = new Version(0, 97);
   private static final String THUMBS_DB_FILE = "[Tt][Hh][Uu][Mm][Bb][Ss]\\.[Dd][Bb]";
   private static final String DS_STORE_FILE = "\\.[Dd][Ss]_[Ss][Tt][Oo][Rr][Ee]";
-  private static final String OS_FILES_REGEX = ".*data/(" + THUMBS_DB_FILE + "|" + DS_STORE_FILE + ")";
+  private static final String SPOTLIGHT_FILE = "\\.[Ss][Pp][Oo][Tt][Ll][Ii][Gg][Hh][Tt]-[Vv]100";
+  private static final String TRASHES_FILE = "\\.(_.)?[Tt][Rr][Aa][Ss][Hh][Ee][Ss]";
+  private static final String FS_EVENTS_FILE = "\\.[Ff][Ss][Ee][Vv][Ee][Nn][Tt][Ss][Dd]";
+  private static final String OS_FILES_REGEX = ".*data/(" + THUMBS_DB_FILE + "|" + DS_STORE_FILE + "|" + SPOTLIGHT_FILE + "|" + TRASHES_FILE + "|" + FS_EVENTS_FILE + ")";
   
   private final BagReader reader;
   
@@ -307,5 +310,13 @@ public class BagLinter {
 
   public BagReader getReader() {
     return reader;
+  }
+
+  /**
+   * Used only for unit testing
+   * @return the regex for os specific files to warn about
+   */
+  protected static String getOsFilesRegex() {
+    return OS_FILES_REGEX;
   }
 }
