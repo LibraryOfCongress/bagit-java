@@ -13,7 +13,7 @@ public class TestUtils {
   }
   
   public static void makeFilesHiddenOnWindows(Path startingDir) throws IOException {
-    if (System.getProperty("os.name").contains("Windows")) {
+    if (isExecutingOnWindows()) {
       Files.walkFileTree(startingDir, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException{
