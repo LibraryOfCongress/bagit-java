@@ -244,8 +244,7 @@ public final class BagReader {
       try {
         file = Paths.get(new URI(fixedPath));
       } catch (URISyntaxException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        throw new InvalidBagitFileFormatException("URL [" + path + "] is invalid.", e);
       }
     }
     
