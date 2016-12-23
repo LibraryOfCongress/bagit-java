@@ -91,9 +91,9 @@ public class ReaderWriterVerifierIntegrationTest {
   }
   
   @Test
-  public void testReaderWriterVersion98() throws Exception{
+  public void testReaderWriterVersion2_0() throws Exception{
     BagReader reader = new BagReader();
-    Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
+    Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v2_0/bag").toURI());
     Bag bag = reader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
     

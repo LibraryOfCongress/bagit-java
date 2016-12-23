@@ -118,8 +118,8 @@ public class BagVerifierTest extends Assert{
   }
   
   @Test
-  public void testVersion0_98IsValid() throws Exception{
-    rootDir = Paths.get(new File("src/test/resources/bags/v0_98/bag").toURI());
+  public void testVersion2_0IsValid() throws Exception{
+    rootDir = Paths.get(new File("src/test/resources/bags/v2_0/bag").toURI());
     Bag bag = reader.read(rootDir);
     
     sut.isValid(bag, true);
@@ -238,6 +238,13 @@ public class BagVerifierTest extends Assert{
     Bag bag = extendedReader.read(sha3BagDir);
     BagVerifier extendedSut = new BagVerifier(mapping);
     extendedSut.isValid(bag, true);
+  }
+  
+  @Test(expected=FileNotInManifestException.class)
+  public void testNotALlFilesListedInAllManifestsThrowsException() throws Exception{
+    Path bagDir = Paths.get(new File("src/test/resources/notAllFilesListedInAllManifestsBag").toURI());
+    Bag bag = reader.read(bagDir);
+    sut.isValid(bag, true);
   }
   
   /*

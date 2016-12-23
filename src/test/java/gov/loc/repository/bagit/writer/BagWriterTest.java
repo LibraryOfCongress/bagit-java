@@ -111,8 +111,8 @@ public class BagWriterTest extends PrivateConstructorTest {
   }
   
   @Test
-  public void testWriteVersion98() throws Exception{
-    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
+  public void testWriteVersion2_0() throws Exception{
+    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v2_0/bag").toURI());
     Bag bag = reader.read(rootDir);
     
     File bagitDir = folder.newFolder();

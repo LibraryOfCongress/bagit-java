@@ -43,6 +43,7 @@ import gov.loc.repository.bagit.util.PathUtils;
 /**
  * Responsible for verifying if a bag is valid, complete
  */
+@SuppressWarnings({"PMD.GodClass"}) //TODO refactor
 public final class BagVerifier {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   
@@ -237,14 +238,20 @@ public final class BagVerifier {
     
     final Set<Path> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     checkAllFilesListedInManifestExist(allFilesListedInManifests);
-    checkAllFilesInPayloadDirAreListedInAManifest(allFilesListedInManifests, dataDir, ignoreHiddenFiles);
+    
+    if(new Version(1,0).compareTo(bag.getVersion()) < 0){
+      checkAllFilesInPayloadDirAreListedInAtLeastOneAManifest(allFilesListedInManifests, dataDir, ignoreHiddenFiles);
+    }
+    else{
+      CheckAllFilesInPayloadDirAreListedInAllManifests(bag.getPayLoadManifests(), dataDir, ignoreHiddenFiles);
+    }
   }
   
   /*
    * Get the directory that contains the payload files.
    */
   private Path getDataDir(final Bag bag){
-    if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+    if(bag.getVersion().compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
       return bag.getRootDir();
     }
     
@@ -271,7 +278,7 @@ public final class BagVerifier {
     logger.info("Checking if bagit.txt file exists");
     Path bagitFile = rootDir.resolve("bagit.txt");
     //@Incubating
-    if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+    if(version.compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
       bagitFile = rootDir.resolve(DOT_BAGIT_DIR_NAME + File.separator + "bagit.txt");
     }
     
@@ -301,7 +308,7 @@ public final class BagVerifier {
     
     DirectoryStream<Path> directoryStream = Files.newDirectoryStream(rootDir);
     //@Incubating
-    if(version.compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+    if(version.compareTo(new Version(2, 00)) >= 0){ //is it a .bagit version?
       directoryStream = Files.newDirectoryStream(rootDir.resolve(DOT_BAGIT_DIR_NAME));
     }
     
@@ -327,7 +334,7 @@ public final class BagVerifier {
     
     DirectoryStream<Path> directoryStream = Files.newDirectoryStream(bag.getRootDir());
     //@Incubating
-    if(bag.getVersion().compareTo(new Version(0, 98)) >= 0){ //is it a .bagit version?
+    if(bag.getVersion().compareTo(new Version(2, 00)) >= 0){ //is it a .bagit version?
       directoryStream = Files.newDirectoryStream(bag.getRootDir().resolve(DOT_BAGIT_DIR_NAME));
     }
     
@@ -370,10 +377,20 @@ public final class BagVerifier {
   /*
    * Make sure all files in the directory are in at least 1 manifest
    */
-  private void checkAllFilesInPayloadDirAreListedInAManifest(final Set<Path> filesListedInManifests, final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException{
+  private void checkAllFilesInPayloadDirAreListedInAtLeastOneAManifest(final Set<Path> filesListedInManifests, final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException{
     logger.debug("Checking if all payload files (files in {} dir) are listed in at least one manifest", payloadDir);
     if(Files.exists(payloadDir)){
-      Files.walkFileTree(payloadDir, new PayloadFileExistsInManifestVistor(filesListedInManifests, ignoreHiddenFiles));
+      Files.walkFileTree(payloadDir, new PayloadFileExistsInAtLeastOneManifestVistor(filesListedInManifests, ignoreHiddenFiles));
+    }
+  }
+  
+  /*
+   * as per the bagit-spec 1.0+ all files have to be listed in all manifests
+   */
+  private void CheckAllFilesInPayloadDirAreListedInAllManifests(final Set<Manifest> payLoadManifests, final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException{
+    logger.debug("Checking if all payload files (files in {} dir) are listed in all manifests", payloadDir);
+    if(Files.exists(payloadDir)){
+      Files.walkFileTree(payloadDir, new PayloadFileExistsInAllManifestsVistor(payLoadManifests, ignoreHiddenFiles));
     }
   }
 

@@ -81,7 +81,7 @@ public final class BagCreator {
    */
   @Incubating
   public static Bag createDotBagit(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
-    final Bag bag = new Bag(new Version(0, 98));
+    final Bag bag = new Bag(new Version(2, 0));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     

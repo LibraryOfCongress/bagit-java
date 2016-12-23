@@ -265,15 +265,15 @@ public class BagReaderTest extends Assert{
   }
   
   @Test
-  public void testReadVersion0_98Bag() throws Exception{
-    Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_98/bag").toURI());
+  public void testReadVersion2_0Bag() throws Exception{
+    Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v2_0/bag").toURI());
     Path[] payloadFiles = new Path[]{rootBag.resolve("dir1/test3.txt"), rootBag.resolve("dir2/dir3/test5.txt"), 
         rootBag.resolve("dir2/test4.txt"), rootBag.resolve("test1.txt"), rootBag.resolve("test2.txt")};
     
     Bag returnedBag = sut.read(rootBag);
     
     assertNotNull(returnedBag);
-    assertEquals(new Version(0, 98), returnedBag.getVersion());
+    assertEquals(new Version(2, 0), returnedBag.getVersion());
     Manifest payloadManifest = (Manifest) returnedBag.getPayLoadManifests().toArray()[0];
     for(Path payloadFile : payloadFiles){
       assertTrue("payload manifest should contain " + payloadFile, payloadManifest.getFileToChecksumMap().containsKey(payloadFile));

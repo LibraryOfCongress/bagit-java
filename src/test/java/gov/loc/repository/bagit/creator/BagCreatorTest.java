@@ -81,7 +81,7 @@ public class BagCreatorTest extends Assert {
     Path expectedBagitFile = dotbagitDir.resolve("bagit.txt");
     
     Bag bag = BagCreator.createDotBagit(rootFolderPath, Arrays.asList(StandardSupportedAlgorithms.MD5), false);
-    assertEquals(new Version(0, 98), bag.getVersion());
+    assertEquals(new Version(2, 0), bag.getVersion());
     
     assertTrue(Files.exists(expectedBagitFile));
     assertTrue(Files.exists(expectedManifestFile));

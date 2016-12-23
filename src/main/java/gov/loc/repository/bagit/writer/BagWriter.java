@@ -31,7 +31,7 @@ import gov.loc.repository.bagit.util.PathUtils;
 @SuppressWarnings("PMD.TooManyMethods")
 public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
-  private static final Version VERSION_0_98 = new Version(0, 98);
+  private static final Version VERSION_2_0 = new Version(2, 0);
   private static final Version VERSION_0_95 = new Version(0, 95);
 
   private BagWriter(){
@@ -76,7 +76,7 @@ public final class BagWriter {
   private static Path writeVersionDependentPayloadFiles(final Bag bag, final Path outputDir) throws IOException{
     Path bagitDir = outputDir;
     //@Incubating
-    if(VERSION_0_98.compareTo(bag.getVersion()) <= 0){
+    if(VERSION_2_0.compareTo(bag.getVersion()) <= 0){
       bagitDir = outputDir.resolve(".bagit");
       Files.createDirectories(bagitDir);
       writePayloadFiles(bag.getPayLoadManifests(), outputDir, bag.getRootDir());
