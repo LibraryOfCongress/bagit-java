@@ -37,7 +37,7 @@ import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
-import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.reader.ManifestReader;
 import gov.loc.repository.bagit.util.PathUtils;
 
 /**
@@ -338,13 +338,11 @@ public final class BagVerifier {
       directoryStream = Files.newDirectoryStream(bag.getRootDir().resolve(DOT_BAGIT_DIR_NAME));
     }
     
-    final BagReader reader = new BagReader(nameMapping);
-    
     for(final Path path : directoryStream){
       final String filename = PathUtils.getFilename(path);
       if(filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")){
         logger.debug("Getting files and checksums listed in [{}]", path);
-        final Manifest manifest = reader.readManifest(path, bag.getRootDir(), bag.getFileEncoding());
+        final Manifest manifest = ManifestReader.readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding());
         filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
       }
     }

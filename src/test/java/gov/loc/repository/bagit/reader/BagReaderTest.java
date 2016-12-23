@@ -140,7 +140,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithNoSizeSpecified() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithNoSizeSpecified.txt").toURI());
-    List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, fetchFile.getParent());
+    List<FetchItem> returnedItems = FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, fetchFile.getParent());
     
     for(FetchItem item : returnedItems){
       assertNotNull(item.url);
@@ -155,7 +155,7 @@ public class BagReaderTest extends Assert{
   @Test
   public void testReadFetchWithSizeSpecified() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithSizeSpecified.txt").toURI());
-    List<FetchItem> returnedItems = sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    List<FetchItem> returnedItems = FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
     
     for(FetchItem item : returnedItems){
       assertNotNull(item.url);
@@ -188,7 +188,7 @@ public class BagReaderTest extends Assert{
     expectedValues.add(new SimpleImmutableEntry<>("Bag-Count", "1 of 15")); //test duplicate
     
     Path bagInfoFile = Paths.get(getClass().getClassLoader().getResource("baginfoFiles").toURI());
-    List<SimpleImmutableEntry<String, String>> actualMetadata = sut.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
+    List<SimpleImmutableEntry<String, String>> actualMetadata = MetadataReader.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
     
     assertEquals(expectedValues, actualMetadata);
   }
@@ -198,7 +198,7 @@ public class BagReaderTest extends Assert{
     Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Bag bag = new Bag();
     bag.setRootDir(rootBag);
-    sut.readAllManifests(rootBag, bag);
+    ManifestReader.readAllManifests(sut.getNameMapping(), rootBag, bag);
     assertEquals(1, bag.getPayLoadManifests().size());
     assertEquals(1, bag.getTagManifests().size());
   }
@@ -283,20 +283,20 @@ public class BagReaderTest extends Assert{
   @Test(expected=MaliciousPathException.class)
   public void testReadUpDirectoryMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/upAdirectoryReference.txt").toURI());
-    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
+    ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
   @Test(expected=MaliciousPathException.class)
   public void testReadTildeMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/tildeReference.txt").toURI());
-    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
+    ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
   @Test(expected=MaliciousPathException.class)
   public void testReadFileUrlMaliciousManifestThrowsException() throws Exception{
     if(!TestUtils.isExecutingOnWindows()){
       Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/fileUrl.txt").toURI());
-      sut.readChecksumFileMap(manifestFile, Paths.get("/bar"), StandardCharsets.UTF_8);
+      ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/bar"), StandardCharsets.UTF_8);
     }
     throw new MaliciousPathException("Skipping for windows cause it isn't valid");
   }
@@ -304,32 +304,32 @@ public class BagReaderTest extends Assert{
   @Test(expected=InvalidBagitFileFormatException.class)
   public void testReadWindowsSpecialDirMaliciousManifestThrowsException() throws Exception{
     Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/windowsSpecialDirectoryName.txt").toURI());
-    sut.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
+    ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
   }
   
   @Test(expected=InvalidBagitFileFormatException.class)
   public void testReadWindowsSpecialDirMaliciousFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/windowsSpecialDirectoryName.txt").toURI());
-    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
   }
   
   @Test(expected=MaliciousPathException.class)
   public void testReadUpADirMaliciousFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/upAdirectoryReference.txt").toURI());
-    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
   }
   
   @Test(expected=MaliciousPathException.class)
   public void testReadTildeFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/tildeReference.txt").toURI());
-    sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
   }
   
   @Test(expected=MaliciousPathException.class)
   public void testReadFileUrlMaliciousFetchThrowsException() throws Exception{
     if(!TestUtils.isExecutingOnWindows()){
       Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/fileUrl.txt").toURI());
-      sut.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+      FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
     }
     throw new MaliciousPathException("Skipping for windows cause it isn't valid");
   }
@@ -337,12 +337,12 @@ public class BagReaderTest extends Assert{
   @Test(expected=InvalidBagMetadataException.class)
   public void testReadInproperIndentedBagMetadataFileThrowsException() throws Exception{
     Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badIndent.txt").toURI());
-    sut.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
+    KeyValueReader.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
   }
   
   @Test(expected=InvalidBagMetadataException.class)
   public void testReadInproperBagMetadataKeyValueSeparatorThrowsException() throws Exception{
     Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badKeyValueSeparator.txt").toURI());
-    sut.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
+    KeyValueReader.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
   }
 }

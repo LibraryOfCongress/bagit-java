@@ -157,13 +157,13 @@ public class BagWriterTest extends PrivateConstructorTest {
     Path bagit = rootDirPath.resolve("bagit.txt");
     
     assertFalse(Files.exists(bagit));
-    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
+    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
     assertTrue(Files.exists(bagit));
     
     //test truncating existing
     long originalModified = Files.getLastModifiedTime(bagit).toMillis();
     long size = Files.size(bagit);
-    BagWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
+    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
     assertTrue(Files.exists(bagit));
     assertTrue(Files.getLastModifiedTime(bagit) + " should be >= " + originalModified, 
         Files.getLastModifiedTime(bagit).toMillis() >= originalModified);
@@ -183,10 +183,10 @@ public class BagWriterTest extends PrivateConstructorTest {
     assertFalse(bagInfo.exists());
     assertFalse(packageInfo.exists());
     
-    BagWriter.writeBagitInfoFile(metadata, new Version(0,96), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
+    MetadataWriter.writeBagMetadata(metadata, new Version(0,96), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(bagInfo.exists());
     
-    BagWriter.writeBagitInfoFile(metadata, new Version(0,95), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
+    MetadataWriter.writeBagMetadata(metadata, new Version(0,95), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(packageInfo.exists());
   }
   
@@ -201,7 +201,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     
     
     assertFalse(fetch.exists());
-    BagWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
+    FetchWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(fetch.exists());
   }
   
@@ -215,7 +215,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
     
     assertFalse(tagManifest.exists());
-    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
+    ManifestWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
     assertTrue(tagManifest.exists());
   }
   
@@ -229,7 +229,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
     
     assertFalse(tagManifest.exists());
-    BagWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
+    ManifestWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
     
     List<String> lines = Files.readAllLines(Paths.get(tagManifest.toURI()));
     for(String line : lines){
@@ -249,7 +249,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     File copiedFile = new File(outputDir, "data/dir1/test3.txt");
     
     assertFalse(copiedFile.exists() || copiedFile.getParentFile().exists());
-    BagWriter.writePayloadFiles(payloadManifests, Paths.get(outputDir.toURI()), rootDir);
+    PayloadWriter.writePayloadFiles(payloadManifests, Paths.get(outputDir.toURI()), rootDir);
     assertTrue(copiedFile.exists() && copiedFile.getParentFile().exists());
   }
   

@@ -18,7 +18,8 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
-import gov.loc.repository.bagit.writer.BagWriter;
+import gov.loc.repository.bagit.writer.BagitFileWriter;
+import gov.loc.repository.bagit.writer.ManifestWriter;
 
 /**
  * Responsible for creating a bag in place.
@@ -60,8 +61,8 @@ public final class BagCreator {
     Files.walkFileTree(dataDir, visitor);
     
     bag.getPayLoadManifests().addAll(map.keySet());
-    BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
-    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
+    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
+    ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
     
     return bag;
@@ -94,8 +95,8 @@ public final class BagCreator {
     Files.walkFileTree(root, visitor);
     
     bag.getPayLoadManifests().addAll(map.keySet());
-    BagWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
-    BagWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
+    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
+    ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
     
     return bag;
   }

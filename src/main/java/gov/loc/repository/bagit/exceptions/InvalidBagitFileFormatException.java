@@ -10,7 +10,7 @@ public class InvalidBagitFileFormatException extends Exception {
     super(message);
   }
   
-  public InvalidBagitFileFormatException(final String message, Exception e){
+  public InvalidBagitFileFormatException(final String message, final Exception e){
     super(message, e);
   }
 }
