@@ -35,13 +35,16 @@ public interface TagFileReader {
     }
 
     fixedPath = PathUtils.decodeFilname(fixedPath);
-    Path file = bagRootDir.resolve(fixedPath).normalize();
+    Path file;
     if(fixedPath.startsWith("file://")){
       try {
         file = Paths.get(new URI(fixedPath));
       } catch (URISyntaxException e) {
         throw new InvalidBagitFileFormatException("URL [" + path + "] is invalid.", e);
       }
+    }
+    else{
+      file = bagRootDir.resolve(fixedPath).normalize();
     }
     
     if(!file.normalize().startsWith(bagRootDir)){

@@ -52,6 +52,6 @@ public class TagFileReaderTest extends Assert {
   @Test(expected=InvalidBagitFileFormatException.class)
   public void testBadURIThrowsException() throws Exception{
     Path bagRootDir = Paths.get("foo");
-    TagFileReader.createFileFromManifest(bagRootDir, "file://C:\\foo^");
+    TagFileReader.createFileFromManifest(bagRootDir, "file://C:/foo^");
   }
 }
