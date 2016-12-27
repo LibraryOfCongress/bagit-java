@@ -1,7 +1,6 @@
 package gov.loc.repository.bagit.reader;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -10,35 +9,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
-import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
-import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
-import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 
 public class BagReaderTest extends Assert{
-  private List<URL> urls;
   private BagReader sut;
   
   @Before
-  public void setup() throws MalformedURLException{
+  public void setup(){
     sut = new BagReader();
-    urls = Arrays.asList(new URL("http://localhost/foo/data/dir1/test3.txt"), 
-        new URL("http://localhost/foo/data/dir2/dir3/test5.txt"),
-        new URL("http://localhost/foo/data/dir2/test4.txt"),
-        new URL("http://localhost/foo/data/test%201.txt"),
-        new URL("http://localhost/foo/data/test2.txt"));
   }
   
   @Test(expected=UnparsableVersionException.class)
@@ -138,72 +126,6 @@ public class BagReaderTest extends Assert{
   }
 
   @Test
-  public void testReadFetchWithNoSizeSpecified() throws Exception{
-    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithNoSizeSpecified.txt").toURI());
-    List<FetchItem> returnedItems = FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, fetchFile.getParent());
-    
-    for(FetchItem item : returnedItems){
-      assertNotNull(item.url);
-      assertTrue(urls.contains(item.url));
-      
-      assertEquals(Long.valueOf(-1), item.length);
-      
-      assertNotNull(item.path);
-    }
-  }
-  
-  @Test
-  public void testReadFetchWithSizeSpecified() throws Exception{
-    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithSizeSpecified.txt").toURI());
-    List<FetchItem> returnedItems = FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
-    
-    for(FetchItem item : returnedItems){
-      assertNotNull(item.url);
-      assertTrue(urls.contains(item.url));
-      
-      assertTrue(item.length > 0);
-      
-      assertNotNull(item.path);
-    }
-  }
-  
-  @Test
-  public void testReadBagMetadata() throws Exception{
-    List<SimpleImmutableEntry<String, String>> expectedValues = new ArrayList<>();
-    expectedValues.add(new SimpleImmutableEntry<>("Source-Organization", "Spengler University"));
-    expectedValues.add(new SimpleImmutableEntry<>("Organization-Address", "1400 Elm St., Cupertino, California, 95014"));
-    expectedValues.add(new SimpleImmutableEntry<>("Contact-Name", "Edna Janssen"));
-    expectedValues.add(new SimpleImmutableEntry<>("Contact-Phone", "+1 408-555-1212"));
-    expectedValues.add(new SimpleImmutableEntry<>("Contact-Email", "ej@spengler.edu"));
-    expectedValues.add(new SimpleImmutableEntry<>("External-Description", "Uncompressed greyscale TIFF images from the" + System.lineSeparator() + 
-        "         Yoshimuri papers collection."));
-    expectedValues.add(new SimpleImmutableEntry<>("Bagging-Date", "2008-01-15"));
-    expectedValues.add(new SimpleImmutableEntry<>("External-Identifier", "spengler_yoshimuri_001"));
-    expectedValues.add(new SimpleImmutableEntry<>("Bag-Size", "260 GB"));
-    expectedValues.add(new SimpleImmutableEntry<>("Bag-Group-Identifier", "spengler_yoshimuri"));
-    expectedValues.add(new SimpleImmutableEntry<>("Bag-Count", "1 of 15"));
-    expectedValues.add(new SimpleImmutableEntry<>("Internal-Sender-Identifier", "/storage/images/yoshimuri"));
-    expectedValues.add(new SimpleImmutableEntry<>("Internal-Sender-Description", "Uncompressed greyscale TIFFs created from" + System.lineSeparator() + 
-        "         microfilm."));
-    expectedValues.add(new SimpleImmutableEntry<>("Bag-Count", "1 of 15")); //test duplicate
-    
-    Path bagInfoFile = Paths.get(getClass().getClassLoader().getResource("baginfoFiles").toURI());
-    List<SimpleImmutableEntry<String, String>> actualMetadata = MetadataReader.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
-    
-    assertEquals(expectedValues, actualMetadata);
-  }
-  
-  @Test
-  public void testReadAllManifests() throws Exception{
-    Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
-    Bag bag = new Bag();
-    bag.setRootDir(rootBag);
-    ManifestReader.readAllManifests(sut.getNameMapping(), rootBag, bag);
-    assertEquals(1, bag.getPayLoadManifests().size());
-    assertEquals(1, bag.getTagManifests().size());
-  }
-  
-  @Test
   public void testReadISO_8859_1Encoding() throws Exception{
     List<SimpleImmutableEntry<String, String>> expectedMetaData = new ArrayList<>();
     expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
@@ -278,71 +200,5 @@ public class BagReaderTest extends Assert{
     for(Path payloadFile : payloadFiles){
       assertTrue("payload manifest should contain " + payloadFile, payloadManifest.getFileToChecksumMap().containsKey(payloadFile));
     }
-  }
-  
-  @Test(expected=MaliciousPathException.class)
-  public void testReadUpDirectoryMaliciousManifestThrowsException() throws Exception{
-    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/upAdirectoryReference.txt").toURI());
-    ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
-  }
-  
-  @Test(expected=MaliciousPathException.class)
-  public void testReadTildeMaliciousManifestThrowsException() throws Exception{
-    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/tildeReference.txt").toURI());
-    ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
-  }
-  
-  @Test(expected=MaliciousPathException.class)
-  public void testReadFileUrlMaliciousManifestThrowsException() throws Exception{
-    if(!TestUtils.isExecutingOnWindows()){
-      Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/fileUrl.txt").toURI());
-      ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/bar"), StandardCharsets.UTF_8);
-    }
-    throw new MaliciousPathException("Skipping for windows cause it isn't valid");
-  }
-  
-  @Test(expected=InvalidBagitFileFormatException.class)
-  public void testReadWindowsSpecialDirMaliciousManifestThrowsException() throws Exception{
-    Path manifestFile = Paths.get(getClass().getClassLoader().getResource("maliciousManifestFile/windowsSpecialDirectoryName.txt").toURI());
-    ManifestReader.readChecksumFileMap(manifestFile, Paths.get("/foo"), StandardCharsets.UTF_8);
-  }
-  
-  @Test(expected=InvalidBagitFileFormatException.class)
-  public void testReadWindowsSpecialDirMaliciousFetchThrowsException() throws Exception{
-    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/windowsSpecialDirectoryName.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
-  }
-  
-  @Test(expected=MaliciousPathException.class)
-  public void testReadUpADirMaliciousFetchThrowsException() throws Exception{
-    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/upAdirectoryReference.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
-  }
-  
-  @Test(expected=MaliciousPathException.class)
-  public void testReadTildeFetchThrowsException() throws Exception{
-    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/tildeReference.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
-  }
-  
-  @Test(expected=MaliciousPathException.class)
-  public void testReadFileUrlMaliciousFetchThrowsException() throws Exception{
-    if(!TestUtils.isExecutingOnWindows()){
-      Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/fileUrl.txt").toURI());
-      FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
-    }
-    throw new MaliciousPathException("Skipping for windows cause it isn't valid");
-  }
-  
-  @Test(expected=InvalidBagMetadataException.class)
-  public void testReadInproperIndentedBagMetadataFileThrowsException() throws Exception{
-    Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badIndent.txt").toURI());
-    KeyValueReader.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
-  }
-  
-  @Test(expected=InvalidBagMetadataException.class)
-  public void testReadInproperBagMetadataKeyValueSeparatorThrowsException() throws Exception{
-    Path baginfo = Paths.get(getClass().getClassLoader().getResource("badBagMetadata/badKeyValueSeparator.txt").toURI());
-    KeyValueReader.readKeyValuesFromFile(baginfo, ":", StandardCharsets.UTF_8);
   }
 }

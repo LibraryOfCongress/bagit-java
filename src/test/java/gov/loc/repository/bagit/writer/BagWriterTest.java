@@ -1,20 +1,12 @@
 package gov.loc.repository.bagit.writer;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,9 +15,7 @@ import org.junit.rules.TemporaryFolder;
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.creator.BagCreator;
 import gov.loc.repository.bagit.domain.Bag;
-import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
 
@@ -148,109 +138,6 @@ public class BagWriterTest extends PrivateConstructorTest {
     
     File fetchFile = new File(bagitDir, "fetch.txt");
     assertTrue(fetchFile.exists());
-  }
-  
-  @Test
-  public void testWriteBagitFile() throws Exception{
-    File rootDir = folder.newFolder();
-    Path rootDirPath = Paths.get(rootDir.toURI());
-    Path bagit = rootDirPath.resolve("bagit.txt");
-    
-    assertFalse(Files.exists(bagit));
-    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
-    assertTrue(Files.exists(bagit));
-    
-    //test truncating existing
-    long originalModified = Files.getLastModifiedTime(bagit).toMillis();
-    long size = Files.size(bagit);
-    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
-    assertTrue(Files.exists(bagit));
-    assertTrue(Files.getLastModifiedTime(bagit) + " should be >= " + originalModified, 
-        Files.getLastModifiedTime(bagit).toMillis() >= originalModified);
-    assertEquals(size, Files.size(bagit));
-  }
-  
-  @Test
-  public void testWriteBagitInfoFile() throws IOException{
-    File rootDir = folder.newFolder();
-    File bagInfo = new File(rootDir, "bag-info.txt");
-    File packageInfo = new File(rootDir, "package-info.txt");
-    List<SimpleImmutableEntry<String, String>> metadata = new ArrayList<>();
-    metadata.add(new SimpleImmutableEntry<>("key1", "value1"));
-    metadata.add(new SimpleImmutableEntry<>("key2", "value2"));
-    metadata.add(new SimpleImmutableEntry<>("key3", "value3"));
-    
-    assertFalse(bagInfo.exists());
-    assertFalse(packageInfo.exists());
-    
-    MetadataWriter.writeBagMetadata(metadata, new Version(0,96), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
-    assertTrue(bagInfo.exists());
-    
-    MetadataWriter.writeBagMetadata(metadata, new Version(0,95), Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
-    assertTrue(packageInfo.exists());
-  }
-  
-  @Test
-  public void testWriteFetchFile() throws Exception{
-    File rootDir = folder.newFolder();
-    Path rootPath = rootDir.toPath();
-    File fetch = new File(rootDir, "fetch.txt");
-    URL url = new URL("http://localhost:/foo/bar");
-    List<FetchItem> itemsToFetch = Arrays.asList(new FetchItem(url, -1l, rootPath.resolve("/data/foo/bar")),
-        new FetchItem(url, 100l, rootPath.resolve("/data/foo/bar")));
-    
-    
-    assertFalse(fetch.exists());
-    FetchWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
-    assertTrue(fetch.exists());
-  }
-  
-  @Test
-  public void testWriteTagManifests() throws IOException{
-    Set<Manifest> tagManifests = new HashSet<>();
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
-    manifest.getFileToChecksumMap().put(Paths.get("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
-    tagManifests.add(manifest);
-    File outputDir = folder.newFolder();
-    File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
-    
-    assertFalse(tagManifest.exists());
-    ManifestWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
-    assertTrue(tagManifest.exists());
-  }
-  
-  @Test
-  public void testManifestsDontContainWindowsFilePathSeparator() throws IOException{
-    Set<Manifest> tagManifests = new HashSet<>();
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
-    manifest.getFileToChecksumMap().put(Paths.get("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
-    tagManifests.add(manifest);
-    File outputDir = folder.newFolder();
-    File tagManifest = new File(outputDir, "tagmanifest-md5.txt");
-    
-    assertFalse(tagManifest.exists());
-    ManifestWriter.writeTagManifests(tagManifests, Paths.get(outputDir.toURI()), Paths.get("/foo/bar/ham"), StandardCharsets.UTF_8);
-    
-    List<String> lines = Files.readAllLines(Paths.get(tagManifest.toURI()));
-    for(String line : lines){
-      assertFalse("Line [" + line + "] contains \\ which is not allowed by the bagit specification", line.contains("\\"));
-    }
-  }
-  
-  @Test
-  public void testWritePayloadFiles() throws IOException, URISyntaxException{
-    Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
-    Path testFile = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").toURI());
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
-    manifest.getFileToChecksumMap().put(testFile, "someHashValue");
-    Set<Manifest> payloadManifests = new HashSet<>();
-    payloadManifests.add(manifest);
-    File outputDir = folder.newFolder();
-    File copiedFile = new File(outputDir, "data/dir1/test3.txt");
-    
-    assertFalse(copiedFile.exists() || copiedFile.getParentFile().exists());
-    PayloadWriter.writePayloadFiles(payloadManifests, Paths.get(outputDir.toURI()), rootDir);
-    assertTrue(copiedFile.exists() && copiedFile.getParentFile().exists());
   }
   
   @Test

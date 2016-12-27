@@ -18,10 +18,10 @@ import gov.loc.repository.bagit.reader.MetadataReader;
  * Part of the BagIt conformance suite. 
  * This checker checks the bag metadata (bag-info.txt) for various problems.
  */
-public final class MetaDataChecker {
-  private static final Logger logger = LoggerFactory.getLogger(MetaDataChecker.class);
+public final class MetadataChecker {
+  private static final Logger logger = LoggerFactory.getLogger(MetadataChecker.class);
   
-  private MetaDataChecker(){
+  private MetadataChecker(){
     //intentionally left empty
   }
   

@@ -100,7 +100,7 @@ public class BagLinter {
     ManifestChecker.checkManifests(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
 
     logger.debug("checking bag metadata for problems.");
-    MetaDataChecker.checkBagMetadata(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
+    MetadataChecker.checkBagMetadata(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
     
     return warnings;
   }
