@@ -18,10 +18,6 @@ configurations {
   integrationTestRuntime.extendsFrom testRuntime
 }
 
-jacoco {
-  toolVersion = "0.7.5.201505241946" //needed for jenkins to report code coverage correctly
-}
-
 task integrationTest(type: Test) {
   description "Runs the integration tests."
   testClassesDir = sourceSets.integrationTest.output.classesDir
@@ -29,11 +25,14 @@ task integrationTest(type: Test) {
   testLogging.showStandardStreams = true
 }
 
-jacocoTestReport.dependsOn integrationTest
-jacocoTestReport.dependsOn test
-check.dependsOn integrationTest
-check.dependsOn jacocoTestReport
+jacocoTestReport.dependsOn integrationTest //include the integration tests in the code coverage reports
+jacocoTestReport.dependsOn test //ensure the tests have run before generating a coverage report
 
+check.dependsOn integrationTest //run the integration tests
+check.dependsOn jacocoTestReport //run the code coverage reports
+check.dependsOn javadoc //ensure javadocs are generated correctly
+
+//ignore some of the code quality checks for tests since you can't always follow the best practices when testing
 findbugsIntegrationTest.enabled = false
 findbugsTest.enabled = false
 
