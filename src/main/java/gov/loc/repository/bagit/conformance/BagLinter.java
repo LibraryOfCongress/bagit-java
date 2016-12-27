@@ -18,8 +18,8 @@ import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
-import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.reader.BagitTextFileReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
 
 /**
@@ -34,10 +34,6 @@ public class BagLinter {
   
   public BagLinter(){
     reader = new BagReader();
-  }
-  
-  public BagLinter(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    reader = new BagReader(nameMapping);
   }
   
   /**
@@ -88,7 +84,7 @@ public class BagLinter {
     
     logger.debug("Reading bagit.txt file for version and encoding.");
     final Path bagitFile = bagitDir.resolve("bagit.txt");
-    final SimpleImmutableEntry<Version, Charset> bagitInfo = reader.readBagitTextFile(bagitFile);
+    final SimpleImmutableEntry<Version, Charset> bagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);
     
     logger.debug("Checking encoding problems.");
     EncodingChecker.checkEncoding(bagitInfo.getValue(), warnings, warningsToIgnore);
@@ -105,8 +101,6 @@ public class BagLinter {
     return warnings;
   }
   
-  
-
   public BagReader getReader() {
     return reader;
   }

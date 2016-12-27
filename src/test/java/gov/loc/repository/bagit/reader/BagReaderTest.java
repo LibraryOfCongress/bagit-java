@@ -2,7 +2,6 @@ package gov.loc.repository.bagit.reader;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +18,6 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
-import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 
 public class BagReaderTest extends Assert{
   private BagReader sut;
@@ -27,11 +25,6 @@ public class BagReaderTest extends Assert{
   @Before
   public void setup(){
     sut = new BagReader();
-  }
-  
-  @Test(expected=UnparsableVersionException.class)
-  public void testParseVersionWithBadVersion() throws UnparsableVersionException{
-    sut.parseVersion("someVersionThatIsUnparsable");
   }
   
   @Test
@@ -160,14 +153,6 @@ public class BagReaderTest extends Assert{
     assertEquals(StandardCharsets.UTF_16, bag.getFileEncoding());
     assertEquals(expectedMetaData, bag.getMetadata());
     assertEquals(expectedFetchItems, bag.getItemsToFetch());
-  }
-  
-  @Test
-  public void testReadBagitFile()throws Exception{
-    Path bagitFile = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").toURI());
-    SimpleImmutableEntry<Version, Charset> actualBagitInfo = sut.readBagitTextFile(bagitFile);
-    assertEquals(new Version(0, 97), actualBagitInfo.getKey());
-    assertEquals(StandardCharsets.UTF_8, actualBagitInfo.getValue());
   }
   
   @Test
