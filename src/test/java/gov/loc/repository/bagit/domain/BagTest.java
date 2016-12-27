@@ -1,15 +1,25 @@
 package gov.loc.repository.bagit.domain;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
 public class BagTest extends Assert {
 
   @Test
-  public void testToString(){
-    String expectedToString = "Bag [version=-1.-1, fileEncoding=UTF-8, payLoadManifests=[], tagManifests=[], itemsToFetch=[], metadata=[]]";
+  public void testToString() throws MalformedURLException{
+    String expectedToString = "Bag [version=-1.-1, fileEncoding=UTF-8, payLoadManifests=[Manifest [algorithm=MD5, fileToChecksumMap={}] ], tagManifests=[Manifest [algorithm=MD5, fileToChecksumMap={}] ], itemsToFetch=[http://www.wiki.com - foo], metadata=[]]";
+    Bag bag = new Bag();
+    bag.getPayLoadManifests().add(new Manifest(StandardSupportedAlgorithms.MD5));
+    bag.getTagManifests().add(new Manifest(StandardSupportedAlgorithms.MD5));
+    bag.getItemsToFetch().add(new FetchItem(new URL("http://www.wiki.com"), -1l, Paths.get("foo")));
     
-    assertEquals(expectedToString, new Bag().toString());
+    assertEquals(expectedToString, bag.toString());
   }
   
   @Test

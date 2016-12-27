@@ -26,6 +26,12 @@ public final class FetchItem {
   
   private transient String cachedString;
   
+  /**
+   * 
+   * @param url the {@link URL} of the file
+   * @param length the file length in bytes or -1 to not specify the length
+   * @param path the path in the bag where the file belongs
+   */
   public FetchItem(final URL url, final Long length, final Path path){
     this.url = url;
     this.length = length;
