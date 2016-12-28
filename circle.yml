@@ -2,10 +2,6 @@ machine:
   java:
     version: oraclejdk8
 
-dependencies:
-  cache_directories:
-    - "/home/ubuntu/bagit-java/vendor/bundle"
-
 test:
   override:
     - ./gradlew check
