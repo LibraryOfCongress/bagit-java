@@ -94,8 +94,8 @@ public final class ManifestChecker {
     }
   }
   
-  private static String parsePath(String line) throws InvalidBagitFileFormatException{
-    String[] parts = line.split("\\s+", 2);
+  private static String parsePath(final String line) throws InvalidBagitFileFormatException{
+    final String[] parts = line.split("\\s+", 2);
     if(parts.length < 2){
       throw new InvalidBagitFileFormatException("Manifest contains line [" + line + "] which does not follow the specified form of <CHECKSUM> <PATH>");
     }
