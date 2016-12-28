@@ -14,6 +14,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.util.PathUtils;
@@ -41,7 +42,7 @@ public final class ManifestChecker {
    * Check for all the manifest specific potential problems
    */
   public static void checkManifests(final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
-      final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousPathException, UnsupportedAlgorithmException{
+      final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
         
     final DirectoryStream<Path> files = Files.newDirectoryStream(bagitDir);
     for(final Path file : files){
@@ -63,13 +64,13 @@ public final class ManifestChecker {
   /*
    * Check for a "bag within a bag" and for relative paths in the manifests
    */
-  private static void checkData(final Path manifestFile, final Charset encoding, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest) throws IOException{
+  private static void checkData(final Path manifestFile, final Charset encoding, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest) throws IOException, InvalidBagitFileFormatException{
     final BufferedReader reader = Files.newBufferedReader(manifestFile, encoding);
     final Set<String> paths = new HashSet<>();
     
     String line = reader.readLine();
     while(line != null){
-      String path = line.split("\\s+", 2)[1];
+      String path = parsePath(line);
       
       path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
       
@@ -91,6 +92,15 @@ public final class ManifestChecker {
       
       line = reader.readLine();
     }
+  }
+  
+  private static String parsePath(String line) throws InvalidBagitFileFormatException{
+    String[] parts = line.split("\\s+", 2);
+    if(parts.length < 2){
+      throw new InvalidBagitFileFormatException("Manifest contains line [" + line + "] which does not follow the specified form of <CHECKSUM> <PATH>");
+    }
+    
+    return parts[1];
   }
   
   private static String checkForManifestCreatedWithMD5SumTools(final String path, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
@@ -137,7 +147,7 @@ public final class ManifestChecker {
   /*
    * Normalize to Canonical decomposition.
    */
-  private static String normalizePathToNFD(final Path path){
+  static String normalizePathToNFD(final Path path){
     final Path filename = path.getFileName();
     if(filename != null){
       return Normalizer.normalize(filename.toString(), Normalizer.Form.NFD);

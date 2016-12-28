@@ -112,4 +112,11 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
       assertTrue(osFileToTest + " should match regex but it doesn't", osFileToTest.matches(regex));
     }
   }
+  
+  @Test
+  public void foo(){
+    String testString = "ABCDEF";
+    String[] parts = testString.split("\\s", 2);
+    System.err.println(parts.length);
+  }
 }

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
@@ -51,8 +52,9 @@ public class BagLinter {
    * @throws IOException if there was an error reading a file
    * @throws UnsupportedAlgorithmException if the {@link BagReader} does not support reading the manifest 
    * @throws MaliciousPathException If the manifest was crafted to try and access a file outside the bag directory
+   * @throws InvalidBagitFileFormatException if one or more of the files do not correctly follow the bagit specification format
    */
-  public Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException{
+  public Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     return this.lintBag(rootDir, Collections.emptyList());
   }
   
@@ -72,8 +74,9 @@ public class BagLinter {
    * @throws IOException if there was an error reading a file
    * @throws UnsupportedAlgorithmException if the {@link BagReader} does not support reading the manifest 
    * @throws MaliciousPathException If the manifest was crafted to try and access a file outside the bag directory
+   * @throws InvalidBagitFileFormatException if one or more of the files do not correctly follow the bagit specification format
    */
-  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException{
+  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     final Set<BagitWarning> warnings = new HashSet<>();
     
     //@Incubating
