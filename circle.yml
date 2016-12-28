@@ -1,0 +1,14 @@
+machine:
+  java:
+    version: oraclejdk8
+
+dependencies:
+  cache_directories:
+    - "/home/ubuntu/bagit-java/vendor/bundle"
+
+test:
+  override:
+    - gradlew check
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
