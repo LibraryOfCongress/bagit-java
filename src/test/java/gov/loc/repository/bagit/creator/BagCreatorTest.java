@@ -34,6 +34,10 @@ public class BagCreatorTest extends Assert {
     
     File expectedManifest = new File(folder.getRoot(), "manifest-md5.txt");
     assertTrue(expectedManifest.exists());
+    
+    File expectedTagManifest = new File(folder.getRoot(), "tagmanifest-md5.txt");
+    assertTrue(expectedTagManifest.exists());
+    
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     assertTrue(bagitFile.exists());
     

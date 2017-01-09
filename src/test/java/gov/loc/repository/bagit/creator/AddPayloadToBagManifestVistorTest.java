@@ -33,7 +33,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
     boolean includeHiddenFiles = false;
     Path start = Paths.get(new File("src/test/resources/dotKeepExampleBag").toURI()).resolve("data");
     
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(map, includeHiddenFiles);
+    CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(map, includeHiddenFiles);
     Files.walkFileTree(start, sut);
     
     assertEquals(1, manifest.getFileToChecksumMap().size());
@@ -43,7 +43,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testSkipDotBagitDir() throws IOException{
     Path dotBagitDirectory = Paths.get(folder.newFolder(".bagit").toURI());
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, true);
+    CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, true);
     FileVisitResult returned = sut.preVisitDirectory(dotBagitDirectory, null);
     assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
   }
@@ -51,7 +51,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testSkipHiddenDirectory() throws IOException{
     Path hiddenDirectory = createHiddenDirectory();
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, false);
+    CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, false);
     FileVisitResult returned = sut.preVisitDirectory(hiddenDirectory, null);
     assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
   }
@@ -59,7 +59,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testIncludeHiddenDirectory() throws IOException{
     Path hiddenDirectory = createHiddenDirectory();
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, true);
+    CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, true);
     FileVisitResult returned = sut.preVisitDirectory(hiddenDirectory, null);
     assertEquals(FileVisitResult.CONTINUE, returned);
   }
@@ -67,7 +67,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   @Test
   public void testSkipHiddenFile() throws IOException{
     Path hiddenFile = createHiddenFile();
-    AddPayloadToBagManifestVistor sut = new AddPayloadToBagManifestVistor(null, false);
+    CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, false);
     FileVisitResult returned = sut.visitFile(hiddenFile, null);
     assertEquals(FileVisitResult.CONTINUE, returned);
   }

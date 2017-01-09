@@ -56,14 +56,22 @@ public final class BagCreator {
     }
     
     logger.info("Creating payload manifest(s)");
-    final Map<Manifest, MessageDigest> map = Hasher.createManifestToMessageDigestMap(algorithms);
-    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(map, includeHidden);
-    Files.walkFileTree(dataDir, visitor);
+    final Map<Manifest, MessageDigest> payloadFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
+    final CreatePayloadManifestsVistor payloadVisitor = new CreatePayloadManifestsVistor(payloadFilesMap, includeHidden);
+    Files.walkFileTree(dataDir, payloadVisitor);
     
-    bag.getPayLoadManifests().addAll(map.keySet());
+    bag.getPayLoadManifests().addAll(payloadFilesMap.keySet());
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
+    //TODO write tag manifests
+    logger.info("Creating tag manifest(s)");
+    final Map<Manifest, MessageDigest> tagFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
+    final CreateTagManifestsVistor tagVistor = new CreateTagManifestsVistor(tagFilesMap, includeHidden);
+    Files.walkFileTree(root, tagVistor);
+    
+    bag.getTagManifests().addAll(tagFilesMap.keySet());
+    ManifestWriter.writeTagManifests(bag.getTagManifests(), root, root, bag.getFileEncoding());
     
     return bag;
   }
@@ -91,12 +99,14 @@ public final class BagCreator {
     
     logger.info("Creating payload manifest");
     final Map<Manifest, MessageDigest> map = Hasher.createManifestToMessageDigestMap(algorithms);
-    final AddPayloadToBagManifestVistor visitor = new AddPayloadToBagManifestVistor(map, includeHidden);
+    final CreatePayloadManifestsVistor visitor = new CreatePayloadManifestsVistor(map, includeHidden);
     Files.walkFileTree(root, visitor);
     
     bag.getPayLoadManifests().addAll(map.keySet());
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
+    
+    //TODO write tag manifest
     
     return bag;
   }

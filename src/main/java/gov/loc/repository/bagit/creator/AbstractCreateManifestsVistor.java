@@ -20,26 +20,24 @@ import gov.loc.repository.bagit.util.PathUtils;
  * An implementation of the {@link SimpleFileVisitor} class that optionally avoids hidden files.
  * Mainly used in {@link BagCreator}
  */
-public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
-  private static final Logger logger = LoggerFactory.getLogger(AddPayloadToBagManifestVistor.class);
+public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Path>{
+  private static final Logger logger = LoggerFactory.getLogger(AbstractCreateManifestsVistor.class);
   
-  private transient final Map<Manifest, MessageDigest> manifestToMessageDigestMap;
-  private transient final boolean includeHiddenFiles;
+  protected final Map<Manifest, MessageDigest> manifestToMessageDigestMap;
+  protected final boolean includeHiddenFiles;
   
-  public AddPayloadToBagManifestVistor(final Map<Manifest, MessageDigest> manifestToMessageDigestMap, final boolean includeHiddenFiles){
+  public AbstractCreateManifestsVistor(final Map<Manifest, MessageDigest> manifestToMessageDigestMap, final boolean includeHiddenFiles){
     this.manifestToMessageDigestMap = manifestToMessageDigestMap;
     this.includeHiddenFiles = includeHiddenFiles;
   }
   
-  @Override
-  public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+  public FileVisitResult abstractPreVisitDirectory(final Path dir, final String directoryToIgnore) throws IOException {
     if(!includeHiddenFiles && PathUtils.isHidden(dir)){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
-    //@Incubating
-    if(dir.endsWith(".bagit")){ 
-      logger.debug("Skipping .bagit directory cause it shouldn't be in the payload manifest");
+    if(dir.endsWith(directoryToIgnore)){ 
+      logger.debug("Skipping {} directory cause it shouldn't be in the manifest", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
     
@@ -56,5 +54,13 @@ public class AddPayloadToBagManifestVistor extends SimpleFileVisitor<Path>{
     }
     
     return FileVisitResult.CONTINUE;
+  }
+
+  public Map<Manifest, MessageDigest> getManifestToMessageDigestMap() {
+    return manifestToMessageDigestMap;
+  }
+
+  public boolean isIncludeHiddenFiles() {
+    return includeHiddenFiles;
   }
 }
