@@ -24,6 +24,9 @@ public class BagLinterTest extends Assert{
       expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
     }
     
-    assertEquals(expectedWarnings, warnings);
+    Set<BagitWarning> diff = new HashSet<>(expectedWarnings);
+    diff.removeAll(warnings);
+    
+    assertEquals("Warnings missing: " + diff.toString() + "\n", expectedWarnings, warnings);
   }
 }

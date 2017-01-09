@@ -44,6 +44,7 @@ public final class ManifestChecker {
   public static void checkManifests(final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
       final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
         
+    boolean missingTagManifest = true;
     final DirectoryStream<Path> files = Files.newDirectoryStream(bagitDir);
     for(final Path file : files){
       final String filename = PathUtils.getFilename(file);
@@ -53,11 +54,17 @@ public final class ManifestChecker {
         }
         else{
           checkData(file, encoding, warnings, warningsToIgnore, false);
+          missingTagManifest = false;
         }
         
         final String algorithm = filename.split("[-\\.]")[1];
         checkAlgorthm(algorithm, warnings, warningsToIgnore);
       }
+    }
+    
+    if(!warningsToIgnore.contains(BagitWarning.MISSING_TAG_MANIEST) && missingTagManifest){
+      logger.warn("Bag [{}] does not contain a tag manifest, which is always recommended.", bagitDir);
+      warnings.add(BagitWarning.MISSING_TAG_MANIEST);
     }
   }
   

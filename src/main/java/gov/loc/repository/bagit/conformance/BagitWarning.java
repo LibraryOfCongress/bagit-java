@@ -18,6 +18,8 @@ public enum BagitWarning {
   MD5SUM_TOOL_GENERATED_MANIFEST("The manifest was created using a using checksum utilities such as those\n" + 
       "contained in the GNU Coreutils package (md5sum, sha1sum, etc.), collectively referred to here as 'md5sum'. "
       + "This creates slight differences in generated manifests that can cause problems in some implementations."),
+  MISSING_TAG_MANIEST("The tag manifest guards against a truncated payload manifest as well as other potental "
+      + "problems and is always recommened that it be included."),
   OLD_BAGIT_VERSION("The bagit specification version is not the newest. Consider converting to the latest version."),
   OS_SPECIFIC_FILES("Files created by the operating system (OS) for its own use. They are non-portable across OS versions "
       + "and should not be included in any manifest. Examples Thumbs.db on Windows or .DS_Store on OS X"),
