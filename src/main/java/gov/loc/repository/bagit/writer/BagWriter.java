@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.hash.HasherOld;
 
 /**
  * responsible for writing out a bag.
@@ -81,7 +81,7 @@ public final class BagWriter {
         final Path relativePath = bag.getRootDir().relativize(originalPath);
         final Path pathToUpdate = newBagRootDir.resolve(relativePath);
         final MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
-        final String newChecksum = Hasher.hash(pathToUpdate, messageDigest);
+        final String newChecksum = HasherOld.hash(pathToUpdate, messageDigest);
         newManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
       }
       

@@ -3,8 +3,6 @@ package gov.loc.repository.bagit.verify;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
@@ -26,11 +24,11 @@ public class CheckManifestHashsTask implements Runnable {
   private transient final Entry<Path, String> entry;
   private transient final CountDownLatch latch;
   private transient final List<Exception> exceptions;
-  private transient final String algorithm;
+  private transient final Hasher hasher;
   
-  public CheckManifestHashsTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
+  public CheckManifestHashsTask(final Entry<Path, String> entry, final Hasher hasher, final CountDownLatch latch, final List<Exception> exceptions) {
     this.entry = entry;
-    this.algorithm = algorithm;
+    this.hasher = hasher;
     this.latch = latch;
     this.exceptions = exceptions;
   }
@@ -38,21 +36,23 @@ public class CheckManifestHashsTask implements Runnable {
   @Override
   public void run() {
     try {
-      final MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
-      checkManifestEntry(entry, messageDigest, algorithm);
-    } catch (IOException | CorruptChecksumException | NoSuchAlgorithmException e) {
+      checkManifestEntry();
+    } catch (IOException | CorruptChecksumException e) {
       exceptions.add(e);
     }
     latch.countDown();
   }
   
-  protected static void checkManifestEntry(final Entry<Path, String> entry, final MessageDigest messageDigest, final String algorithm) throws IOException, CorruptChecksumException{
+  protected void checkManifestEntry() throws IOException, CorruptChecksumException{
     if(Files.exists(entry.getKey())){
       logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
-      final String hash = Hasher.hash(entry.getKey(), messageDigest);
+      
+      hasher.hashSingleFile(entry.getKey());
+      final String hash = hasher.value();
+      
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){
-        throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 
+        throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + hasher.getBagitName() + 
             " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
       }
     }

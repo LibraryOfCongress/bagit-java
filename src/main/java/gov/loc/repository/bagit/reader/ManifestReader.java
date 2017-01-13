@@ -19,7 +19,6 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
-import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.util.PathUtils;
 
 public final class ManifestReader {
@@ -94,9 +93,8 @@ public final class ManifestReader {
           throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
-    final SupportedAlgorithm algorithm = nameMapping.getSupportedAlgorithm(alg);
     
-    final Manifest manifest = new Manifest(algorithm);
+    final Manifest manifest = new Manifest(alg);
     
     final Map<Path, String> filetToChecksumMap = readChecksumFileMap(manifestFile, bagRootDir, charset);
     manifest.setFileToChecksumMap(filetToChecksumMap);

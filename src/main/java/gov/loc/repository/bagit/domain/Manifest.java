@@ -6,17 +6,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import gov.loc.repository.bagit.hash.SupportedAlgorithm;
-
 /**
  * A manifest is a list of files and their corresponding checksum with the algorithm used to generate that checksum
  */
 public final class Manifest {
-  private final SupportedAlgorithm algorithm;
+  private final String bagitAlgorithmName;
   private Map<Path, String> fileToChecksumMap = new HashMap<>();
   
-  public Manifest(final SupportedAlgorithm algorithm){
-    this.algorithm = algorithm;
+  public Manifest(final String bagitAlgorithmName){
+    this.bagitAlgorithmName = bagitAlgorithmName;
   }
 
   public Map<Path, String> getFileToChecksumMap() {
@@ -27,18 +25,18 @@ public final class Manifest {
     this.fileToChecksumMap = fileToChecksumMap;
   }
 
-  public SupportedAlgorithm getAlgorithm() {
-    return algorithm;
+  public String getBagitAlgorithmName() {
+    return bagitAlgorithmName;
   }
 
   @Override
   public String toString() {
-    return "Manifest [algorithm=" + algorithm + ", fileToChecksumMap=" + fileToChecksumMap + "]";
+    return "Manifest [bagitAlgorithmName=" + bagitAlgorithmName + ", fileToChecksumMap=" + fileToChecksumMap + "]";
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(algorithm) + fileToChecksumMap.hashCode();
+    return Objects.hash(bagitAlgorithmName) + fileToChecksumMap.hashCode();
   }
 
   @Override
@@ -55,6 +53,6 @@ public final class Manifest {
     
     final Manifest other = (Manifest) obj;
     
-    return Objects.equals(algorithm, other.algorithm) && fileToChecksumMap.equals(other.getFileToChecksumMap()); 
+    return Objects.equals(bagitAlgorithmName, other.bagitAlgorithmName) && fileToChecksumMap.equals(other.getFileToChecksumMap()); 
   }
 }

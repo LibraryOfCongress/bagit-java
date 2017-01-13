@@ -16,7 +16,7 @@ public class HasherTest extends PrivateConstructorTest {
 
   @Test
   public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
-    assertUtilityClassWellDefined(Hasher.class);
+    assertUtilityClassWellDefined(HasherOld.class);
   }
   
   @Test
@@ -25,7 +25,7 @@ public class HasherTest extends PrivateConstructorTest {
     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
     String expectedHash = "41b89090f32a9ef33226b48f1b98dddf";
     
-    String hash = Hasher.hash(path, messageDigest);
+    String hash = HasherOld.hash(path, messageDigest);
     assertEquals(expectedHash, hash);
   }
 }

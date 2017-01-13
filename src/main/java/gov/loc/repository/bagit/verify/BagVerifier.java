@@ -181,7 +181,8 @@ public final class BagVerifier {
     final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
     
     for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-      executor.execute(new CheckManifestHashsTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));
+      //TODO
+      executor.execute(new CheckManifestHashsTask(entry, null, latch, exceptions));
     }
     
     latch.await();
