@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +17,6 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
-import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.util.PathUtils;
 
 public final class ManifestReader {
@@ -31,7 +29,6 @@ public final class ManifestReader {
   /**
    * Finds and reads all manifest files in the rootDir and adds them to the given bag.
    * 
-   * @param nameMapping a map between BagIt algorithm names and {@link MessageDigest} names
    * @param rootDir the directory that contain the manifest(s)
    * @param bag to update with the manifests
    * 
@@ -41,7 +38,7 @@ public final class ManifestReader {
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
-  static void readAllManifests(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final Path rootDir, final Bag bag) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  static void readAllManifests(final Path rootDir, final Bag bag) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.info("Attempting to find and read manifests");
     final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
@@ -50,11 +47,11 @@ public final class ManifestReader {
       
       if(filename.startsWith("tagmanifest-")){
         logger.debug("Found tag manifest [{}]", path);
-        bag.getTagManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
+        bag.getTagManifests().add(readManifest(path, bag.getRootDir(), bag.getFileEncoding()));
       }
       else if(filename.startsWith("manifest-")){
         logger.debug("Found payload manifest [{}]", path);
-        bag.getPayLoadManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
+        bag.getPayLoadManifests().add(readManifest(path, bag.getRootDir(), bag.getFileEncoding()));
       }
     }
   }
@@ -77,7 +74,6 @@ public final class ManifestReader {
   /**
    * Reads a manifest file and converts it to a {@link Manifest} object.
    * 
-   * @param nameMapping a map between BagIt algorithm names and {@link MessageDigest} names
    * @param manifestFile a specific manifest file
    * @param bagRootDir the root directory of the bag
    * @param charset the encoding to use when reading the manifest file
@@ -88,8 +84,7 @@ public final class ManifestReader {
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
-  public static Manifest readManifest(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, 
-      final Path manifestFile, final Path bagRootDir, final Charset charset) 
+  public static Manifest readManifest(final Path manifestFile, final Path bagRootDir, final Charset charset) 
           throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.debug("Reading manifest [{}]", manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];

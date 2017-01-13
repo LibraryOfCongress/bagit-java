@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.Hasher;
 
 /**
@@ -26,9 +27,9 @@ public class CheckManifestHashsTask implements Runnable {
   private transient final List<Exception> exceptions;
   private transient final Hasher hasher;
   
-  public CheckManifestHashsTask(final Entry<Path, String> entry, final Hasher hasher, final CountDownLatch latch, final List<Exception> exceptions) {
+  public CheckManifestHashsTask(final Entry<Path, String> entry, final Hasher hasher, final CountDownLatch latch, final List<Exception> exceptions) throws UnsupportedAlgorithmException {
     this.entry = entry;
-    this.hasher = hasher;
+    this.hasher = hasher.instanceOf();
     this.latch = latch;
     this.exceptions = exceptions;
   }
@@ -48,7 +49,7 @@ public class CheckManifestHashsTask implements Runnable {
       logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
       
       hasher.hashSingleFile(entry.getKey());
-      final String hash = hasher.value();
+      final String hash = hasher.getCalculatedValue();
       
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){

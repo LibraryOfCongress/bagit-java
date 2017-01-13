@@ -26,6 +26,7 @@ import gov.loc.repository.bagit.util.PathUtils;
  * An implementation of the {@link SimpleFileVisitor} class that optionally avoids hidden files.
  * Mainly used in {@link BagCreator}
  */
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Path>{
   private static final Logger logger = LoggerFactory.getLogger(AbstractCreateManifestsVistor.class);
   private static final int _64_KB = 1024 * 64;
@@ -75,7 +76,7 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
         }
         
         for(final Entry<String, Hasher> entry: bagitNameToHasherMap.entrySet()){
-          bagitNameToManifestMap.get(entry.getKey()).getFileToChecksumMap().put(path, entry.getValue().value());
+          bagitNameToManifestMap.get(entry.getKey()).getFileToChecksumMap().put(path, entry.getValue().getCalculatedValue());
           entry.getValue().clear();
         }
       }
@@ -86,6 +87,14 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
   
   public Set<Manifest> getManifests(){
     return new HashSet<>(bagitNameToManifestMap.values());
+  }
+
+  public Map<String, Manifest> getBagitNameToManifestMap() {
+    return bagitNameToManifestMap;
+  }
+
+  public Map<String, Hasher> getBagitNameToHasherMap() {
+    return bagitNameToHasherMap;
   }
 
   public boolean isIncludeHiddenFiles() {

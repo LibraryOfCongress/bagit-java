@@ -9,8 +9,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -35,8 +39,11 @@ import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
-import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
-import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
+import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.hash.MD5Hasher;
+import gov.loc.repository.bagit.hash.SHA1Hasher;
+import gov.loc.repository.bagit.hash.SHA256Hasher;
+import gov.loc.repository.bagit.hash.SHA512Hasher;
 import gov.loc.repository.bagit.reader.ManifestReader;
 import gov.loc.repository.bagit.util.PathUtils;
 
@@ -52,27 +59,30 @@ public final class BagVerifier {
   private static final String DOT_BAGIT_DIR_NAME = ".bagit";
   private static final String PAYLOAD_OXUM_REGEX = "\\d+\\.\\d+";
   
-  private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  private final Map<String, Hasher> bagitNameToHasherMap;
   private final ExecutorService executor;
   
-  public BagVerifier(){
-    nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
-    executor = Executors.newCachedThreadPool();
+  
+  public BagVerifier() throws NoSuchAlgorithmException{
+    this(Executors.newCachedThreadPool(),
+        Arrays.asList(new MD5Hasher(), new SHA1Hasher(), new SHA256Hasher(), new SHA512Hasher()));
   }
   
-  public BagVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    this.nameMapping = nameMapping;
-    executor = Executors.newCachedThreadPool();
+  public BagVerifier(final ExecutorService executor) throws NoSuchAlgorithmException{
+    this(executor,
+        Arrays.asList(new MD5Hasher(), new SHA1Hasher(), new SHA256Hasher(), new SHA512Hasher()));
   }
   
-  public BagVerifier(final ExecutorService executor){
-    nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
+  public BagVerifier(final Collection<Hasher> hashers){
+    this(Executors.newCachedThreadPool(), hashers);
+  }
+  
+  public BagVerifier(final ExecutorService executor, final Collection<Hasher> hashers){
     this.executor = executor;
-  }
-  
-  public BagVerifier(final ExecutorService executor, final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    this.nameMapping = nameMapping;
-    this.executor = executor;
+    bagitNameToHasherMap = new HashMap<>();
+    for (final Hasher hasher : hashers){
+      bagitNameToHasherMap.put(hasher.getBagitName(), hasher);
+    }
   }
   
   /**
@@ -176,13 +186,17 @@ public final class BagVerifier {
    * Check the supplied checksum hashes against the generated checksum hashes
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
+  void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException, UnsupportedAlgorithmException{
+    final Hasher hasher = bagitNameToHasherMap.get(manifest.getBagitAlgorithmName());
+    if(hasher == null){
+      throw new UnsupportedAlgorithmException(manifest.getBagitAlgorithmName() + " is not supported!");
+    }
+    
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
     
     for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-      //TODO
-      executor.execute(new CheckManifestHashsTask(entry, null, latch, exceptions));
+      executor.execute(new CheckManifestHashsTask(entry, hasher, latch, exceptions));
     }
     
     latch.await();
@@ -343,7 +357,7 @@ public final class BagVerifier {
       final String filename = PathUtils.getFilename(path);
       if(filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")){
         logger.debug("Getting files and checksums listed in [{}]", path);
-        final Manifest manifest = ManifestReader.readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding());
+        final Manifest manifest = ManifestReader.readManifest(path, bag.getRootDir(), bag.getFileEncoding());
         filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
       }
     }
@@ -393,11 +407,11 @@ public final class BagVerifier {
     }
   }
 
-  public BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
-    return nameMapping;
-  }
-
   public ExecutorService getExecutor() {
     return executor;
+  }
+
+  public Map<String, Hasher> getBagitNameToHasherMap() {
+    return bagitNameToHasherMap;
   }
 }

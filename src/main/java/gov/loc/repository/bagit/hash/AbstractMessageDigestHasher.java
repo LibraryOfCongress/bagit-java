@@ -1,11 +1,14 @@
 package gov.loc.repository.bagit.hash;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 
 public abstract class AbstractMessageDigestHasher implements Hasher {
   private static final Logger logger = LoggerFactory.getLogger(SHA1Hasher.class);
@@ -20,7 +23,7 @@ public abstract class AbstractMessageDigestHasher implements Hasher {
   }
 
   @Override
-  public void update(byte[] buffer, int length) {
+  public void update(final byte[] buffer, final int length) {
     messageDigest.update(buffer, 0, length);
   }
 
@@ -34,7 +37,7 @@ public abstract class AbstractMessageDigestHasher implements Hasher {
   }
 
   @Override
-  public String value() {
+  public String getCalculatedValue() {
     final Formatter formatter = new Formatter();
     
     for (final byte b : messageDigest.digest()) {
@@ -50,5 +53,27 @@ public abstract class AbstractMessageDigestHasher implements Hasher {
   @Override
   public String getBagitName(){
     return bagitName;
+  }
+  
+  @Override
+  public Hasher instanceOf() throws UnsupportedAlgorithmException{
+    try {
+      return this.getClass().getConstructor().newInstance();
+    } catch (IllegalAccessException | InstantiationException | IllegalArgumentException | 
+        InvocationTargetException | NoSuchMethodException | SecurityException e) {
+      throw new UnsupportedAlgorithmException(e);
+    }
+  }
+
+  public MessageDigest getMessageDigest() {
+    return messageDigest;
+  }
+
+  public void setMessageDigest(final MessageDigest messageDigest) {
+    this.messageDigest = messageDigest;
+  }
+
+  public String getMessageDigestName() {
+    return messageDigestName;
   }
 }

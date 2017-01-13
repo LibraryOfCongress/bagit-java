@@ -22,7 +22,6 @@ import gov.loc.repository.bagit.hash.MD5Hasher;
 import gov.loc.repository.bagit.hash.SHA1Hasher;
 import gov.loc.repository.bagit.hash.SHA256Hasher;
 import gov.loc.repository.bagit.hash.SHA512Hasher;
-import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.writer.BagitFileWriter;
 import gov.loc.repository.bagit.writer.ManifestWriter;
 
@@ -44,7 +43,8 @@ public final class BagCreator {
   }
   
   /**
-   * Allows you to customize which checksum algorithms are used when creating manifest(s) 
+   * Allows you to customize which checksum algorithms are used when creating manifest(s)
+   * @param hashers the collection of {@link Hasher} that will be used to create the manifest(s)
    */
   public BagCreator(final Collection<Hasher> hashers){
     bagitNameToHasherMap = new HashMap<>();
@@ -103,14 +103,13 @@ public final class BagCreator {
    * in an unknown state of transition. Thus this is <b>not thread safe</b>
    * 
    * @param root the directory that will become the base of the bag and where to start searching for content
-   * @param algorithms an collection of {@link SupportedAlgorithm} implementations
    * @param includeHidden to include hidden files when generating the bagit files, like the manifests
    * @return a {@link Bag} object representing the newly created bagit bag
    * @throws NoSuchAlgorithmException if {@link MessageDigest} can't find the algorithm
    * @throws IOException if there is a problem writing files or .bagit directory
    */
   @Incubating
-  public Bag createDotBagit(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
+  public Bag createDotBagit(final Path root, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     final Bag bag = new Bag(new Version(2, 0));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
@@ -129,5 +128,9 @@ public final class BagCreator {
     //TODO write tag manifest
     
     return bag;
+  }
+
+  public Map<String, Hasher> getBagitNameToHasherMap() {
+    return bagitNameToHasherMap;
   }
 }

@@ -13,21 +13,14 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
-import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
-import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 
 /**
  * Responsible for reading a bag from the filesystem.
  */
 public final class BagReader {
-  private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
   
-  public BagReader(){
-    this.nameMapping = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
-  }
-  
-  public BagReader(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    this.nameMapping = nameMapping;
+  private BagReader(){
+    //intentionally left empty
   }
   
   /**
@@ -43,7 +36,7 @@ public final class BagReader {
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest or fetch file is not formatted properly
    */
-  public Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousPathException, InvalidBagMetadataException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  public static Bag read(final Path rootDir) throws IOException, UnparsableVersionException, MaliciousPathException, InvalidBagMetadataException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     final Bag bag = new Bag();
     
     //@Incubating
@@ -58,7 +51,7 @@ public final class BagReader {
     bag.setVersion(bagitInfo.getKey());
     bag.setFileEncoding(bagitInfo.getValue());
     
-    ManifestReader.readAllManifests(nameMapping, bagitDir, bag);
+    ManifestReader.readAllManifests(bagitDir, bag);
     
     bag.getMetadata().addAll(MetadataReader.readBagMetadata(bagitDir, bag.getFileEncoding()));
     
@@ -70,7 +63,4 @@ public final class BagReader {
     return bag;
   }
   
-  public BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
-    return nameMapping;
-  }
 }

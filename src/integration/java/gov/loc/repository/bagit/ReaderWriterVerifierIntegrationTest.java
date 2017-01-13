@@ -21,87 +21,88 @@ public class ReaderWriterVerifierIntegrationTest {
   @Test
   public void testReaderWriterVersion93() throws Exception{
     BagVerifier verifier = new BagVerifier();
-    BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_93/bag").toURI());
     Path outputDir = Paths.get(folder.newFolder().toURI());
     
-    Bag bag = reader.read(rootDir);
+    BagWriter writer = new BagWriter();
+    
+    Bag bag = BagReader.read(rootDir);
     verifier.isValid(bag, true);
     
-    BagWriter.write(bag, outputDir);
+    writer.write(bag, outputDir);
     testBagsEqual(rootDir, outputDir);
     
-    verifier.isValid(reader.read(outputDir), true);
+    verifier.isValid(BagReader.read(outputDir), true);
   }
   
   @Test
   public void testReaderWriterVersion94() throws Exception{
-    BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_94/bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
+    BagWriter writer = new BagWriter();
     
-    BagWriter.write(bag, outputDir);
+    writer.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
     BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    verifier.isValid(BagReader.read(outputDir), true);
   }
   
   @Test
   public void testReaderWriterVersion95() throws Exception{
-    BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_95/bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
+    BagWriter writer = new BagWriter();
     
-    BagWriter.write(bag, outputDir);
+    writer.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
     BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    verifier.isValid(BagReader.read(outputDir), true);
   }
   
   @Test
   public void testReaderWriterVersion96() throws Exception{
-    BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_96/bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
+    BagWriter writer = new BagWriter();
     
-    BagWriter.write(bag, outputDir);
+    writer.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
     BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    verifier.isValid(BagReader.read(outputDir), true);
   }
 
   @Test
   public void testReaderWriterVersion97() throws Exception{
-    BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
+    BagWriter writer = new BagWriter();
     
-    BagWriter.write(bag, outputDir);
+    writer.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
     BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    verifier.isValid(BagReader.read(outputDir), true);
   }
   
   @Test
   public void testReaderWriterVersion2_0() throws Exception{
-    BagReader reader = new BagReader();
     Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v2_0/bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     Path outputDir = Paths.get(folder.newFolder().toURI());
+    BagWriter writer = new BagWriter();
     
-    BagWriter.write(bag, outputDir);
+    writer.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
     BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    verifier.isValid(BagReader.read(outputDir), true);
   }
   
   private void testBagsEqual(Path originalBag, Path newBag) throws IOException{
