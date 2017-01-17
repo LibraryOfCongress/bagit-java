@@ -64,20 +64,20 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{
-      try(final InputStream is = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ))){
+      try(final InputStream inputStream = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ))){
         final byte[] buffer = new byte[CHUNK_SIZE];
-        int read = is.read(buffer);
+        int numberOfBytesRead = inputStream.read(buffer);
         
-        while(read != -1) {
+        while(numberOfBytesRead != -1) {
           for(final Hasher hasher : bagitNameToHasherMap.values()){
-            hasher.update(buffer, read);
+            hasher.update(buffer, numberOfBytesRead);
           }
-          read = is.read(buffer);
+          numberOfBytesRead = inputStream.read(buffer);
         }
         
         for(final Entry<String, Hasher> entry: bagitNameToHasherMap.entrySet()){
           bagitNameToManifestMap.get(entry.getKey()).getFileToChecksumMap().put(path, entry.getValue().getCalculatedValue());
-          entry.getValue().clear();
+          entry.getValue().clear(); //reset the hasher's state since we are done calculating
         }
       }
     }
