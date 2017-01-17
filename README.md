@@ -104,7 +104,9 @@ if(verifier.canQuickVerify(bag)){
 
 ##### Add other checksum algorithms
 
-You only need to implement 1 interface:
+You only need to implement 1 interface and then add the implemented `Hasher` 
+to the `bagitNameToHasherMap` in `BagCreator`, `BagVerifier` or `BagWriter` before using their methods.
+Below is an example implementation for a SHA3 hasher
 
 ```java
 import java.security.MessageDigest;
@@ -118,7 +120,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 
-public class MyNewHasher implements Hasher {
+public class MySHA3Hasher implements Hasher {
   static {
     if (Security.getProvider("BC") == null) {
       Security.addProvider(new BouncyCastleProvider());
@@ -179,9 +181,6 @@ public class MyNewHasher implements Hasher {
   }
 }
 ```
-
-and then add the implemented `Hasher` to the `bagitNameToHasherMap` in `BagCreator`, `BagVerifier` or 
-`BagWriter` before using their methods.
 
 #### Check for potential problems
 
