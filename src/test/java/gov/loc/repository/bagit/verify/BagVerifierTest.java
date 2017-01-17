@@ -31,6 +31,7 @@ import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
+import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.reader.BagReader;
 
 public class BagVerifierTest extends Assert{
@@ -50,6 +51,17 @@ public class BagVerifierTest extends Assert{
   @Before
   public void setup() throws NoSuchAlgorithmException{
     sut = new BagVerifier();
+  }
+  
+  @Test(expected=VerificationException.class)
+  public void testVerificationExceptionIsThrownForNoSuchAlgorithmException() throws Exception{
+  //will cause a IOException to be thrown when calculating the hash, which gets turned into a VerificationException
+    File file = folder.newFolder(); 
+    
+    Manifest manifest = new Manifest("md5");
+    manifest.getFileToChecksumMap().put(file.toPath(), "foo");
+    
+    sut.checkHashes(manifest);
   }
   
   @Test

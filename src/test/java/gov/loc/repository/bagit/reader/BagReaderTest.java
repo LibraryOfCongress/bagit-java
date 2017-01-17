@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.reader;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -10,15 +11,20 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
+import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 
-public class BagReaderTest extends Assert{
+public class BagReaderTest extends PrivateConstructorTest{
+  @Test
+  public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
+    assertUtilityClassWellDefined(BagReader.class);
+  }
+  
   @Test
   public void testReadBagWithinABag() throws Exception{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/bag-in-a-bag").toURI());
