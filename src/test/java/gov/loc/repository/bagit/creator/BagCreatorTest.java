@@ -79,15 +79,24 @@ public class BagCreatorTest extends Assert {
   
   @Test
   public void testCreateDotBagit() throws IOException, NoSuchAlgorithmException{
+    createTestStructure();
+    
     Path rootFolderPath = Paths.get(folder.getRoot().toURI());
     Path dotbagitDir = rootFolderPath.resolve(".bagit");
     Path expectedManifestFile = dotbagitDir.resolve("manifest-md5.txt");
+    Path expectedTagManifestFile = dotbagitDir.resolve("tagmanifest-md5.txt");
     Path expectedBagitFile = dotbagitDir.resolve("bagit.txt");
     
     Bag bag = BagCreator.createDotBagit(rootFolderPath, Arrays.asList(StandardSupportedAlgorithms.MD5), false);
     assertEquals(new Version(2, 0), bag.getVersion());
     
     assertTrue(Files.exists(expectedBagitFile));
+    assertTrue(Files.size(expectedBagitFile) > 0);
+    
     assertTrue(Files.exists(expectedManifestFile));
+    assertTrue(Files.size(expectedManifestFile) > 0);
+    
+    assertTrue(Files.exists(expectedTagManifestFile));
+    assertTrue(Files.size(expectedTagManifestFile) > 0);
   }
 }

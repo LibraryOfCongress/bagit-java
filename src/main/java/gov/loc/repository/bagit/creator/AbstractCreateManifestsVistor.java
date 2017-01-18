@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
@@ -32,7 +33,7 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
   }
   
   public FileVisitResult abstractPreVisitDirectory(final Path dir, final String directoryToIgnore) throws IOException {
-    if(!includeHiddenFiles && PathUtils.isHidden(dir)){
+    if(!includeHiddenFiles && PathUtils.isHidden(dir) && !dir.endsWith(Paths.get(".bagit"))){
       logger.debug("Skipping [{}] since we are ignoring hidden files", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }

@@ -64,7 +64,6 @@ public final class BagCreator {
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
-    //TODO write tag manifests
     logger.info("Creating tag manifest(s)");
     final Map<Manifest, MessageDigest> tagFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
     final CreateTagManifestsVistor tagVistor = new CreateTagManifestsVistor(tagFilesMap, includeHidden);
@@ -106,7 +105,13 @@ public final class BagCreator {
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
     
-    //TODO write tag manifest
+    logger.info("Creating tag manifest(s)");
+    final Map<Manifest, MessageDigest> tagFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
+    final CreateTagManifestsVistor tagVistor = new CreateTagManifestsVistor(tagFilesMap, includeHidden);
+    Files.walkFileTree(dotbagitDir, tagVistor);
+    
+    bag.getTagManifests().addAll(tagFilesMap.keySet());
+    ManifestWriter.writeTagManifests(bag.getTagManifests(), dotbagitDir, root, bag.getFileEncoding());
     
     return bag;
   }
