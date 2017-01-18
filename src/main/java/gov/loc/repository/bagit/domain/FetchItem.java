@@ -29,7 +29,7 @@ public final class FetchItem {
   /**
    * 
    * @param url the {@link URL} of the file
-   * @param length the file length in bytes or -1 to not specify the length
+   * @param length the file length in bytes, -1 or null to not specify the length
    * @param path the path in the bag where the file belongs
    */
   public FetchItem(final URL url, final Long length, final Path path){
@@ -42,14 +42,14 @@ public final class FetchItem {
     final StringBuilder sb = new StringBuilder();
     sb.append(url).append(' ');
     
-    if(length < 0){
+    if(length == null || length < 0){
       sb.append("- ");
     }
     else{
       sb.append(length).append(' ');
     }
     
-    sb.append(path.toString().replaceAll("\\\\", "/"));
+    sb.append(path);
       
     return sb.toString();
   }

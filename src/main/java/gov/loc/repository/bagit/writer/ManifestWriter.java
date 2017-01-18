@@ -5,16 +5,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.util.PathUtils;
 
-public final class ManifestWriter {
+public final class ManifestWriter{
   private static final Logger logger = LoggerFactory.getLogger(PayloadWriter.class);
   
   private ManifestWriter(){
@@ -65,20 +64,11 @@ public final class ManifestWriter {
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
         //there are 2 spaces between the checksum and the path so that the manifests are compatible with the md5sum tools available on most unix systems.
         //This may cause problems on windows due to it being text mode, in which case either replace with a * or try verifying in binary mode with --binary
-        final String line = entry.getValue() + "  " + formatManifestString(relativeTo, entry.getKey()) + System.lineSeparator();
+        final String line = entry.getValue() + "  " + RelativePathWriter.formatRelativePathString(relativeTo, entry.getKey());
         logger.debug("Writing [{}] to [{}]", line, manifestPath);
         Files.write(manifestPath, line.getBytes(charsetName), 
             StandardOpenOption.APPEND, StandardOpenOption.CREATE);
       }
     }
-  }
-  
-  /*
-   * Create a relative path that has \ (windows) path separator replaced with / and encodes newlines
-   */
-  private static String formatManifestString(final Path relativeTo, final Path entry){
-    final String encodedPath = PathUtils.encodeFilename(relativeTo.relativize(entry));
-    
-    return encodedPath.replace('\\', '/');
   }
 }

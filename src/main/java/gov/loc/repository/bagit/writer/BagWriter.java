@@ -54,7 +54,7 @@ public final class BagWriter {
     }
     if(bag.getItemsToFetch().size() > 0){
       logger.debug("writing the fetch file");
-      FetchWriter.writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getFileEncoding());
+      FetchWriter.writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
     }
     if(bag.getTagManifests().size() > 0){
       logger.debug("writing the tag manifest(s)");
