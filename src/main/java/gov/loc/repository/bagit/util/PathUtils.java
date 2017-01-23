@@ -5,7 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.DosFileAttributes;
 
+import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Version;
+
 public final class PathUtils {
+  private static final String PAYLOAD_DIR_NAME = "data";
   
   private PathUtils(){
     //intentionally left blank
@@ -61,5 +65,24 @@ public final class PathUtils {
     }
 
     return Files.isHidden(path);
+  }
+  
+  /*
+   * Get the directory that contains the payload files.
+   */
+  /**
+   * With bagit version 2.0 (.bagit)
+   * payload files are no longer in the "data" directory. This method accounts for this
+   * and will return the directory that contains the payload files
+   * 
+   * @param bag that contains the payload files you want
+   * @return the directory that contains the payload files 
+   */
+  public static Path getDataDir(final Bag bag){
+    if(bag.getVersion().compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+      return bag.getRootDir();
+    }
+    
+    return bag.getRootDir().resolve(PAYLOAD_DIR_NAME);
   }
 }
