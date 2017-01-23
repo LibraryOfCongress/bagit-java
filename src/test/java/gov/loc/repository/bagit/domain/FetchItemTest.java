@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.domain;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -20,7 +21,7 @@ public class FetchItemTest extends Assert {
   @Test
   public void testToString() throws MalformedURLException{
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
-    String expected = "https://github.com/LibraryOfCongress/bagit-java 1 /foo";
+    String expected = "https://github.com/LibraryOfCongress/bagit-java 1 " + File.separator + "foo";
     
     assertEquals("expected [" + expected + "] but got [" + item.toString() + "]", expected, item.toString());
   }
