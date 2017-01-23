@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -18,17 +19,23 @@ import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
 public class BagCreatorTest extends Assert {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
+  private BagCreator sut;
+  
+  @Before
+  public void setup() throws NoSuchAlgorithmException{
+    sut = new BagCreator();
+  }
+  
   @Test
   public void testBagInPlace() throws IOException, NoSuchAlgorithmException{
     List<Path> expectedPayloadFiles = createTestStructure();
     
-    Bag bag = BagCreator.bagInPlace(Paths.get(folder.getRoot().toURI()), Arrays.asList(StandardSupportedAlgorithms.MD5), false);
+    Bag bag = sut.bagInPlace(Paths.get(folder.getRoot().toURI()), false);
     
     assertEquals(new Version(0, 97), bag.getVersion());
     
@@ -87,7 +94,7 @@ public class BagCreatorTest extends Assert {
     Path expectedTagManifestFile = dotbagitDir.resolve("tagmanifest-md5.txt");
     Path expectedBagitFile = dotbagitDir.resolve("bagit.txt");
     
-    Bag bag = BagCreator.createDotBagit(rootFolderPath, Arrays.asList(StandardSupportedAlgorithms.MD5), false);
+    Bag bag = sut.createDotBagit(rootFolderPath, false);
     assertEquals(new Version(2, 0), bag.getVersion());
     
     assertTrue(Files.exists(expectedBagitFile));

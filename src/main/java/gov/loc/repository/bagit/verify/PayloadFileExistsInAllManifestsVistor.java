@@ -26,7 +26,7 @@ public class PayloadFileExistsInAllManifestsVistor extends AbstractPayloadFileEx
     if(Files.isRegularFile(path)){
       for(final Manifest manifest : manifests){
         if(!manifest.getFileToChecksumMap().keySet().contains(path.normalize())){
-          throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in manifest manifest-" + manifest.getAlgorithm().getBagitName() + ".txt");
+          throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in manifest manifest-" + manifest.getBagitAlgorithmName() + ".txt");
         }
       }
     }

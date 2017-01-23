@@ -5,7 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -15,6 +19,10 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.hash.MD5Hasher;
+import gov.loc.repository.bagit.hash.SHA1Hasher;
+import gov.loc.repository.bagit.hash.SHA256Hasher;
+import gov.loc.repository.bagit.hash.SHA512Hasher;
 
 /**
  * responsible for writing out a bag.
@@ -22,8 +30,17 @@ import gov.loc.repository.bagit.hash.Hasher;
 public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
 
-  private BagWriter(){
-    //intentionally left empty
+  private final Map<String, Hasher> bagitNameToHasherMap;
+  
+  public BagWriter() throws NoSuchAlgorithmException{
+    this(Arrays.asList(new MD5Hasher(), new SHA1Hasher(), new SHA256Hasher(), new SHA512Hasher()));
+  }
+  
+  public BagWriter(final Collection<Hasher> hashers){
+    bagitNameToHasherMap = new HashMap<>();
+    for (final Hasher hasher : hashers){
+      bagitNameToHasherMap.put(hasher.getBagitName(), hasher);
+    }
   }
   
   /**
@@ -38,7 +55,7 @@ public final class BagWriter {
    * @throws IOException if there is a problem writing a file
    * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} which is used during update.
    */
-  public static void write(final Bag bag, final Path outputDir) throws IOException, NoSuchAlgorithmException{
+  public void write(final Bag bag, final Path outputDir) throws IOException, NoSuchAlgorithmException{
     logger.debug("writing payload files");
     final Path bagitDir = PayloadWriter.writeVersionDependentPayloadFiles(bag, outputDir);
     
@@ -71,17 +88,20 @@ public final class BagWriter {
    * Update the tag manifest cause the checksum of the other tag files will have changed since we just wrote them out to disk
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  private static Set<Manifest> updateTagManifests(final Bag bag, final Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
+  private Set<Manifest> updateTagManifests(final Bag bag, final Path newBagRootDir) throws NoSuchAlgorithmException, IOException{
     final Set<Manifest> newManifests = new HashSet<>();
     
     for(final Manifest tagManifest : bag.getTagManifests()){
-      final Manifest newManifest = new Manifest(tagManifest.getAlgorithm());
+      final Manifest newManifest = new Manifest(tagManifest.getBagitAlgorithmName());
       
       for(final Path originalPath : tagManifest.getFileToChecksumMap().keySet()){
         final Path relativePath = bag.getRootDir().relativize(originalPath);
         final Path pathToUpdate = newBagRootDir.resolve(relativePath);
-        final MessageDigest messageDigest = MessageDigest.getInstance(tagManifest.getAlgorithm().getMessageDigestName());
-        final String newChecksum = Hasher.hash(pathToUpdate, messageDigest);
+        
+        bagitNameToHasherMap.get(tagManifest.getBagitAlgorithmName()).hashSingleFile(pathToUpdate);
+        final String newChecksum = bagitNameToHasherMap.get(tagManifest.getBagitAlgorithmName()).getCalculatedValue();
+        bagitNameToHasherMap.get(tagManifest.getBagitAlgorithmName()).clear();
+        
         newManifest.getFileToChecksumMap().put(pathToUpdate, newChecksum);
       }
       
@@ -94,7 +114,7 @@ public final class BagWriter {
   /*
    * Write the tag manifest files
    */
-  private static void writeTagManifestFiles(final Set<Manifest> manifests, final Path outputDir, final Path bagRootDir) throws IOException{
+  private void writeTagManifestFiles(final Set<Manifest> manifests, final Path outputDir, final Path bagRootDir) throws IOException{
     for(final Manifest manifest : manifests){
       for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
         final Path relativeLocation = bagRootDir.relativize(entry.getKey());
@@ -106,6 +126,10 @@ public final class BagWriter {
         }
       }
     }
+  }
+
+  public Map<String, Hasher> getBagitNameToHasherMap() {
+    return bagitNameToHasherMap;
   }
   
   

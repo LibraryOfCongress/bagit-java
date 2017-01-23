@@ -55,7 +55,7 @@ public final class ManifestWriter{
    */
   private static void writeManifests(final Set<Manifest> manifests, final Path outputDir, final Path relativeTo, final String filenameBase, final Charset charsetName) throws IOException{
     for(final Manifest manifest : manifests){
-      final Path manifestPath = outputDir.resolve(filenameBase + manifest.getAlgorithm().getBagitName() + ".txt");
+      final Path manifestPath = outputDir.resolve(filenameBase + manifest.getBagitAlgorithmName() + ".txt");
       logger.debug("Writing manifest to [{}]", manifestPath);
 
       Files.deleteIfExists(manifestPath);

@@ -15,7 +15,6 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
 public class PayloadWriterTest extends PrivateConstructorTest {
 
@@ -31,7 +30,7 @@ public class PayloadWriterTest extends PrivateConstructorTest {
   public void testWritePayloadFiles() throws IOException, URISyntaxException{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Path testFile = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").toURI());
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
+    Manifest manifest = new Manifest("md5");
     manifest.getFileToChecksumMap().put(testFile, "someHashValue");
     Set<Manifest> payloadManifests = new HashSet<>();
     payloadManifests.add(manifest);

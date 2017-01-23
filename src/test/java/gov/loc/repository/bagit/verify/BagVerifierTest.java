@@ -8,12 +8,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -30,8 +32,6 @@ import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
-import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.reader.BagReader;
 
 public class BagVerifierTest extends Assert{
@@ -46,17 +46,32 @@ public class BagVerifierTest extends Assert{
   
   private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   
-  private BagVerifier sut = new BagVerifier();
-  private BagReader reader = new BagReader();
+  private BagVerifier sut;
+  
+  @Before
+  public void setup() throws NoSuchAlgorithmException{
+    sut = new BagVerifier();
+  }
+  
+  @Test(expected=VerificationException.class)
+  public void testVerificationExceptionIsThrownForNoSuchAlgorithmException() throws Exception{
+  //will cause a IOException to be thrown when calculating the hash, which gets turned into a VerificationException
+    File file = folder.newFolder(); 
+    
+    Manifest manifest = new Manifest("md5");
+    manifest.getFileToChecksumMap().put(file.toPath(), "foo");
+    
+    sut.checkHashes(manifest);
+  }
   
   @Test
   public void testCanQuickVerify() throws Exception{
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     boolean canQuickVerify = sut.canQuickVerify(bag);
     assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
     
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
-    bag = reader.read(passingRootDir);
+    bag = BagReader.read(passingRootDir);
     canQuickVerify = sut.canQuickVerify(bag);
     assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
   }
@@ -64,14 +79,14 @@ public class BagVerifierTest extends Assert{
   @Test 
   public void testQuickVerify() throws Exception{
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
-    Bag bag = reader.read(passingRootDir);
+    Bag bag = BagReader.read(passingRootDir);
     
     sut.quicklyVerify(bag, true);
   }
   
   @Test(expected=PayloadOxumDoesNotExistException.class)
   public void testExceptionIsThrownWhenPayloadOxumDoesntExist() throws Exception{
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     sut.quicklyVerify(bag, true);
     
   }
@@ -79,7 +94,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=InvalidPayloadOxumException.class)
   public void testInvalidByteSizeForQuickVerify() throws Exception{
     Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumByteSize/bag").toURI());
-    Bag bag = reader.read(badRootDir);
+    Bag bag = BagReader.read(badRootDir);
     
     sut.quicklyVerify(bag, true);
   }
@@ -87,7 +102,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=InvalidPayloadOxumException.class)
   public void testInvalidFileCountForQuickVerify() throws Exception{
     Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumFileCount/bag").toURI());
-    Bag bag = reader.read(badRootDir);
+    Bag bag = BagReader.read(badRootDir);
     
     sut.quicklyVerify(bag, true);
   }
@@ -95,8 +110,7 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testStandardSupportedAlgorithms() throws Exception{
     List<String> algorithms = Arrays.asList("md5", "sha1", "sha256", "sha512");
-    for(String alg : algorithms){
-      StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.valueOf(alg.toUpperCase());
+    for(String algorithm : algorithms){
       Manifest manifest = new Manifest(algorithm);
       sut.checkHashes(manifest);
     }
@@ -105,14 +119,14 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testBagWithTagFilesInPayloadIsValid() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/bags/v0_96/bag-with-tagfiles-in-payload-manifest").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isValid(bag, true);
   }
   
   @Test
   public void testVersion0_97IsValid() throws Exception{
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isValid(bag, true);
   }
@@ -120,14 +134,14 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testVersion2_0IsValid() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/bags/v2_0/bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isValid(bag, true);
   }
   
   @Test
   public void testIsComplete() throws Exception{
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isComplete(bag, true);
   }
@@ -135,7 +149,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenFetchItemsDontExist() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/bad-fetch-bag").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isComplete(bag, true);
   }
@@ -143,7 +157,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=FileNotInPayloadDirectoryException.class)
   public void testErrorWhenManifestListFileThatDoesntExist() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/filesInManifestDontExist").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isComplete(bag, true);
   }
@@ -151,7 +165,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=FileNotInManifestException.class)
   public void testErrorWhenFileIsntInManifest() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/filesInPayloadDirAreNotInManifest").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isComplete(bag, true);
   }
@@ -159,7 +173,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=CorruptChecksumException.class)
   public void testCorruptPayloadFile() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/corruptPayloadFile").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isValid(bag, true);
   }
@@ -167,7 +181,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=CorruptChecksumException.class)
   public void testCorruptTagFile() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/corruptTagFile").toURI());
-    Bag bag = reader.read(rootDir);
+    Bag bag = BagReader.read(rootDir);
     
     sut.isValid(bag, true);
   }
@@ -175,7 +189,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=MissingBagitFileException.class)
   public void testErrorWhenMissingBagitTextFile() throws Exception{
     copyBagToTestFolder();
-    Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
+    Bag bag = BagReader.read(Paths.get(folder.getRoot().toURI()));
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     bagitFile.delete();
     
@@ -185,7 +199,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=MissingPayloadDirectoryException.class)
   public void testErrorWhenMissingPayloadDirectory() throws Exception{
     copyBagToTestFolder();
-    Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
+    Bag bag = BagReader.read(Paths.get(folder.getRoot().toURI()));
     File dataDir = new File(folder.getRoot(), "data");
     deleteDirectory(Paths.get(dataDir.toURI()));
     
@@ -195,7 +209,7 @@ public class BagVerifierTest extends Assert{
   @Test(expected=MissingPayloadManifestException.class)
   public void testErrorWhenMissingPayloadManifest() throws Exception{
     copyBagToTestFolder();
-    Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
+    Bag bag = BagReader.read(Paths.get(folder.getRoot().toURI()));
     File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
     manifestFile.delete();
     
@@ -205,27 +219,14 @@ public class BagVerifierTest extends Assert{
   @Test(expected=UnsupportedAlgorithmException.class)
   public void testErrorWhenUnspportedAlgorithmException() throws Exception{
     Path sha3BagDir = Paths.get(getClass().getClassLoader().getResource("sha3Bag").toURI());
-    BagReader extendedReader = new BagReader();
-    Bag bag = extendedReader.read(sha3BagDir);
+    Bag bag = BagReader.read(sha3BagDir);
     
     sut.isValid(bag, true);
   }
   
-  @Test(expected=VerificationException.class)
-  public void testVerificationExceptionIsThrownForNoSuchAlgorithmException() throws Exception{
-    Path unreadableFile = Paths.get(folder.newFile().toURI());
-    
-    Manifest manifest = new Manifest(new SupportedAlgorithm() {
-      @Override
-      public String getMessageDigestName() {
-        return "FOO";
-      }
-      @Override
-      public String getBagitName() {
-        return "foo";
-      }
-    });
-    manifest.getFileToChecksumMap().put(unreadableFile, "foo");
+  @Test(expected=UnsupportedAlgorithmException.class)
+  public void testUnsupportedAlgorithmExceptionException() throws Exception{
+    Manifest manifest = new Manifest("foo");
     
     sut.checkHashes(manifest);
   }
@@ -233,17 +234,15 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testAddSHA3SupportViaExtension() throws Exception{
     Path sha3BagDir = Paths.get(new File("src/test/resources/sha3Bag").toURI());
-    MySupportedNameToAlgorithmMapping mapping = new MySupportedNameToAlgorithmMapping();
-    BagReader extendedReader = new BagReader(mapping);
-    Bag bag = extendedReader.read(sha3BagDir);
-    BagVerifier extendedSut = new BagVerifier(mapping);
+    Bag bag = BagReader.read(sha3BagDir);
+    BagVerifier extendedSut = new BagVerifier(Arrays.asList(new SHA3Hasher()));
     extendedSut.isValid(bag, true);
   }
   
   @Test(expected=FileNotInManifestException.class)
   public void testNotALlFilesListedInAllManifestsThrowsException() throws Exception{
     Path bagDir = Paths.get(new File("src/test/resources/notAllFilesListedInAllManifestsBag").toURI());
-    Bag bag = reader.read(bagDir);
+    Bag bag = BagReader.read(bagDir);
     sut.isValid(bag, true);
   }
   
@@ -253,7 +252,7 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testManifestsWithLeadingDotSlash() throws Exception{
     Path bagPath = Paths.get(new File("src/test/resources/bag-with-leading-dot-slash-in-manifest").toURI());
-    Bag bag = reader.read(bagPath);
+    Bag bag = BagReader.read(bagPath);
     
     sut.isValid(bag, true);
   }

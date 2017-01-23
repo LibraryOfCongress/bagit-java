@@ -12,7 +12,6 @@ import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
-import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 
 public class ManifestReaderTest extends PrivateConstructorTest {
   
@@ -26,7 +25,7 @@ public class ManifestReaderTest extends PrivateConstructorTest {
     Path rootBag = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Bag bag = new Bag();
     bag.setRootDir(rootBag);
-    ManifestReader.readAllManifests(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), rootBag, bag);
+    ManifestReader.readAllManifests(rootBag, bag);
     assertEquals(1, bag.getPayLoadManifests().size());
     assertEquals(1, bag.getTagManifests().size());
   }

@@ -16,7 +16,6 @@ import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
 public class ManifestWriterTest extends PrivateConstructorTest {
   
@@ -31,7 +30,7 @@ public class ManifestWriterTest extends PrivateConstructorTest {
   @Test
   public void testWriteTagManifests() throws IOException{
     Set<Manifest> tagManifests = new HashSet<>();
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
+    Manifest manifest = new Manifest("md5");
     manifest.getFileToChecksumMap().put(Paths.get("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
     tagManifests.add(manifest);
     File outputDir = folder.newFolder();
@@ -45,7 +44,7 @@ public class ManifestWriterTest extends PrivateConstructorTest {
   @Test
   public void testManifestsDontContainWindowsFilePathSeparator() throws IOException{
     Set<Manifest> tagManifests = new HashSet<>();
-    Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
+    Manifest manifest = new Manifest("md5");
     manifest.getFileToChecksumMap().put(Paths.get("/foo/bar/ham/data/one/two/buckleMyShoe.txt"), "someHashValue");
     tagManifests.add(manifest);
     File outputDir = folder.newFolder();

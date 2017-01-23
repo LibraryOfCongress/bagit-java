@@ -30,13 +30,6 @@ import gov.loc.repository.bagit.verify.BagVerifier;
 public class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   
-  
-  private final BagReader reader;
-  
-  public BagLinter(){
-    reader = new BagReader();
-  }
-  
   /**
    * The BagIt specification is very flexible in what it allows which leads to situations 
    * where something may be technically allowed, but should be discouraged.
@@ -104,7 +97,4 @@ public class BagLinter {
     return warnings;
   }
   
-  public BagReader getReader() {
-    return reader;
-  }
 }

@@ -60,22 +60,22 @@ to follow modern Java practices and will require some changes to existing code:
 ##### Create a bag from a folder using version 0.97
 ```java
 Path folder = Paths.get("FolderYouWantToBag");
-StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 boolean includeHiddenFiles = false;
-Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
+BagCreator bagCreator = new BagCreator();
+Bag bag = bagCreator.bagInPlace(folder, includeHiddenFiles);
 ```
 
 ##### Read an existing bag (version 0.93 and higher)
 ```java
 Path rootDir = Paths.get("RootDirectoryOfExistingBag");
-BagReader reader = new BagReader();
-Bag bag = reader.read(rootDir);
+Bag bag = BagReader.read(rootDir);
 ```
 
 ##### Write a Bag object to disk
 ```java
 Path outputDir = Paths.get("WhereYouWantToWriteTheBagTo");
-BagWriter.write(bag, outputDir); //where bag is a Bag object
+BagWriter bagWriter = new BagWriter();
+bagWriter.write(bag, outputDir); //where bag is a Bag object
 ```
 
 ##### Verify Complete
@@ -104,34 +104,83 @@ if(verifier.canQuickVerify(bag)){
 
 ##### Add other checksum algorithms
 
-You only need to implement 2 interfaces:
+You only need to implement 1 interface and then add the implemented `Hasher` 
+to the `bagitNameToHasherMap` in `BagCreator`, `BagVerifier` or `BagWriter` before using their methods.
+Below is an example implementation for a SHA3 hasher
 
 ```java
-public class MyNewSupportedAlgorithm implements SupportedAlgorithm {
-  @Override
-  public String getMessageDigestName() {
-    return "SHA3-256";
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+import java.util.Formatter;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
+
+public class MySHA3Hasher implements Hasher {
+  static {
+    if (Security.getProvider("BC") == null) {
+      Security.addProvider(new BouncyCastleProvider());
+    }
   }
+  
+  private static final Logger logger = LoggerFactory.getLogger(SHA1Hasher.class);
+  private MessageDigest messageDigest;
+  private final String bagitName;
+  private final String messageDigestName;
+  
+  public MyNewHasher(final String messageDigestName, final String bagitName) throws NoSuchAlgorithmException {
+    this.messageDigestName = messageDigestName;
+    this.bagitName = bagitName;
+    messageDigest = MessageDigest.getInstance(messageDigestName);
+  }
+
+  @Override
+  public void update(byte[] buffer, int length) {
+    messageDigest.update(buffer, 0, length);
+  }
+
+  @Override
+  public void clear() {
+    try {
+      messageDigest = MessageDigest.getInstance(messageDigestName);
+    } catch (NoSuchAlgorithmException e) {
+      logger.error("Could not get a new instance of the {} message digest", messageDigestName, e);
+    }
+  }
+
+  @Override
+  public String getCalculatedValue() {
+    final Formatter formatter = new Formatter();
+    
+    for (final byte b : messageDigest.digest()) {
+      formatter.format("%02x", b);
+    }
+    
+    final String hash = formatter.toString();
+    formatter.close();
+    
+    return hash;
+  }
+
   @Override
   public String getBagitName() {
-    return "sha3256";
+    return bagitName;
   }
-}
 
-public class MyNewNameMapping implements BagitAlgorithmNameToSupportedAlgorithmMapping {
   @Override
-  public SupportedAlgorithm getMessageDigestName(String bagitAlgorithmName) {
-    if("sha3256".equals(bagitAlgorithmName)){
-      return new MyNewSupportedAlgorithm();
+  public Hasher instanceOf() throws UnsupportedAlgorithmException {
+    try {
+      return new MyNewHasher(messageDigestName, bagitName);
+    } catch (NoSuchAlgorithmException e) {
+      throw new UnsupportedAlgorithmException(e);
     }
-
-    return StandardSupportedAlgorithms.valueOf(bagitAlgorithmName.toUpperCase());
   }
 }
 ```
-
-and then add the implemented `BagitAlgorithmNameToSupportedAlgorithmMapping`
-class to your `BagReader` or `bagVerifier` object before using their methods.
 
 #### Check for potential problems
 
@@ -169,5 +218,6 @@ Inside the bagit-java root directory, run `gradle check`.
 Simply run `gradle eclipse` and it will automatically create a eclipse project for you that you can import.
 
 ### Roadmap for this library
-* Further refine reading and writing of bags version 0.93-0.97
+* Further refine reading and writing of bags version 0.93-1.0
 * Fix bugs/issues reported with new library (on going)
+* Test/propose new features in branches (like `.bagit`)
