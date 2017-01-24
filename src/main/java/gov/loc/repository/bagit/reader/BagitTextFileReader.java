@@ -72,22 +72,19 @@ public final class BagitTextFileReader {
     for(final SimpleImmutableEntry<String, String> pair : pairs){
       if("BagIt-Version".equals(pair.getKey())){
         version = pair.getValue();
-        logger.debug("BagIt-Version is [{}]", version);
         values.version = parseVersion(version);
       }
       if("Tag-File-Character-Encoding".equals(pair.getKey())){
         encoding = Charset.forName(pair.getValue());
-        logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
         values.encoding = encoding;
       }
       if("Payload-Byte-Count".equals(pair.getKey())){ //assume version is 1.0+
-        logger.debug("Payload-Byte-Count is [{}]", pair.getKey());
         values.payloadByteCount = Long.valueOf(pair.getValue());
       }
       if("Payload-File-Count".equals(pair.getKey())){ //assume version is 1.0+
-        logger.debug("Payload-File-Count is [{}]", pair.getKey());
         values.payloadFileCount = Long.valueOf(pair.getValue());
       }
+      logger.debug("[{}] is [{}]", pair.getKey(), pair.getValue());
     }
     
     return values;

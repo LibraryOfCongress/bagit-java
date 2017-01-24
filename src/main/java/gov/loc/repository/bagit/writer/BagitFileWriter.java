@@ -55,22 +55,18 @@ public final class BagitFileWriter {
     final Path bagitPath = outputDir.resolve("bagit.txt");
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
     
+    final StringBuilder sb = new StringBuilder(100);
     
-    final String firstLine = "BagIt-Version : " + version + System.lineSeparator();
-    logger.debug("Writing line [{}] to [{}]", firstLine, bagitPath);
-    Files.write(bagitPath, firstLine.getBytes(StandardCharsets.UTF_8), 
-        StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+    sb.append("BagIt-Version : ").append(version).append(System.lineSeparator())
+    .append("Tag-File-Character-Encoding : ").append(encoding).append(System.lineSeparator());
     
-    final String secondLine = "Tag-File-Character-Encoding : " + encoding + System.lineSeparator();
-    logger.debug("Writing line [{}] to [{}]", secondLine, bagitPath);
-    Files.write(bagitPath, secondLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-    
+    logger.debug("Writing [{}] to [{}]", sb.toString(), bagitPath);
     if(version.compareTo(ONE_DOT_ZERO) >= 0 && payloadByteCount != null && payloadFileCount != null){ //if it is 1.0 or greater
-      final String thirdLine = "Payload-Byte-Count : " + payloadByteCount + System.lineSeparator();
-      Files.write(bagitPath, thirdLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-      
-      final String fourthLine = "Payload-File-Count : " + payloadFileCount + System.lineSeparator();
-      Files.write(bagitPath, fourthLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+      sb.append("Payload-Byte-Count : ").append(payloadByteCount).append(System.lineSeparator())
+      .append("Payload-File-Count : ").append(payloadFileCount).append(System.lineSeparator());
     }
+    
+    Files.write(bagitPath, sb.toString().getBytes(StandardCharsets.UTF_8), 
+        StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
   }
 }
