@@ -33,9 +33,21 @@ public final class QuickVerifier {
    * @return true if the bag can be quickly verified
    */
   public static boolean canQuickVerify(final Bag bag){
+    boolean payloadInfoExists = false;
+    
+    if(bag.getPayloadByteCount() != null && bag.getPayloadFileCount() != null){
+      logger.debug("Found payload byte and file count, using that instead of payload-oxum");
+      //TODO check if it matches payload-oxum, and if not issue warning?
+      payloadInfoExists = true;
+    }
+    
     final String payloadOxum = getPayloadOxum(bag);
-    logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
-    return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
+    if(payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
+      logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
+      payloadInfoExists = true;
+    }
+    
+    return payloadInfoExists && bag.getItemsToFetch().size() == 0;
   }
   
   /*
@@ -53,7 +65,7 @@ public final class QuickVerifier {
   /**
    * Quickly verify by comparing the number of files and the total number of bytes expected
    * 
-   * @param bag the bag to verify by payload-oxum
+   * @param bag the bag to quickly verify
    * @param ignoreHiddenFiles ignore hidden files found in payload directory
    * 
    * @throws IOException if there is an error reading a file
@@ -63,9 +75,36 @@ public final class QuickVerifier {
    * To check, run {@link BagVerifier#canQuickVerify}
    */
   public static void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+    final SimpleImmutableEntry<Long, Long> byteAndFileCount = getByteAndFileCount(bag);
+    
+    final Path payloadDir = PathUtils.getDataDir(bag);
+    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
+    Files.walkFileTree(payloadDir, vistor);
+    logger.info("supplied payload-oxum: [{}.{}], Calculated payload-oxum: [{}.{}], for payload directory [{}]", 
+        byteAndFileCount.getKey(), byteAndFileCount.getValue(), vistor.getTotalSize(), vistor.getCount(), payloadDir);
+    
+    if(byteAndFileCount.getKey() != vistor.getTotalSize()){
+      throw new InvalidPayloadOxumException("Invalid total size. Expected " + byteAndFileCount.getKey() + " but calculated " + vistor.getTotalSize());
+    }
+    if(byteAndFileCount.getValue() != vistor.getCount()){
+      throw new InvalidPayloadOxumException("Invalid file count. Expected " + byteAndFileCount.getValue() + " but found " + vistor.getCount() + " files");
+    }
+  }
+  
+  /**
+   * get either the payload-oxum values or the payload-byte-count and payload-file-count
+   * 
+   * @param bag the bag to get the payload info from
+   * @return the byte count, the file count
+   */
+  private static SimpleImmutableEntry<Long, Long> getByteAndFileCount(final Bag bag){
+    if(bag.getPayloadByteCount() != null && bag.getPayloadFileCount() != null){
+      return new SimpleImmutableEntry<Long, Long>(bag.getPayloadByteCount(), bag.getPayloadFileCount());
+    }
+    
     final String payloadOxum = getPayloadOxum(bag);
     if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
-      throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
+      throw new PayloadOxumDoesNotExistException("Payload-Oxum or payload-byte-count and payload-file-count does not exist in bag.");
     }
 
     final String[] parts = payloadOxum.split("\\.");
@@ -74,16 +113,6 @@ public final class QuickVerifier {
     logger.debug("Parsing [{}] for the number of files to find in the payload directory", parts[1]);
     final long numberOfFiles = Long.parseLong(parts[1]);
     
-    final Path payloadDir = PathUtils.getDataDir(bag);
-    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
-    Files.walkFileTree(payloadDir, vistor);
-    logger.info("supplied payload-oxum: [{}], Calculated payload-oxum: [{}.{}], for payload directory [{}]", payloadOxum, vistor.getTotalSize(), vistor.getCount(), payloadDir);
-    
-    if(totalSize != vistor.getTotalSize()){
-      throw new InvalidPayloadOxumException("Invalid total size. Expected " + totalSize + "but calculated " + vistor.getTotalSize());
-    }
-    if(numberOfFiles != vistor.getCount()){
-      throw new InvalidPayloadOxumException("Invalid file count. Expected " + numberOfFiles + "but found " + vistor.getCount() + " files");
-    }
+    return new SimpleImmutableEntry<>(totalSize, numberOfFiles);
   }
 }

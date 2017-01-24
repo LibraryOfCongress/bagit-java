@@ -43,4 +43,29 @@ public class BagitFileWriterTest extends PrivateConstructorTest {
         Files.getLastModifiedTime(bagit).toMillis() >= originalModified);
     assertEquals(size, Files.size(bagit));
   }
+  
+  @Test
+  public void testBagitFileWritesOptionalLines() throws Exception{
+    File rootDir = folder.newFolder();
+    Path rootDirPath = Paths.get(rootDir.toURI());
+    Path bagit = rootDirPath.resolve("bagit.txt");
+    
+    assertFalse(Files.exists(bagit));
+    BagitFileWriter.writeBagitFile(new Version(1, 0), StandardCharsets.UTF_8, 5l, 5l, rootDirPath);
+    assertTrue(Files.exists(bagit));
+    assertEquals(4, Files.readAllLines(bagit).size());
+  }
+  
+  @Test //should not write payload byte and file count lines for version older than 1.0
+  public void testBagitFileDoesntWritesOptionalLines() throws Exception{
+    File rootDir = folder.newFolder();
+    Path rootDirPath = Paths.get(rootDir.toURI());
+    Path bagit = rootDirPath.resolve("bagit.txt");
+    
+    assertFalse(Files.exists(bagit));
+    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, 5l, 5l, rootDirPath);
+    assertTrue(Files.exists(bagit));
+    assertEquals(2, Files.readAllLines(bagit).size());
+  }
+  
 }

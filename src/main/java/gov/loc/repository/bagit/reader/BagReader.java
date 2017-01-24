@@ -1,13 +1,10 @@
 package gov.loc.repository.bagit.reader;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap.SimpleImmutableEntry;
 
 import gov.loc.repository.bagit.domain.Bag;
-import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
@@ -53,10 +50,7 @@ public final class BagReader {
     }
     bag.setRootDir(rootDir);
     
-    final Path bagitFile = bagitDir.resolve("bagit.txt");
-    final SimpleImmutableEntry<Version, Charset> bagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);
-    bag.setVersion(bagitInfo.getKey());
-    bag.setFileEncoding(bagitInfo.getValue());
+    BagitTextFileReader.readBagitTextFile(bag);
     
     ManifestReader.readAllManifests(nameMapping, bagitDir, bag);
     

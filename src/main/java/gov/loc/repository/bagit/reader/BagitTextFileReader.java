@@ -3,13 +3,15 @@ package gov.loc.repository.bagit.reader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
@@ -32,8 +34,38 @@ public final class BagitTextFileReader {
    * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
   public static SimpleImmutableEntry<Version, Charset> readBagitTextFile(final Path bagitFile) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
+    final BagitFileValues values = parseValues(bagitFile);
+    
+    return new SimpleImmutableEntry<Version, Charset>(values.version, values.encoding);
+  }
+  
+  /**
+   * Read the bagit.txt file and get the version and encoding. In version 1.0+ also check for
+   * payload-byte-count and payload-file-count
+   * 
+   * @param bag the to read that contains the bagit.txt file and set the values in the bag
+   * 
+   * @throws IOException if there is a problem reading a file
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
+   */
+  public static void readBagitTextFile(final Bag bag) throws IOException, UnparsableVersionException, InvalidBagMetadataException{
+    Path bagitDir = bag.getRootDir().resolve(".bagit");
+    if(!Files.exists(bagitDir)){
+      bagitDir = bag.getRootDir();
+    }
+    final BagitFileValues values = parseValues(bagitDir.resolve("bagit.txt"));
+    
+    bag.setVersion(values.version);
+    bag.setFileEncoding(values.encoding);
+    bag.setPayloadByteCount(values.payloadByteCount);
+    bag.setPayloadFileCount(values.payloadFileCount);
+  }
+  
+  private static BagitFileValues parseValues(final Path bagitFile) throws UnparsableVersionException, IOException, InvalidBagMetadataException{
     logger.debug("Reading [{}] file", bagitFile);
     final List<SimpleImmutableEntry<String, String>> pairs = KeyValueReader.readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
+    final BagitFileValues values = new BagitFileValues();
     
     String version = "";
     Charset encoding = StandardCharsets.UTF_8;
@@ -41,14 +73,24 @@ public final class BagitTextFileReader {
       if("BagIt-Version".equals(pair.getKey())){
         version = pair.getValue();
         logger.debug("BagIt-Version is [{}]", version);
+        values.version = parseVersion(version);
       }
       if("Tag-File-Character-Encoding".equals(pair.getKey())){
         encoding = Charset.forName(pair.getValue());
         logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
+        values.encoding = encoding;
+      }
+      if("Payload-Byte-Count".equals(pair.getKey())){ //assume version is 1.0+
+        logger.debug("Payload-Byte-Count is [{}]", pair.getKey());
+        values.payloadByteCount = Long.valueOf(pair.getValue());
+      }
+      if("Payload-File-Count".equals(pair.getKey())){ //assume version is 1.0+
+        logger.debug("Payload-File-Count is [{}]", pair.getKey());
+        values.payloadFileCount = Long.valueOf(pair.getValue());
       }
     }
     
-    return new SimpleImmutableEntry<Version, Charset>(parseVersion(version), encoding);
+    return values;
   }
   
   /*
@@ -64,5 +106,13 @@ public final class BagitTextFileReader {
     final int minor = Integer.parseInt(parts[1]);
     
     return new Version(major, minor);
+  }
+  
+  @SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
+  private static class BagitFileValues{
+    public Version version;
+    public Charset encoding;
+    public Long payloadByteCount;
+    public Long payloadFileCount;
   }
 }

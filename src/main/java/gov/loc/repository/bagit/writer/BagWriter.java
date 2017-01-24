@@ -43,7 +43,7 @@ public final class BagWriter {
     final Path bagitDir = PayloadWriter.writeVersionDependentPayloadFiles(bag, outputDir);
     
     logger.debug("writing the bagit.txt file");
-    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
+    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bag.getPayloadByteCount(), bag.getPayloadFileCount(), bagitDir);
     
     logger.debug("writing the payload manifest(s)");
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
