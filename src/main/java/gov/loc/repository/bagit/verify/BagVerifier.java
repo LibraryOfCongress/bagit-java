@@ -18,6 +18,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
@@ -25,6 +26,7 @@ import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
+import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
@@ -61,8 +63,12 @@ public final class BagVerifier {
    * 
    * @param bag the {@link Bag} object you wish to check
    * @return true if the bag can be quickly verified
+   * 
+   * @throws IOException if there is a problem reading a file
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  public boolean canQuickVerify(final Bag bag){
+  public boolean canQuickVerify(final Bag bag) throws UnparsableVersionException, IOException, InvalidBagMetadataException{
     return QuickVerifier.canQuickVerify(bag);
   }
   
@@ -72,13 +78,15 @@ public final class BagVerifier {
    * @param bag the bag to verify by payload-oxum
    * @param ignoreHiddenFiles ignore hidden files found in payload directory
    * 
-   * @throws IOException if there is an error reading a file
    * @throws InvalidPayloadOxumException if either the total bytes or the number of files 
    * calculated for the payload directory of the bag is different than the supplied values
+   * @throws IOException if there is a problem reading a file
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+  public void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException, UnparsableVersionException, InvalidBagMetadataException{
     QuickVerifier.quicklyVerify(bag, ignoreHiddenFiles);
   }
 
@@ -150,7 +158,7 @@ public final class BagVerifier {
    * <li>every element is present
    * <li>every file in the payload manifest(s) are present
    * <li>every file in the tag manifest(s) are present. Tag files not listed in a tag manifest may be present.
-   * <li>every file in the data directory must be listed in at least one payload manifest
+   * <li>every file in the payload directory must be listed in at least one payload manifest
    * <li>each element must comply with the bagit spec
    * </ul>
    * 

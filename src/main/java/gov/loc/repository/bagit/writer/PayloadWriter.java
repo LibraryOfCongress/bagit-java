@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.util.PathUtils;
 
 public final class PayloadWriter {
   private static final Logger logger = LoggerFactory.getLogger(PayloadWriter.class);
@@ -35,7 +36,7 @@ public final class PayloadWriter {
     else{
       final Path dataDir = outputDir.resolve("data");
       Files.createDirectories(dataDir);
-      writePayloadFiles(bag.getPayLoadManifests(), dataDir, bag.getRootDir().resolve("data"));
+      writePayloadFiles(bag.getPayLoadManifests(), dataDir, PathUtils.getDataDir(bag));
     }
     
     return bagitDir;
@@ -45,8 +46,8 @@ public final class PayloadWriter {
   * Write the payload <b>file(s)</b> to the output directory
   * 
   * @param payloadManifests the set of objects representing the payload manifests
-  * @param outputDir the data directory of the bag
-  * @param bagDataDir the data directory of the bag
+  * @param outputDir the payload directory of the bag
+  * @param bagDataDir the payload directory of the bag
   * 
   * @throws IOException if there was a problem writing a file
   */

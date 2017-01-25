@@ -36,8 +36,16 @@ public class QuickVerifierTest extends PrivateConstructorTest {
   }
   
   @Test 
-  public void testQuickVerify() throws Exception{
+  public void testQuickVerifyUsingPayloadOxum() throws Exception{
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
+    Bag bag = reader.read(passingRootDir);
+    
+    QuickVerifier.quicklyVerify(bag, true);
+  }
+  
+  @Test 
+  public void testQuickVerifyUsingPayloadByteAndFileCount() throws Exception{
+    Path passingRootDir = Paths.get(new File("src/test/resources/bags/v1_0/bag").toURI());
     Bag bag = reader.read(passingRootDir);
     
     QuickVerifier.quicklyVerify(bag, true);

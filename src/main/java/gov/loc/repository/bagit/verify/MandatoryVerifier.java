@@ -33,7 +33,7 @@ public final class MandatoryVerifier {
   }
 
   /**
-   * make sure all the fetch items exist in the data directory
+   * make sure all the fetch items exist in the payload directory
    * 
    * @param items the items that needed to be fetched for the bag to be complete
    * @param bagDir the root directory of the bag
@@ -76,8 +76,8 @@ public final class MandatoryVerifier {
    * @throws MissingPayloadDirectoryException if the bag does not contain the payload directory
    */
   public static void checkPayloadDirectoryExists(final Bag bag) throws MissingPayloadDirectoryException{
-    logger.info("Checking if special payload directory exists (only for version 0.97 and earlier)");
     final Path dataDir = PathUtils.getDataDir(bag);
+    logger.info("Checking if payload directory [{}] exists", dataDir);
     
     if(!Files.exists(dataDir)){
       throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");

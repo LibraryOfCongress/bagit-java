@@ -1,0 +1,4 @@
+BagIt-Version: 1.0
+Tag-File-Character-Encoding: UTF-8
+Payload-Byte-Count: 25
+Payload-File-Count: 5
