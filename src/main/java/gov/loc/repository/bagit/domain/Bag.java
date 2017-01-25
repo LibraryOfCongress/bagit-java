@@ -39,9 +39,6 @@ public final class Bag {
   
   private Long payloadByteCount;
   
-  //TODO
-//  add payload file and byte count here and to reader. Use in verifier and writer
-  
   /**
    * empty bag with an invalid version
    */
@@ -73,50 +70,6 @@ public final class Bag {
     this.rootDir = bag.getRootDir();
   }
   
-  public Version getVersion(){
-    return version;
-  }
-
-  public Set<Manifest> getPayLoadManifests() {
-    return payLoadManifests;
-  }
-
-  public void setPayLoadManifests(final Set<Manifest> payLoadManifests) {
-    this.payLoadManifests = payLoadManifests;
-  }
-
-  public Set<Manifest> getTagManifests() {
-    return tagManifests;
-  }
-
-  public void setTagManifests(final Set<Manifest> tagManifests) {
-    this.tagManifests = tagManifests;
-  }
-
-  public List<FetchItem> getItemsToFetch() {
-    return itemsToFetch;
-  }
-
-  public void setItemsToFetch(final List<FetchItem> itemsToFetch) {
-    this.itemsToFetch = itemsToFetch;
-  }
-
-  public List<SimpleImmutableEntry<String, String>> getMetadata() {
-    return metadata;
-  }
-
-  public void setMetadata(final List<SimpleImmutableEntry<String, String>> metadata) {
-    this.metadata = metadata;
-  }
-
-  public Charset getFileEncoding() {
-    return fileEncoding;
-  }
-
-  public void setFileEncoding(final Charset fileEncoding) {
-    this.fileEncoding = fileEncoding;
-  }
-
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(95);
@@ -161,6 +114,50 @@ public final class Bag {
         Objects.equals(this.tagManifests, other.getTagManifests()) &&
         Objects.equals(this.itemsToFetch, other.getItemsToFetch()) &&
         Objects.equals(this.metadata, other.getMetadata());
+  }
+  
+  public Version getVersion(){
+    return version;
+  }
+
+  public Set<Manifest> getPayLoadManifests() {
+    return payLoadManifests;
+  }
+
+  public void setPayLoadManifests(final Set<Manifest> payLoadManifests) {
+    this.payLoadManifests = payLoadManifests;
+  }
+
+  public Set<Manifest> getTagManifests() {
+    return tagManifests;
+  }
+
+  public void setTagManifests(final Set<Manifest> tagManifests) {
+    this.tagManifests = tagManifests;
+  }
+
+  public List<FetchItem> getItemsToFetch() {
+    return itemsToFetch;
+  }
+
+  public void setItemsToFetch(final List<FetchItem> itemsToFetch) {
+    this.itemsToFetch = itemsToFetch;
+  }
+
+  public List<SimpleImmutableEntry<String, String>> getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(final List<SimpleImmutableEntry<String, String>> metadata) {
+    this.metadata = metadata;
+  }
+
+  public Charset getFileEncoding() {
+    return fileEncoding;
+  }
+
+  public void setFileEncoding(final Charset fileEncoding) {
+    this.fileEncoding = fileEncoding;
   }
 
   public Path getRootDir() {

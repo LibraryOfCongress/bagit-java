@@ -150,7 +150,7 @@ public final class BagVerifier {
    * <li>every element is present
    * <li>every file in the payload manifest(s) are present
    * <li>every file in the tag manifest(s) are present. Tag files not listed in a tag manifest may be present.
-   * <li>every file in the data directory must be listed in at least one payload manifest
+   * <li>every file in the payload directory must be listed in at least one payload manifest
    * <li>each element must comply with the bagit spec
    * </ul>
    * 

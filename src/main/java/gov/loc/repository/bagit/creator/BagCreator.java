@@ -18,6 +18,7 @@ import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
+import gov.loc.repository.bagit.util.PathUtils;
 import gov.loc.repository.bagit.writer.BagitFileWriter;
 import gov.loc.repository.bagit.writer.ManifestWriter;
 
@@ -26,6 +27,8 @@ import gov.loc.repository.bagit.writer.ManifestWriter;
  */
 public final class BagCreator {
   private static final Logger logger = LoggerFactory.getLogger(BagCreator.class);
+  private static final int LATEST_MAJOR_VERSION = 0;
+  private static final int LATEST_MINOR_VERSION = 97;
   
   private BagCreator(){}
   
@@ -42,11 +45,11 @@ public final class BagCreator {
    * @return a {@link Bag} object representing the newly created bagit bag
    */
   public static Bag bagInPlace(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
-    final Bag bag = new Bag(new Version(0, 97));
+    final Bag bag = new Bag(new Version(LATEST_MAJOR_VERSION, LATEST_MINOR_VERSION));
     bag.setRootDir(root);
     logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
     
-    final Path dataDir = root.resolve("data");
+    final Path dataDir = PathUtils.getDataDir(bag);
     Files.createDirectory(dataDir);
     final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root);
     for(final Path path : directoryStream){
