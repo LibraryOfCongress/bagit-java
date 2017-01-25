@@ -5,7 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -21,6 +24,7 @@ import gov.loc.repository.bagit.hash.Hasher;
  */
 public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
+  private static final String PAYLOAD_OXUM_KEY = "Payload-Oxum";
 
   private BagWriter(){
     //intentionally left empty
@@ -41,9 +45,14 @@ public final class BagWriter {
   public static void write(final Bag bag, final Path outputDir) throws IOException, NoSuchAlgorithmException{
     logger.debug("writing payload files");
     final Path bagitDir = PayloadWriter.writeVersionDependentPayloadFiles(bag, outputDir);
+
+    logger.debug("Calculating the payload oxum");
+    final SimpleImmutableEntry<Long, Long> payloadByteAndFileCount = calculatePayloadByteAndFileCount(bag.getPayLoadManifests());
+    updateMetadataWithPayloadInfo(bag, payloadByteAndFileCount.getKey(), payloadByteAndFileCount.getValue());
     
     logger.debug("writing the bagit.txt file");
-    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bag.getPayloadByteCount(), bag.getPayloadFileCount(), bagitDir);
+    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), payloadByteAndFileCount.getKey(), 
+        payloadByteAndFileCount.getValue(), bagitDir);
     
     logger.debug("writing the payload manifest(s)");
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
@@ -65,7 +74,33 @@ public final class BagWriter {
     }
   }
   
+  private static SimpleImmutableEntry<Long, Long> calculatePayloadByteAndFileCount(final Set<Manifest> manifests) throws IOException{
+    long byteCount = 0l;
+    
+    final Set<Path> uniquePaths = new HashSet<>();
+    for(final Manifest manifest : manifests){
+      uniquePaths.addAll(manifest.getFileToChecksumMap().keySet());
+    }
+    
+    for(final Path file : uniquePaths){
+      byteCount += Files.size(file);
+    }
+    
+    return new SimpleImmutableEntry<>(byteCount, Long.valueOf(uniquePaths.size()));
+  }
   
+  private static void updateMetadataWithPayloadInfo(final Bag bag, final long byteCount, final long fileCount){
+    final List<SimpleImmutableEntry<String, String>> updatedMetadata = new ArrayList<>();
+    
+    for(final SimpleImmutableEntry<String, String> metadata : bag.getMetadata()){
+      if(!PAYLOAD_OXUM_KEY.equals(metadata.getKey())){
+        updatedMetadata.add(metadata);
+      }
+    }
+    
+    updatedMetadata.add(new SimpleImmutableEntry<>(PAYLOAD_OXUM_KEY, byteCount + "." + fileCount));
+    bag.setMetadata(updatedMetadata);
+  }
   
   /*
    * Update the tag manifest cause the checksum of the other tag files will have changed since we just wrote them out to disk

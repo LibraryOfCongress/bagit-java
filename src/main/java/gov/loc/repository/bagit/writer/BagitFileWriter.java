@@ -22,19 +22,6 @@ public final class BagitFileWriter {
   }
   
   /**
-   * Write the bagit.txt file in required UTF-8 encoding.
-   * 
-   * @param version the version of the bag to write out
-   * @param encoding the encoding of the tag files
-   * @param outputDir the root of the bag
-   * 
-   * @throws IOException if there was a problem writing the file
-   */
-  public static void writeBagitFile(final Version version, final Charset encoding, final Path outputDir) throws IOException{
-    writeBagitFileInternal(version, encoding, null, null, outputDir);
-  }
-  
-  /**
    * Write the bagit.txt file in required UTF-8 encoding for versions 1.0+
    * 
    * @param version the version of the bag to write out

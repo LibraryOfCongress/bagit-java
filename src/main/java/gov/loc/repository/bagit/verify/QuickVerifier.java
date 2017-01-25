@@ -9,8 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
 import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
+import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.reader.BagitFileValues;
+import gov.loc.repository.bagit.reader.BagitTextFileReader;
 import gov.loc.repository.bagit.util.PathUtils;
 
 /**
@@ -32,16 +36,22 @@ public final class QuickVerifier {
    * 
    * @param bag
    *          the {@link Bag} object you wish to check
+   *          
    * @return true if the bag can be quickly verified
+   * 
+   * @throws IOException if there is a problem reading a file
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  public static boolean canQuickVerify(final Bag bag) {
+  public static boolean canQuickVerify(final Bag bag) throws UnparsableVersionException, IOException, InvalidBagMetadataException {
     boolean payloadInfoExists = false;
     final String payloadOxum = getPayloadOxum(bag);
+    final BagitFileValues bagitValues = BagitTextFileReader.parseValues(bag.getRootDir().resolve("bagit.txt"));
 
-    if (bag.getPayloadByteCount() != null && bag.getPayloadFileCount() != null) {
+    if (bagitValues.getPayloadByteCount() != null && bagitValues.getPayloadFileCount() != null) {
       logger.debug("Found payload byte and file count, using that instead of payload-oxum");
       if(payloadOxum != null){
-        comparePayloadOxumWithByteAndFileCount(payloadOxum, bag.getPayloadByteCount(), bag.getPayloadFileCount());
+        comparePayloadOxumWithByteAndFileCount(payloadOxum, bagitValues.getPayloadByteCount(), bagitValues.getPayloadFileCount());
       }
       payloadInfoExists = true;
     }
@@ -83,23 +93,22 @@ public final class QuickVerifier {
    * Quickly verify by comparing the number of files and the total number of
    * bytes expected
    * 
-   * @param bag
-   *          the bag to quickly verify
-   * @param ignoreHiddenFiles
-   *          ignore hidden files found in payload directory
+   * @param bag the bag to quickly verify
+   * @param ignoreHiddenFiles ignore hidden files found in payload directory
    * 
-   * @throws IOException
-   *           if there is an error reading a file
+   * @throws IOException if there is an error reading a file
    * @throws InvalidPayloadOxumException
    *           if either the total bytes or the number of files calculated for
    *           the payload directory of the bag is different than the supplied
    *           values
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec 
    * @throws PayloadOxumDoesNotExistException
    *           if the bag does not contain a payload-oxum. To check, run
    *           {@link BagVerifier#canQuickVerify}
    */
   public static void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles)
-      throws IOException, InvalidPayloadOxumException {
+      throws IOException, InvalidPayloadOxumException, UnparsableVersionException, InvalidBagMetadataException {
     final SimpleImmutableEntry<Long, Long> byteAndFileCount = getByteAndFileCount(bag);
 
     final Path payloadDir = PathUtils.getDataDir(bag);
@@ -124,11 +133,18 @@ public final class QuickVerifier {
    * 
    * @param bag
    *          the bag to get the payload info from
+   *          
    * @return the byte count, the file count
+   * 
+   * @throws IOException if there is a problem reading a file
+   * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to the bagit spec
    */
-  private static SimpleImmutableEntry<Long, Long> getByteAndFileCount(final Bag bag) {
-    if (bag.getPayloadByteCount() != null && bag.getPayloadFileCount() != null) {
-      return new SimpleImmutableEntry<Long, Long>(bag.getPayloadByteCount(), bag.getPayloadFileCount());
+  private static SimpleImmutableEntry<Long, Long> getByteAndFileCount(final Bag bag) throws UnparsableVersionException, IOException, InvalidBagMetadataException {
+    final BagitFileValues bagitValues = BagitTextFileReader.parseValues(bag.getRootDir().resolve("bagit.txt"));
+    
+    if (bagitValues.getPayloadByteCount() != null && bagitValues.getPayloadFileCount() != null) {
+      return new SimpleImmutableEntry<Long, Long>(bagitValues.getPayloadByteCount(), bagitValues.getPayloadFileCount());
     }
 
     final String payloadOxum = getPayloadOxum(bag);

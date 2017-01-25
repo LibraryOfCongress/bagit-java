@@ -35,10 +35,6 @@ public final class Bag {
   //the current location of the bag on the filesystem
   private Path rootDir;
   
-  private Long payloadFileCount;
-  
-  private Long payloadByteCount;
-  
   /**
    * empty bag with an invalid version
    */
@@ -172,19 +168,4 @@ public final class Bag {
     this.version = version;
   }
 
-  public Long getPayloadFileCount() {
-    return payloadFileCount;
-  }
-
-  public void setPayloadFileCount(final Long payloadFileCount) {
-    this.payloadFileCount = payloadFileCount;
-  }
-
-  public Long getPayloadByteCount() {
-    return payloadByteCount;
-  }
-
-  public void setPayloadByteCount(final Long payloadByteCount) {
-    this.payloadByteCount = payloadByteCount;
-  }
 }

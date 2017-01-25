@@ -67,9 +67,6 @@ public final class PathUtils {
     return Files.isHidden(path);
   }
   
-  /*
-   * Get the directory that contains the payload files.
-   */
   /**
    * With bagit version 2.0 (.bagit)
    * payload files are no longer in the "data" directory. This method accounts for this

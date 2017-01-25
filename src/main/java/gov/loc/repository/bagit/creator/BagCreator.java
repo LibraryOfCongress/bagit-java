@@ -64,7 +64,7 @@ public final class BagCreator {
     Files.walkFileTree(dataDir, payloadVisitor);
     
     bag.getPayLoadManifests().addAll(payloadFilesMap.keySet());
-    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
+    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), null, null, root);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
     logger.info("Creating tag manifest(s)");
@@ -105,7 +105,7 @@ public final class BagCreator {
     Files.walkFileTree(root, visitor);
     
     bag.getPayLoadManifests().addAll(map.keySet());
-    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
+    BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), null, null, dotbagitDir);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
     
     logger.info("Creating tag manifest(s)");

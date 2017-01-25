@@ -31,13 +31,13 @@ public class BagitFileWriterTest extends PrivateConstructorTest {
     Path bagit = rootDirPath.resolve("bagit.txt");
     
     assertFalse(Files.exists(bagit));
-    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
+    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, 0l, 0l, rootDirPath);
     assertTrue(Files.exists(bagit));
     
     //test truncating existing
     long originalModified = Files.getLastModifiedTime(bagit).toMillis();
     long size = Files.size(bagit);
-    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, rootDirPath);
+    BagitFileWriter.writeBagitFile(new Version(0, 97), StandardCharsets.UTF_8, 0l, 0l, rootDirPath);
     assertTrue(Files.exists(bagit));
     assertTrue(Files.getLastModifiedTime(bagit) + " should be >= " + originalModified, 
         Files.getLastModifiedTime(bagit).toMillis() >= originalModified);
