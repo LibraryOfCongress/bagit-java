@@ -67,9 +67,6 @@ public final class PathUtils {
     return Files.isHidden(path);
   }
   
-  /*
-   * Get the directory that contains the payload files.
-   */
   /**
    * With bagit version 2.0 (.bagit)
    * payload files are no longer in the "data" directory. This method accounts for this
@@ -84,5 +81,23 @@ public final class PathUtils {
     }
     
     return bag.getRootDir().resolve(PAYLOAD_DIR_NAME);
+  }
+  
+  /**
+   * With bagit version 2.0 (.bagit)
+   * payload files are no longer in the "data" directory. This method accounts for this
+   * and will return the directory that contains the payload files
+   * 
+   * @param version the bag version
+   * @param output where the bag is being or was written to
+   * 
+   * @return the payload directory for the output directory
+   */
+  public static Path getDataDir(final Version version, final Path output){
+    if(version.compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+      return output;
+    }
+    
+    return output.resolve(PAYLOAD_DIR_NAME);
   }
 }

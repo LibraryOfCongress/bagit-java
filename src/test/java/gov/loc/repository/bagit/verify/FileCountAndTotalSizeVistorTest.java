@@ -13,8 +13,7 @@ import org.junit.Test;
 import gov.loc.repository.bagit.TestUtils;
 
 /**
- * Tests the include or ignore functionality of hidden files while walking the file tree. 
- * Note that this currently only works with linux/unix systems!
+ * Tests the ignore of hidden files while walking the file tree. 
  */
 public class FileCountAndTotalSizeVistorTest extends Assert {
   
@@ -27,22 +26,10 @@ public class FileCountAndTotalSizeVistorTest extends Assert {
 
   @Test
   public void testIgnoreHidden() throws IOException{
-    boolean ignoreHiddenFiles = true;
-    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
+    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor();
     
     Files.walkFileTree(payloadDir, vistor);
     
     assertEquals(2, vistor.getCount());
   }
-  
-  @Test
-  public void testDontIgnoreHidden() throws IOException{
-    boolean ignoreHiddenFiles = false;
-    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
-    
-    Files.walkFileTree(payloadDir, vistor);
-    assertEquals(5, vistor.getCount());
-  }
-  
-  
 }

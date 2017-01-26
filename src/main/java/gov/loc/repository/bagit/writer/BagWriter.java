@@ -5,7 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -15,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.Hasher;
+import gov.loc.repository.bagit.util.PathUtils;
+import gov.loc.repository.bagit.verify.FileCountAndTotalSizeVistor;
 
 /**
  * responsible for writing out a bag.
@@ -42,6 +47,10 @@ public final class BagWriter {
     logger.debug("writing payload files");
     final Path bagitDir = PayloadWriter.writeVersionDependentPayloadFiles(bag, outputDir);
     
+    logger.debug("Upserting payload-oxum");
+    final String payloadOxum = generatePayloadOxum(PathUtils.getDataDir(bag.getVersion(), outputDir));
+    upsertPayloadOxum(bag, payloadOxum);
+    
     logger.debug("writing the bagit.txt file");
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
     
@@ -65,7 +74,42 @@ public final class BagWriter {
     }
   }
   
+  /**
+   * Calculate the total file and byte count of the files in the payload directory
+   * 
+   * @param dataDir the directory to calculate the payload-oxum
+   * 
+   * @return the string representation of the payload-oxum value
+   * 
+   * @throws IOException if there is an error reading any of the files
+   */
+  private static String generatePayloadOxum(final Path dataDir) throws IOException{
+    final FileCountAndTotalSizeVistor visitor = new FileCountAndTotalSizeVistor();
+    
+    Files.walkFileTree(dataDir, visitor);
+    
+    return visitor.getTotalSize() + "." + visitor.getCount();
+  }
   
+  /**
+   * insert or update the payload-oxum
+   * 
+   * @param bag the bag to update with the new payload-oxum value
+   * @param payloadOxumValue the new payload-oxum value
+   */
+  private static void upsertPayloadOxum(final Bag bag, final String payloadOxumValue){
+    final List<SimpleImmutableEntry<String, String>> newMetadata = new ArrayList<>();
+    
+    //remove the current payload-oxum, also ensures there is only one payload-oxum. This is needed so there is no currentModificationException
+    for(final SimpleImmutableEntry<String, String> entry : bag.getMetadata()){
+      if(!"Payload-oxum".equals(entry.getKey())){
+        newMetadata.add(entry);
+      }
+    }
+    
+    newMetadata.add(new SimpleImmutableEntry<>("Payload-oxum", payloadOxumValue));
+    bag.setMetadata(newMetadata);
+  }
   
   /*
    * Update the tag manifest cause the checksum of the other tag files will have changed since we just wrote them out to disk

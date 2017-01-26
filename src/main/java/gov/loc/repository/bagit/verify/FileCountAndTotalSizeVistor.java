@@ -19,18 +19,13 @@ import gov.loc.repository.bagit.util.PathUtils;
 public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(FileCountAndTotalSizeVistor.class);
   
-  private transient final boolean ignoreHiddenFiles;
   private transient long totalSize;
   private transient long count;
 
-  public FileCountAndTotalSizeVistor(final boolean ignoreHiddenFiles) {
-    this.ignoreHiddenFiles = ignoreHiddenFiles;
-  }
-  
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-    if(ignoreHiddenFiles && PathUtils.isHidden(dir) || dir.endsWith(Paths.get(".bagit"))){
-      logger.debug("Skipping {} cause ignore hidden files/directories", dir);
+    if(PathUtils.isHidden(dir) || dir.endsWith(Paths.get(".bagit"))){
+      logger.debug("Skipping {} cause we ignore hidden directories", dir);
       return FileVisitResult.SKIP_SUBTREE;
     }
     
@@ -39,7 +34,7 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
 
   @Override
   public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException{
-    if(!ignoreHiddenFiles && PathUtils.isHidden(path) && !path.endsWith(".keep")){
+    if(PathUtils.isHidden(path) && !path.endsWith(".keep")){
       logger.debug("Skipping [{}] since we are ignoring hidden files", path);
     }
     else{

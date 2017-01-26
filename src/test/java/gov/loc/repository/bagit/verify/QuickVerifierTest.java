@@ -40,13 +40,13 @@ public class QuickVerifierTest extends PrivateConstructorTest {
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     Bag bag = reader.read(passingRootDir);
     
-    QuickVerifier.quicklyVerify(bag, true);
+    QuickVerifier.quicklyVerify(bag);
   }
   
   @Test(expected=PayloadOxumDoesNotExistException.class)
   public void testExceptionIsThrownWhenPayloadOxumDoesntExist() throws Exception{
     Bag bag = reader.read(rootDir);
-    QuickVerifier.quicklyVerify(bag, true);
+    QuickVerifier.quicklyVerify(bag);
     
   }
   
@@ -55,7 +55,7 @@ public class QuickVerifierTest extends PrivateConstructorTest {
     Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumByteSize/bag").toURI());
     Bag bag = reader.read(badRootDir);
     
-    QuickVerifier.quicklyVerify(bag, true);
+    QuickVerifier.quicklyVerify(bag);
   }
   
   @Test(expected=InvalidPayloadOxumException.class)
@@ -63,6 +63,6 @@ public class QuickVerifierTest extends PrivateConstructorTest {
     Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumFileCount/bag").toURI());
     Bag bag = reader.read(badRootDir);
     
-    QuickVerifier.quicklyVerify(bag, true);
+    QuickVerifier.quicklyVerify(bag);
   }
 }

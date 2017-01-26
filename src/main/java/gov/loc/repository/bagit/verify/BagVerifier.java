@@ -70,7 +70,6 @@ public final class BagVerifier {
    * Quickly verify by comparing the number of files and the total number of bytes expected
    * 
    * @param bag the bag to verify by payload-oxum
-   * @param ignoreHiddenFiles ignore hidden files found in payload directory
    * 
    * @throws IOException if there is an error reading a file
    * @throws InvalidPayloadOxumException if either the total bytes or the number of files 
@@ -78,8 +77,8 @@ public final class BagVerifier {
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
-    QuickVerifier.quicklyVerify(bag, ignoreHiddenFiles);
+  public void quicklyVerify(final Bag bag) throws IOException, InvalidPayloadOxumException{
+    QuickVerifier.quicklyVerify(bag);
   }
 
   /**

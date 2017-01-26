@@ -54,7 +54,6 @@ public final class QuickVerifier {
    * Quickly verify by comparing the number of files and the total number of bytes expected
    * 
    * @param bag the bag to verify by payload-oxum
-   * @param ignoreHiddenFiles ignore hidden files found in payload directory
    * 
    * @throws IOException if there is an error reading a file
    * @throws InvalidPayloadOxumException if either the total bytes or the number of files 
@@ -62,7 +61,7 @@ public final class QuickVerifier {
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public static void quicklyVerify(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, InvalidPayloadOxumException{
+  public static void quicklyVerify(final Bag bag) throws IOException, InvalidPayloadOxumException{
     final String payloadOxum = getPayloadOxum(bag);
     if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
       throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
@@ -75,7 +74,7 @@ public final class QuickVerifier {
     final long numberOfFiles = Long.parseLong(parts[1]);
     
     final Path payloadDir = PathUtils.getDataDir(bag);
-    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor(ignoreHiddenFiles);
+    final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor();
     Files.walkFileTree(payloadDir, vistor);
     logger.info("supplied payload-oxum: [{}], Calculated payload-oxum: [{}.{}], for payload directory [{}]", payloadOxum, vistor.getTotalSize(), vistor.getCount(), payloadDir);
     
