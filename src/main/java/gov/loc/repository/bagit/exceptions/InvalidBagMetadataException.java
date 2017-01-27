@@ -8,7 +8,7 @@ package gov.loc.repository.bagit.exceptions;
  * <pre>&lt;KEY&gt;:&lt;VALUE&gt;
  *    &lt;VALUE CONTINUED&gt;</pre>
  */
-public class InvalidBagMetadataException extends Exception {
+public class InvalidBagMetadataException extends InvalidBagitFileFormatException {
   private static final long serialVersionUID = 1L;
 
   public InvalidBagMetadataException(final String message){

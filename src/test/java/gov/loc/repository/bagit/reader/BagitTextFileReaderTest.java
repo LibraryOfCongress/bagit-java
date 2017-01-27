@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.reader;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -11,9 +12,10 @@ import org.junit.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 
-public class BagitTestFileReaderTest extends PrivateConstructorTest {
+public class BagitTextFileReaderTest extends PrivateConstructorTest {
 
   @Test
   public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
@@ -27,9 +29,15 @@ public class BagitTestFileReaderTest extends PrivateConstructorTest {
   
   @Test
   public void testReadBagitFile()throws Exception{
-    Path bagitFile = Paths.get(getClass().getClassLoader().getResource("bagitFiles/bagit-0.97.txt").toURI());
+    Path bagitFile = Paths.get(new File("src/test/resources/bagitFiles/bagit-0.97.txt").toURI());
     SimpleImmutableEntry<Version, Charset> actualBagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);
     assertEquals(new Version(0, 97), actualBagitInfo.getKey());
     assertEquals(StandardCharsets.UTF_8, actualBagitInfo.getValue());
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
+  public void testReadBagitFileWithBomShouldThrowException()throws Exception{
+    Path bagitFile = Paths.get(new File("src/test/resources/bagitFiles/bagit-with-bom.txt").toURI());
+    BagitTextFileReader.readBagitTextFile(bagitFile);
   }
 }
