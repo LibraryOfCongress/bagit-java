@@ -13,6 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
@@ -26,7 +27,6 @@ import gov.loc.repository.bagit.verify.BagVerifier;
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
  */
-@SuppressWarnings({"PMD.UseLocaleWithCaseConversions"})
 public class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   
@@ -35,6 +35,18 @@ public class BagLinter {
   
   public BagLinter(){
     reader = new BagReader();
+  }
+  
+  /**
+   * Check a bag against a bagit-profile as described by {@link https://github.com/ruebot/bagit-profiles}
+   * 
+   * @param jsonProfile the json string describing the profile
+   * @param bag the bag to check against the profile
+   * 
+   * @return true if the bag conforms to the bagit profile, false otherwise
+   */
+  public boolean checkAgainstProfile(final String jsonProfile, final Bag bag){
+    return BagProfileChecker.bagConformsToProfile(jsonProfile, bag);
   }
   
   /**
