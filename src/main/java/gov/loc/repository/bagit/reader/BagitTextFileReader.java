@@ -33,6 +33,7 @@ public final class BagitTextFileReader {
    * 
    * @throws IOException if there is a problem reading a file
    * @throws UnparsableVersionException if there is a problem parsing the bagit version number
+   * @throws InvalidBagMetadataException if the bagit.txt file does not conform to "key: value"
    * @throws InvalidBagitFileFormatException if the bagit.txt file does not conform to the bagit spec
    */
   public static SimpleImmutableEntry<Version, Charset> readBagitTextFile(final Path bagitFile) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
@@ -60,7 +61,7 @@ public final class BagitTextFileReader {
    * As per the specification, a BOM is not allowed in the bagit.txt file
    */
   private static void throwErrorIfByteOrderMarkIsPresent(final Path bagitFile) throws IOException, InvalidBagitFileFormatException{
-    byte[] firstFewBytesInFile = Arrays.copyOfRange(Files.readAllBytes(bagitFile), 0, BOM.length);
+    final byte[] firstFewBytesInFile = Arrays.copyOfRange(Files.readAllBytes(bagitFile), 0, BOM.length);
     if(Arrays.equals(BOM, firstFewBytesInFile)){
       throw new InvalidBagitFileFormatException("File [" + bagitFile + "] contains a byte order mark (BOM) which "
           + "is not allowed by the bagit specification!");
