@@ -25,12 +25,12 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
-import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptable;
+import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
-import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptable;
-import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresent;
-import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresent;
-import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresent;
+import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.reader.BagitTextFileReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
@@ -61,15 +61,15 @@ public class BagLinter {
    * @throws JsonParseException if there is a problem parsing the json while mapping to java object
    * 
    * @throws FetchFileNotAllowedException if there is a fetch file when the profile prohibits it
-   * @throws MetatdataValueIsNotAcceptable if a metadata value is not in the list of acceptable values
-   * @throws RequiredMetadataFieldNotPresent if a metadata field is not present but it should be
-   * @throws RequiredManifestNotPresent if a payload or tag manifest type is not present but should be
-   * @throws BagitVersionIsNotAcceptable if the version of the bag is not in the list of acceptable versions
-   * @throws RequiredTagFileNotPresent if a tag file is not present but should be
+   * @throws MetatdataValueIsNotAcceptableException if a metadata value is not in the list of acceptable values
+   * @throws RequiredMetadataFieldNotPresentException if a metadata field is not present but it should be
+   * @throws RequiredManifestNotPresentException if a payload or tag manifest type is not present but should be
+   * @throws BagitVersionIsNotAcceptableException if the version of the bag is not in the list of acceptable versions
+   * @throws RequiredTagFileNotPresentException if a tag file is not present but should be
    */
   public void checkAgainstProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
-  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresent, MetatdataValueIsNotAcceptable, RequiredManifestNotPresent, 
-  BagitVersionIsNotAcceptable, RequiredTagFileNotPresent{
+  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, RequiredManifestNotPresentException, 
+  BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
     BagProfileChecker.bagConformsToProfile(jsonProfile, bag);
   }
   

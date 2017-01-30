@@ -24,12 +24,12 @@ import gov.loc.repository.bagit.conformance.profile.BagitProfileDeserializer;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptable;
+import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
-import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptable;
-import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresent;
-import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresent;
-import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresent;
+import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
 
 public final class BagProfileChecker {
 
@@ -50,15 +50,15 @@ public final class BagProfileChecker {
    * @throws JsonParseException if there is a problem parsing the json while mapping to java object
    * 
    * @throws FetchFileNotAllowedException if there is a fetch file when the profile prohibits it
-   * @throws MetatdataValueIsNotAcceptable if a metadata value is not in the list of acceptable values
-   * @throws RequiredMetadataFieldNotPresent if a metadata field is not present but it should be
-   * @throws RequiredManifestNotPresent if a payload or tag manifest type is not present but should be
-   * @throws BagitVersionIsNotAcceptable if the version of the bag is not in the list of acceptable versions
-   * @throws RequiredTagFileNotPresent if a tag file is not present but should be
+   * @throws MetatdataValueIsNotAcceptableException if a metadata value is not in the list of acceptable values
+   * @throws RequiredMetadataFieldNotPresentException if a metadata field is not present but it should be
+   * @throws RequiredManifestNotPresentException if a payload or tag manifest type is not present but should be
+   * @throws BagitVersionIsNotAcceptableException if the version of the bag is not in the list of acceptable versions
+   * @throws RequiredTagFileNotPresentException if a tag file is not present but should be
    */
   public static void bagConformsToProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
-  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresent, MetatdataValueIsNotAcceptable, RequiredManifestNotPresent, 
-  BagitVersionIsNotAcceptable, RequiredTagFileNotPresent{
+  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, RequiredManifestNotPresentException, 
+  BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
     
     final BagitProfile profile = parseBagitProfile(jsonProfile);
     checkFetch(bag.getRootDir(), profile.isAllowFetchFile(), bag.getItemsToFetch());
@@ -70,7 +70,7 @@ public final class BagProfileChecker {
     requiredManifestsExist(bag.getTagManifests(), profile.getTagManifestsRequired(), false);
 
     if(!profile.getAcceptableBagitVersions().contains(bag.getVersion().toString())){
-      throw new BagitVersionIsNotAcceptable("Version [" + bag.getVersion().toString() + "] is not in the acceptable list of " + 
+      throw new BagitVersionIsNotAcceptableException("Version [" + bag.getVersion().toString() + "] is not in the acceptable list of " + 
           profile.getAcceptableBagitVersions());
     }
     
@@ -93,7 +93,7 @@ public final class BagProfileChecker {
   }
   
   private static void checkMetadata(final List<SimpleImmutableEntry<String, String>> bagMetadata, 
-      final Map<String, BagInfoEntry> bagInfoEntryRequirements) throws RequiredMetadataFieldNotPresent, MetatdataValueIsNotAcceptable{
+      final Map<String, BagInfoEntry> bagInfoEntryRequirements) throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException{
     final MapOfLists metadataMap = convertMetadata(bagMetadata);
     
     for(final Entry<String, BagInfoEntry> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
@@ -101,7 +101,7 @@ public final class BagProfileChecker {
       
       //is it required and not there?
       if(bagInfoEntryRequirement.getValue().isRequired() && !metadataContainsKey){
-        throw new RequiredMetadataFieldNotPresent("Profile specifies metadata field [" + bagInfoEntryRequirement.getKey() + "] is required but was not found!");
+        throw new RequiredMetadataFieldNotPresentException("Profile specifies metadata field [" + bagInfoEntryRequirement.getKey() + "] is required but was not found!");
       }
       
       //a size of zero implies that all values are acceptable
@@ -109,7 +109,7 @@ public final class BagProfileChecker {
         //if it is present, and only certain values are allowed, check all the values to make sure they conform
         for(final String metadataValue : metadataMap.get(bagInfoEntryRequirement.getKey())){
           if(!bagInfoEntryRequirement.getValue().getAcceptableValues().contains(metadataValue)){
-            throw new MetatdataValueIsNotAcceptable("Profile specifies that acceptable values for [" + bagInfoEntryRequirement.getKey() + 
+            throw new MetatdataValueIsNotAcceptableException("Profile specifies that acceptable values for [" + bagInfoEntryRequirement.getKey() + 
                 "] are " + bagInfoEntryRequirement.getValue().getAcceptableValues() + " but found [" + metadataValue + "]");
           }
         }
@@ -129,7 +129,7 @@ public final class BagProfileChecker {
   }
   
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  private static void requiredManifestsExist(final Set<Manifest> manifests, final List<String> requiredManifestTypes, final boolean isPayloadManifest) throws RequiredManifestNotPresent{
+  private static void requiredManifestsExist(final Set<Manifest> manifests, final List<String> requiredManifestTypes, final boolean isPayloadManifest) throws RequiredManifestNotPresentException{
     final Set<String> manifestTypesPresent = new HashSet<>();
     
     for(final Manifest manifest : manifests){
@@ -143,17 +143,17 @@ public final class BagProfileChecker {
         if(isPayloadManifest){ sb.append("tag");}
         sb.append("manifest type [").append(requiredManifestType).append("] was not present");
           
-        throw new RequiredManifestNotPresent(sb.toString());
+        throw new RequiredManifestNotPresentException(sb.toString());
       }
     }
   }
   
-  private static void requiredTagFilesExist(final Path rootDir, final List<String> requiredTagFilePaths) throws RequiredTagFileNotPresent{
+  private static void requiredTagFilesExist(final Path rootDir, final List<String> requiredTagFilePaths) throws RequiredTagFileNotPresentException{
     Path requiredTagFile;
     for(final String requiredTagFilePath : requiredTagFilePaths){
       requiredTagFile = rootDir.resolve(requiredTagFilePath);
       if(!Files.exists(requiredTagFile)){
-        throw new RequiredTagFileNotPresent("Required tag file [" + requiredTagFilePath + "] was not found");
+        throw new RequiredTagFileNotPresentException("Required tag file [" + requiredTagFilePath + "] was not found");
       }
     }
   }
