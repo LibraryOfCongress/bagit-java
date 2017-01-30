@@ -66,8 +66,8 @@
    "Manifests-Required":[
       "md5"
    ],
-   "Allow-Fetch.txt":false,
-   "Serialization":"optional",
+   "Allow-Fetch.txt":true,
+   "Serialization":"forbidden",
    "Accept-Serialization":[
       "application/zip"
    ],

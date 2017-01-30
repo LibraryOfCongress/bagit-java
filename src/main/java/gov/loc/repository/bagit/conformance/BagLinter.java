@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.conformance;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +14,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import gov.loc.repository.bagit.conformance.profile.BagitProfile;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
@@ -20,6 +25,12 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
+import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptable;
+import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
+import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptable;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresent;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresent;
+import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresent;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.reader.BagitTextFileReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
@@ -38,15 +49,28 @@ public class BagLinter {
   }
   
   /**
-   * Check a bag against a bagit-profile as described by {@link https://github.com/ruebot/bagit-profiles}
+   * Check a bag against a bagit-profile as described by 
+   * <a href="https://github.com/ruebot/bagit-profiles">https://github.com/ruebot/bagit-profiles</a>
+   * <br>Note: <b> This implementation does not check the Serialization part of the profile!</b>
    * 
-   * @param jsonProfile the json string describing the profile
+   * @param jsonProfile the input stream to the json string describing the profile
    * @param bag the bag to check against the profile
    * 
-   * @return true if the bag conforms to the bagit profile, false otherwise
+   * @throws IOException if there is a problem reading the profile
+   * @throws JsonMappingException if there is a problem mapping the profile to the {@link BagitProfile}
+   * @throws JsonParseException if there is a problem parsing the json while mapping to java object
+   * 
+   * @throws FetchFileNotAllowedException if there is a fetch file when the profile prohibits it
+   * @throws MetatdataValueIsNotAcceptable if a metadata value is not in the list of acceptable values
+   * @throws RequiredMetadataFieldNotPresent if a metadata field is not present but it should be
+   * @throws RequiredManifestNotPresent if a payload or tag manifest type is not present but should be
+   * @throws BagitVersionIsNotAcceptable if the version of the bag is not in the list of acceptable versions
+   * @throws RequiredTagFileNotPresent if a tag file is not present but should be
    */
-  public boolean checkAgainstProfile(final String jsonProfile, final Bag bag){
-    return BagProfileChecker.bagConformsToProfile(jsonProfile, bag);
+  public void checkAgainstProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
+  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresent, MetatdataValueIsNotAcceptable, RequiredManifestNotPresent, 
+  BagitVersionIsNotAcceptable, RequiredTagFileNotPresent{
+    BagProfileChecker.bagConformsToProfile(jsonProfile, bag);
   }
   
   /**

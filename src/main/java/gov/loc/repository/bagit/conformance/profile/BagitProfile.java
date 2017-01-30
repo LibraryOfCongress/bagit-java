@@ -1,89 +1,107 @@
 package gov.loc.repository.bagit.conformance.profile;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+/**
+ * POJO for all the bagit profile fields
+ */
 public class BagitProfile {
-  @JsonProperty("BagIt-Profile-Info")
-  private BagitProfileInfo bagitProfileInfo;
+  private BagitProfileMetadata bagitProfileMetadata = new BagitProfileMetadata();
+  private Map<String, BagInfoEntry> bagInfoEntryRequirements = new HashMap<>();
+  private List<String> manifestTypesRequired = new ArrayList<>();
+  private boolean allowFetchFile; //defaults to false
+  private Serialization serialization = Serialization.optional;
+  private List<String> acceptableMIMESerializationTypes = new ArrayList<>();
+  private List<String> acceptableBagitVersions = new ArrayList<>();
+  private List<String> tagManifestsRequired = new ArrayList<>();
+  private List<String> tagFilesRequired = new ArrayList<>();
   
-  @JsonProperty("Bag-Info")
-  private BagInfo bagInfo;
-  
-  @JsonProperty("Manifests-Required")
-  private List<String> manifestsRequired;
-  
-  @JsonProperty("Allow-Fetch.txt")
-  private boolean allowFetchFile;
-  
-  @JsonProperty("Serialization")
-  private Serialization serialization;
-  
-  @JsonProperty("Accept-Serialization")
-  private List<String> acceptSerialization;
-  
-  @JsonProperty("Accept-BagIt-Version")
-  private List<String> acceptBagitVersion;
-  
-  @JsonProperty("Tag-Manifests-Required")
-  private List<String> tagManifestsRequired;
-  
-  @JsonProperty("Tag-Files-Required")
-  private List<String> tagFilesRequired;
-  
-  public BagitProfileInfo getBagitProfileInfo() {
-    return bagitProfileInfo;
+  @Override
+  public boolean equals(final Object other) {
+    if (!(other instanceof BagitProfile)) {
+      return false;
+    }
+    final BagitProfile castOther = (BagitProfile) other;
+    return Objects.equals(bagitProfileMetadata, castOther.bagitProfileMetadata) && Objects.equals(bagInfoEntryRequirements, castOther.bagInfoEntryRequirements)
+        && Objects.equals(manifestTypesRequired, castOther.manifestTypesRequired)
+        && Objects.equals(allowFetchFile, castOther.allowFetchFile)
+        && Objects.equals(serialization, castOther.serialization)
+        && Objects.equals(acceptableMIMESerializationTypes, castOther.acceptableMIMESerializationTypes)
+        && Objects.equals(acceptableBagitVersions, castOther.acceptableBagitVersions)
+        && Objects.equals(tagManifestsRequired, castOther.tagManifestsRequired)
+        && Objects.equals(tagFilesRequired, castOther.tagFilesRequired);
   }
-  public void setBagitProfileInfo(BagitProfileInfo bagitProfileInfo) {
-    this.bagitProfileInfo = bagitProfileInfo;
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(bagitProfileMetadata, bagInfoEntryRequirements, manifestTypesRequired, allowFetchFile, serialization,
+        acceptableMIMESerializationTypes, acceptableBagitVersions, tagManifestsRequired, tagFilesRequired);
   }
-  public BagInfo getBagInfo() {
-    return bagInfo;
+
+  @Override
+  public String toString() {
+    return "BagitProfile [bagitProfileInfo=" + bagitProfileMetadata + ", bagInfo=" + bagInfoEntryRequirements + ", manifestsRequired="
+        + manifestTypesRequired + ", allowFetchFile=" + allowFetchFile + ", serialization=" + serialization
+        + ", acceptSerialization=" + acceptableMIMESerializationTypes + ", acceptBagitVersion=" + acceptableBagitVersions
+        + ", tagManifestsRequired=" + tagManifestsRequired + ", tagFilesRequired=" + tagFilesRequired + "]";
   }
-  public void setBagInfo(BagInfo bagInfo) {
-    this.bagInfo = bagInfo;
+  
+  public BagitProfileMetadata getBagitProfileMetadata() {
+    return bagitProfileMetadata;
   }
-  public List<String> getManifestsRequired() {
-    return manifestsRequired;
+  public void setBagitProfileMetadata(final BagitProfileMetadata bagitProfileInfo) {
+    this.bagitProfileMetadata = bagitProfileInfo;
   }
-  public void setManifestsRequired(List<String> manifestsRequired) {
-    this.manifestsRequired = manifestsRequired;
+  public Map<String,BagInfoEntry> getBagInfoEntryRequirements() {
+    return bagInfoEntryRequirements;
+  }
+  public void setBagInfoEntryRequirements(final Map<String, BagInfoEntry> bagInfo) {
+    this.bagInfoEntryRequirements = bagInfo;
+  }
+  public List<String> getManifestTypesRequired() {
+    return manifestTypesRequired;
+  }
+  public void setManifestTypesRequired(final List<String> manifestsRequired) {
+    this.manifestTypesRequired = manifestsRequired;
   }
   public boolean isAllowFetchFile() {
     return allowFetchFile;
   }
-  public void setAllowFetchFile(boolean allowFetchFile) {
+  public void setAllowFetchFile(final boolean allowFetchFile) {
     this.allowFetchFile = allowFetchFile;
   }
   public Serialization getSerialization() {
     return serialization;
   }
-  public void setSerialization(Serialization serialization) {
+  public void setSerialization(final Serialization serialization) {
     this.serialization = serialization;
   }
-  public List<String> getAcceptSerialization() {
-    return acceptSerialization;
+  public List<String> getAcceptableMIMESerializationTypes() {
+    return acceptableMIMESerializationTypes;
   }
-  public void setAcceptSerialization(List<String> acceptSerialization) {
-    this.acceptSerialization = acceptSerialization;
+  public void setAcceptableMIMESerializationTypes(final List<String> acceptSerialization) {
+    this.acceptableMIMESerializationTypes = acceptSerialization;
   }
-  public List<String> getAcceptBagitVersion() {
-    return acceptBagitVersion;
+  public List<String> getAcceptableBagitVersions() {
+    return acceptableBagitVersions;
   }
-  public void setAcceptBagitVersion(List<String> acceptBagitVersion) {
-    this.acceptBagitVersion = acceptBagitVersion;
+  public void setAcceptableBagitVersions(final List<String> acceptBagitVersion) {
+    this.acceptableBagitVersions = acceptBagitVersion;
   }
   public List<String> getTagManifestsRequired() {
     return tagManifestsRequired;
   }
-  public void setTagManifestsRequired(List<String> tagManifestsRequired) {
+  public void setTagManifestsRequired(final List<String> tagManifestsRequired) {
     this.tagManifestsRequired = tagManifestsRequired;
   }
   public List<String> getTagFilesRequired() {
     return tagFilesRequired;
   }
-  public void setTagFilesRequired(List<String> tagFilesRequired) {
+  public void setTagFilesRequired(final List<String> tagFilesRequired) {
     this.tagFilesRequired = tagFilesRequired;
   }
 }
