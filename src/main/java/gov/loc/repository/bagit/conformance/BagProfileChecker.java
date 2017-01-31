@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +35,7 @@ import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotP
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
 
 public final class BagProfileChecker {
+  private static final Logger logger = LoggerFactory.getLogger(BagProfileChecker.class);
 
   private BagProfileChecker(){
     //intentionally left empty
@@ -57,11 +61,11 @@ public final class BagProfileChecker {
    * @throws RequiredTagFileNotPresentException if a tag file is not present but should be
    */
   public static void bagConformsToProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
-  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, RequiredManifestNotPresentException, 
-  BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
+  IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, 
+  RequiredManifestNotPresentException, BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
     
     final BagitProfile profile = parseBagitProfile(jsonProfile);
-    checkFetch(bag.getRootDir(), profile.isAllowFetchFile(), bag.getItemsToFetch());
+    checkFetch(bag.getRootDir(), profile.isFetchFileAllowed(), bag.getItemsToFetch());
     
     checkMetadata(bag.getMetadata(), profile.getBagInfoEntryRequirements());
     
@@ -87,7 +91,8 @@ public final class BagProfileChecker {
   }
   
   private static void checkFetch(final Path rootDir, final boolean allowFetchFile, final List<FetchItem> itemsToFetch) throws FetchFileNotAllowedException{
-    if(!allowFetchFile && itemsToFetch.isEmpty()){
+    logger.debug("Checking if the fetch file is allowed for bag [{}]", rootDir);
+    if(!allowFetchFile && !itemsToFetch.isEmpty()){
       throw new FetchFileNotAllowedException("Fetch File was found in bag [" + rootDir + "]");
     }
   }
@@ -99,14 +104,15 @@ public final class BagProfileChecker {
     for(final Entry<String, BagInfoEntry> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
       final boolean metadataContainsKey = metadataMap.keySet().contains(bagInfoEntryRequirement.getKey());
       
+      logger.debug("Checking if [{}] is required in the bag metadata", bagInfoEntryRequirement.getKey());
       //is it required and not there?
       if(bagInfoEntryRequirement.getValue().isRequired() && !metadataContainsKey){
         throw new RequiredMetadataFieldNotPresentException("Profile specifies metadata field [" + bagInfoEntryRequirement.getKey() + "] is required but was not found!");
       }
       
       //a size of zero implies that all values are acceptable
-      if(bagInfoEntryRequirement.getValue().getAcceptableValues().size() > 0){
-        //if it is present, and only certain values are allowed, check all the values to make sure they conform
+      if(!bagInfoEntryRequirement.getValue().getAcceptableValues().isEmpty()){
+        logger.debug("Checking if all the values listed for [{}] are acceptable", bagInfoEntryRequirement.getKey());
         for(final String metadataValue : metadataMap.get(bagInfoEntryRequirement.getKey())){
           if(!bagInfoEntryRequirement.getValue().getAcceptableValues().contains(metadataValue)){
             throw new MetatdataValueIsNotAcceptableException("Profile specifies that acceptable values for [" + bagInfoEntryRequirement.getKey() + 
@@ -122,7 +128,7 @@ public final class BagProfileChecker {
     
     //transform into a map so that we don't have to loop over the list every time since we don't care about order
     for(final SimpleImmutableEntry<String, String> metadata : bagMetadata){
-      metadataMap.put(metadata.getKey(), metadata.getKey());
+      metadataMap.put(metadata.getKey(), metadata.getValue());
     }
     
     return metadataMap;
@@ -131,6 +137,7 @@ public final class BagProfileChecker {
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private static void requiredManifestsExist(final Set<Manifest> manifests, final List<String> requiredManifestTypes, final boolean isPayloadManifest) throws RequiredManifestNotPresentException{
     final Set<String> manifestTypesPresent = new HashSet<>();
+    logger.debug("Checking if all the required manifests are present");
     
     for(final Manifest manifest : manifests){
       manifestTypesPresent.add(manifest.getAlgorithm().getBagitName());
@@ -150,6 +157,8 @@ public final class BagProfileChecker {
   
   private static void requiredTagFilesExist(final Path rootDir, final List<String> requiredTagFilePaths) throws RequiredTagFileNotPresentException{
     Path requiredTagFile;
+    logger.debug("Checking if all the required tag files exist");
+    
     for(final String requiredTagFilePath : requiredTagFilePaths){
       requiredTagFile = rootDir.resolve(requiredTagFilePath);
       if(!Files.exists(requiredTagFile)){

@@ -13,7 +13,7 @@ public class BagitProfile {
   private BagitProfileMetadata bagitProfileMetadata = new BagitProfileMetadata();
   private Map<String, BagInfoEntry> bagInfoEntryRequirements = new HashMap<>();
   private List<String> manifestTypesRequired = new ArrayList<>();
-  private boolean allowFetchFile; //defaults to false
+  private boolean fetchFileAllowed; //defaults to false
   private Serialization serialization = Serialization.optional;
   private List<String> acceptableMIMESerializationTypes = new ArrayList<>();
   private List<String> acceptableBagitVersions = new ArrayList<>();
@@ -28,7 +28,7 @@ public class BagitProfile {
     final BagitProfile castOther = (BagitProfile) other;
     return Objects.equals(bagitProfileMetadata, castOther.bagitProfileMetadata) && Objects.equals(bagInfoEntryRequirements, castOther.bagInfoEntryRequirements)
         && Objects.equals(manifestTypesRequired, castOther.manifestTypesRequired)
-        && Objects.equals(allowFetchFile, castOther.allowFetchFile)
+        && Objects.equals(fetchFileAllowed, castOther.fetchFileAllowed)
         && Objects.equals(serialization, castOther.serialization)
         && Objects.equals(acceptableMIMESerializationTypes, castOther.acceptableMIMESerializationTypes)
         && Objects.equals(acceptableBagitVersions, castOther.acceptableBagitVersions)
@@ -38,14 +38,14 @@ public class BagitProfile {
 
   @Override
   public int hashCode() {
-    return Objects.hash(bagitProfileMetadata, bagInfoEntryRequirements, manifestTypesRequired, allowFetchFile, serialization,
+    return Objects.hash(bagitProfileMetadata, bagInfoEntryRequirements, manifestTypesRequired, fetchFileAllowed, serialization,
         acceptableMIMESerializationTypes, acceptableBagitVersions, tagManifestsRequired, tagFilesRequired);
   }
 
   @Override
   public String toString() {
     return "BagitProfile [bagitProfileInfo=" + bagitProfileMetadata + ", bagInfo=" + bagInfoEntryRequirements + ", manifestsRequired="
-        + manifestTypesRequired + ", allowFetchFile=" + allowFetchFile + ", serialization=" + serialization
+        + manifestTypesRequired + ", allowFetchFile=" + fetchFileAllowed + ", serialization=" + serialization
         + ", acceptSerialization=" + acceptableMIMESerializationTypes + ", acceptBagitVersion=" + acceptableBagitVersions
         + ", tagManifestsRequired=" + tagManifestsRequired + ", tagFilesRequired=" + tagFilesRequired + "]";
   }
@@ -68,11 +68,11 @@ public class BagitProfile {
   public void setManifestTypesRequired(final List<String> manifestsRequired) {
     this.manifestTypesRequired = manifestsRequired;
   }
-  public boolean isAllowFetchFile() {
-    return allowFetchFile;
+  public boolean isFetchFileAllowed() {
+    return fetchFileAllowed;
   }
-  public void setAllowFetchFile(final boolean allowFetchFile) {
-    this.allowFetchFile = allowFetchFile;
+  public void setFetchFileAllowed(final boolean allowFetchFile) {
+    this.fetchFileAllowed = allowFetchFile;
   }
   public Serialization getSerialization() {
     return serialization;

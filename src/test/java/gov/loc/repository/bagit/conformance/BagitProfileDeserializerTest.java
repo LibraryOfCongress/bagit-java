@@ -49,7 +49,7 @@ public class BagitProfileDeserializerTest extends Assert{
     
     expectedProfile.setManifestTypesRequired(Arrays.asList("md5"));
     
-    expectedProfile.setAllowFetchFile(true);
+    expectedProfile.setFetchFileAllowed(false);
     
     expectedProfile.setSerialization(Serialization.forbidden);
     
