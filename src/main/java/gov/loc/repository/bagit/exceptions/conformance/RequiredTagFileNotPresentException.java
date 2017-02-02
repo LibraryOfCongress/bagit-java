@@ -1,7 +1,7 @@
 package gov.loc.repository.bagit.exceptions.conformance;
 
 /**
- * Class to represent when a specific manifest is not found
+ * Class to represent when a specific tag file is not found
  */
 public class RequiredTagFileNotPresentException extends Exception {
 private static final long serialVersionUID = 1L;
