@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import gov.loc.repository.bagit.conformance.profile.BagInfoEntry;
+import gov.loc.repository.bagit.conformance.profile.BagInfoRequirement;
 import gov.loc.repository.bagit.conformance.profile.BagitProfile;
 import gov.loc.repository.bagit.conformance.profile.BagitProfileDeserializer;
 import gov.loc.repository.bagit.domain.Bag;
@@ -67,11 +67,11 @@ public final class BagProfileChecker {
     final BagitProfile profile = parseBagitProfile(jsonProfile);
     checkFetch(bag.getRootDir(), profile.isFetchFileAllowed(), bag.getItemsToFetch());
     
-    checkMetadata(bag.getMetadata(), profile.getBagInfoEntryRequirements());
+    checkMetadata(bag.getMetadata(), profile.getBagInfoRequirements());
     
     requiredManifestsExist(bag.getPayLoadManifests(), profile.getManifestTypesRequired(), true);
 
-    requiredManifestsExist(bag.getTagManifests(), profile.getTagManifestsRequired(), false);
+    requiredManifestsExist(bag.getTagManifests(), profile.getTagManifestTypesRequired(), false);
 
     if(!profile.getAcceptableBagitVersions().contains(bag.getVersion().toString())){
       throw new BagitVersionIsNotAcceptableException("Version [" + bag.getVersion().toString() + "] is not in the acceptable list of " + 
@@ -98,10 +98,10 @@ public final class BagProfileChecker {
   }
   
   private static void checkMetadata(final List<SimpleImmutableEntry<String, String>> bagMetadata, 
-      final Map<String, BagInfoEntry> bagInfoEntryRequirements) throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException{
+      final Map<String, BagInfoRequirement> bagInfoEntryRequirements) throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException{
     final MapOfLists metadataMap = convertMetadata(bagMetadata);
     
-    for(final Entry<String, BagInfoEntry> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
+    for(final Entry<String, BagInfoRequirement> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
       final boolean metadataContainsKey = metadataMap.keySet().contains(bagInfoEntryRequirement.getKey());
       
       logger.debug("Checking if [{}] is required in the bag metadata", bagInfoEntryRequirement.getKey());

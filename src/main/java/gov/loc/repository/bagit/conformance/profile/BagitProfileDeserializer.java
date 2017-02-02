@@ -38,10 +38,9 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     final BagitProfile profile = new BagitProfile();
     final JsonNode node = p.getCodec().readTree(p);
     
-    final BagitProfileMetadata bagitProfileInfo = parseBagitProfileInfo(node);
-    profile.setBagitProfileMetadata(bagitProfileInfo);
+    parseBagitProfileInfo(node, profile);
     
-    profile.setBagInfoEntryRequirements(parseBagInfo(node));
+    profile.setBagInfoRequirements(parseBagInfo(node));
     
     profile.getManifestTypesRequired().addAll(parseManifestTypesRequired(node));
     
@@ -53,7 +52,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     
     profile.getAcceptableMIMESerializationTypes().addAll(parseAcceptableSerializationFormats(node));
     
-    profile.getTagManifestsRequired().addAll(parseRequiredTagmanifestTypes(node));
+    profile.getTagManifestTypesRequired().addAll(parseRequiredTagmanifestTypes(node));
     
     profile.getTagFilesRequired().addAll(parseRequiredTagFiles(node));
     
@@ -62,51 +61,47 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return profile;
   }
   
-  private BagitProfileMetadata parseBagitProfileInfo(final JsonNode node){
+  private void parseBagitProfileInfo(final JsonNode node, final BagitProfile profile){
     final JsonNode bagitProfileInfoNode = node.get("BagIt-Profile-Info");
-    
     logger.debug("Parsing the BagIt-Profile-Info section");
-    final BagitProfileMetadata bagitProfileInfo = new BagitProfileMetadata();
     
     final String profileIdentifier = bagitProfileInfoNode.get("BagIt-Profile-Identifier").asText();
     logger.debug("Identifier is [{}]", profileIdentifier);
-    bagitProfileInfo.setBagitProfileIdentifier(profileIdentifier);
+    profile.setBagitProfileIdentifier(profileIdentifier);
     
     final String sourceOrg = bagitProfileInfoNode.get("Source-Organization").asText();
     logger.debug("Source-Organization is [{}]", sourceOrg);
-    bagitProfileInfo.setSourceOrganization(sourceOrg);
+    profile.setSourceOrganization(sourceOrg);
     
     final String contactName = bagitProfileInfoNode.get("Contact-Name").asText();
     logger.debug("Contact-Name is [{}]", contactName);
-    bagitProfileInfo.setContactName(contactName);
+    profile.setContactName(contactName);
     
     final String contactEmail = bagitProfileInfoNode.get("Contact-Email").asText();
     logger.debug("Contact-Email is [{}]", contactEmail);
-    bagitProfileInfo.setContactEmail(contactEmail);
+    profile.setContactEmail(contactEmail);
     
     final String extDescript = bagitProfileInfoNode.get("External-Description").asText();
     logger.debug("External-Description is [{}]", extDescript);
-    bagitProfileInfo.setExternalDescription(extDescript);
+    profile.setExternalDescription(extDescript);
     
     final String version = bagitProfileInfoNode.get("Version").asText();
     logger.debug("Version is [{}]", version);
-    bagitProfileInfo.setVersion(version);
-    
-    return bagitProfileInfo;
+    profile.setVersion(version);
   }
   
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  private Map<String, BagInfoEntry> parseBagInfo(final JsonNode rootNode){
+  private Map<String, BagInfoRequirement> parseBagInfo(final JsonNode rootNode){
     final JsonNode bagInfoNode = rootNode.get("Bag-Info");
     logger.debug("Parsing the Bag-Info section");
-    final Map<String, BagInfoEntry>  bagInfo = new HashMap<>();
+    final Map<String, BagInfoRequirement>  bagInfo = new HashMap<>();
     
     final Iterator<Entry<String, JsonNode>> nodes = bagInfoNode.fields(); //stuck in java 6...
     
     while(nodes.hasNext()){
       final Entry<String, JsonNode> node = nodes.next();
       
-      final BagInfoEntry entry = new BagInfoEntry();
+      final BagInfoRequirement entry = new BagInfoRequirement();
       entry.setRequired(node.getValue().get("required").asBoolean());
       
       final JsonNode valuesNode = node.getValue().get("values");

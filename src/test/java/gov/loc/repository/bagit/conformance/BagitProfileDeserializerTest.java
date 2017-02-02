@@ -11,10 +11,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import gov.loc.repository.bagit.conformance.profile.BagInfoEntry;
+import gov.loc.repository.bagit.conformance.profile.BagInfoRequirement;
 import gov.loc.repository.bagit.conformance.profile.BagitProfile;
 import gov.loc.repository.bagit.conformance.profile.BagitProfileDeserializer;
-import gov.loc.repository.bagit.conformance.profile.BagitProfileMetadata;
 import gov.loc.repository.bagit.conformance.profile.Serialization;
 
 public class BagitProfileDeserializerTest extends Assert{
@@ -36,16 +35,14 @@ public class BagitProfileDeserializerTest extends Assert{
   private BagitProfile createExpectedProfile(){
     BagitProfile expectedProfile = new BagitProfile();
     
-    BagitProfileMetadata bagitProfileInfo = new BagitProfileMetadata();
-    bagitProfileInfo.setBagitProfileIdentifier("http://canadiana.org/standards/bagit/tdr_ingest.json");
-    bagitProfileInfo.setContactEmail("tdr@canadiana.com");
-    bagitProfileInfo.setContactName("William Wueppelmann");
-    bagitProfileInfo.setExternalDescription("BagIt profile for ingesting content into the C.O. TDR loading dock.");
-    bagitProfileInfo.setSourceOrganization("Candiana.org");
-    bagitProfileInfo.setVersion("1.2");
-    expectedProfile.setBagitProfileMetadata(bagitProfileInfo);
+    expectedProfile.setBagitProfileIdentifier("http://canadiana.org/standards/bagit/tdr_ingest.json");
+    expectedProfile.setContactEmail("tdr@canadiana.com");
+    expectedProfile.setContactName("William Wueppelmann");
+    expectedProfile.setExternalDescription("BagIt profile for ingesting content into the C.O. TDR loading dock.");
+    expectedProfile.setSourceOrganization("Candiana.org");
+    expectedProfile.setVersion("1.2");
     
-    expectedProfile.setBagInfoEntryRequirements(createBagInfo());
+    expectedProfile.setBagInfoRequirements(createBagInfo());
     
     expectedProfile.setManifestTypesRequired(Arrays.asList("md5"));
     
@@ -57,31 +54,31 @@ public class BagitProfileDeserializerTest extends Assert{
     
     expectedProfile.setAcceptableBagitVersions(Arrays.asList("0.96"));
     
-    expectedProfile.setTagManifestsRequired(Arrays.asList("md5"));
+    expectedProfile.setTagManifestTypesRequired(Arrays.asList("md5"));
     
     expectedProfile.setTagFilesRequired(Arrays.asList("DPN/dpnFirstNode.txt", "DPN/dpnRegistry"));
     
     return expectedProfile;
   }
   
-  private Map<String, BagInfoEntry> createBagInfo(){
-    Map<String, BagInfoEntry> info = new HashMap<>();
+  private Map<String, BagInfoRequirement> createBagInfo(){
+    Map<String, BagInfoRequirement> info = new HashMap<>();
     
-    info.put("Source-Organization", new BagInfoEntry(true, Arrays.asList("Simon Fraser University", "York University")));
-    info.put("Organization-Address", new BagInfoEntry(true, 
+    info.put("Source-Organization", new BagInfoRequirement(true, Arrays.asList("Simon Fraser University", "York University")));
+    info.put("Organization-Address", new BagInfoRequirement(true, 
         Arrays.asList("8888 University Drive Burnaby, B.C. V5A 1S6 Canada", "4700 Keele Street Toronto, Ontario M3J 1P3 Canada")));
-    info.put("Contact-Name", new BagInfoEntry(true, Arrays.asList("Mark Jordan", "Nick Ruest")));
-    info.put("Contact-Phone", new BagInfoEntry(false, Arrays.asList()));
-    info.put("Contact-Email", new BagInfoEntry(true, Arrays.asList()));
-    info.put("External-Description", new BagInfoEntry(true, Arrays.asList()));
-    info.put("External-Identifier", new BagInfoEntry(false, Arrays.asList()));
-    info.put("Bag-Size", new BagInfoEntry(true, Arrays.asList()));
-    info.put("Bag-Group-Identifier", new BagInfoEntry(false, Arrays.asList()));
-    info.put("Bag-Count", new BagInfoEntry(true, Arrays.asList()));
-    info.put("Internal-Sender-Identifier", new BagInfoEntry(false, Arrays.asList()));
-    info.put("Internal-Sender-Description", new BagInfoEntry(false, Arrays.asList()));
-    info.put("Bagging-Date", new BagInfoEntry(true, Arrays.asList()));
-    info.put("Payload-Oxum", new BagInfoEntry(true, Arrays.asList()));
+    info.put("Contact-Name", new BagInfoRequirement(true, Arrays.asList("Mark Jordan", "Nick Ruest")));
+    info.put("Contact-Phone", new BagInfoRequirement(false, Arrays.asList()));
+    info.put("Contact-Email", new BagInfoRequirement(true, Arrays.asList()));
+    info.put("External-Description", new BagInfoRequirement(true, Arrays.asList()));
+    info.put("External-Identifier", new BagInfoRequirement(false, Arrays.asList()));
+    info.put("Bag-Size", new BagInfoRequirement(true, Arrays.asList()));
+    info.put("Bag-Group-Identifier", new BagInfoRequirement(false, Arrays.asList()));
+    info.put("Bag-Count", new BagInfoRequirement(true, Arrays.asList()));
+    info.put("Internal-Sender-Identifier", new BagInfoRequirement(false, Arrays.asList()));
+    info.put("Internal-Sender-Description", new BagInfoRequirement(false, Arrays.asList()));
+    info.put("Bagging-Date", new BagInfoRequirement(true, Arrays.asList()));
+    info.put("Payload-Oxum", new BagInfoRequirement(true, Arrays.asList()));
 
     return info;
   }

@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class BagInfoEntry {
+public class BagInfoRequirement {
   private boolean required;
   private List<String> acceptableValues = new ArrayList<>();
   
   @Override
   public boolean equals(final Object other) {
-    if (!(other instanceof BagInfoEntry)) {
+    if (!(other instanceof BagInfoRequirement)) {
       return false;
     }
-    final BagInfoEntry castOther = (BagInfoEntry) other;
+    final BagInfoRequirement castOther = (BagInfoRequirement) other;
     return Objects.equals(required, castOther.required)
         && Objects.equals(acceptableValues, castOther.acceptableValues);
   }
@@ -23,11 +23,11 @@ public class BagInfoEntry {
     return Objects.hash(required, acceptableValues);
   }
 
-  public BagInfoEntry(){
+  public BagInfoRequirement(){
     //intentionally left empty
   }
   
-  public BagInfoEntry(final boolean required, final List<String> acceptableValues){
+  public BagInfoRequirement(final boolean required, final List<String> acceptableValues){
     this.required = required;
     this.acceptableValues = acceptableValues;
   }
