@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
@@ -90,6 +91,16 @@ public class BagProfileCheckerTest extends PrivateConstructorTest {
   @Test(expected=RequiredTagFileNotPresentException.class)
   public void testRequiredTagFileNotPresentException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/missingRequiredTagFileBag").toPath();
+    Bag bag = reader.read(bagRootPath);
+    
+    try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
+      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+    }
+  }
+  
+  @Test(expected=BagitVersionIsNotAcceptableException.class)
+  public void testBagitVersionIsNotAcceptableException() throws Exception{
+    Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/wrongBagitVersionBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
