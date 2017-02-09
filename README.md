@@ -1,6 +1,7 @@
 # BagIt Library (BIL)
 [![Travis-CI Build Status (Linux)](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
 [![Appveyor Build Status (Windows)](https://ci.appveyor.com/api/projects/status/ilsnisus965d56n6?svg=true)](https://ci.appveyor.com/project/johnscancella/bagit-java)
+[![CircleCI](https://circleci.com/gh/LibraryOfCongress/bagit-java/tree/master.svg?style=shield)](https://circleci.com/gh/LibraryOfCongress/bagit-java)
 [![Coverage Status](https://coveralls.io/repos/github/LibraryOfCongress/bagit-java/badge.svg?branch=master)](https://coveralls.io/github/LibraryOfCongress/bagit-java?branch=master)
 [![Maven Central](https://img.shields.io/badge/maven%20central-4.12.1-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Cgov.loc%7Cbagit%7C4.12.1%7Cjar)
 [![License](https://img.shields.io/badge/License-Public--Domain-blue.svg)](https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt)
