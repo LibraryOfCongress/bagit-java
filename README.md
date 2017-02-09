@@ -1,12 +1,15 @@
 # BagIt Library (BIL)
-[![Travis-CI Build Status (Linux)](https://travis-ci.org/LibraryOfCongress/bagit-java.svg?branch=master)](https://travis-ci.org/LibraryOfCongress/bagit-java)
-[![Appveyor Build Status (Windows)](https://ci.appveyor.com/api/projects/status/ilsnisus965d56n6?svg=true)](https://ci.appveyor.com/project/johnscancella/bagit-java)
-[![CircleCI](https://circleci.com/gh/LibraryOfCongress/bagit-java/tree/master.svg?style=shield)](https://circleci.com/gh/LibraryOfCongress/bagit-java)
+[![Travis-CI Build Status (Linux)](https://img.shields.io/travis/LibraryOfCongress/bagit-java/master.svg?label=TravisCi)](https://travis-ci.org/LibraryOfCongress/bagit-java)
+[![Appveyor Build Status (Windows)](https://img.shields.io/appveyor/ci/johnscancella/bagit-java/master.svg?label=Appveyor%20(Windows))](https://ci.appveyor.com/project/johnscancella/bagit-java)
+[![CircleCI](https://img.shields.io/circleci/project/github/LibraryOfCongress/bagit-java/master.svg?label=CircleCi)](https://circleci.com/gh/LibraryOfCongress/bagit-java)
 [![Coverage Status](https://coveralls.io/repos/github/LibraryOfCongress/bagit-java/badge.svg?branch=master)](https://coveralls.io/github/LibraryOfCongress/bagit-java?branch=master)
+[![Versioneye Dependency Status](https://www.versioneye.com/user/projects/589c83416a7781003b242fd6/badge.svg?style=flat)](https://www.versioneye.com/user/projects/589c83416a7781003b242fd6)
 [![Maven Central](https://img.shields.io/badge/maven%20central-4.12.1-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Cgov.loc%7Cbagit%7C4.12.1%7Cjar)
 [![License](https://img.shields.io/badge/License-Public--Domain-blue.svg)](https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt)
 [![javadoc.io](https://img.shields.io/badge/javadoc.io-4.12.1-blue.svg)](http://www.javadoc.io/doc/gov.loc/bagit/4.12.1)
+[![Github Latest Release Downloads](https://img.shields.io/github/downloads/LibraryOfCongress/bagit-java/latest/total.svg)]()
 
+[//]: # (https://img.shields.io/versioneye/d/java/gov.loc:bagit.svg once it is deployed to maven-central)
 [//]: # (see https://github.com/jirutka/maven-badges once you have deployed past 5.0-BETA on maven central so that it will automatically update)
 [//]: # (see https://github.com/moznion/javadocio-badges for automatic javadoc)
 
