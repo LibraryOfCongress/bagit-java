@@ -58,7 +58,7 @@ public final class Hasher {
     addMessageDigestHashToManifest(path, manifestToMessageDigestMap);
   }
   
-  protected static void updateMessageDigests(final Path path, final Collection<MessageDigest> messageDigests) throws IOException{
+  static void updateMessageDigests(final Path path, final Collection<MessageDigest> messageDigests) throws IOException{
     try(final InputStream is = new BufferedInputStream(Files.newInputStream(path, StandardOpenOption.READ))){
       final byte[] buffer = new byte[CHUNK_SIZE];
       int read = is.read(buffer);

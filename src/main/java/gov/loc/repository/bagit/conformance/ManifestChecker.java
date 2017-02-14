@@ -101,7 +101,7 @@ public final class ManifestChecker {
     }
   }
   
-  protected static String parsePath(final String line) throws InvalidBagitFileFormatException{
+  static String parsePath(final String line) throws InvalidBagitFileFormatException{
     final String[] parts = line.split("\\s+", 2);
     if(parts.length < 2){
       throw new InvalidBagitFileFormatException("Manifest contains line [" + line + "] which does not follow the specified form of <CHECKSUM> <PATH>");
@@ -191,7 +191,7 @@ public final class ManifestChecker {
   /*
    * Check for anything weaker than SHA-512
    */
-  protected static void checkAlgorthm(final String algorithm, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
+  static void checkAlgorthm(final String algorithm, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
     final String upperCaseAlg = algorithm.toUpperCase();
     if(!warningsToIgnore.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM) && 
         (upperCaseAlg.startsWith("MD") || upperCaseAlg.matches("SHA(1|224|256|384)?"))){
