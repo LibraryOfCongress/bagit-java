@@ -7,12 +7,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 
 public class HasherTest extends PrivateConstructorTest {
+  @Rule
+  public TemporaryFolder folder= new TemporaryFolder();
 
   @Test
   public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
@@ -27,5 +32,12 @@ public class HasherTest extends PrivateConstructorTest {
     
     String hash = Hasher.hash(path, messageDigest);
     assertEquals(expectedHash, hash);
+  }
+  
+  @Test(expected=IOException.class)
+  public void testHashBadInput() throws IOException, NoSuchAlgorithmException{
+    Path path = folder.newFolder().toPath();
+    MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+    Hasher.updateMessageDigests(path, Arrays.asList(messageDigest));
   }
 }

@@ -1,38 +1,27 @@
-package gov.loc.repository.bagit.conformance;
+package gov.loc.repository.bagit.conformance.profile;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.Before;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import gov.loc.repository.bagit.conformance.profile.BagInfoRequirement;
-import gov.loc.repository.bagit.conformance.profile.BagitProfile;
-import gov.loc.repository.bagit.conformance.profile.BagitProfileDeserializer;
-import gov.loc.repository.bagit.conformance.profile.Serialization;
-
-public class BagitProfileDeserializerTest extends Assert{
-
-  @Test
-  public void testDeserialize() throws Exception{
-    ObjectMapper mapper = new ObjectMapper();
+public abstract class AbstractBagitProfileTest extends Assert {
+  protected ObjectMapper mapper;
+  
+  @Before
+  public void setup(){
+    mapper = new ObjectMapper();
     SimpleModule module = new SimpleModule();
     module.addDeserializer(BagitProfile.class, new BagitProfileDeserializer());
     mapper.registerModule(module);
-
-    BagitProfile expectedProfile = createExpectedProfile();
-    
-    BagitProfile profile = mapper.readValue(new File("src/test/resources/bagitProfiles/exampleProfile.json"), BagitProfile.class);
-    
-    assertEquals(expectedProfile, profile);
   }
   
-  private BagitProfile createExpectedProfile(){
+  protected BagitProfile createExpectedProfile(){
     BagitProfile expectedProfile = new BagitProfile();
     
     expectedProfile.setBagitProfileIdentifier("http://canadiana.org/standards/bagit/tdr_ingest.json");
@@ -43,25 +32,18 @@ public class BagitProfileDeserializerTest extends Assert{
     expectedProfile.setVersion("1.2");
     
     expectedProfile.setBagInfoRequirements(createBagInfo());
-    
     expectedProfile.setManifestTypesRequired(Arrays.asList("md5"));
-    
     expectedProfile.setFetchFileAllowed(false);
-    
     expectedProfile.setSerialization(Serialization.forbidden);
-    
     expectedProfile.setAcceptableMIMESerializationTypes(Arrays.asList("application/zip"));
-    
     expectedProfile.setAcceptableBagitVersions(Arrays.asList("0.96"));
-    
     expectedProfile.setTagManifestTypesRequired(Arrays.asList("md5"));
-    
     expectedProfile.setTagFilesRequired(Arrays.asList("DPN/dpnFirstNode.txt", "DPN/dpnRegistry"));
     
     return expectedProfile;
   }
   
-  private Map<String, BagInfoRequirement> createBagInfo(){
+  protected Map<String, BagInfoRequirement> createBagInfo(){
     Map<String, BagInfoRequirement> info = new HashMap<>();
     
     info.put("Source-Organization", new BagInfoRequirement(true, Arrays.asList("Simon Fraser University", "York University")));
