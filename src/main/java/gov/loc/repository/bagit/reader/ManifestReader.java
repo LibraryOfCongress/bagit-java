@@ -44,18 +44,19 @@ public final class ManifestReader {
    */
   static void readAllManifests(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final Path rootDir, final Bag bag) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.info("Attempting to find and read manifests");
-    final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir);
     
-    for (final Path path : manifests){
-      final String filename = PathUtils.getFilename(path);
-      
-      if(filename.startsWith("tagmanifest-")){
-        logger.debug("Found tag manifest [{}]", path);
-        bag.getTagManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
-      }
-      else if(filename.startsWith("manifest-")){
-        logger.debug("Found payload manifest [{}]", path);
-        bag.getPayLoadManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
+    try(final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir)){
+      for (final Path path : manifests){
+        final String filename = PathUtils.getFilename(path);
+        
+        if(filename.startsWith("tagmanifest-")){
+          logger.debug("Found tag manifest [{}]", path);
+          bag.getTagManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
+        }
+        else if(filename.startsWith("manifest-")){
+          logger.debug("Found payload manifest [{}]", path);
+          bag.getPayLoadManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
+        }
       }
     }
   }

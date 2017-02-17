@@ -100,18 +100,14 @@ public final class MandatoryVerifier {
     logger.info("Checking if there is at least one payload manifest in [{}]", rootDir);
     boolean hasAtLeastOneManifest = false;
     
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(rootDir);
-    //@Incubating
-    if(version.compareTo(new Version(2, 00)) >= 0){ //is it a .bagit version?
-      directoryStream = Files.newDirectoryStream(rootDir.resolve(DOT_BAGIT_DIR_NAME));
-    }
-    
-    for(final Path path : directoryStream){
-      if(PathUtils.getFilename(path).startsWith("manifest-")){
-        logger.debug("Found payload manifest file [{}]", path.getFileName());
-        hasAtLeastOneManifest = true;
+    try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(PathUtils.getBagitDir(version, rootDir))){
+      for(final Path path : directoryStream){
+        if(PathUtils.getFilename(path).startsWith("manifest-")){
+          logger.debug("Found payload manifest file [{}]", path.getFileName());
+          hasAtLeastOneManifest = true;
+        }
       }
-    }
+    }    
     
     if(!hasAtLeastOneManifest){
       throw new MissingPayloadManifestException("Bag does not contain any payload manifest files");

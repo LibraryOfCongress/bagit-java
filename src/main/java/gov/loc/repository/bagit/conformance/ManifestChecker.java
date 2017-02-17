@@ -45,20 +45,21 @@ public final class ManifestChecker {
       final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
         
     boolean missingTagManifest = true;
-    final DirectoryStream<Path> files = Files.newDirectoryStream(bagitDir);
-    for(final Path file : files){
-      final String filename = PathUtils.getFilename(file);
-      if(filename.contains("manifest-")){
-        if(filename.startsWith("manifest-")){
-          checkData(file, encoding, warnings, warningsToIgnore, true);
+    try(final DirectoryStream<Path> files = Files.newDirectoryStream(bagitDir)){
+      for(final Path file : files){
+        final String filename = PathUtils.getFilename(file);
+        if(filename.contains("manifest-")){
+          if(filename.startsWith("manifest-")){
+            checkData(file, encoding, warnings, warningsToIgnore, true);
+          }
+          else{
+            checkData(file, encoding, warnings, warningsToIgnore, false);
+            missingTagManifest = false;
+          }
+          
+          final String algorithm = filename.split("[-\\.]")[1];
+          checkAlgorthm(algorithm, warnings, warningsToIgnore);
         }
-        else{
-          checkData(file, encoding, warnings, warningsToIgnore, false);
-          missingTagManifest = false;
-        }
-        
-        final String algorithm = filename.split("[-\\.]")[1];
-        checkAlgorthm(algorithm, warnings, warningsToIgnore);
       }
     }
     
@@ -138,14 +139,14 @@ public final class ManifestChecker {
       if(dirToCheck == null){ throw new IOException("Could not access parent folder of " + fileToCheck);} //to satisfy findbugs
       final String normalizedFileToCheck = normalizePathToNFD(fileToCheck);
       
-      final DirectoryStream<Path> files = Files.newDirectoryStream(dirToCheck);
-      
-      for(final Path file : files){
-        final String normalizedFile = normalizePathToNFD(file);
-        
-        if(!file.equals(fileToCheck) && normalizedFileToCheck.equals(normalizedFile)){
-          logger.warn("File [{}] has a different normalization then what is specified in the manifest.", fileToCheck);
-          warnings.add(BagitWarning.DIFFERENT_NORMALIZATION);
+      try(final DirectoryStream<Path> files = Files.newDirectoryStream(dirToCheck)){
+        for(final Path file : files){
+          final String normalizedFile = normalizePathToNFD(file);
+          
+          if(!file.equals(fileToCheck) && normalizedFileToCheck.equals(normalizedFile)){
+            logger.warn("File [{}] has a different normalization then what is specified in the manifest.", fileToCheck);
+            warnings.add(BagitWarning.DIFFERENT_NORMALIZATION);
+          }
         }
       }
     }

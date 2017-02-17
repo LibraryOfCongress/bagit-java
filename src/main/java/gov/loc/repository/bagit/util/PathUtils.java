@@ -11,6 +11,9 @@ import gov.loc.repository.bagit.domain.Version;
 public final class PathUtils {
   private static final String PAYLOAD_DIR_NAME = "data";
   
+  //@Incubating
+ private static final String DOT_BAGIT_DIR_NAME = ".bagit";
+  
   private PathUtils(){
     //intentionally left blank
   }
@@ -99,5 +102,22 @@ public final class PathUtils {
     }
     
     return output.resolve(PAYLOAD_DIR_NAME);
+  }
+  
+  /**
+   * With bagit version 2.0 (.bagit) bagit specific files are no longer at the bag root directory.
+   * This method accounts for this and will return the directory that contains the bag specific files.
+   * 
+   * @param version the bag version
+   * @param bagRoot the root directory of the bag
+   * 
+   * @return the directory which contains the bag specific files, like manifests or bagit.txt
+   */
+  public static Path getBagitDir(final Version version, final Path bagRoot){
+    if(version.compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+      return bagRoot.resolve(DOT_BAGIT_DIR_NAME);
+    }
+    
+    return bagRoot;
   }
 }

@@ -48,10 +48,11 @@ public final class BagCreator {
     
     final Path dataDir = root.resolve("data");
     Files.createDirectory(dataDir);
-    final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root);
-    for(final Path path : directoryStream){
-      if(!path.equals(dataDir) && !Files.isHidden(path) || includeHidden){
-        Files.move(path, dataDir.resolve(path.getFileName()));
+    try(final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root)){
+      for(final Path path : directoryStream){
+        if(!path.equals(dataDir) && !Files.isHidden(path) || includeHidden){
+          Files.move(path, dataDir.resolve(path.getFileName()));
+        }
       }
     }
     

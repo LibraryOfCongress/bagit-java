@@ -32,9 +32,6 @@ import gov.loc.repository.bagit.util.PathUtils;
 public class PayloadVerifier {
   private static final Logger logger = LoggerFactory.getLogger(PayloadVerifier.class);
 
-  // @Incubating
-  private static final String DOT_BAGIT_DIR_NAME = ".bagit";
-
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
 
   public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
@@ -76,20 +73,16 @@ public class PayloadVerifier {
     logger.debug("Getting all files listed in the manifest(s)");
     final Set<Path> filesListedInManifests = new HashSet<>();
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(bag.getRootDir());
-    // @Incubating
-    if (bag.getVersion().compareTo(new Version(2, 00)) >= 0) { // is it a .bagit
-                                                               // version?
-      directoryStream = Files.newDirectoryStream(bag.getRootDir().resolve(DOT_BAGIT_DIR_NAME));
-    }
-
-    for (final Path path : directoryStream) {
-      final String filename = PathUtils.getFilename(path);
-      if (filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")) {
-        logger.debug("Getting files and checksums listed in [{}]", path);
-        final Manifest manifest = ManifestReader.readManifest(nameMapping, path, bag.getRootDir(),
-            bag.getFileEncoding());
-        filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
+    try(DirectoryStream<Path> directoryStream = 
+        Files.newDirectoryStream(PathUtils.getBagitDir(bag.getVersion(), bag.getRootDir()))){
+      for (final Path path : directoryStream) {
+        final String filename = PathUtils.getFilename(path);
+        if (filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")) {
+          logger.debug("Getting files and checksums listed in [{}]", path);
+          final Manifest manifest = ManifestReader.readManifest(nameMapping, path, bag.getRootDir(),
+              bag.getFileEncoding());
+          filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
+        }
       }
     }
 
