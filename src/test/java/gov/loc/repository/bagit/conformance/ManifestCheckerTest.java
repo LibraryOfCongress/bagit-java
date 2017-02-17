@@ -9,11 +9,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 
 public class ManifestCheckerTest extends PrivateConstructorTest{
+  @Rule
+  public TemporaryFolder folder= new TemporaryFolder();
   
   private final Path rootDir = Paths.get("src","test","resources","linterTestBag");
   
@@ -37,6 +42,16 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
     assertTrue(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
     assertTrue(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
     assertTrue(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
+    assertTrue(warnings.contains(BagitWarning.MISSING_TAG_MANIEST));
+  }
+  
+  @Test
+  public void testCheckTagManifest() throws Exception{
+    folder.newFile("tagmanifest-md5.txt");
+    Set<BagitWarning> warnings = new HashSet<>();
+
+    ManifestChecker.checkManifests(folder.getRoot().toPath(), StandardCharsets.UTF_16, warnings, Collections.emptyList());
+    assertFalse(warnings.contains(BagitWarning.MISSING_TAG_MANIEST));
   }
   
   @Test
@@ -110,6 +125,22 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
     
     for(String osFileToTest : osFilesToTest){
       assertTrue(osFileToTest + " should match regex but it doesn't", osFileToTest.matches(regex));
+    }
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
+  public void testParsePath() throws InvalidBagitFileFormatException{
+    ManifestChecker.parsePath("foobarham");
+  }
+  
+  @Test
+  public void testCheckAlgorthm(){
+    Set<BagitWarning> warnings;
+    String[] algorithms = new String[]{"md5", "sha", "sha1", "sha224", "sha256", "sha384"};
+    for(String algorithm : algorithms){
+     warnings = new HashSet<>();
+     ManifestChecker.checkAlgorthm(algorithm, warnings, Collections.emptyList());
+       assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
     }
   }
 }

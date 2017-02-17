@@ -102,7 +102,7 @@ public final class ManifestChecker {
     }
   }
   
-  private static String parsePath(final String line) throws InvalidBagitFileFormatException{
+  static String parsePath(final String line) throws InvalidBagitFileFormatException{
     final String[] parts = line.split("\\s+", 2);
     if(parts.length < 2){
       throw new InvalidBagitFileFormatException("Manifest contains line [" + line + "] which does not follow the specified form of <CHECKSUM> <PATH>");
@@ -156,11 +156,6 @@ public final class ManifestChecker {
    * Normalize to Canonical decomposition.
    */
   static String normalizePathToNFD(final Path path){
-    final Path filename = path.getFileName();
-    if(filename != null){
-      return Normalizer.normalize(filename.toString(), Normalizer.Form.NFD);
-    }
-    
     return Normalizer.normalize(path.toString(), Normalizer.Form.NFD);
   }
   
@@ -197,10 +192,10 @@ public final class ManifestChecker {
   /*
    * Check for anything weaker than SHA-512
    */
-  private static void checkAlgorthm(final String algorithm, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
+  static void checkAlgorthm(final String algorithm, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
     final String upperCaseAlg = algorithm.toUpperCase();
     if(!warningsToIgnore.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM) && 
-        (upperCaseAlg.startsWith("MD") || upperCaseAlg.matches("SHA(-224|-256|-384)?"))){
+        (upperCaseAlg.startsWith("MD") || upperCaseAlg.matches("SHA(1|224|256|384)?"))){
       logger.warn("Detected a known weak algorithm [{}]. With the great advances in computer hardware there is little penalty "
           + "to using more bits to calculate the checksum.", algorithm);
       warnings.add(BagitWarning.WEAK_CHECKSUM_ALGORITHM);

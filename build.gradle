@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-  compile 'org.slf4j:slf4j-api:1.7.22'
+  compile 'org.slf4j:slf4j-api:1.7.22', 'com.fasterxml.jackson.core:jackson-databind:2.8.6'
     
   testCompile 'junit:junit:4.12', 
     'org.springframework.boot:spring-boot-starter-logging:1.4.3.RELEASE',
