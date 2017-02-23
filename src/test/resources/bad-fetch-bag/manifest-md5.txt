@@ -1,1 +1,1 @@
-bae7aa47892753a1355770164d780dec  data/wikipedia.png
+304aab05bf24e79b559ef0a89cf4e6dc  data/wikipedia.png
