@@ -2,19 +2,16 @@ package gov.loc.repository.bagit.impl;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -544,25 +541,24 @@ public abstract class AbstractBag implements Bag {
 			filepath = bagConstants.getDataDirectory() + "/" + filepath;
 		}
 		
-		log.debug("remove all the files under " + filepath);
-    //remove all the files. Need to create list so there is no concurrentModificationException
-		List<String> deleteFilepaths = new ArrayList<String>();
-    for(BagFile bagFile : this.getPayload()) {
-      if (bagFile.getFilepath().startsWith(filepath)) {
-        deleteFilepaths.add(bagFile.getFilepath());
-      }
-    }
-    for(String deleteFilepath : deleteFilepaths) {
-      log.debug("Removing " + deleteFilepath);
-      this.removeBagFile(deleteFilepath);     
-    }
+		if ((bagConstants.getDataDirectory() + "/").equals(filepath)) {
+			return;
+		}
+
+		log.debug("Removing payload directory " + filepath);
 		
-    //now remove the empty directories
-		try {
-      FileUtils.deleteDirectory(new File(filepath));
-    } catch (IOException e) {
-      log.error("Could not delete payload directory [" + filepath + "]!", e);
-    }
+		List<String> deleteFilepaths = new ArrayList<String>();
+		
+		for(BagFile bagFile : this.getPayload()) {
+			if (bagFile.getFilepath().startsWith(filepath)) {
+				deleteFilepaths.add(bagFile.getFilepath());
+			}
+		}
+		
+		for(String deleteFilepath : deleteFilepaths) {
+			log.debug("Removing " + deleteFilepath);
+			this.removeBagFile(deleteFilepath);			
+		}
 	}
 
 	@Override
@@ -574,27 +570,21 @@ public abstract class AbstractBag implements Bag {
 		if (filepath.startsWith(bagConstants.getDataDirectory())) {
 			throw new RuntimeException("Trying to remove payload");
 		}
-
-		log.debug("remove all the files under " + filepath);
-		//remove all the files. Need to create list so there is no concurrentModificationException
-		List<String> deleteFilepaths = new ArrayList<String>();
-    for(BagFile bagFile : this.getTags()) {
-      if (bagFile.getFilepath().startsWith(filepath)) {
-        deleteFilepaths.add(bagFile.getFilepath());
-      }
-    }
-    for(String deleteFilepath : deleteFilepaths) {
-      log.debug("Removing " + deleteFilepath);
-      this.removeBagFile(deleteFilepath);     
-    }
 		
 		log.debug("Removing tag directory " + filepath);
-		//now remove the empty directories
-		try {
-      FileUtils.deleteDirectory(new File(filepath));
-    } catch (IOException e) {
-      log.error("Could not delete tag directory [" + filepath + "]!", e);
-    }
+		
+		List<String> deleteFilepaths = new ArrayList<String>();
+		
+		for(BagFile bagFile : this.getTags()) {
+			if (bagFile.getFilepath().startsWith(filepath)) {
+				deleteFilepaths.add(bagFile.getFilepath());
+			}
+		}
+		
+		for(String deleteFilepath : deleteFilepaths) {
+			log.debug("Removing " + deleteFilepath);
+			this.removeBagFile(deleteFilepath);			
+		}
 	}
 
 	

@@ -41,6 +41,9 @@ public class BagInABagTests extends AbstractBagImplTest {
 	
 			bag.removePayloadDirectory("data/bag/data/test1.txt");
 			assertNotNull(bag.getBagFile("data/bag/data/test1.txt"));
+	
+			bag.removePayloadDirectory("data");
+			assertNotNull(bag.getBagFile("data/bag/manifest-md5.txt"));
 		} finally {
 			bag.close();
 		}
