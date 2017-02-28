@@ -33,7 +33,7 @@ public final class MetadataWriter {
    */
   public static void writeBagMetadata(final List<SimpleImmutableEntry<String, String>> metadata, final Version version, final Path outputDir, final Charset charsetName) throws IOException{
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
-    if(VERSION_0_95.compareTo(version) >= 0){
+    if(version.isSameOrOlder(VERSION_0_95)){
       bagInfoFilePath = outputDir.resolve("package-info.txt");
     }
     logger.debug("Writing {} to [{}]", bagInfoFilePath.getFileName(), outputDir);

@@ -60,7 +60,7 @@ public final class MandatoryVerifier {
     logger.info("Checking if bagit.txt file exists");
     Path bagitFile = rootDir.resolve("bagit.txt");
     //@Incubating
-    if(version.compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+    if(version.isSameOrNewer(new Version(2, 0))){ //is it a .bagit version?
       bagitFile = rootDir.resolve(DOT_BAGIT_DIR_NAME + File.separator + "bagit.txt");
     }
     

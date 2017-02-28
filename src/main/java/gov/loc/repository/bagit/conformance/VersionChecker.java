@@ -20,7 +20,7 @@ public interface VersionChecker {
    * Check that they are using the latest version
    */
   static void checkVersion(final Version version, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore){
-    if(!warningsToIgnore.contains(BagitWarning.OLD_BAGIT_VERSION) && LATEST_BAGIT_VERSION.compareTo(version) == 1){
+    if(!warningsToIgnore.contains(BagitWarning.OLD_BAGIT_VERSION) && version.isOlder(LATEST_BAGIT_VERSION)){
       logger.warn("Found version [{}] of the bagit specification but the latest version is [{}].", version, LATEST_BAGIT_VERSION);
       warnings.add(BagitWarning.OLD_BAGIT_VERSION);
     }

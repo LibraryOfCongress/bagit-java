@@ -58,7 +58,7 @@ public class PayloadVerifier {
     final Set<Path> allFilesListedInManifests = getAllFilesListedInManifests(bag);
     checkAllFilesListedInManifestExist(allFilesListedInManifests);
 
-    if (new Version(1, 0).compareTo(bag.getVersion()) < 0) {
+    if (bag.getVersion().isOlder(new Version(1, 0))) {
       checkAllFilesInPayloadDirAreListedInAtLeastOneAManifest(allFilesListedInManifests, PathUtils.getDataDir(bag), ignoreHiddenFiles);
     } else {
       CheckAllFilesInPayloadDirAreListedInAllManifests(bag.getPayLoadManifests(), PathUtils.getDataDir(bag), ignoreHiddenFiles);

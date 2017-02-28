@@ -27,7 +27,7 @@ public final class PayloadWriter {
   static Path writeVersionDependentPayloadFiles(final Bag bag, final Path outputDir) throws IOException{
     Path bagitDir = outputDir;
     //@Incubating
-    if(VERSION_2_0.compareTo(bag.getVersion()) <= 0){
+    if(bag.getVersion().isSameOrNewer(VERSION_2_0)){
       bagitDir = outputDir.resolve(".bagit");
       Files.createDirectories(bagitDir);
       writePayloadFiles(bag.getPayLoadManifests(), outputDir, bag.getRootDir());

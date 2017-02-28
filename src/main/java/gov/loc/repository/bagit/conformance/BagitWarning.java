@@ -12,6 +12,8 @@ public enum BagitWarning {
       + "This can cause problems on a filesystem like the one used by apple (HFS)."),
   DIFFERENT_NORMALIZATION("The bag contains two files that differ only in the normalization. "
       + "This can cause verification to fail on some systems, and general user confusion."),
+  EXTRA_LINES_IN_BAGIT_FILES("The bagit specification says it must only contain 2 lines. "
+      + "However, some implementations have decided to ignore this which may cause compatibility issues"),
   LEADING_DOT_SLASH("A manifest lists all data files as relative to the bag root directory,"
       + " it is superfluous to therefore specify it with a dot."),
   NON_STANDARD_ALGORITHM("The checksum algorithm used does not come standard with the Java runtime. Consider using SHA512 instead."),

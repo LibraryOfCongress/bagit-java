@@ -1,2 +1,3 @@
 BagIt-Version: 0.96
 Tag-File-Character-Encoding: UTF-16
+extra line: in file is not allowed by specification

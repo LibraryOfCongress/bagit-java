@@ -58,6 +58,22 @@ public final class Version implements Comparable<Version>{
     
     return Objects.equals(major, other.major) && Objects.equals(minor, other.minor); 
   }
+  
+  public boolean isNewer(final Version version){
+    return this.compareTo(version) > 0;
+  }
+  
+  public boolean isSameOrNewer(final Version version){
+    return this.compareTo(version) >= 0;
+  }
+  
+  public boolean isOlder(final Version version){
+    return this.compareTo(version) < 0;
+  }
+  
+  public boolean isSameOrOlder(final Version version){
+    return this.compareTo(version) <= 0;
+  }
 
   public int getMajor() {
     return major;

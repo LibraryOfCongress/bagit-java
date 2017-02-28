@@ -3,12 +3,14 @@ package gov.loc.repository.bagit.conformance;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -33,6 +35,7 @@ import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotP
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.reader.BagitTextFileReader;
+import gov.loc.repository.bagit.reader.KeyValueReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
 
 /**
@@ -40,7 +43,7 @@ import gov.loc.repository.bagit.verify.BagVerifier;
  */
 public class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
-  
+  private static final Version VERSION_1_0 = new Version(1,0);
   
   private final BagReader reader;
   
@@ -121,8 +124,8 @@ public class BagLinter {
       bagitDir = rootDir;
     }
     
-    logger.debug("Reading bagit.txt file for version and encoding.");
     final Path bagitFile = bagitDir.resolve("bagit.txt");
+    checkForExtraLines(bagitFile, warnings, warningsToIgnore);
     final SimpleImmutableEntry<Version, Charset> bagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);
     
     logger.debug("Checking encoding problems.");
@@ -142,5 +145,28 @@ public class BagLinter {
   
   public BagReader getReader() {
     return reader;
+  }
+  
+  private void checkForExtraLines(final Path bagitFile, final Collection<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore) throws InvalidBagMetadataException, IOException, UnparsableVersionException{
+    if(warningsToIgnore.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES)){
+      logger.debug("skipping check for extra lines in bagit files");
+      return;
+    }
+    
+    logger.debug("checking if [{}] contains more than 2 lines");
+    final List<SimpleImmutableEntry<String, String>> pairs = KeyValueReader.readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
+     
+    for(final SimpleImmutableEntry<String, String> pair : pairs){
+      if("BagIt-Version".equals(pair.getKey())){
+        final Version version = BagitTextFileReader.parseVersion(pair.getValue());
+        //versions before 1.0 specified it must be exactly 2 lines
+        if(pairs.size() > 2 && version.isOlder(VERSION_1_0)){
+          logger.warn("The bagit specification states that the bagit.txt file must contain exactly 2 lines. "
+              + "However we found {} lines, some implementations will "
+              + "ignore this but may cause imcompatibility issues with other tools.", pairs.size());
+          warnings.add(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES);
+        }
+      }
+    }
   }
 }

@@ -92,4 +92,42 @@ public class VersionTest extends Assert {
     
     assertTrue(v1.equals(v2));
   }
+  
+  @Test
+  public void testIsNewer(){
+    Version older = new Version(0, 0);
+    Version newer = new Version(0, 1);
+    
+    assertTrue(newer.isNewer(older));
+    
+    older = new Version(1, 0);
+    newer = new Version(1, 1);
+    assertTrue(newer.isNewer(older));
+  }
+  
+  @Test
+  public void testIsSameOrNewer(){
+    Version same1 = new Version(0, 0);
+    Version same2 = new Version(0, 0);
+    assertTrue(same1.isSameOrNewer(same2));
+  }
+  
+  @Test
+  public void testIsOlder(){
+    Version older = new Version(0, 0);
+    Version newer = new Version(0, 1);
+    
+    assertTrue(older.isOlder(newer));
+    
+    older = new Version(1, 0);
+    newer = new Version(1, 1);
+    assertTrue(older.isOlder(newer));
+  }
+  
+  @Test
+  public void testIsSameOrOlder(){
+    Version same1 = new Version(0, 0);
+    Version same2 = new Version(0, 0);
+    assertTrue(same1.isSameOrOlder(same2));
+  }
 }

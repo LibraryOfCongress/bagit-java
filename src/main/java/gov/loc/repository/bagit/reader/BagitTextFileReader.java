@@ -37,12 +37,12 @@ public final class BagitTextFileReader {
    * @throws InvalidBagitFileFormatException if the bagit.txt file does not conform to the bagit spec
    */
   public static SimpleImmutableEntry<Version, Charset> readBagitTextFile(final Path bagitFile) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
-    logger.debug("Reading [{}] file", bagitFile);
+    logger.debug("Reading [{}] for version and encoding", bagitFile);
     throwErrorIfByteOrderMarkIsPresent(bagitFile);
     final List<SimpleImmutableEntry<String, String>> pairs = KeyValueReader.readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
     
-    String version = "";
-    Charset encoding = StandardCharsets.UTF_8;
+    String version = null;
+    Charset encoding = null;
     for(final SimpleImmutableEntry<String, String> pair : pairs){
       if("BagIt-Version".equals(pair.getKey())){
         version = pair.getValue();
@@ -52,6 +52,10 @@ public final class BagitTextFileReader {
         encoding = Charset.forName(pair.getValue());
         logger.debug("Tag-File-Character-Encoding is [{}]", encoding);
       }
+    }
+    
+    if(version == null || encoding == null){
+      throw new InvalidBagitFileFormatException("bagit.txt MUST contain 'BagIt-Version' AND 'Tag-File-Character-Encoding' entries!");
     }
     
     return new SimpleImmutableEntry<Version, Charset>(parseVersion(version), encoding);
@@ -71,7 +75,7 @@ public final class BagitTextFileReader {
   /*
    * parses the version string into a {@link Version} object
    */
-  static Version parseVersion(final String version) throws UnparsableVersionException{
+  public static Version parseVersion(final String version) throws UnparsableVersionException{
     if(!version.contains(".")){
       throw new UnparsableVersionException("Version must be in format MAJOR.MINOR but was " + version);
     }

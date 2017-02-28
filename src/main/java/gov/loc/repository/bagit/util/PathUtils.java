@@ -79,7 +79,7 @@ public final class PathUtils {
    * @return the directory that contains the payload files 
    */
   public static Path getDataDir(final Bag bag){
-    if(bag.getVersion().compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+    if(bag.getVersion().isSameOrNewer(new Version(2, 0))){ //is it a .bagit version?
       return bag.getRootDir();
     }
     
@@ -97,7 +97,7 @@ public final class PathUtils {
    * @return the payload directory for the output directory
    */
   public static Path getDataDir(final Version version, final Path output){
-    if(version.compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+    if(version.isSameOrNewer(new Version(2, 0))){ //is it a .bagit version?
       return output;
     }
     
@@ -114,7 +114,7 @@ public final class PathUtils {
    * @return the directory which contains the bag specific files, like manifests or bagit.txt
    */
   public static Path getBagitDir(final Version version, final Path bagRoot){
-    if(version.compareTo(new Version(2, 0)) >= 0){ //is it a .bagit version?
+    if(version.isSameOrNewer(new Version(2, 0))){ //is it a .bagit version?
       return bagRoot.resolve(DOT_BAGIT_DIR_NAME);
     }
     
