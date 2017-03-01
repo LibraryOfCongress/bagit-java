@@ -5,12 +5,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.repository.bagit.domain.Metadata;
 import gov.loc.repository.bagit.domain.Version;
 
 public final class MetadataWriter {
@@ -31,7 +31,7 @@ public final class MetadataWriter {
    * 
    * @throws IOException if there was a problem writing a file
    */
-  public static void writeBagMetadata(final List<SimpleImmutableEntry<String, String>> metadata, final Version version, final Path outputDir, final Charset charsetName) throws IOException{
+  public static void writeBagMetadata(final Metadata metadata, final Version version, final Path outputDir, final Charset charsetName) throws IOException{
     Path bagInfoFilePath = outputDir.resolve("bag-info.txt");
     if(version.isSameOrOlder(VERSION_0_95)){
       bagInfoFilePath = outputDir.resolve("package-info.txt");
@@ -40,7 +40,7 @@ public final class MetadataWriter {
 
     Files.deleteIfExists(bagInfoFilePath);
     
-    for(final SimpleImmutableEntry<String, String> entry : metadata){
+    for(final SimpleImmutableEntry<String, String> entry : metadata.getAll()){
       final String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, bagInfoFilePath);
       Files.write(bagInfoFilePath, line.getBytes(charsetName), 

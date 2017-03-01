@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +24,7 @@ import gov.loc.repository.bagit.conformance.profile.BagitProfileDeserializer;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.Metadata;
 import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
@@ -97,12 +95,11 @@ public final class BagProfileChecker {
     }
   }
   
-  private static void checkMetadata(final List<SimpleImmutableEntry<String, String>> bagMetadata, 
-      final Map<String, BagInfoRequirement> bagInfoEntryRequirements) throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException{
-    final MapOfLists metadataMap = convertMetadata(bagMetadata);
+  private static void checkMetadata(final Metadata bagMetadata, final Map<String, BagInfoRequirement> bagInfoEntryRequirements) 
+      throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException{
     
     for(final Entry<String, BagInfoRequirement> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
-      final boolean metadataContainsKey = metadataMap.keySet().contains(bagInfoEntryRequirement.getKey());
+      final boolean metadataContainsKey = bagMetadata.contains(bagInfoEntryRequirement.getKey());
       
       logger.debug("Checking if [{}] is required in the bag metadata", bagInfoEntryRequirement.getKey());
       //is it required and not there?
@@ -113,7 +110,7 @@ public final class BagProfileChecker {
       //a size of zero implies that all values are acceptable
       if(!bagInfoEntryRequirement.getValue().getAcceptableValues().isEmpty()){
         logger.debug("Checking if all the values listed for [{}] are acceptable", bagInfoEntryRequirement.getKey());
-        for(final String metadataValue : metadataMap.get(bagInfoEntryRequirement.getKey())){
+        for(final String metadataValue : bagMetadata.get(bagInfoEntryRequirement.getKey())){
           if(!bagInfoEntryRequirement.getValue().getAcceptableValues().contains(metadataValue)){
             throw new MetatdataValueIsNotAcceptableException("Profile specifies that acceptable values for [" + bagInfoEntryRequirement.getKey() + 
                 "] are " + bagInfoEntryRequirement.getValue().getAcceptableValues() + " but found [" + metadataValue + "]");
@@ -121,17 +118,6 @@ public final class BagProfileChecker {
         }
       }
     }
-  }
-  
-  private static MapOfLists convertMetadata(final List<SimpleImmutableEntry<String, String>> bagMetadata){
-    final MapOfLists metadataMap = new MapOfLists();
-    
-    //transform into a map so that we don't have to loop over the list every time since we don't care about order
-    for(final SimpleImmutableEntry<String, String> metadata : bagMetadata){
-      metadataMap.put(metadata.getKey(), metadata.getValue());
-    }
-    
-    return metadataMap;
   }
   
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
@@ -164,22 +150,6 @@ public final class BagProfileChecker {
       if(!Files.exists(requiredTagFile)){
         throw new RequiredTagFileNotPresentException("Required tag file [" + requiredTagFilePath + "] was not found");
       }
-    }
-  }
-  
-  private static class MapOfLists extends HashMap<String, List<String>>{
-    private static final long serialVersionUID = 1L;
-
-    public void put(final String key, final String value){
-      final List<String> values = this.get(key);
-      final List<String> newValues = new ArrayList<>();
-      
-      if(values != null){
-        newValues.addAll(values);
-      }
-      newValues.add(value);
-      
-      this.put(key, newValues);
     }
   }
 }

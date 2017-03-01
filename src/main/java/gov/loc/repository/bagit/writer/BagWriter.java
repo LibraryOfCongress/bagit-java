@@ -5,10 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -49,7 +46,7 @@ public final class BagWriter {
     
     logger.debug("Upserting payload-oxum");
     final String payloadOxum = generatePayloadOxum(PathUtils.getDataDir(bag.getVersion(), outputDir));
-    upsertPayloadOxum(bag, payloadOxum);
+    bag.getMetadata().upsertPayloadOxum(payloadOxum);
     
     logger.debug("writing the bagit.txt file");
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
@@ -57,7 +54,7 @@ public final class BagWriter {
     logger.debug("writing the payload manifest(s)");
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
 
-    if(bag.getMetadata().size() > 0){
+    if(!bag.getMetadata().isEmpty()){
       logger.debug("writing the bag metadata");
       MetadataWriter.writeBagMetadata(bag.getMetadata(), bag.getVersion(), bagitDir, bag.getFileEncoding());
     }
@@ -89,26 +86,6 @@ public final class BagWriter {
     Files.walkFileTree(dataDir, visitor);
     
     return visitor.getTotalSize() + "." + visitor.getCount();
-  }
-  
-  /**
-   * insert or update the payload-oxum
-   * 
-   * @param bag the bag to update with the new payload-oxum value
-   * @param payloadOxumValue the new payload-oxum value
-   */
-  private static void upsertPayloadOxum(final Bag bag, final String payloadOxumValue){
-    final List<SimpleImmutableEntry<String, String>> newMetadata = new ArrayList<>();
-    
-    //remove the current payload-oxum, also ensures there is only one payload-oxum. This is needed so there is no currentModificationException
-    for(final SimpleImmutableEntry<String, String> entry : bag.getMetadata()){
-      if(!"Payload-oxum".equals(entry.getKey())){
-        newMetadata.add(entry);
-      }
-    }
-    
-    newMetadata.add(new SimpleImmutableEntry<>("Payload-oxum", payloadOxumValue));
-    bag.setMetadata(newMetadata);
   }
   
   /*

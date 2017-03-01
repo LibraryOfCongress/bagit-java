@@ -4,7 +4,7 @@ plugins {
   //these have to be in the main project for now see - https://discuss.gradle.org/t/how-do-i-include-buildscript-block-from-external-gradle-script/7016/2
   id "com.github.kt3k.coveralls" version "2.6.3" 
   id "de.aaschmid.cpd" version "1.0"
-  id "org.owasp.dependencycheck" version "1.4.4.1"
+  id "org.owasp.dependencycheck" version "1.4.5"
 }
 apply from: 'eclipse.gradle'
 apply from: 'maven-central.gradle'
@@ -23,7 +23,9 @@ repositories {
 }
 
 dependencies {
-  compile 'org.slf4j:slf4j-api:1.7.22', 'com.fasterxml.jackson.core:jackson-databind:2.8.6'
+  compile 'org.slf4j:slf4j-api:1.7.22', 
+  'com.fasterxml.jackson.core:jackson-core:2.8.6', 
+  'com.fasterxml.jackson.core:jackson-databind:2.8.6'
     
   testCompile 'junit:junit:4.12', 
     'org.springframework.boot:spring-boot-starter-logging:1.4.3.RELEASE',

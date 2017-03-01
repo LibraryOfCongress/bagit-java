@@ -3,7 +3,6 @@ package gov.loc.repository.bagit.domain;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +29,7 @@ public final class Bag {
   private List<FetchItem> itemsToFetch = new ArrayList<>();
   
   //equivalent to the bag-info.txt 
-  private List<SimpleImmutableEntry<String, String>> metadata = new ArrayList<>();
+  private Metadata metadata = new Metadata();
   
   //the current location of the bag on the filesystem
   private Path rootDir;
@@ -94,11 +93,11 @@ public final class Bag {
     this.itemsToFetch = itemsToFetch;
   }
 
-  public List<SimpleImmutableEntry<String, String>> getMetadata() {
+  public Metadata getMetadata() {
     return metadata;
   }
 
-  public void setMetadata(final List<SimpleImmutableEntry<String, String>> metadata) {
+  public void setMetadata(final Metadata metadata) {
     this.metadata = metadata;
   }
 

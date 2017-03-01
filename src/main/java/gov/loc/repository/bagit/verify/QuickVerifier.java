@@ -42,7 +42,7 @@ public final class QuickVerifier {
    * Get the Payload-Oxum value from the key value pairs
    */
   private static String getPayloadOxum(final Bag bag){
-    for(final SimpleImmutableEntry<String,String> keyValue : bag.getMetadata()){
+    for(final SimpleImmutableEntry<String,String> keyValue : bag.getMetadata().getAll()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         return keyValue.getValue();
       }

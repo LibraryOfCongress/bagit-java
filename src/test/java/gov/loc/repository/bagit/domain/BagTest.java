@@ -3,6 +3,9 @@ package gov.loc.repository.bagit.domain;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -68,5 +71,26 @@ public class BagTest extends Assert {
     Bag bag1 = new Bag();
     
     assertFalse(bag1.equals("foo"));
+  }
+  
+  @Test
+  public void foo(){
+    List<SimpleImmutableEntry<String, String>> list = new ArrayList<>();
+    list.add(new SimpleImmutableEntry<>("foo", "bar"));
+    list.add(new SimpleImmutableEntry<>("bar", "ham"));
+    list.add(new SimpleImmutableEntry<>("ham", "hungry"));
+    
+    SimpleImmutableEntry<String, String> entryToRemove = null;
+    for(final SimpleImmutableEntry<String, String> entry : list){
+      if(!"ham".equals(entry.getKey())){
+        entryToRemove = entry;
+        continue;
+      }
+    }
+    if(entryToRemove != null){
+      list.remove(entryToRemove);
+    }
+    
+    System.err.println(list);
   }
 }

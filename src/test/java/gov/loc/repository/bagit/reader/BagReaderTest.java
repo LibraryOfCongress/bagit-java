@@ -17,6 +17,7 @@ import org.junit.Test;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.domain.Metadata;
 import gov.loc.repository.bagit.domain.Version;
 
 public class BagReaderTest extends Assert{
@@ -87,7 +88,7 @@ public class BagReaderTest extends Assert{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_93/bag").toURI());
     Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 93), bag.getVersion());
-    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata()){
+    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata().getAll()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         assertEquals("25.5", keyValue.getValue());
       }
@@ -99,7 +100,7 @@ public class BagReaderTest extends Assert{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_94/bag").toURI());
     Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 94), bag.getVersion());
-    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata()){
+    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata().getAll()){
       if("Payload-Oxum".equals(keyValue.getKey())){
         assertEquals("25.5", keyValue.getValue());
       }
@@ -111,7 +112,7 @@ public class BagReaderTest extends Assert{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_95/bag").toURI());
     Bag bag = sut.read(rootDir);
     assertEquals(new Version(0, 95), bag.getVersion());
-    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata()){
+    for(SimpleImmutableEntry<String, String> keyValue : bag.getMetadata().getAll()){
       if("Package-Size".equals(keyValue.getKey())){
         assertEquals("260 GB", keyValue.getValue());
       }
@@ -120,12 +121,12 @@ public class BagReaderTest extends Assert{
 
   @Test
   public void testReadISO_8859_1Encoding() throws Exception{
-    List<SimpleImmutableEntry<String, String>> expectedMetaData = new ArrayList<>();
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bagging-Date","2016-02-26"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Email","cadams@loc.gov"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Name","Chris Adams"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Payload-Oxum","58.2"));
+    Metadata expectedMetaData = new Metadata();
+    expectedMetaData.add("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>");
+    expectedMetaData.add("Bagging-Date","2016-02-26");
+    expectedMetaData.add("Contact-Email","cadams@loc.gov");
+    expectedMetaData.add("Contact-Name","Chris Adams");
+    expectedMetaData.add("Payload-Oxum","58.2");
     
     Path bagPath = Paths.get(new File("src/test/resources/ISO-8859-1-encodedBag").toURI());
     Bag bag = sut.read(bagPath);
@@ -136,12 +137,12 @@ public class BagReaderTest extends Assert{
   
   @Test
   public void testReadUTF_16_Encoding() throws Exception{
-    List<SimpleImmutableEntry<String, String>> expectedMetaData = new ArrayList<>();
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Bagging-Date","2016-02-26"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Email","cadams@loc.gov"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Contact-Name","Chris Adams"));
-    expectedMetaData.add(new SimpleImmutableEntry<String, String>("Payload-Oxum","58.2"));
+    Metadata expectedMetaData = new Metadata();
+    expectedMetaData.add("Bag-Software-Agent","bagit.py <http://github.com/libraryofcongress/bagit-python>");
+    expectedMetaData.add("Bagging-Date","2016-02-26");
+    expectedMetaData.add("Contact-Email","cadams@loc.gov");
+    expectedMetaData.add("Contact-Name","Chris Adams");
+    expectedMetaData.add("Payload-Oxum","58.2");
     
     Path bagPath = Paths.get(new File("src/test/resources/UTF-16-encoded-tag-files").toURI());
     
