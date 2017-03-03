@@ -140,19 +140,19 @@ public class Metadata {
     return list.isEmpty();
   }
 
-  Map<String, List<String>> getMap() {
+  protected Map<String, List<String>> getMap() {
     return map;
   }
 
-  void setMap(final Map<String, List<String>> map) {
+  protected void setMap(final Map<String, List<String>> map) {
     this.map = map;
   }
 
-  List<SimpleImmutableEntry<String, String>> getList() {
+  protected List<SimpleImmutableEntry<String, String>> getList() {
     return list;
   }
 
-  void setList(final List<SimpleImmutableEntry<String, String>> list) {
+  protected void setList(final List<SimpleImmutableEntry<String, String>> list) {
     this.list = list;
   }
 }

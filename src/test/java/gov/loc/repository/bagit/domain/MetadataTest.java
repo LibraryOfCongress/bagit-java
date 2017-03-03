@@ -69,4 +69,20 @@ public class MetadataTest extends Assert {
     assertFalse("should not equal each other since one has duplicate values", sut.equals(repeatedValues));
     assertTrue("should be equal since they hold the same values", sut.equals(same));
   }
+  
+  @Test
+  public void testRemove(){
+    sut.add("key", "value");
+    sut.add("key", "value");
+    sut.add("key", "value");
+    
+    assertEquals(3, sut.getList().size());
+    assertEquals(3, sut.getMap().get("KEY").size());
+    assertEquals(3, sut.getAll().size());
+    
+    sut.remove("key");
+    assertEquals(0, sut.getList().size());
+    assertNull(sut.getMap().get("KEY"));
+    assertEquals(0, sut.getAll().size());
+  }
 }
