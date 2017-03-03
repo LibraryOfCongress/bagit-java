@@ -66,10 +66,11 @@ public class Metadata {
    * @return <tt>true</tt> (as specified by {@link Collection#add})
    */
   public boolean add(final String key, final String value){
-    if(map.get(key.toUpperCase()) == null){
-      map.put(key.toUpperCase(), new ArrayList<>());
+    final String upperCaseKey = key.toUpperCase();
+    if(map.get(upperCaseKey) == null){
+      map.put(upperCaseKey, new ArrayList<>());
     }
-    map.get(key.toUpperCase()).add(value);
+    map.get(upperCaseKey).add(value);
     
     return list.add(new SimpleImmutableEntry<>(key, value));
   }
