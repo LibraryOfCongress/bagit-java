@@ -85,4 +85,13 @@ public class MetadataTest extends Assert {
     assertNull(sut.getMap().get("KEY"));
     assertEquals(0, sut.getAll().size());
   }
+  
+  @Test
+  public void testAddingMultiplePayloadOxumJustUpsertsInstead(){
+    sut.add("Payload-Oxum", "16.1");
+    sut.add("Payload-Oxum", "20.5");
+    sut.add("Payload-Oxum", "100.7");
+    
+    assertEquals(Arrays.asList("100.7"), sut.get("payload-oxum"));
+  }
 }

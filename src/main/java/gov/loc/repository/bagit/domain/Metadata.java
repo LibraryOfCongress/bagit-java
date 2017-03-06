@@ -13,7 +13,7 @@ import java.util.Objects;
  */
 @SuppressWarnings({"PMD.UseLocaleWithCaseConversions"})
 public class Metadata {
-  private static final String PAYLOAD_OXUM = "Payload-oxum";
+  private static final String PAYLOAD_OXUM = "Payload-Oxum";
   private Map<String, List<String>> map = new HashMap<>();
   private List<SimpleImmutableEntry<String, String>> list = new ArrayList<>();
   
@@ -66,6 +66,10 @@ public class Metadata {
    * @return <tt>true</tt> (as specified by {@link Collection#add})
    */
   public boolean add(final String key, final String value){
+    if(PAYLOAD_OXUM.equalsIgnoreCase(key)){
+      this.remove(PAYLOAD_OXUM);
+    }
+    
     final String upperCaseKey = key.toUpperCase();
     if(map.get(upperCaseKey) == null){
       map.put(upperCaseKey, new ArrayList<>());
@@ -117,7 +121,7 @@ public class Metadata {
    * payload oxum is a special case where it makes no sense to have multiple values so instead of just appending we upsert (insert or update)
    * @param payloadOxumValue the value payload-oxum should be set to
    */
-  public void upsertPayloadOxum(final String payloadOxumValue){
+  public boolean upsertPayloadOxum(final String payloadOxumValue){
     map.remove(PAYLOAD_OXUM.toUpperCase());
     SimpleImmutableEntry<String, String> entryToRemove = null;
     for(final SimpleImmutableEntry<String, String> entry : list){
@@ -130,7 +134,7 @@ public class Metadata {
       list.remove(entryToRemove);
     }
     
-    this.add(PAYLOAD_OXUM, payloadOxumValue);
+    return this.add(PAYLOAD_OXUM, payloadOxumValue);
   }
   
   /**
