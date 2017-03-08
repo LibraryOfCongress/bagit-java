@@ -2,6 +2,10 @@ machine:
   java:
     version: oraclejdk8
 
+checkout:
+  post:
+    - git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git
+
 test:
   override:
     - ./gradlew check
