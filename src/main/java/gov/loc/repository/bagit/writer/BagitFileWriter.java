@@ -33,12 +33,12 @@ public final class BagitFileWriter {
     logger.debug("Writing bagit.txt file to [{}]", outputDir);
     
     
-    final String firstLine = "BagIt-Version : " + version + System.lineSeparator();
+    final String firstLine = "BagIt-Version: " + version + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", firstLine, bagitPath);
     Files.write(bagitPath, firstLine.getBytes(StandardCharsets.UTF_8), 
         StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     
-    final String secondLine = "Tag-File-Character-Encoding : " + encoding + System.lineSeparator();
+    final String secondLine = "Tag-File-Character-Encoding: " + encoding + System.lineSeparator();
     logger.debug("Writing line [{}] to [{}]", secondLine, bagitPath);
     Files.write(bagitPath, secondLine.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
   }

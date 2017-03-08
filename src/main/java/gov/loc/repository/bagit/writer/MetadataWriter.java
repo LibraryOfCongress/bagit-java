@@ -41,7 +41,7 @@ public final class MetadataWriter {
     Files.deleteIfExists(bagInfoFilePath);
     
     for(final SimpleImmutableEntry<String, String> entry : metadata.getAll()){
-      final String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
+      final String line = entry.getKey() + ": " + entry.getValue() + System.lineSeparator();
       logger.debug("Writing [{}] to [{}]", line, bagInfoFilePath);
       Files.write(bagInfoFilePath, line.getBytes(charsetName), 
           StandardOpenOption.APPEND, StandardOpenOption.CREATE);
