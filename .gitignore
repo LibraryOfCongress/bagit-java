@@ -1,6 +1,7 @@
 target/
 bin/
 build/
+bagit-conformance-suite/
 .project
 .settings/
 .classpath
