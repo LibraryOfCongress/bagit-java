@@ -42,8 +42,7 @@ public final class MandatoryVerifier {
   public static void checkFetchItemsExist(final List<FetchItem> items, final Path bagDir) throws FileNotInPayloadDirectoryException{
     logger.info("Checking if all [{}] items in fetch.txt exist in the [{}]", items.size(), bagDir);
     for(final FetchItem item : items){
-      final Path file = bagDir.resolve(item.path);
-      if(!Files.exists(file)){
+      if(!Files.exists(item.path)){
         throw new FileNotInPayloadDirectoryException("Fetch item " + item + " has not been fetched!");
       }
     }

@@ -120,6 +120,8 @@ public class Metadata {
   /**
    * payload oxum is a special case where it makes no sense to have multiple values so instead of just appending we upsert (insert or update)
    * @param payloadOxumValue the value payload-oxum should be set to
+   * 
+   * @return <tt>true</tt> (as specified by {@link Collection#add})
    */
   public boolean upsertPayloadOxum(final String payloadOxumValue){
     map.remove(PAYLOAD_OXUM.toUpperCase());

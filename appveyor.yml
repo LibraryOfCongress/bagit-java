@@ -3,9 +3,12 @@ version: "{build}"
 
 install:
 - cmd: choco install gradle
+- cmd: git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git
 
 build_script:
 - cmd: gradle check
+
+shallow_clone: true
 
 cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml

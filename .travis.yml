@@ -9,7 +9,14 @@ matrix:
         - brew install gradle
 
 language: java
-install: true #skip having travis-ci trying to run assemble
+
+#we don't care about having that much git history when building
+git:
+  depth: 3
+
+#include the conformance suite repo
+before_install: "git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git"
+install: true #skip having travis-ci trying te run assemble
 script: "gradle clean check"
 after_success: "gradle coveralls"
 env:

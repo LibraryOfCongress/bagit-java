@@ -39,12 +39,15 @@ public final class MetadataWriter {
     logger.debug("Writing {} to [{}]", bagInfoFilePath.getFileName(), outputDir);
 
     Files.deleteIfExists(bagInfoFilePath);
+    final StringBuilder lines = new StringBuilder();
     
     for(final SimpleImmutableEntry<String, String> entry : metadata.getAll()){
-      final String line = entry.getKey() + " : " + entry.getValue() + System.lineSeparator();
-      logger.debug("Writing [{}] to [{}]", line, bagInfoFilePath);
-      Files.write(bagInfoFilePath, line.getBytes(charsetName), 
-          StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+      final String line = entry.getKey() + ": " + entry.getValue() + System.lineSeparator();
+      lines.append(line);
     }
+    
+    logger.debug("Writing [{}] to [{}]", lines.toString(), bagInfoFilePath);
+    Files.write(bagInfoFilePath, lines.toString().getBytes(charsetName), 
+        StandardOpenOption.APPEND, StandardOpenOption.CREATE);
   }
 }
