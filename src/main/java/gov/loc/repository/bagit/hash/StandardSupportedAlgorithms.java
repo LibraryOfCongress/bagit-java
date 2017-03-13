@@ -20,6 +20,7 @@ public enum StandardSupportedAlgorithms implements SupportedAlgorithm{
     return messageDigestName;
   }
 
+  @SuppressWarnings({"PMD.UseLocaleWithCaseConversions"})
   @Override
   public String getBagitName() {
     return name().toLowerCase();

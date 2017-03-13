@@ -40,6 +40,7 @@ pmdIntegrationTest.enabled = false
 pmdTest.enabled = false
 
 pmd {
+  toolVersion = "5.5.4"
   ruleSets = [
     "java-basic", 
     "java-braces",
@@ -87,15 +88,6 @@ dependencyCheck {
     skipTestGroups=true
     skipConfigurations=['findbugs','cpd'] //don't look for vulnerabilities in the build plugins
     outputDirectory="build/reports/OWASP"
-    format="ALL"
-    analyzers {
-      archiveEnabled=false
-      assemblyEnabled=false
-      experimentalEnabled=false
-      nuspecEnabled=false
-      pathToMono=false
-      zipExtensions=false
-    }
 }
 
 //Keep this for easy viewing of html findbugs report

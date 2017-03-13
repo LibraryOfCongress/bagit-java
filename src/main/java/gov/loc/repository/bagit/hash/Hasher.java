@@ -82,16 +82,13 @@ public final class Hasher {
   
   //Convert the byte to hex format
   private static String formatMessageDigest(final MessageDigest messageDigest){
-    final Formatter formatter = new Formatter();
-    
-    for (final byte b : messageDigest.digest()) {
-      formatter.format("%02x", b);
+    try(final Formatter formatter = new Formatter()){
+      for (final byte b : messageDigest.digest()) {
+        formatter.format("%02x", b);
+      }
+      
+      return formatter.toString();
     }
-    
-    final String hash = formatter.toString();
-    formatter.close();
-    
-    return hash;
   }
   
   /**
