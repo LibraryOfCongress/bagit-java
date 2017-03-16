@@ -19,6 +19,7 @@ configurations {
 }
 
 task integrationTest(type: Test) {
+  group "Verification"
   description "Runs the integration tests."
   testClassesDir = sourceSets.integrationTest.output.classesDir
   classpath = sourceSets.integrationTest.runtimeClasspath
