@@ -8,6 +8,8 @@
    which can serve as a reference for the more advanced implementations which
    most users will require.
 3. Allow for ignoring hidden files except if specified in manifest.
+4. Linter was created for documenting allowed but discouraged features of the BagIt specification.
+5. Integration testing against known good and bad BagIt bags.
 
 #### Changes in 4.10.0
 1. Fixes defect in SimpleResult.add*Message() methods.
