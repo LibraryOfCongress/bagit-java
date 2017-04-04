@@ -46,6 +46,8 @@ public class PayloadVerifier {
 
   /**
    * Create a PayloadVerifier using a cached thread pool and a custom mapping
+   * 
+   * @param nameMapping the mapping between BagIt algorithm name and the java supported algorithm
    */
   public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
     this(nameMapping, Executors.newCachedThreadPool());
@@ -54,6 +56,8 @@ public class PayloadVerifier {
   /**
    * Create a PayloadVerifier using a custom thread pool and the 
    * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping} mapping
+   * 
+   * @param executor the thread pool to use when doing work
    */
   public PayloadVerifier(final ExecutorService executor) {
     this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), executor);
@@ -61,6 +65,9 @@ public class PayloadVerifier {
   
   /**
    * Create a PayloadVerifier using a custom thread pool and a custom mapping
+   * 
+   * @param nameMapping the mapping between BagIt algorithm name and the java supported algorithm
+   * @param executor the thread pool to use when doing work
    */
   public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final ExecutorService executor) {
     this.nameMapping = nameMapping;
@@ -175,5 +182,9 @@ public class PayloadVerifier {
 
   public BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
     return nameMapping;
+  }
+
+  public ExecutorService getExecutor() {
+    return executor;
   }
 }
