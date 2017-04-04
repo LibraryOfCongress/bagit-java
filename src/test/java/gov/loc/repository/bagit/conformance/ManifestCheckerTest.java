@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.conformance;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
     
     assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
     assertTrue(warnings.contains(BagitWarning.DIFFERENT_CASE));
-    if(!System.getProperty("os.name").equals("Mac OS X")){ //don't test normalization on mac
+    if(FileSystems.getDefault().getClass().getName() != "sun.nio.fs.MacOSXFileSystem"){ //don't test normalization on mac
       assertTrue(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
     }
     assertTrue(warnings.contains(BagitWarning.BAG_WITHIN_A_BAG));

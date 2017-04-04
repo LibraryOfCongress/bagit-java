@@ -36,36 +36,37 @@ public interface KeyValueReader {
   static List<SimpleImmutableEntry<String, String>> readKeyValuesFromFile(final Path file, final String splitRegex, final Charset charset) throws IOException, InvalidBagMetadataException{
     //TODO refactor into smaller methods
     final List<SimpleImmutableEntry<String, String>> keyValues = new ArrayList<>();
-    final BufferedReader br = Files.newBufferedReader(file, charset);
-
-    String line = br.readLine();
-    while(line != null){
-      if(line.matches("^\\s+.*")){
-        final SimpleImmutableEntry<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
-        final SimpleImmutableEntry<String, String> newKeyValue = new SimpleImmutableEntry<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
-        keyValues.add(newKeyValue);
-        
-        logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
-      }
-      else{
-        final String[] parts = line.split(splitRegex, 2);
-        if(parts.length != 2){
-          final StringBuilder message = new StringBuilder(300);
-          message.append("Line [").append(line)
-            .append("] does not meet the bagit specification for a bag tag file. Perhaps you meant to indent it " +
-            "by a space or a tab? Or perhaps you didn't use a colon to separate the key from the value?" +
-            "It must follow the form of <key>:<value> or if continuing from another line must be indented " +
-            "by a space or a tab.");
+    
+    try(final BufferedReader reader = Files.newBufferedReader(file, charset)){
+      String line = reader.readLine();
+      while(line != null){
+        if(line.matches("^\\s+.*")){
+          final SimpleImmutableEntry<String, String> oldKeyValue = keyValues.remove(keyValues.size() -1);
+          final SimpleImmutableEntry<String, String> newKeyValue = new SimpleImmutableEntry<String, String>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
+          keyValues.add(newKeyValue);
           
-          throw new InvalidBagMetadataException(message.toString());
+          logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
         }
-        final String key = parts[0].trim();
-        final String value = parts[1].trim();
-        logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", key, value, file, splitRegex);
-        keyValues.add(new SimpleImmutableEntry<String, String>(key, value));
+        else{
+          final String[] parts = line.split(splitRegex, 2);
+          if(parts.length != 2){
+            final StringBuilder message = new StringBuilder(300);
+            message.append("Line [").append(line)
+              .append("] does not meet the bagit specification for a bag tag file. Perhaps you meant to indent it " +
+              "by a space or a tab? Or perhaps you didn't use a colon to separate the key from the value?" +
+              "It must follow the form of <key>:<value> or if continuing from another line must be indented " +
+              "by a space or a tab.");
+            
+            throw new InvalidBagMetadataException(message.toString());
+          }
+          final String key = parts[0].trim();
+          final String value = parts[1].trim();
+          logger.debug("Found key [{}] value [{}] in file [{}] using regex [{}]", key, value, file, splitRegex);
+          keyValues.add(new SimpleImmutableEntry<String, String>(key, value));
+        }
+         
+        line = reader.readLine();
       }
-       
-      line = br.readLine();
     }
     
     return keyValues;

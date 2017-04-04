@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMapping;
+import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.reader.ManifestReader;
 import gov.loc.repository.bagit.util.PathUtils;
 
@@ -33,9 +34,47 @@ public class PayloadVerifier {
   private static final Logger logger = LoggerFactory.getLogger(PayloadVerifier.class);
 
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  private final ExecutorService executor;
+  
+  /**
+   * Create a PayloadVerifier using a cached thread pool and the 
+   * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping} mapping
+   */
+  public PayloadVerifier(){
+    this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), Executors.newCachedThreadPool());
+  }
 
+  /**
+   * Create a PayloadVerifier using a cached thread pool and a custom mapping
+   */
   public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
+    this(nameMapping, Executors.newCachedThreadPool());
+  }
+  
+  /**
+   * Create a PayloadVerifier using a custom thread pool and the 
+   * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping} mapping
+   */
+  public PayloadVerifier(final ExecutorService executor) {
+    this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), executor);
+  }
+  
+  /**
+   * Create a PayloadVerifier using a custom thread pool and a custom mapping
+   */
+  public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final ExecutorService executor) {
     this.nameMapping = nameMapping;
+    this.executor = executor;
+  }
+  
+  //right before this object is garbage collected, shutdown the thread pool so the resource isn't leaked
+  @Override
+  protected void finalize() throws Throwable {
+    try {
+        executor.shutdown();
+    } finally {
+        super.finalize();
+    }
   }
 
   /**
@@ -94,8 +133,7 @@ public class PayloadVerifier {
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private void checkAllFilesListedInManifestExist(final Set<Path> files)
-      throws FileNotInPayloadDirectoryException, InterruptedException {
-    final ExecutorService executor = Executors.newCachedThreadPool();
+      throws FileNotInPayloadDirectoryException, InterruptedException {//TODO
     final CountDownLatch latch = new CountDownLatch(files.size());
     final List<Path> missingFiles = new ArrayList<>();
 
@@ -105,7 +143,6 @@ public class PayloadVerifier {
     }
 
     latch.await();
-    executor.shutdown();
 
     if (!missingFiles.isEmpty()) {
       throw new FileNotInPayloadDirectoryException(

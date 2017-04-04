@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.conformance;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +27,7 @@ public class BagLinterTest extends Assert{
     expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
     Set<BagitWarning> warnings = sut.lintBag(rootDir);
 
-    if(System.getProperty("os.name").equals("Mac OS X")){
+    if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
       expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
     }
     

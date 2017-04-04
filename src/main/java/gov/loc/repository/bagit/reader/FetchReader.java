@@ -38,24 +38,25 @@ public final class FetchReader {
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   public static List<FetchItem> readFetch(final Path fetchFile, final Charset encoding, final Path bagRootDir) throws IOException, MaliciousPathException, InvalidBagitFileFormatException{
     logger.info("Attempting to read [{}]", fetchFile);
-    final BufferedReader br = Files.newBufferedReader(fetchFile, encoding);
     final List<FetchItem> itemsToFetch = new ArrayList<>();
-
-    String line = br.readLine();
-    String[] parts = null;
-    long length = 0;
-    URL url = null;
-    while(line != null){
-      parts = line.split("\\s+", 3);
-      final Path path = TagFileReader.createFileFromManifest(bagRootDir, parts[2]);
-      length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
-      url = new URL(parts[0]);
-      
-      logger.debug("Read URL [{}] length [{}] path [{}] from fetch file [{}]", url, length, parts[2], fetchFile);
-      final FetchItem itemToFetch = new FetchItem(url, length, path);
-      itemsToFetch.add(itemToFetch);
-      
-      line = br.readLine();
+    
+    try(final BufferedReader reader = Files.newBufferedReader(fetchFile, encoding)){
+      String line = reader.readLine();
+      String[] parts = null;
+      long length = 0;
+      URL url = null;
+      while(line != null){
+        parts = line.split("\\s+", 3);
+        final Path path = TagFileReader.createFileFromManifest(bagRootDir, parts[2]);
+        length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
+        url = new URL(parts[0]);
+        
+        logger.debug("Read URL [{}] length [{}] path [{}] from fetch file [{}]", url, length, parts[2], fetchFile);
+        final FetchItem itemToFetch = new FetchItem(url, length, path);
+        itemsToFetch.add(itemToFetch);
+        
+        line = reader.readLine();
+      }
     }
 
     return itemsToFetch;

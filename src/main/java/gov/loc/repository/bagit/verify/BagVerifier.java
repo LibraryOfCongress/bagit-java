@@ -39,21 +39,45 @@ public final class BagVerifier {
   private final PayloadVerifier manifestVerifier;
   private final ExecutorService executor;
   
+  /**
+   * Create a BagVerifier with a cached thread pool and a 
+   * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping}
+   */
   public BagVerifier(){
     this(Executors.newCachedThreadPool(), new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
   }
   
+  /**
+   * Create a BagVerifier with a cached thread pool and a custom mapping
+   */
   public BagVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     this(Executors.newCachedThreadPool(), nameMapping);
   }
   
+  /**
+   * Create a BagVerifier with a custom thread pool and a 
+   * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping}
+   */
   public BagVerifier(final ExecutorService executor){
     this(executor, new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
   }
   
+  /**
+   * Create a BagVerifier with a custom thread pool and a custom mapping
+   */
   public BagVerifier(final ExecutorService executor, final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
     manifestVerifier = new PayloadVerifier(nameMapping);
     this.executor = executor;
+  }
+  
+  //right before this object is garbage collected, shutdown the thread pool so the resource isn't leaked
+  @Override
+  protected void finalize() throws Throwable {
+    try {
+        executor.shutdown();
+    } finally {
+        super.finalize();
+    }
   }
   
   /**
@@ -134,7 +158,7 @@ public final class BagVerifier {
     if(!exceptions.isEmpty()){
       final Exception e = exceptions.get(0);
       if(e instanceof CorruptChecksumException){
-        logger.debug("[{}] hashes don't match, but I can only return one exception", exceptions.size());
+        logger.debug("[{}] errors occured. At least one of the errors is due to hashes not matching.", exceptions.size());
         throw (CorruptChecksumException)e;
       }
       

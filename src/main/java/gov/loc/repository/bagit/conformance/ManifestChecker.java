@@ -73,32 +73,33 @@ public final class ManifestChecker {
    * Check for a "bag within a bag" and for relative paths in the manifests
    */
   private static void checkData(final Path manifestFile, final Charset encoding, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest) throws IOException, InvalidBagitFileFormatException{
-    final BufferedReader reader = Files.newBufferedReader(manifestFile, encoding);
-    final Set<String> paths = new HashSet<>();
-    
-    String line = reader.readLine();
-    while(line != null){
-      String path = parsePath(line);
+    try(final BufferedReader reader = Files.newBufferedReader(manifestFile, encoding)){
+      final Set<String> paths = new HashSet<>();
       
-      path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
-      
-      if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_CASE) && paths.contains(path.toLowerCase())){
-        logger.warn("In manifest [{}], path [{}] is the same as another path except for the case. This can cause problems if moving the bag to a filesystem that is case insensitive.", manifestFile, path);
-        warnings.add(BagitWarning.DIFFERENT_CASE);
+      String line = reader.readLine();
+      while(line != null){
+        String path = parsePath(line);
+        
+        path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
+        
+        if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_CASE) && paths.contains(path.toLowerCase())){
+          logger.warn("In manifest [{}], path [{}] is the same as another path except for the case. This can cause problems if moving the bag to a filesystem that is case insensitive.", manifestFile, path);
+          warnings.add(BagitWarning.DIFFERENT_CASE);
+        }
+        paths.add(path.toLowerCase());
+        
+        if(encoding.name().startsWith("UTF")){
+          checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
+        }
+        
+        checkForBagWithinBag(line, warnings, warningsToIgnore, isPayloadManifest);
+        
+        checkForRelativePaths(line, warnings, warningsToIgnore, manifestFile);
+        
+        checkForOSSpecificFiles(line, warnings, warningsToIgnore, manifestFile);
+        
+        line = reader.readLine();
       }
-      paths.add(path.toLowerCase());
-      
-      if(encoding.name().startsWith("UTF")){
-        checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
-      }
-      
-      checkForBagWithinBag(line, warnings, warningsToIgnore, isPayloadManifest);
-      
-      checkForRelativePaths(line, warnings, warningsToIgnore, manifestFile);
-      
-      checkForOSSpecificFiles(line, warnings, warningsToIgnore, manifestFile);
-      
-      line = reader.readLine();
     }
   }
   
