@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -142,7 +141,7 @@ public class PayloadVerifier {
   private void checkAllFilesListedInManifestExist(final Set<Path> files)
       throws FileNotInPayloadDirectoryException, InterruptedException {//TODO
     final CountDownLatch latch = new CountDownLatch(files.size());
-    final List<Path> missingFiles = new ArrayList<>();
+    final Set<Path> missingFiles = new ConcurrentSkipListSet<>();
 
     logger.debug("Checking if all files listed in the manifest(s) exist");
     for (final Path file : files) {

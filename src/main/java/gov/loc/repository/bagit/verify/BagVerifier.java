@@ -151,7 +151,11 @@ public final class BagVerifier {
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
-    final List<Exception> exceptions = new ArrayList<>(); //TODO maybe return all of these at some point...
+    
+    //TODO maybe return all of these at some point... 
+    //if that is ever the case make sure to use Collections.synchronizedCollection(new ArrayList<>())
+    //we aren't doing it now because it is a huge performance hit for little value
+    final List<Exception> exceptions = new ArrayList<>(); 
     
     for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
       executor.execute(new CheckManifestHashsTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));

@@ -2,8 +2,8 @@ package gov.loc.repository.bagit.verify;
 
 import java.nio.file.Path;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +21,7 @@ public class CheckIfFileExistsTaskTest extends Assert {
   public void testNormalizedFileExists() throws Exception{
     ExecutorService executor = Executors.newCachedThreadPool();
     CountDownLatch latch = new CountDownLatch(1);
-    List<Path> missingFiles = new ArrayList<>();
+    Set<Path> missingFiles = new ConcurrentSkipListSet<>();
     String filename = "Núñez.txt";
     String filenameNFC = Normalizer.normalize(filename, Normalizer.Form.NFC);
     String filenameNFD = Normalizer.normalize(filename, Normalizer.Form.NFD);

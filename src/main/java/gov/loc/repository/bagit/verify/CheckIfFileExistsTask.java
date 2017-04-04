@@ -5,7 +5,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
@@ -18,10 +18,11 @@ import org.slf4j.LoggerFactory;
 public class CheckIfFileExistsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckIfFileExistsTask.class);
   private transient final Path file;
-  private transient final List<Path> missingFiles;
+  //TODO if performance is an issue look at concurrentHashMap - it will take up more space but insertion is O(1) vs O(n)
+  private transient final Set<Path> missingFiles;
   private transient final CountDownLatch latch;
   
-  public CheckIfFileExistsTask(final Path file, final List<Path> missingFiles, final CountDownLatch latch) {
+  public CheckIfFileExistsTask(final Path file, final Set<Path> missingFiles, final CountDownLatch latch) {
     this.file = file;
     this.latch = latch;
     this.missingFiles = missingFiles;
