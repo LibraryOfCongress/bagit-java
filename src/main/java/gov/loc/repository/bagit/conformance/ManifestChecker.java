@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
-import gov.loc.repository.bagit.exceptions.MaliciousPathException;
-import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.util.PathUtils;
 
 /**
@@ -42,7 +40,7 @@ public final class ManifestChecker {
    * Check for all the manifest specific potential problems
    */
   public static void checkManifests(final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
-      final Collection<BagitWarning> warningsToIgnore) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+      final Collection<BagitWarning> warningsToIgnore) throws IOException, InvalidBagitFileFormatException{
         
     boolean missingTagManifest = true;
     try(final DirectoryStream<Path> files = Files.newDirectoryStream(bagitDir)){

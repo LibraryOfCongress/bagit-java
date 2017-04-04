@@ -2,8 +2,6 @@ package gov.loc.repository.bagit.verify;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -120,7 +118,6 @@ public final class BagVerifier {
    * @param bag the {@link Bag} object to check
    * @param ignoreHiddenFiles ignore hidden files unless explicitly listed in manifest(s)
    * 
-   * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} 
    * @throws CorruptChecksumException when the computed hash doesn't match given hash
    * @throws IOException if there was an error with the file
    * @throws MissingPayloadManifestException if there is not at least one payload manifest
@@ -133,7 +130,7 @@ public final class BagVerifier {
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
-  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, NoSuchAlgorithmException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     

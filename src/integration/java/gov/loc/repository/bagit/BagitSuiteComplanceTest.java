@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Set;
 
@@ -73,7 +72,7 @@ public class BagitSuiteComplanceTest extends Assert {
       try{
         bag = reader.read(invalidBagDir);
         verifier.isValid(bag, true);
-      }catch(InvalidBagitFileFormatException | IOException | NoSuchAlgorithmException | UnparsableVersionException | 
+      }catch(InvalidBagitFileFormatException | IOException | UnparsableVersionException | 
         MissingPayloadManifestException | MissingBagitFileException | MissingPayloadDirectoryException | 
         FileNotInPayloadDirectoryException | InterruptedException | MaliciousPathException | 
         CorruptChecksumException | VerificationException | UnsupportedAlgorithmException e){

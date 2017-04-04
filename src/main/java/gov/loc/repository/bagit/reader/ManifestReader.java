@@ -66,6 +66,7 @@ public final class ManifestReader {
    */
   private static DirectoryStream<Path> getAllManifestFiles(final Path rootDir) throws IOException{
     final DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+      @Override
       public boolean accept(final Path file) throws IOException {
         if(file == null || file.getFileName() == null){ return false;}
         final String filename = PathUtils.getFilename(file);
@@ -110,18 +111,16 @@ public final class ManifestReader {
    */
   static Map<Path, String> readChecksumFileMap(final Path manifestFile, final Path bagRootDir, final Charset charset) throws IOException, MaliciousPathException, InvalidBagitFileFormatException{
     final HashMap<Path, String> map = new HashMap<>();
-    final BufferedReader br = Files.newBufferedReader(manifestFile, charset);
-
-    String line = br.readLine();
-    while(line != null){
-      final String[] parts = line.split("\\s+", 2);
-      final Path file = TagFileReader.createFileFromManifest(bagRootDir, parts[1]);
-      logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[0], file, manifestFile);
-      map.put(file, parts[0]);
-      line = br.readLine();
+    try(final BufferedReader br = Files.newBufferedReader(manifestFile, charset)){
+      String line = br.readLine();
+      while(line != null){
+        final String[] parts = line.split("\\s+", 2);
+        final Path file = TagFileReader.createFileFromManifest(bagRootDir, parts[1]);
+        logger.debug("Read checksum [{}] and file [{}] from manifest [{}]", parts[0], file, manifestFile);
+        map.put(file, parts[0]);
+        line = br.readLine();
+      }
     }
-    
-    br.close();
     
     return map;
   }

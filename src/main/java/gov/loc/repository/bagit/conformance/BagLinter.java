@@ -24,9 +24,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
-import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
-import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
@@ -70,7 +68,7 @@ public class BagLinter {
    * @throws BagitVersionIsNotAcceptableException if the version of the bag is not in the list of acceptable versions
    * @throws RequiredTagFileNotPresentException if a tag file is not present but should be
    */
-  public void checkAgainstProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
+  public static void checkAgainstProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
   IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, RequiredManifestNotPresentException, 
   BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
     BagProfileChecker.bagConformsToProfile(jsonProfile, bag);
@@ -89,11 +87,8 @@ public class BagLinter {
    * @throws InvalidBagMetadataException if the bag metadata does not conform to the bagit specification
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
-   * @throws UnsupportedAlgorithmException if the {@link BagReader} does not support reading the manifest 
-   * @throws MaliciousPathException If the manifest was crafted to try and access a file outside the bag directory
-   * @throws InvalidBagitFileFormatException if one or more of the files do not correctly follow the bagit specification format
    */
-  public Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  public Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
     return this.lintBag(rootDir, Collections.emptyList());
   }
   
@@ -111,11 +106,8 @@ public class BagLinter {
    * @throws InvalidBagMetadataException if the bag metadata does not conform to the bagit specification
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
-   * @throws UnsupportedAlgorithmException if the {@link BagReader} does not support reading the manifest 
-   * @throws MaliciousPathException If the manifest was crafted to try and access a file outside the bag directory
-   * @throws InvalidBagitFileFormatException if one or more of the files do not correctly follow the bagit specification format
    */
-  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
     final Set<BagitWarning> warnings = new HashSet<>();
     
     //@Incubating

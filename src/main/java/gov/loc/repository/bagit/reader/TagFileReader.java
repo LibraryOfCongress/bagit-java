@@ -17,7 +17,7 @@ public interface TagFileReader {
   String ERROR_PREFIX = "Path [";
   
   /*
-   * Create the file and check it for various things, like starting with a *
+   * Create the file and check it for various things, like starting with a *, or trying to access a file outside the bag
    */
   static Path createFileFromManifest(final Path bagRootDir, final String path) throws MaliciousPathException, InvalidBagitFileFormatException{
     String fixedPath = path;
