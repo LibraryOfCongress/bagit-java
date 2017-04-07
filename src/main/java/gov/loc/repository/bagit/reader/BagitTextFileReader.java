@@ -58,7 +58,7 @@ public final class BagitTextFileReader {
       throw new InvalidBagitFileFormatException("bagit.txt MUST contain 'BagIt-Version' AND 'Tag-File-Character-Encoding' entries!");
     }
     
-    return new SimpleImmutableEntry<Version, Charset>(parseVersion(version), encoding);
+    return new SimpleImmutableEntry<>(parseVersion(version), encoding);
   }
   
   /*

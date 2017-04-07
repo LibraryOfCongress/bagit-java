@@ -137,12 +137,12 @@ public class BagVerifierTest extends Assert{
   @Test
   public void testCanQuickVerify() throws Exception{
     Bag bag = reader.read(rootDir);
-    boolean canQuickVerify = sut.canQuickVerify(bag);
+    boolean canQuickVerify = BagVerifier.canQuickVerify(bag);
     assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
     
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     bag = reader.read(passingRootDir);
-    canQuickVerify = sut.canQuickVerify(bag);
+    canQuickVerify = BagVerifier.canQuickVerify(bag);
     assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
   }
   
@@ -151,7 +151,7 @@ public class BagVerifierTest extends Assert{
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     Bag bag = reader.read(passingRootDir);
     
-    sut.quicklyVerify(bag);
+    BagVerifier.quicklyVerify(bag);
   }
   
 }

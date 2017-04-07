@@ -95,10 +95,9 @@ verifier.isValid(bag, ignoreHiddenFiles);
 ##### Quickly verify by payload-oxum
 ```java
 boolean ignoreHiddenFiles = true;
-BagVerifier verifier = new BagVerifier();
 
-if(verifier.canQuickVerify(bag)){
-  verifier.quicklyVerify(bag, ignoreHiddenFiles);
+if(BagVerifier.canQuickVerify(bag)){
+  BagVerifier.quicklyVerify(bag, ignoreHiddenFiles);
 }
 ```
 

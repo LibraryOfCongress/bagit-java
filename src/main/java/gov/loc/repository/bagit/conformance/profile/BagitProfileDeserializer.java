@@ -61,7 +61,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return profile;
   }
   
-  private void parseBagitProfileInfo(final JsonNode node, final BagitProfile profile){
+  private static void parseBagitProfileInfo(final JsonNode node, final BagitProfile profile){
     final JsonNode bagitProfileInfoNode = node.get("BagIt-Profile-Info");
     logger.debug("Parsing the BagIt-Profile-Info section");
     
@@ -91,7 +91,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
   }
   
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  private Map<String, BagInfoRequirement> parseBagInfo(final JsonNode rootNode){
+  private static Map<String, BagInfoRequirement> parseBagInfo(final JsonNode rootNode){
     final JsonNode bagInfoNode = rootNode.get("Bag-Info");
     logger.debug("Parsing the Bag-Info section");
     final Map<String, BagInfoRequirement>  bagInfo = new HashMap<>();
@@ -118,7 +118,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return bagInfo;
   }
   
-  private List<String> parseManifestTypesRequired(final JsonNode node){
+  private static List<String> parseManifestTypesRequired(final JsonNode node){
     final JsonNode manifests = node.get("Manifests-Required");
     
     final List<String> manifestTypes = new ArrayList<>();
@@ -132,7 +132,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return manifestTypes;
   }
   
-  private List<String> parseAcceptableSerializationFormats(final JsonNode node){
+  private static List<String> parseAcceptableSerializationFormats(final JsonNode node){
     final JsonNode serialiationFormats = node.get("Accept-Serialization");
     final List<String> serialTypes = new ArrayList<>();
     
@@ -144,7 +144,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return serialTypes;
   }
   
-  private List<String> parseRequiredTagmanifestTypes(final JsonNode node){
+  private static List<String> parseRequiredTagmanifestTypes(final JsonNode node){
     final JsonNode tagManifestsRequiredNodes = node.get("Tag-Manifests-Required");
     final List<String> requiredTagmanifestTypes = new ArrayList<>();
     
@@ -156,7 +156,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return requiredTagmanifestTypes;
   }
   
-  private List<String> parseRequiredTagFiles(final JsonNode node){
+  private static List<String> parseRequiredTagFiles(final JsonNode node){
     final JsonNode tagFilesRequiredNodes = node.get("Tag-Files-Required");
     final List<String> requiredTagFiles = new ArrayList<>();
     
@@ -168,7 +168,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     return requiredTagFiles;
   }
   
-  private List<String> parseAcceptableVersions(final JsonNode node){
+  private static List<String> parseAcceptableVersions(final JsonNode node){
     final JsonNode acceptableVersionsNodes = node.get("Accept-BagIt-Version");
     final List<String> acceptableVersions = new ArrayList<>();
     

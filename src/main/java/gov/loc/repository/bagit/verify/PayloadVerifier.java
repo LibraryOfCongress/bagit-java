@@ -138,8 +138,7 @@ public class PayloadVerifier {
    * Make sure all the listed files actually exist
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  private void checkAllFilesListedInManifestExist(final Set<Path> files)
-      throws FileNotInPayloadDirectoryException, InterruptedException {//TODO
+  private void checkAllFilesListedInManifestExist(final Set<Path> files) throws FileNotInPayloadDirectoryException, InterruptedException {
     final CountDownLatch latch = new CountDownLatch(files.size());
     final Set<Path> missingFiles = new ConcurrentSkipListSet<>();
 
@@ -159,7 +158,7 @@ public class PayloadVerifier {
   /*
    * Make sure all files in the directory are in at least 1 manifest
    */
-  private void checkAllFilesInPayloadDirAreListedInAtLeastOneAManifest(final Set<Path> filesListedInManifests,
+  private static void checkAllFilesInPayloadDirAreListedInAtLeastOneAManifest(final Set<Path> filesListedInManifests,
       final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException {
     logger.debug("Checking if all payload files (files in {} dir) are listed in at least one manifest", payloadDir);
     if (Files.exists(payloadDir)) {
@@ -171,7 +170,7 @@ public class PayloadVerifier {
   /*
    * as per the bagit-spec 1.0+ all files have to be listed in all manifests
    */
-  private void CheckAllFilesInPayloadDirAreListedInAllManifests(final Set<Manifest> payLoadManifests,
+  private static void CheckAllFilesInPayloadDirAreListedInAllManifests(final Set<Manifest> payLoadManifests,
       final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException {
     logger.debug("Checking if all payload files (files in {} dir) are listed in all manifests", payloadDir);
     if (Files.exists(payloadDir)) {

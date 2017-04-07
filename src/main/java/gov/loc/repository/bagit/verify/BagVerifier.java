@@ -91,7 +91,7 @@ public final class BagVerifier {
    * @param bag the {@link Bag} object you wish to check
    * @return true if the bag can be quickly verified
    */
-  public boolean canQuickVerify(final Bag bag){
+  public static boolean canQuickVerify(final Bag bag){
     return QuickVerifier.canQuickVerify(bag);
   }
   
@@ -106,7 +106,7 @@ public final class BagVerifier {
    * @throws PayloadOxumDoesNotExistException if the bag does not contain a payload-oxum.
    * To check, run {@link BagVerifier#canQuickVerify}
    */
-  public void quicklyVerify(final Bag bag) throws IOException, InvalidPayloadOxumException{
+  public static void quicklyVerify(final Bag bag) throws IOException, InvalidPayloadOxumException{
     QuickVerifier.quicklyVerify(bag);
   }
 
