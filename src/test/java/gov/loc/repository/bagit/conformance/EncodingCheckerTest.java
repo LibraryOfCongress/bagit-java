@@ -12,7 +12,7 @@ import org.junit.Test;
 public class EncodingCheckerTest extends Assert {
 
   @Test
-  public void testLinterCheckTagFilesEncoding() throws Exception{
+  public void testLinterCheckTagFilesEncoding(){
     Set<BagitWarning> warnings = new HashSet<>();
     EncodingChecker.checkEncoding(StandardCharsets.UTF_16, warnings, Collections.emptySet());
     
@@ -20,7 +20,7 @@ public class EncodingCheckerTest extends Assert {
   }
   
   @Test
-  public void testLinterIgnoreTagFilesEncoding() throws Exception{
+  public void testLinterIgnoreTagFilesEncoding(){
     Set<BagitWarning> warnings = new HashSet<>();
     EncodingChecker.checkEncoding(StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.TAG_FILES_ENCODING));
     

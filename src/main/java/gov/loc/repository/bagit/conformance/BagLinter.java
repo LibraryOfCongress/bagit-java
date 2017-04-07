@@ -31,7 +31,6 @@ import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAccept
 import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
-import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.reader.BagitTextFileReader;
 import gov.loc.repository.bagit.reader.KeyValueReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
@@ -39,14 +38,12 @@ import gov.loc.repository.bagit.verify.BagVerifier;
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
  */
-public class BagLinter {
+public final class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
   private static final Version VERSION_1_0 = new Version(1,0);
   
-  private final BagReader reader;
-  
-  public BagLinter(){
-    reader = new BagReader();
+  private BagLinter(){
+//    intentionally left empty
   }
   
   /**
@@ -88,8 +85,8 @@ public class BagLinter {
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
    */
-  public Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
-    return this.lintBag(rootDir, Collections.emptyList());
+  public static Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
+    return lintBag(rootDir, Collections.emptyList());
   }
   
   /**
@@ -107,7 +104,7 @@ public class BagLinter {
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
    */
-  public Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
+  public static Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
     final Set<BagitWarning> warnings = new HashSet<>();
     
     //@Incubating
@@ -135,11 +132,7 @@ public class BagLinter {
     return warnings;
   }
   
-  public BagReader getReader() {
-    return reader;
-  }
-  
-  private void checkForExtraLines(final Path bagitFile, final Collection<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore) throws InvalidBagMetadataException, IOException, UnparsableVersionException{
+  private static void checkForExtraLines(final Path bagitFile, final Collection<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore) throws InvalidBagMetadataException, IOException, UnparsableVersionException{
     if(warningsToIgnore.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES)){
       logger.debug("skipping check for extra lines in bagit files");
       return;

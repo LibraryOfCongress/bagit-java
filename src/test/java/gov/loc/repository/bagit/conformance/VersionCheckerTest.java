@@ -13,7 +13,7 @@ import gov.loc.repository.bagit.domain.Version;
 public class VersionCheckerTest extends Assert {
 
   @Test
-  public void testCheckOldVersion() throws Exception{
+  public void testCheckOldVersion(){
     Set<BagitWarning> warnings = new HashSet<>();
     VersionChecker.checkVersion(new Version(0, 95), warnings, Collections.emptyList());
     
@@ -21,7 +21,7 @@ public class VersionCheckerTest extends Assert {
   }
   
   @Test
-  public void testLinterIgnoreOldVersion() throws Exception{
+  public void testLinterIgnoreOldVersion(){
     Set<BagitWarning> warnings = new HashSet<>();
     VersionChecker.checkVersion(new Version(0, 95), warnings, Arrays.asList(BagitWarning.OLD_BAGIT_VERSION));
     

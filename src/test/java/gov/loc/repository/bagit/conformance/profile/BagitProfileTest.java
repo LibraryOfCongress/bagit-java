@@ -32,7 +32,7 @@ public class BagitProfileTest extends AbstractBagitProfileTest{
   }
   
   @Test
-  public void testEquals() throws Exception{
+  public void testEquals(){
     BagitProfile profile = createExpectedProfile();
     
     assertFalse(profile.equals(null));

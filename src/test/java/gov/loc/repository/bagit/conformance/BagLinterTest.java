@@ -15,17 +15,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.reader.BagReader;
 
 public class BagLinterTest extends Assert{
   
-  private BagLinter sut = new BagLinter();
   private final Path rootDir = Paths.get("src","test","resources","linterTestBag");
   
   @Test
   public void testLintBag() throws Exception{
     Set<BagitWarning> expectedWarnings = new HashSet<>();
     expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
-    Set<BagitWarning> warnings = sut.lintBag(rootDir);
+    Set<BagitWarning> warnings = BagLinter.lintBag(rootDir);
 
     if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
       expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
@@ -41,10 +41,11 @@ public class BagLinterTest extends Assert{
   public void testCheckAgainstProfile() throws Exception{
     Path profileJson = new File("src/test/resources/bagitProfiles/exampleProfile.json").toPath();
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/profileConformantBag").toPath();
-    Bag bag = sut.getReader().read(bagRootPath);
+    BagReader reader = new BagReader();
+    Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      sut.checkAgainstProfile(inputStream, bag);
+      BagLinter.checkAgainstProfile(inputStream, bag);
     }
   }
 }

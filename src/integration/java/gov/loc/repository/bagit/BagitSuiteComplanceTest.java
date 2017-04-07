@@ -64,7 +64,7 @@ public class BagitSuiteComplanceTest extends Assert {
   }
   
   @Test
-  public void testInvalidBags() throws IOException{
+  public void testInvalidBags(){
     int errorCount = 0;
     Bag bag;
     
@@ -85,11 +85,10 @@ public class BagitSuiteComplanceTest extends Assert {
   
   @Test
   public void testWarnings() throws Exception{
-    BagLinter linter = new BagLinter();
     Set<BagitWarning> warnings;
     
     for(Path bagDir : visitor.getWarningTestCases()){
-      warnings = linter.lintBag(bagDir);
+      warnings = BagLinter.lintBag(bagDir);
       assertTrue(warnings.size() > 0);
     }
   }

@@ -19,7 +19,7 @@ public class FetchItemTest extends Assert {
   }
 
   @Test
-  public void testToString() throws MalformedURLException{
+  public void testToString(){
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     String expected = "https://github.com/LibraryOfCongress/bagit-java 1 " + File.separator + "foo";
     
