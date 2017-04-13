@@ -49,6 +49,6 @@ task cloneConformanceSuite(){
   onlyIf { !location.exists() }
   doLast{
       Grgit.clone(dir: location, 
-                  uri: 'https://github.com/loc-rdc/bagit-conformance-suite.git')
+                  uri: 'https://github.com/libraryofcongress/bagit-conformance-suite.git')
     }
 }
