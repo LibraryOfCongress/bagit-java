@@ -24,7 +24,7 @@ public class RelativePathWriterTest extends PrivateConstructorTest {
   }
 
   @Test
-  public void testDifferentTypePaths(){
+  public void testUsingBothRelativeAndAbsolutePaths(){
     Path parent = Paths.get("one/two");
     Path child = Paths.get("one/two/three").toAbsolutePath();
     String expectedRelativePath = "three" + System.lineSeparator();
