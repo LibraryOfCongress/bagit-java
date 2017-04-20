@@ -22,4 +22,13 @@ public class RelativePathWriterTest extends PrivateConstructorTest {
     
     assertEquals(expectedRelativePath, RelativePathWriter.formatRelativePathString(parent, child));
   }
+
+  @Test
+  public void testDifferentTypePaths(){
+    Path parent = Paths.get("one/two");
+    Path child = Paths.get("one/two/three").toAbsolutePath();
+    String expectedRelativePath = "three" + System.lineSeparator();
+
+    assertEquals(expectedRelativePath, RelativePathWriter.formatRelativePathString(parent, child));
+  }
 }
