@@ -19,8 +19,7 @@ public final class RelativePathWriter {
    * @return the relative path with only unix path separator
    */
   public static String formatRelativePathString(final Path relativeTo, final Path entry){
-    final String encodedPath = PathUtils.encodeFilename(relativeTo.relativize(entry));
-    
+    final String encodedPath = PathUtils.encodeFilename(relativeTo.toAbsolutePath().relativize(entry.toAbsolutePath()));
     return encodedPath.replace('\\', '/') + System.lineSeparator();
   }
 }
