@@ -2,6 +2,7 @@ package gov.loc.repository.bagit.conformance;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,15 +12,20 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
 import org.junit.Test;
 
+import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.reader.BagReader;
 
-public class BagLinterTest extends Assert{
+public class BagLinterTest extends PrivateConstructorTest{
   
   private final Path rootDir = Paths.get("src","test","resources","linterTestBag");
+  
+  @Test
+  public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
+    assertUtilityClassWellDefined(BagLinter.class);
+  }
   
   @Test
   public void testLintBag() throws Exception{
@@ -47,5 +53,11 @@ public class BagLinterTest extends Assert{
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
       BagLinter.checkAgainstProfile(inputStream, bag);
     }
+  }
+  
+  @Test
+  public void testIgnoreCheckForExtraLines() throws Exception{
+    Set<BagitWarning> warnings = BagLinter.lintBag(rootDir, Arrays.asList(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
+    assertFalse(warnings.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
   }
 }
