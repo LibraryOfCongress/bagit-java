@@ -29,7 +29,7 @@ supported version being 0.93.
 
 The 5.x versions do not include a command-line interface.
 Users who need a command-line utility can continue to use the latest 4.x release
-([download 4.12.1](https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.1/bagit-4.12.1.zip)
+([download 4.12.3](https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.3/bagit-v4.12.3.zip)
 or switch to an alternative implementation such as
 [bagit-python](https://github.com/LibraryOfCongress/bagit-python) or
 [BagIt for Ruby](https://github.com/tipr/bagit).
