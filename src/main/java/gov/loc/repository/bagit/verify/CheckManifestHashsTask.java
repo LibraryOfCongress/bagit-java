@@ -23,10 +23,10 @@ import gov.loc.repository.bagit.hash.Hasher;
 public class CheckManifestHashsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashsTask.class);
   
-  private transient final Entry<Path, String> entry;
-  private transient final CountDownLatch latch;
-  private transient final List<Exception> exceptions;
-  private transient final String algorithm;
+  private final Entry<Path, String> entry;
+  private final CountDownLatch latch;
+  private final List<Exception> exceptions;
+  private final String algorithm;
   
   public CheckManifestHashsTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
     this.entry = entry;
@@ -57,6 +57,22 @@ public class CheckManifestHashsTask implements Runnable {
       }
     }
     //if the file doesn't exist it will be caught by checkAllFilesListedInManifestExist method
+  }
+
+  public Entry<Path, String> getEntry() {
+    return entry;
+  }
+
+  public CountDownLatch getLatch() {
+    return latch;
+  }
+
+  public List<Exception> getExceptions() {
+    return exceptions;
+  }
+
+  public String getAlgorithm() {
+    return algorithm;
   }
 
 }

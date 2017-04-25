@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.FetchItem;
 
+/**
+ * Responsible for writing out the list of {@link FetchItem} to the fetch.txt file on the filesystem
+ */
 public final class FetchWriter {
   private static final Logger logger = LoggerFactory.getLogger(FetchWriter.class);
 

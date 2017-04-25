@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * POJO for all the bagit profile fields
+ * POJO for all the bagit profile fields. 
+ * A bagit profile is used to ensure the bag metadata contains all required elements and optional elements follow allowed values
  */
 public class BagitProfile {
   private String bagitProfileIdentifier = "";

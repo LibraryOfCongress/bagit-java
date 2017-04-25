@@ -8,6 +8,9 @@ import java.nio.file.attribute.DosFileAttributes;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
 
+/**
+ * Convenience class for dealing with various path issues
+ */
 public final class PathUtils {
   private static final String PAYLOAD_DIR_NAME = "data";
   

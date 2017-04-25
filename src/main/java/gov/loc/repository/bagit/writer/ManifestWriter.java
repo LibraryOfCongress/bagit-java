@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Manifest;
 
+/**
+ * Responsible for writing out a {@link Manifest} to the filesystem
+ */
 public final class ManifestWriter{
   private static final Logger logger = LoggerFactory.getLogger(PayloadWriter.class);
   

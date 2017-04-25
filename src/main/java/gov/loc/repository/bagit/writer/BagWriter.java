@@ -19,7 +19,7 @@ import gov.loc.repository.bagit.util.PathUtils;
 import gov.loc.repository.bagit.verify.FileCountAndTotalSizeVistor;
 
 /**
- * responsible for writing out a bag.
+ * responsible for writing out a {@link Bag}
  */
 public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);

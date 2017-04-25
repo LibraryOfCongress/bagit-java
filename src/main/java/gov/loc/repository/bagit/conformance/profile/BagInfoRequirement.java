@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * This class is used to define elements in a bag-info.txt file used by a bagit-profile.
+ */
 public class BagInfoRequirement {
   private boolean required;
   private List<String> acceptableValues = new ArrayList<>();

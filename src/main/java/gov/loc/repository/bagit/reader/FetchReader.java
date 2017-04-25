@@ -16,6 +16,9 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 
+/**
+ * This class is responsible for reading and parsing fetch.txt file from the filesystem
+ */
 public final class FetchReader {
   private static final Logger logger = LoggerFactory.getLogger(FetchReader.class);
 

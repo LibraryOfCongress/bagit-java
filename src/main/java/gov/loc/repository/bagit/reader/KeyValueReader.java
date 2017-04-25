@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 
+/**
+ * Convenience class for reading key value pairs from a file
+ */
 public final class KeyValueReader {
   private static final Logger logger = LoggerFactory.getLogger(KeyValueReader.class);
 
@@ -21,9 +24,7 @@ public final class KeyValueReader {
     //intentionall left blank
   }
   
-  /*
-   * Generic method to read key value pairs from the bagit files, like bagit.txt or bag-info.txt
-   */
+
   /**
    * Generic method to read key value pairs from the bagit files, like bagit.txt or bag-info.txt
    * 

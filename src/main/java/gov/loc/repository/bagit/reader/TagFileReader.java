@@ -12,6 +12,9 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.util.PathUtils;
 
+/**
+ * Convenience class for reading tag files from the filesystem
+ */
 public interface TagFileReader {
   Logger logger = LoggerFactory.getLogger(TagFileReader.class);
   String ERROR_PREFIX = "Path [";

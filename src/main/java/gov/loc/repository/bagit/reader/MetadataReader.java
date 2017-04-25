@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 
+/**
+ * This class is responsible for reading and parsing bagit metadata files from the filesystem
+ */
 public final class MetadataReader {
   private static final Logger logger = LoggerFactory.getLogger(MetadataReader.class);
 

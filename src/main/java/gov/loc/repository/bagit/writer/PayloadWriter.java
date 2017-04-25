@@ -13,6 +13,9 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 
+/**
+ * Responsible for writing out the bag payload to the filesystem
+ */
 public final class PayloadWriter {
   private static final Logger logger = LoggerFactory.getLogger(PayloadWriter.class);
   private static final Version VERSION_2_0 = new Version(2, 0);

@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings(value = {"PMD.DoNotUseThreads"})
 public class CheckIfFileExistsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckIfFileExistsTask.class);
-  private transient final Path file;
+  private final Path file;
   //TODO if performance is an issue look at concurrentHashMap - it will take up more space but insertion is O(1) vs O(n)
-  private transient final Set<Path> missingFiles;
-  private transient final CountDownLatch latch;
+  private final Set<Path> missingFiles;
+  private final CountDownLatch latch;
   
   public CheckIfFileExistsTask(final Path file, final Set<Path> missingFiles, final CountDownLatch latch) {
     this.file = file;
@@ -70,5 +70,17 @@ public class CheckIfFileExistsTask implements Runnable {
     }
     
     return false;
+  }
+
+  public Path getFile() {
+    return file;
+  }
+
+  public Set<Path> getMissingFiles() {
+    return missingFiles;
+  }
+
+  public CountDownLatch getLatch() {
+    return latch;
   }
 }

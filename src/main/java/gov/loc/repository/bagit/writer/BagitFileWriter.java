@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Version;
 
+/**
+ * Responsible for writing the bagit.txt to the filesystem
+ */
 public final class BagitFileWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagitFileWriter.class);
   

@@ -4,6 +4,9 @@ import java.nio.file.Path;
 
 import gov.loc.repository.bagit.util.PathUtils;
 
+/**
+ * Convenience class for writing a relative path
+ */
 public final class RelativePathWriter {
   
   private RelativePathWriter(){

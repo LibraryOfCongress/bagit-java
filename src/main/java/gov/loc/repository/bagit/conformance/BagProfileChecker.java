@@ -32,6 +32,9 @@ import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresen
 import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
 
+/**
+ * Responsible for checking a bag against a profile
+ */
 public final class BagProfileChecker {
   private static final Logger logger = LoggerFactory.getLogger(BagProfileChecker.class);
 

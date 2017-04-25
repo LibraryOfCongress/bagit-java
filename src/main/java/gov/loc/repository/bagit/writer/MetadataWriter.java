@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Metadata;
 import gov.loc.repository.bagit.domain.Version;
 
+/**
+ * Responsible for writing out the bag {@link Metadata} to the filesystem
+ */
 public final class MetadataWriter {
   private static final Logger logger = LoggerFactory.getLogger(MetadataWriter.class);
   private static final Version VERSION_0_95 = new Version(0, 95);

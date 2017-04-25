@@ -22,6 +22,9 @@ import gov.loc.repository.bagit.hash.BagitAlgorithmNameToSupportedAlgorithmMappi
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.util.PathUtils;
 
+/**
+ * This class is responsible for reading and parsing manifest files on the filesystem
+ */
 public final class ManifestReader {
   private static final Logger logger = LoggerFactory.getLogger(ManifestReader.class);
   

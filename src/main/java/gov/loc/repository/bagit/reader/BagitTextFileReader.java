@@ -17,6 +17,9 @@ import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 
+/**
+ * This class is responsible for reading and parsing bagit.txt files from the filesystem
+ */
 public final class BagitTextFileReader {
   private static final Logger logger = LoggerFactory.getLogger(BagitTextFileReader.class);
   private static final byte[] BOM = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
