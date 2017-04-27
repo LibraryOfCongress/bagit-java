@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ import gov.loc.repository.bagit.verify.FileCountAndTotalSizeVistor;
  */
 public final class BagWriter {
   private static final Logger logger = LoggerFactory.getLogger(BagWriter.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private BagWriter(){
     //intentionally left empty
@@ -41,29 +43,29 @@ public final class BagWriter {
    * @throws NoSuchAlgorithmException when trying to generate a {@link MessageDigest} which is used during update.
    */
   public static void write(final Bag bag, final Path outputDir) throws IOException, NoSuchAlgorithmException{
-    logger.debug("writing payload files");
+    logger.debug(messages.getString("writing_payload_files"));
     final Path bagitDir = PayloadWriter.writeVersionDependentPayloadFiles(bag, outputDir);
     
-    logger.debug("Upserting payload-oxum");
+    logger.debug(messages.getString("upsert_payload_oxum"));
     final String payloadOxum = generatePayloadOxum(PathUtils.getDataDir(bag.getVersion(), outputDir));
     bag.getMetadata().upsertPayloadOxum(payloadOxum);
     
-    logger.debug("writing the bagit.txt file");
+    logger.debug(messages.getString("writing_bagit_file"));
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), bagitDir);
     
-    logger.debug("writing the payload manifest(s)");
+    logger.debug(messages.getString("writing_payload_manifests"));
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
 
     if(!bag.getMetadata().isEmpty()){
-      logger.debug("writing the bag metadata");
+      logger.debug(messages.getString("writing_bag_metadata"));
       MetadataWriter.writeBagMetadata(bag.getMetadata(), bag.getVersion(), bagitDir, bag.getFileEncoding());
     }
     if(bag.getItemsToFetch().size() > 0){
-      logger.debug("writing the fetch file");
+      logger.debug(messages.getString("writing_fetch_file"));
       FetchWriter.writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
     }
     if(bag.getTagManifests().size() > 0){
-      logger.debug("writing the tag manifest(s)");
+      logger.debug(messages.getString("writing_tag_manifests"));
       writeTagManifestFiles(bag.getTagManifests(), bagitDir, bag.getRootDir());
       final Set<Manifest> updatedTagManifests = updateTagManifests(bag, outputDir);
       bag.setTagManifests(updatedTagManifests);

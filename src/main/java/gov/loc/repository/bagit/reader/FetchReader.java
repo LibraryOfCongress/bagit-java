@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import gov.loc.repository.bagit.exceptions.MaliciousPathException;
  */
 public final class FetchReader {
   private static final Logger logger = LoggerFactory.getLogger(FetchReader.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private FetchReader(){
     //intentionally left empty
@@ -40,7 +42,7 @@ public final class FetchReader {
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   public static List<FetchItem> readFetch(final Path fetchFile, final Charset encoding, final Path bagRootDir) throws IOException, MaliciousPathException, InvalidBagitFileFormatException{
-    logger.info("Attempting to read [{}]", fetchFile);
+    logger.info(messages.getString("reading_fetch_file"), fetchFile);
     final List<FetchItem> itemsToFetch = new ArrayList<>();
     
     try(final BufferedReader reader = Files.newBufferedReader(fetchFile, encoding)){
@@ -54,7 +56,7 @@ public final class FetchReader {
         length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
         url = new URL(parts[0]);
         
-        logger.debug("Read URL [{}] length [{}] path [{}] from fetch file [{}]", url, length, parts[2], fetchFile);
+        logger.debug(messages.getString("read_fetch_file_line"), url, length, parts[2], fetchFile);
         final FetchItem itemToFetch = new FetchItem(url, length, path);
         itemsToFetch.add(itemToFetch);
         

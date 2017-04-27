@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ResourceBundle;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import gov.loc.repository.bagit.domain.Version;
 public final class MetadataWriter {
   private static final Logger logger = LoggerFactory.getLogger(MetadataWriter.class);
   private static final Version VERSION_0_95 = new Version(0, 95);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private MetadataWriter(){
     //intentionall left empty
@@ -39,7 +41,7 @@ public final class MetadataWriter {
     if(version.isSameOrOlder(VERSION_0_95)){
       bagInfoFilePath = outputDir.resolve("package-info.txt");
     }
-    logger.debug("Writing {} to [{}]", bagInfoFilePath.getFileName(), outputDir);
+    logger.debug(messages.getString("writing_metadata_to_path"), bagInfoFilePath.getFileName(), outputDir);
 
     Files.deleteIfExists(bagInfoFilePath);
     final StringBuilder lines = new StringBuilder();
@@ -49,7 +51,7 @@ public final class MetadataWriter {
       lines.append(line);
     }
     
-    logger.debug("Writing [{}] to [{}]", lines.toString(), bagInfoFilePath);
+    logger.debug(messages.getString("writing_line_to_file"), lines.toString(), bagInfoFilePath);
     Files.write(bagInfoFilePath, lines.toString().getBytes(charsetName), 
         StandardOpenOption.APPEND, StandardOpenOption.CREATE);
   }

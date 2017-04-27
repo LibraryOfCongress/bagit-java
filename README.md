@@ -50,6 +50,11 @@ this functionality, the
 demonstrates how you can implement this feature with your additional application
 and workflow requirements.
 
+##### Internationalization
+All logging and error messages have been put into a [ResourceBundle](https://docs.oracle.com/javase/7/docs/api/java/util/ResourceBundle.html). 
+This allows for all the messages to be translated to multiple languages and automatically used during runtime. 
+If you would like to contribute to translations please visit https://www.transifex.com/acdha/bagit-java/dashboard/
+
 ##### New Interfaces
 
 The 5.x version is a complete rewrite of the bagit-java library which attempts
@@ -170,3 +175,4 @@ Simply run `gradle eclipse` and it will automatically create a eclipse project f
 ### Roadmap for this library
 * Further refine reading and writing of bags version 0.93-0.97
 * Fix bugs/issues reported with new library (on going)
+* Translate to various languages (on going)

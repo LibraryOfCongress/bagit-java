@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ public final class Hasher {
   private static final Logger logger = LoggerFactory.getLogger(Hasher.class);
   private static final int _64_KB = 1024 * 64;
   private static final int CHUNK_SIZE = _64_KB;
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private Hasher(){
     //intentionally left empty
@@ -75,7 +77,7 @@ public final class Hasher {
   private static void addMessageDigestHashToManifest(final Path path, final Map<Manifest, MessageDigest> manifestToMessageDigestMap){
     for(final Entry<Manifest, MessageDigest> entry : manifestToMessageDigestMap.entrySet()){
       final String hash = formatMessageDigest(entry.getValue());
-      logger.debug("Adding [{}] to manifest with hash [{}]", path, hash);
+      logger.debug(messages.getString("adding_checksum"), path, hash);
       entry.getKey().getFileToChecksumMap().put(path, hash);
     }
   }

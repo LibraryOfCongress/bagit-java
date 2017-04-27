@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import gov.loc.repository.bagit.reader.MetadataReader;
  */
 public final class MetadataChecker {
   private static final Logger logger = LoggerFactory.getLogger(MetadataChecker.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private MetadataChecker(){
     //intentionally left empty
@@ -46,7 +48,7 @@ public final class MetadataChecker {
       }
       
       if(!containsPayloadOxum){
-        logger.warn("The Payload-Oxum key was not found in the bag metadata. This will prevent a \"quick verify\".");
+        logger.warn(messages.getString("missing_payload_oxum_warning"));
         warnings.add(BagitWarning.PAYLOAD_OXUM_MISSING);
       }
     }

@@ -8,10 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -37,6 +39,7 @@ import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresent
  */
 public final class BagProfileChecker {
   private static final Logger logger = LoggerFactory.getLogger(BagProfileChecker.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private BagProfileChecker(){
     //intentionally left empty
@@ -75,8 +78,7 @@ public final class BagProfileChecker {
     requiredManifestsExist(bag.getTagManifests(), profile.getTagManifestTypesRequired(), false);
 
     if(!profile.getAcceptableBagitVersions().contains(bag.getVersion().toString())){
-      throw new BagitVersionIsNotAcceptableException("Version [" + bag.getVersion().toString() + "] is not in the acceptable list of " + 
-          profile.getAcceptableBagitVersions());
+      throw new BagitVersionIsNotAcceptableException(messages.getString("bagit_version_not_acceptable_error"), bag.getVersion(), profile.getAcceptableBagitVersions());
     }
     
     requiredTagFilesExist(bag.getRootDir(), profile.getTagFilesRequired());
@@ -92,9 +94,9 @@ public final class BagProfileChecker {
   }
   
   private static void checkFetch(final Path rootDir, final boolean allowFetchFile, final List<FetchItem> itemsToFetch) throws FetchFileNotAllowedException{
-    logger.debug("Checking if the fetch file is allowed for bag [{}]", rootDir);
+    logger.debug(messages.getString("checking_fetch_file_allowed"), rootDir);
     if(!allowFetchFile && !itemsToFetch.isEmpty()){
-      throw new FetchFileNotAllowedException("Fetch File was found in bag [" + rootDir + "]");
+      throw new FetchFileNotAllowedException(messages.getString("fetch_file_not_allowed_error"), rootDir);
     }
   }
   
@@ -104,19 +106,19 @@ public final class BagProfileChecker {
     for(final Entry<String, BagInfoRequirement> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
       final boolean metadataContainsKey = bagMetadata.contains(bagInfoEntryRequirement.getKey());
       
-      logger.debug("Checking if [{}] is required in the bag metadata", bagInfoEntryRequirement.getKey());
+      logger.debug(messages.getString("checking_metadata_entry_required"), bagInfoEntryRequirement.getKey());
       //is it required and not there?
       if(bagInfoEntryRequirement.getValue().isRequired() && !metadataContainsKey){
-        throw new RequiredMetadataFieldNotPresentException("Profile specifies metadata field [" + bagInfoEntryRequirement.getKey() + "] is required but was not found!");
+        throw new RequiredMetadataFieldNotPresentException(messages.getString("required_metadata_field_not_present_error"), bagInfoEntryRequirement.getKey());
       }
       
       //a size of zero implies that all values are acceptable
       if(!bagInfoEntryRequirement.getValue().getAcceptableValues().isEmpty()){
-        logger.debug("Checking if all the values listed for [{}] are acceptable", bagInfoEntryRequirement.getKey());
+        logger.debug(messages.getString("check_values_acceptable"), bagInfoEntryRequirement.getKey());
         for(final String metadataValue : bagMetadata.get(bagInfoEntryRequirement.getKey())){
           if(!bagInfoEntryRequirement.getValue().getAcceptableValues().contains(metadataValue)){
-            throw new MetatdataValueIsNotAcceptableException("Profile specifies that acceptable values for [" + bagInfoEntryRequirement.getKey() + 
-                "] are " + bagInfoEntryRequirement.getValue().getAcceptableValues() + " but found [" + metadataValue + "]");
+            throw new MetatdataValueIsNotAcceptableException(messages.getString("metadata_value_not_acceptable_error"), 
+                bagInfoEntryRequirement.getKey(), bagInfoEntryRequirement.getValue().getAcceptableValues(), metadataValue);
           }
         }
       }
@@ -126,7 +128,7 @@ public final class BagProfileChecker {
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private static void requiredManifestsExist(final Set<Manifest> manifests, final List<String> requiredManifestTypes, final boolean isPayloadManifest) throws RequiredManifestNotPresentException{
     final Set<String> manifestTypesPresent = new HashSet<>();
-    logger.debug("Checking if all the required manifests are present");
+    logger.debug(messages.getString("check_required_manifests_present"));
     
     for(final Manifest manifest : manifests){
       manifestTypesPresent.add(manifest.getAlgorithm().getBagitName());
@@ -134,10 +136,13 @@ public final class BagProfileChecker {
     
     for(final String requiredManifestType : requiredManifestTypes){
       if(!manifestTypesPresent.contains(requiredManifestType)){
-        final StringBuilder sb = new StringBuilder(25);
-        sb.append("Required ");
-        if(isPayloadManifest){ sb.append("tag");}
-        sb.append("manifest type [").append(requiredManifestType).append("] was not present");
+        final StringBuilder sb = new StringBuilder();
+        if(isPayloadManifest){ sb.append("tag");
+          sb.append(MessageFormatter.format(messages.getString("required_tag_manifest_type_not_present"), requiredManifestType).getMessage());
+        }
+        else{
+          sb.append(MessageFormatter.format(messages.getString("required_manifest_type_not_present"), requiredManifestType).getMessage());
+        }
           
         throw new RequiredManifestNotPresentException(sb.toString());
       }
@@ -146,12 +151,12 @@ public final class BagProfileChecker {
   
   private static void requiredTagFilesExist(final Path rootDir, final List<String> requiredTagFilePaths) throws RequiredTagFileNotPresentException{
     Path requiredTagFile;
-    logger.debug("Checking if all the required tag files exist");
+    logger.debug(messages.getString("checking_required_tag_file_exists"));
     
     for(final String requiredTagFilePath : requiredTagFilePaths){
       requiredTagFile = rootDir.resolve(requiredTagFilePath);
       if(!Files.exists(requiredTagFile)){
-        throw new RequiredTagFileNotPresentException("Required tag file [" + requiredTagFilePath + "] was not found");
+        throw new RequiredTagFileNotPresentException(messages.getString("required_tag_file_not_found_error"), requiredTagFilePath);
       }
     }
   }

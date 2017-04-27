@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,8 @@ import gov.loc.repository.bagit.domain.FetchItem;
  */
 public final class FetchWriter {
   private static final Logger logger = LoggerFactory.getLogger(FetchWriter.class);
-
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
+  
   private FetchWriter(){
     //intentionally left empty
   }
@@ -33,12 +35,12 @@ public final class FetchWriter {
    * @throws IOException if there was a problem writing a file
    */
   public static void writeFetchFile(final List<FetchItem> itemsToFetch, final Path outputDir, final Path bagitRootDir, final Charset charsetName) throws IOException{
-    logger.debug("Writing fetch.txt to [{}]", outputDir);
+    logger.debug(messages.getString("writing_fetch_file_to_path"), outputDir);
     final Path fetchFilePath = outputDir.resolve("fetch.txt");
     
     for(final FetchItem item : itemsToFetch){
       final String line = formatFetchLine(item, bagitRootDir);
-      logger.debug("Writing [{}] to [{}]", line, fetchFilePath);
+      logger.debug(messages.getString("writing_line_to_file"), line, fetchFilePath);
       Files.write(fetchFilePath, line.getBytes(charsetName), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
   }

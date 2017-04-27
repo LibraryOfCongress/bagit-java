@@ -4,9 +4,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
@@ -17,6 +19,7 @@ import gov.loc.repository.bagit.util.PathUtils;
  */
 public interface TagFileReader {
   Logger logger = LoggerFactory.getLogger(TagFileReader.class);
+  ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   String ERROR_PREFIX = "Path [";
   
   /*
@@ -25,16 +28,18 @@ public interface TagFileReader {
   static Path createFileFromManifest(final Path bagRootDir, final String path) throws MaliciousPathException, InvalidBagitFileFormatException{
     String fixedPath = path;
     if(path.charAt(0) == '*'){
-      logger.warn("Encountered path that was created by non-bagit tool. Removing * from path. Please remove all * from manifest files!");
+      logger.warn(messages.getString("removing_asterisk"));
       fixedPath = path.substring(1); //remove the * from the path
     }
     
     if(path.contains("\\")){
-      throw new InvalidBagitFileFormatException(ERROR_PREFIX + path + "] is invalid due to the use of the path separactor [\\]");
+      final String formattedMessage = messages.getString("blackslash_used_as_path_separator_error");
+      throw new InvalidBagitFileFormatException(MessageFormatter.format(formattedMessage, path).getMessage());
     }
     
     if(path.contains("~/")){
-      throw new MaliciousPathException(ERROR_PREFIX + path + "] is trying to be malicious and access a file outside the bag");
+      final String formattedMessage = messages.getString("malicious_path_error");
+      throw new MaliciousPathException(MessageFormatter.format(formattedMessage, path).getMessage());
     }
 
     fixedPath = PathUtils.decodeFilname(fixedPath);
@@ -43,7 +48,8 @@ public interface TagFileReader {
       try {
         file = Paths.get(new URI(fixedPath));
       } catch (URISyntaxException e) {
-        throw new InvalidBagitFileFormatException("URL [" + path + "] is invalid.", e);
+        final String formattedMessage = messages.getString("invalid_url_format_error");
+        throw new InvalidBagitFileFormatException(MessageFormatter.format(formattedMessage, path).getMessage(), e);
       }
     }
     else{
@@ -51,8 +57,8 @@ public interface TagFileReader {
     }
     
     if(!file.normalize().startsWith(bagRootDir)){
-      throw new MaliciousPathException(ERROR_PREFIX + file + "] is outside the bag root directory of " + bagRootDir + 
-          "! This is not allowed according to the bagit specification!");
+      final String formattedMessage = messages.getString("malicious_path_error");
+      throw new MaliciousPathException(MessageFormatter.format(formattedMessage, file).getMessage());
     }
     
     return file;

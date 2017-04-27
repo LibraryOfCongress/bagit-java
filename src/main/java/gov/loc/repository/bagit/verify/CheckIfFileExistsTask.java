@@ -5,6 +5,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings(value = {"PMD.DoNotUseThreads"})
 public class CheckIfFileExistsTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckIfFileExistsTask.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   private final Path file;
   //TODO if performance is an issue look at concurrentHashMap - it will take up more space but insertion is O(1) vs O(n)
   private final Set<Path> missingFiles;
@@ -35,7 +37,7 @@ public class CheckIfFileExistsTask implements Runnable {
     
     if(!fileExists){
       if(existsNormalized){
-        logger.warn("File name [{}] has a different normalization than what is contained on the filesystem!", file);
+        logger.warn(messages.getString("different_normalization_on_filesystem_warning"), file);
       }
       else{
         missingFiles.add(file);
@@ -64,8 +66,7 @@ public class CheckIfFileExistsTask implements Runnable {
         }
       }
       catch(IOException e){
-        logger.error("Error while trying to read [{}] to see if any files in that directory match the normalized "
-            + "filename of [{}]", parent, normalizedFile, e);
+        logger.error(messages.getString("error_reading_normalized_file"), parent, normalizedFile, e);
       }
     }
     

@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import gov.loc.repository.bagit.util.PathUtils;
  */
 public final class ManifestReader {
   private static final Logger logger = LoggerFactory.getLogger(ManifestReader.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private ManifestReader(){
     //intentionally left empty
@@ -46,18 +48,18 @@ public final class ManifestReader {
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
   static void readAllManifests(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final Path rootDir, final Bag bag) throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
-    logger.info("Attempting to find and read manifests");
+    logger.info(messages.getString("attempting_read_manifests"));
     
     try(final DirectoryStream<Path> manifests = getAllManifestFiles(rootDir)){
       for (final Path path : manifests){
         final String filename = PathUtils.getFilename(path);
         
         if(filename.startsWith("tagmanifest-")){
-          logger.debug("Found tag manifest [{}]", path);
+          logger.debug(messages.getString("found_tagmanifest"), path);
           bag.getTagManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
         }
         else if(filename.startsWith("manifest-")){
-          logger.debug("Found payload manifest [{}]", path);
+          logger.debug(messages.getString("found_payload_manifest"), path);
           bag.getPayLoadManifests().add(readManifest(nameMapping, path, bag.getRootDir(), bag.getFileEncoding()));
         }
       }
@@ -97,7 +99,7 @@ public final class ManifestReader {
   public static Manifest readManifest(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, 
       final Path manifestFile, final Path bagRootDir, final Charset charset) 
           throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
-    logger.debug("Reading manifest [{}]", manifestFile);
+    logger.debug(messages.getString("reading_manifest"), manifestFile);
     final String alg = PathUtils.getFilename(manifestFile).split("[-\\.]")[1];
     final SupportedAlgorithm algorithm = nameMapping.getSupportedAlgorithm(alg);
     

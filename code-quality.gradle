@@ -79,10 +79,10 @@ jacocoTestReport {
 
 cpdCheck {
     source = sourceSets.main.allJava
-//    reports {
-//        text.enabled = true
-//        xml.enabled = false
-//    }
+    reports {
+        text.enabled = true
+        xml.enabled = false
+    }
 }
 
 dependencyCheck {
@@ -98,3 +98,57 @@ dependencyCheck {
 //      html.enabled = true
 //  }
 //}
+
+import java.util.Map.Entry;
+task checkMessageBundle(){
+  inputs.files(fileTree(dir: "src/main/resources", include: "**/MessageBundle*.properties"))
+  outputs.dir("$buildDir/checkMessageBundle") //hack: define a output dir so gradle will check if up-to-date
+  
+  doLast{
+    Set<String> messageKeys = new HashSet<>()
+  
+    inputs.getFiles().each{File file -> 
+      file.eachLine {String line -> 
+        if(line && !line.trim().startsWith('#')){
+          String[] keyValue = checkMessageBundleLineIsCorrectlyFormatted(line, file)
+          
+          if(messageKeys.contains(keyValue[0])){
+            throw new GradleException("Internationalization message bundle contains duplicate key [${keyValue[0]}]!")
+          }
+          messageKeys.add(keyValue[0])
+        }
+      }
+    }
+    
+    checkAllMessageKeysAreUsed(messageKeys)
+  }
+}
+check.dependsOn checkMessageBundle
+
+String[] checkMessageBundleLineIsCorrectlyFormatted(String line, File file){
+  String[] keyValue = line.split("=", 2)
+  
+  if(keyValue.size() != 2 || keyValue[1].isEmpty()){
+    throw new GradleException("Line [${line}] in file [${file}] is not a valid entry for the internationalization message bundle!")
+  }
+  
+  return keyValue
+}
+
+void checkAllMessageKeysAreUsed(Set<String> messageKeys){
+  sourceSets.main.allJava.each { File file ->
+    file.eachLine{ String line ->
+      for(String key : messageKeys.clone()){
+        if(line.contains(key)){
+          messageKeys.remove(key)
+        }
+      }
+    }
+  }
+  
+  if(messageKeys.size() > 0){
+    messageKeys.each{String key ->
+      throw new GradleException("[${key}] is listed in the internationalization message bundle but never actually used!")
+    }  
+  }
+}

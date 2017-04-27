@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,11 @@ import gov.loc.repository.bagit.writer.ManifestWriter;
  */
 public final class BagCreator {
   private static final Logger logger = LoggerFactory.getLogger(BagCreator.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private BagCreator(){}
   
+  @SuppressWarnings("CPD-START")
   /**
    * Creates a basic(only required elements) bag in place for version 0.97.
    * This method moves and creates files, thus if an error is thrown during operation it may leave the filesystem 
@@ -44,7 +47,7 @@ public final class BagCreator {
   public static Bag bagInPlace(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     final Bag bag = new Bag(new Version(0, 97));
     bag.setRootDir(root);
-    logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
+    logger.info(messages.getString("creating_bag"), bag.getVersion(), root);
     
     final Path dataDir = root.resolve("data");
     Files.createDirectory(dataDir);
@@ -56,7 +59,7 @@ public final class BagCreator {
       }
     }
     
-    logger.info("Creating payload manifest(s)");
+    logger.info(messages.getString("creating_payload_manifests"));
     final Map<Manifest, MessageDigest> payloadFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
     final CreatePayloadManifestsVistor payloadVisitor = new CreatePayloadManifestsVistor(payloadFilesMap, includeHidden);
     Files.walkFileTree(dataDir, payloadVisitor);
@@ -65,7 +68,7 @@ public final class BagCreator {
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), root);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), root, root, bag.getFileEncoding());
     
-    logger.info("Creating tag manifest(s)");
+    logger.info(messages.getString("creating_tag_manifests"));
     final Map<Manifest, MessageDigest> tagFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
     final CreateTagManifestsVistor tagVistor = new CreateTagManifestsVistor(tagFilesMap, includeHidden);
     Files.walkFileTree(root, tagVistor);
@@ -76,6 +79,7 @@ public final class BagCreator {
     return bag;
   }
   
+  @SuppressWarnings("CPD-END")
   /**
    * Creates a basic(only required elements) .bagit bag in place.
    * This creates files and directories, thus if an error is thrown during operation it may leave the filesystem 
@@ -92,12 +96,12 @@ public final class BagCreator {
   public static Bag createDotBagit(final Path root, final Collection<SupportedAlgorithm> algorithms, final boolean includeHidden) throws NoSuchAlgorithmException, IOException{
     final Bag bag = new Bag(new Version(2, 0));
     bag.setRootDir(root);
-    logger.info("Creating a bag with version: [{}] in directory: [{}]", bag.getVersion(), root);
+    logger.info(messages.getString("creating_bag"), bag.getVersion(), root);
     
     final Path dotbagitDir = root.resolve(".bagit");
     Files.createDirectories(dotbagitDir);
     
-    logger.info("Creating payload manifest");
+    logger.info(messages.getString("creating_payload_manifests"));
     final Map<Manifest, MessageDigest> map = Hasher.createManifestToMessageDigestMap(algorithms);
     final CreatePayloadManifestsVistor visitor = new CreatePayloadManifestsVistor(map, includeHidden);
     Files.walkFileTree(root, visitor);
@@ -106,7 +110,7 @@ public final class BagCreator {
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), dotbagitDir);
     ManifestWriter.writePayloadManifests(bag.getPayLoadManifests(), dotbagitDir, root, bag.getFileEncoding());
     
-    logger.info("Creating tag manifest(s)");
+    logger.info(messages.getString("creating_tag_manifests"));
     final Map<Manifest, MessageDigest> tagFilesMap = Hasher.createManifestToMessageDigestMap(algorithms);
     final CreateTagManifestsVistor tagVistor = new CreateTagManifestsVistor(tagFilesMap, includeHidden);
     Files.walkFileTree(dotbagitDir, tagVistor);
@@ -116,4 +120,5 @@ public final class BagCreator {
     
     return bag;
   }
+  
 }

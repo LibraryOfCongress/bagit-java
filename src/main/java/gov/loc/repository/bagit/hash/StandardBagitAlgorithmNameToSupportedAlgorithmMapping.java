@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.hash;
 
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 
@@ -9,6 +10,7 @@ import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
  */
 public class StandardBagitAlgorithmNameToSupportedAlgorithmMapping
     implements BagitAlgorithmNameToSupportedAlgorithmMapping {
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   @Override
   public SupportedAlgorithm getSupportedAlgorithm(final String bagitAlgorithmName) throws UnsupportedAlgorithmException {
@@ -16,7 +18,7 @@ public class StandardBagitAlgorithmNameToSupportedAlgorithmMapping
       return StandardSupportedAlgorithms.valueOf(bagitAlgorithmName.toUpperCase(Locale.getDefault()));
     }
     catch(IllegalArgumentException e){
-      throw new UnsupportedAlgorithmException(bagitAlgorithmName + " is not supported!", e);
+      throw new UnsupportedAlgorithmException(messages.getString("algorithm_not_supported_error"), bagitAlgorithmName, e);
     }
   }
 }
