@@ -149,7 +149,7 @@ public final class ManifestChecker {
           final String normalizedFile = normalizePathToNFD(file);
           
           if(!file.equals(fileToCheck) && normalizedFileToCheck.equals(normalizedFile)){
-            logger.warn(messages.getString("different_normalization_warning"), fileToCheck);
+            logger.warn(messages.getString("different_normalization_in_manifest_warning"), fileToCheck);
             warnings.add(BagitWarning.DIFFERENT_NORMALIZATION);
           }
         }

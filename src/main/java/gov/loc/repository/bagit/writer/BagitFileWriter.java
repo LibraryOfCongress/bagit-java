@@ -37,7 +37,6 @@ public final class BagitFileWriter {
     final Path bagitPath = outputDir.resolve("bagit.txt");
     logger.debug(messages.getString("write_bagit_file_to_path"), outputDir);
     
-    
     final String firstLine = "BagIt-Version: " + version + System.lineSeparator();
     logger.debug(messages.getString("writing_line_to_file"), firstLine, bagitPath);
     Files.write(bagitPath, firstLine.getBytes(StandardCharsets.UTF_8), 

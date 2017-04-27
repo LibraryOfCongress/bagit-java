@@ -37,7 +37,7 @@ public class CheckIfFileExistsTask implements Runnable {
     
     if(!fileExists){
       if(existsNormalized){
-        logger.warn(messages.getString("different_normalization_warning"), file);
+        logger.warn(messages.getString("different_normalization_on_filesystem_warning"), file);
       }
       else{
         missingFiles.add(file);
