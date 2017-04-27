@@ -8,9 +8,11 @@ import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 
@@ -19,6 +21,8 @@ import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
  */
 public final class KeyValueReader {
   private static final Logger logger = LoggerFactory.getLogger(KeyValueReader.class);
+  private static final String INDENTED_LINE_REGEX = "^\\s+.*";
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private KeyValueReader(){
     //intentionall left blank
@@ -44,14 +48,14 @@ public final class KeyValueReader {
     try(final BufferedReader reader = Files.newBufferedReader(file, charset)){
       String line = reader.readLine();
       while(line != null){
-        if(line.matches("^\\s+.*") && !keyValues.isEmpty()){
+        if(line.matches(INDENTED_LINE_REGEX) && !keyValues.isEmpty()){
           mergeIndentedLine(line, keyValues);
         }
         else{
           final String[] parts = checkLineFormat(line, splitRegex);
           final String key = parts[0].trim();
           final String value = parts[1].trim();
-          logger.debug("Found key [{}] value [{}] in file [{}] using split regex [{}]", key, value, file, splitRegex);
+          logger.debug(messages.getString("read_key_value_line"), key, value, file, splitRegex);
           keyValues.add(new SimpleImmutableEntry<>(key, value));
         }
          
@@ -67,22 +71,15 @@ public final class KeyValueReader {
     final SimpleImmutableEntry<String, String> newKeyValue = new SimpleImmutableEntry<>(oldKeyValue.getKey(), oldKeyValue.getValue() + System.lineSeparator() +line);
     keyValues.add(newKeyValue);
     
-    logger.debug("Found an indented line - merging it with key [{}]", oldKeyValue.getKey());
+    logger.debug(messages.getString("found_indented_line"), oldKeyValue.getKey());
   }
   
   private static String[] checkLineFormat(final String line, final String splitRegex) throws InvalidBagMetadataException{
     final String[] parts = line.split(splitRegex, 2);
     
     if(parts.length != 2){
-      final StringBuilder message = new StringBuilder(300);
-      message.append("Line [").append(line)
-        .append("] does not meet the bagit specification for a bag tag file. Perhaps you meant to indent it " +
-        "by a space or a tab? Or perhaps you didn't use a colon to separate the key from the value?" +
-        "It must follow the form of <key>")
-        .append(splitRegex)
-        .append("<value> or if continuing from another line must be indented by a space or a tab.");
-      
-      throw new InvalidBagMetadataException(message.toString());
+      final String formattedMessage = messages.getString("malformed_key_value_line_error");
+      throw new InvalidBagMetadataException(MessageFormatter.format(formattedMessage, line, splitRegex).getMessage());
     }
     
     return parts;

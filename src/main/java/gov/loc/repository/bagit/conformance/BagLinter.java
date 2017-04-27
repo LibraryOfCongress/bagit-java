@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import gov.loc.repository.bagit.verify.BagVerifier;
  */
 public final class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   private static final Version VERSION_1_0 = new Version(1,0);
   
   private BagLinter(){
@@ -117,16 +119,16 @@ public final class BagLinter {
     checkForExtraLines(bagitFile, warnings, warningsToIgnore);
     final SimpleImmutableEntry<Version, Charset> bagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);
     
-    logger.debug("Checking encoding problems.");
+    logger.info(messages.getString("checking_encoding_problems"));
     EncodingChecker.checkEncoding(bagitInfo.getValue(), warnings, warningsToIgnore);
     
-    logger.debug("checking for latest version.");
+    logger.info(messages.getString("checking_latest_version"));
     VersionChecker.checkVersion(bagitInfo.getKey(), warnings, warningsToIgnore);
     
-    logger.debug("checking manifests for problems.");
+    logger.info(messages.getString("checking_manifest_problems"));
     ManifestChecker.checkManifests(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
 
-    logger.debug("checking bag metadata for problems.");
+    logger.info(messages.getString("checking_metadata_problems"));
     MetadataChecker.checkBagMetadata(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
     
     return warnings;
@@ -134,11 +136,11 @@ public final class BagLinter {
   
   private static void checkForExtraLines(final Path bagitFile, final Collection<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore) throws InvalidBagMetadataException, IOException, UnparsableVersionException{
     if(warningsToIgnore.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES)){
-      logger.debug("skipping check for extra lines in bagit files");
+      logger.debug(messages.getString("skipping_check_extra_lines"));
       return;
     }
     
-    logger.debug("checking if [{}] contains more than 2 lines");
+    logger.debug(messages.getString("checking_extra_lines"));
     final List<SimpleImmutableEntry<String, String>> pairs = KeyValueReader.readKeyValuesFromFile(bagitFile, ":", StandardCharsets.UTF_8);
      
     for(final SimpleImmutableEntry<String, String> pair : pairs){
@@ -146,9 +148,7 @@ public final class BagLinter {
         final Version version = BagitTextFileReader.parseVersion(pair.getValue());
         //versions before 1.0 specified it must be exactly 2 lines
         if(pairs.size() > 2 && version.isOlder(VERSION_1_0)){
-          logger.warn("The bagit specification states that the bagit.txt file must contain exactly 2 lines. "
-              + "However we found {} lines, some implementations will "
-              + "ignore this but may cause imcompatibility issues with other tools.", pairs.size());
+          logger.warn(messages.getString("extra_lines_warning"), pairs.size());
           warnings.add(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES);
         }
       }

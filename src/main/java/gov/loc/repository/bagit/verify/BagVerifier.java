@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -33,6 +34,7 @@ import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgori
  */
 public final class BagVerifier {
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private final PayloadVerifier manifestVerifier;
   private final ExecutorService executor;
@@ -131,15 +133,15 @@ public final class BagVerifier {
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
   public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
-    logger.info("Checking if the bag with root directory [{}] is valid.", bag.getRootDir());
+    logger.info(messages.getString("checking_bag_is_valid"), bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
-    logger.debug("Checking payload manifest(s) checksums");
+    logger.debug(messages.getString("checking_payload_checksums"));
     for(final Manifest payloadManifest : bag.getPayLoadManifests()){
       checkHashes(payloadManifest);
     }
     
-    logger.debug("Checking tag manifest(s) checksums");
+    logger.debug(messages.getString("checking_tag_file_checksums"));
     for(final Manifest tagManifest : bag.getTagManifests()){
       checkHashes(tagManifest);
     }
@@ -158,7 +160,7 @@ public final class BagVerifier {
     final List<Exception> exceptions = new ArrayList<>(); 
     
     for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-      executor.execute(new CheckManifestHashsTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));
+      executor.execute(new CheckManifestHashesTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));
     }
     
     latch.await();
@@ -166,7 +168,7 @@ public final class BagVerifier {
     if(!exceptions.isEmpty()){
       final Exception e = exceptions.get(0);
       if(e instanceof CorruptChecksumException){
-        logger.debug("[{}] errors occured. At least one of the errors is due to hashes not matching.", exceptions.size());
+        logger.debug(messages.getString("checksums_not_matching_error"), exceptions.size());
         throw (CorruptChecksumException)e;
       }
       
@@ -201,7 +203,7 @@ public final class BagVerifier {
   public void isComplete(final Bag bag, final boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
     FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
-    logger.info("Checking if the bag with root directory [{}] is complete.", bag.getRootDir());
+    logger.info(messages.getString("checking_bag_is_complete"), bag.getRootDir());
     
     MandatoryVerifier.checkFetchItemsExist(bag.getItemsToFetch(), bag.getRootDir());
     

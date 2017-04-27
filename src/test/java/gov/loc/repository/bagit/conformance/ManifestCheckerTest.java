@@ -43,7 +43,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
     assertTrue(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
     assertTrue(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
     assertTrue(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
-    assertTrue(warnings.contains(BagitWarning.MISSING_TAG_MANIEST));
+    assertTrue(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
   }
   
   @Test
@@ -52,7 +52,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
     Set<BagitWarning> warnings = new HashSet<>();
 
     ManifestChecker.checkManifests(folder.getRoot().toPath(), StandardCharsets.UTF_16, warnings, Collections.emptyList());
-    assertFalse(warnings.contains(BagitWarning.MISSING_TAG_MANIEST));
+    assertFalse(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
   }
   
   @Test

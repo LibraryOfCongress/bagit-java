@@ -7,6 +7,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Set;
 
+import org.slf4j.helpers.MessageFormatter;
+
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 
@@ -26,11 +28,12 @@ public class PayloadFileExistsInAllManifestsVistor extends AbstractPayloadFileEx
     if(Files.isRegularFile(path)){
       for(final Manifest manifest : manifests){
         if(!manifest.getFileToChecksumMap().keySet().contains(path.normalize())){
-          throw new FileNotInManifestException("File " + path + " is in the payload directory but isn't listed in manifest manifest-" + manifest.getAlgorithm().getBagitName() + ".txt");
+          final String formattedMessage = messages.getString("file_not_in_manifest_error");
+          throw new FileNotInManifestException(MessageFormatter.format(formattedMessage, path, manifest.getAlgorithm().getBagitName()).getMessage());
         }
       }
     }
-    logger.debug("[{}] is in all manifests", path);
+    logger.debug(messages.getString("file_in_all_manifests"), path);
     return FileVisitResult.CONTINUE;
   }
 }

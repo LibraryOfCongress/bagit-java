@@ -5,6 +5,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
@@ -13,6 +14,7 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
@@ -31,6 +33,7 @@ import gov.loc.repository.bagit.util.PathUtils;
  */
 public class PayloadVerifier {
   private static final Logger logger = LoggerFactory.getLogger(PayloadVerifier.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
   private final ExecutorService executor;
@@ -115,7 +118,7 @@ public class PayloadVerifier {
    */
   private Set<Path> getAllFilesListedInManifests(final Bag bag)
       throws IOException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException {
-    logger.debug("Getting all files listed in the manifest(s)");
+    logger.debug(messages.getString("all_files_in_manifests"));
     final Set<Path> filesListedInManifests = new HashSet<>();
 
     try(DirectoryStream<Path> directoryStream = 
@@ -123,7 +126,7 @@ public class PayloadVerifier {
       for (final Path path : directoryStream) {
         final String filename = PathUtils.getFilename(path);
         if (filename.startsWith("tagmanifest-") || filename.startsWith("manifest-")) {
-          logger.debug("Getting files and checksums listed in [{}]", path);
+          logger.debug(messages.getString("get_listing_in_manifest"), path);
           final Manifest manifest = ManifestReader.readManifest(nameMapping, path, bag.getRootDir(),
               bag.getFileEncoding());
           filesListedInManifests.addAll(manifest.getFileToChecksumMap().keySet());
@@ -142,7 +145,7 @@ public class PayloadVerifier {
     final CountDownLatch latch = new CountDownLatch(files.size());
     final Set<Path> missingFiles = new ConcurrentSkipListSet<>();
 
-    logger.debug("Checking if all files listed in the manifest(s) exist");
+    logger.info(messages.getString("check_all_files_in_manifests_exist"));
     for (final Path file : files) {
       executor.execute(new CheckIfFileExistsTask(file, missingFiles, latch));
     }
@@ -150,8 +153,8 @@ public class PayloadVerifier {
     latch.await();
 
     if (!missingFiles.isEmpty()) {
-      throw new FileNotInPayloadDirectoryException(
-          "Manifest(s) contains file(s) " + missingFiles + " but they don't exist!");
+      final String formattedMessage = messages.getString("missing_payload_files_error");
+      throw new FileNotInPayloadDirectoryException(MessageFormatter.format(formattedMessage, missingFiles).getMessage());
     }
   }
 
@@ -160,7 +163,7 @@ public class PayloadVerifier {
    */
   private static void checkAllFilesInPayloadDirAreListedInAtLeastOneAManifest(final Set<Path> filesListedInManifests,
       final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException {
-    logger.debug("Checking if all payload files (files in {} dir) are listed in at least one manifest", payloadDir);
+    logger.debug(messages.getString("checking_file_in_at_least_one_manifest"), payloadDir);
     if (Files.exists(payloadDir)) {
       Files.walkFileTree(payloadDir,
           new PayloadFileExistsInAtLeastOneManifestVistor(filesListedInManifests, ignoreHiddenFiles));
@@ -172,7 +175,7 @@ public class PayloadVerifier {
    */
   private static void CheckAllFilesInPayloadDirAreListedInAllManifests(final Set<Manifest> payLoadManifests,
       final Path payloadDir, final boolean ignoreHiddenFiles) throws IOException {
-    logger.debug("Checking if all payload files (files in {} dir) are listed in all manifests", payloadDir);
+    logger.debug(messages.getString("checking_file_in_all_manifests"), payloadDir);
     if (Files.exists(payloadDir)) {
       Files.walkFileTree(payloadDir, new PayloadFileExistsInAllManifestsVistor(payLoadManifests, ignoreHiddenFiles));
     }

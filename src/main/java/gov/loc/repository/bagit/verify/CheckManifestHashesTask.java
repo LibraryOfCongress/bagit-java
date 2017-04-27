@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
@@ -20,15 +21,16 @@ import gov.loc.repository.bagit.hash.Hasher;
  * This is thread safe so you can call many at a time.
  */
 @SuppressWarnings("PMD.DoNotUseThreads")
-public class CheckManifestHashsTask implements Runnable {
-  private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashsTask.class);
+public class CheckManifestHashesTask implements Runnable {
+  private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashesTask.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private final Entry<Path, String> entry;
   private final CountDownLatch latch;
   private final List<Exception> exceptions;
   private final String algorithm;
   
-  public CheckManifestHashsTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
+  public CheckManifestHashesTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
     this.entry = entry;
     this.algorithm = algorithm;
     this.latch = latch;
@@ -48,12 +50,11 @@ public class CheckManifestHashsTask implements Runnable {
   
   protected static void checkManifestEntry(final Entry<Path, String> entry, final MessageDigest messageDigest, final String algorithm) throws IOException, CorruptChecksumException{
     if(Files.exists(entry.getKey())){
-      logger.debug("Checking file [{}] to see if checksum matches [{}]", entry.getKey(), entry.getValue());
+      logger.debug(messages.getString("checking_checksums"), entry.getKey(), entry.getValue());
       final String hash = Hasher.hash(entry.getKey(), messageDigest);
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
       if(!hash.equals(entry.getValue())){
-        throw new CorruptChecksumException("File [" + entry.getKey() + "] is suppose to have a " + algorithm + 
-            " hash of [" + entry.getValue() + "] but was computed [" + hash+"]");
+        throw new CorruptChecksumException(messages.getString("corrupt_checksum_error"), entry.getKey(), algorithm, entry.getValue(), hash);
       }
     }
     //if the file doesn't exist it will be caught by checkAllFilesListedInManifestExist method

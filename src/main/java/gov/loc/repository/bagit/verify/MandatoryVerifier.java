@@ -6,9 +6,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.FetchItem;
@@ -24,6 +26,7 @@ import gov.loc.repository.bagit.util.PathUtils;
  */
 public final class MandatoryVerifier {
   private static final Logger logger = LoggerFactory.getLogger(MandatoryVerifier.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   //@Incubating
   private static final String DOT_BAGIT_DIR_NAME = ".bagit";
@@ -40,10 +43,11 @@ public final class MandatoryVerifier {
    * @throws FileNotInPayloadDirectoryException if one or more of the fetch items don't exist
    */
   public static void checkFetchItemsExist(final List<FetchItem> items, final Path bagDir) throws FileNotInPayloadDirectoryException{
-    logger.info("Checking if all [{}] items in fetch.txt exist in the [{}]", items.size(), bagDir);
+    logger.info(messages.getString("checking_fetch_items_exist"), items.size(), bagDir);
     for(final FetchItem item : items){
       if(!Files.exists(item.path)){
-        throw new FileNotInPayloadDirectoryException("Fetch item " + item + " has not been fetched!");
+        final String formattedMessage = messages.getString("fetch_item_missing_error");
+        throw new FileNotInPayloadDirectoryException(MessageFormatter.format(formattedMessage, item).getMessage());
       }
     }
   }
@@ -64,7 +68,8 @@ public final class MandatoryVerifier {
     }
     
     if(!Files.exists(bagitFile)){
-      throw new MissingBagitFileException("File [" + bagitFile + "] should exist but it doesn't");
+      final String formattedMessage = messages.getString("file_should_exist_error");
+      throw new MissingBagitFileException(MessageFormatter.format(formattedMessage, bagitFile).getMessage());
     }
   }
   
@@ -75,11 +80,11 @@ public final class MandatoryVerifier {
    * @throws MissingPayloadDirectoryException if the bag does not contain the payload directory
    */
   public static void checkPayloadDirectoryExists(final Bag bag) throws MissingPayloadDirectoryException{
-    logger.info("Checking if special payload directory exists (only for version 0.97 and earlier)");
+    logger.info(messages.getString("checking_payload_directory_exists"));
     final Path dataDir = PathUtils.getDataDir(bag);
     
     if(!Files.exists(dataDir)){
-      throw new MissingPayloadDirectoryException("File [" + dataDir + "] should exist but it doesn't");
+      throw new MissingPayloadDirectoryException(messages.getString("file_should_exist_error"));
     }
   }
   
@@ -102,14 +107,14 @@ public final class MandatoryVerifier {
     try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(PathUtils.getBagitDir(version, rootDir))){
       for(final Path path : directoryStream){
         if(PathUtils.getFilename(path).startsWith("manifest-")){
-          logger.debug("Found payload manifest file [{}]", path.getFileName());
+          logger.debug(messages.getString("found_payload_manifest"), path.getFileName());
           hasAtLeastOneManifest = true;
         }
       }
     }    
     
     if(!hasAtLeastOneManifest){
-      throw new MissingPayloadManifestException("Bag does not contain any payload manifest files");
+      throw new MissingPayloadManifestException(messages.getString("missing_payload_manifest_error"));
     }
     
   }

@@ -9,10 +9,12 @@ import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.util.PathUtils;
@@ -24,6 +26,7 @@ import gov.loc.repository.bagit.util.PathUtils;
 @SuppressWarnings({"PMD.UseLocaleWithCaseConversions"})
 public final class ManifestChecker {
   private static final Logger logger = LoggerFactory.getLogger(ManifestChecker.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private static final String THUMBS_DB_FILE = "[Tt][Hh][Uu][Mm][Bb][Ss]\\.[Dd][Bb]";
   private static final String DS_STORE_FILE = "\\.[Dd][Ss]_[Ss][Tt][Oo][Rr][Ee]";
@@ -61,9 +64,9 @@ public final class ManifestChecker {
       }
     }
     
-    if(!warningsToIgnore.contains(BagitWarning.MISSING_TAG_MANIEST) && missingTagManifest){
-      logger.warn("Bag [{}] does not contain a tag manifest, which is always recommended.", bagitDir);
-      warnings.add(BagitWarning.MISSING_TAG_MANIEST);
+    if(!warningsToIgnore.contains(BagitWarning.MISSING_TAG_MANIFEST) && missingTagManifest){
+      logger.warn(messages.getString("bag_missing_tag_manifest_warning"), bagitDir);
+      warnings.add(BagitWarning.MISSING_TAG_MANIFEST);
     }
   }
   
@@ -81,7 +84,7 @@ public final class ManifestChecker {
         path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
         
         if(!warningsToIgnore.contains(BagitWarning.DIFFERENT_CASE) && paths.contains(path.toLowerCase())){
-          logger.warn("In manifest [{}], path [{}] is the same as another path except for the case. This can cause problems if moving the bag to a filesystem that is case insensitive.", manifestFile, path);
+          logger.warn(messages.getString("different_case_warning"), manifestFile, path);
           warnings.add(BagitWarning.DIFFERENT_CASE);
         }
         paths.add(path.toLowerCase());
@@ -104,7 +107,8 @@ public final class ManifestChecker {
   static String parsePath(final String line) throws InvalidBagitFileFormatException{
     final String[] parts = line.split("\\s+", 2);
     if(parts.length < 2){
-      throw new InvalidBagitFileFormatException("Manifest contains line [" + line + "] which does not follow the specified form of <CHECKSUM> <PATH>");
+      final String formattedMessage = messages.getString("manifest_line_violated_spec_error");
+      throw new InvalidBagitFileFormatException(MessageFormatter.format(formattedMessage, line).getMessage());
     }
     
     return parts[1];
@@ -119,8 +123,7 @@ public final class ManifestChecker {
     }
     
     if(!warningsToIgnore.contains(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST) && startsWithStar){
-      logger.warn("Path [{}] starts with a *, which means it was generated with a non-bagit tool. "
-          + "It is recommended to remove the * in order to conform to the bagit specification.", path);
+      logger.warn(messages.getString("md5sum_generated_line_warning"), path);
       warnings.add(BagitWarning.MD5SUM_TOOL_GENERATED_MANIFEST);
     }
     
@@ -135,7 +138,10 @@ public final class ManifestChecker {
       
       final Path fileToCheck = rootDir.resolve(path).normalize();
       final Path dirToCheck = fileToCheck.getParent();
-      if(dirToCheck == null){ throw new IOException("Could not access parent folder of " + fileToCheck);} //to satisfy findbugs
+      if(dirToCheck == null){ 
+        final String formattedMessage = messages.getString("cannot_access_parent_path_error");
+        throw new IOException(MessageFormatter.format(formattedMessage, fileToCheck).getMessage()); //to satisfy findbugs
+      }
       final String normalizedFileToCheck = normalizePathToNFD(fileToCheck);
       
       try(final DirectoryStream<Path> files = Files.newDirectoryStream(dirToCheck)){
@@ -143,7 +149,7 @@ public final class ManifestChecker {
           final String normalizedFile = normalizePathToNFD(file);
           
           if(!file.equals(fileToCheck) && normalizedFileToCheck.equals(normalizedFile)){
-            logger.warn("File [{}] has a different normalization then what is specified in the manifest.", fileToCheck);
+            logger.warn(messages.getString("different_normalization_warning"), fileToCheck);
             warnings.add(BagitWarning.DIFFERENT_NORMALIZATION);
           }
         }
@@ -163,7 +169,7 @@ public final class ManifestChecker {
    */
   private static void checkForBagWithinBag(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final boolean isPayloadManifest){
     if(!warningsToIgnore.contains(BagitWarning.BAG_WITHIN_A_BAG) && isPayloadManifest && line.contains("manifest-")){
-      logger.warn("We stronger recommend not storing a bag within a bag as it is known to cause problems.");
+      logger.warn(messages.getString("bag_within_bag_warning"));
       warnings.add(BagitWarning.BAG_WITHIN_A_BAG);
     }
   }
@@ -173,7 +179,7 @@ public final class ManifestChecker {
    */
   private static void checkForRelativePaths(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final Path manifestFile){
     if(!warningsToIgnore.contains(BagitWarning.LEADING_DOT_SLASH) && line.contains("./")){
-      logger.warn("In manifest [{}] line [{}] is a non-normalized path.", manifestFile, line);
+      logger.warn(messages.getString("leading_dot_slash_warning"), manifestFile, line);
       warnings.add(BagitWarning.LEADING_DOT_SLASH);
     }
   }
@@ -183,7 +189,7 @@ public final class ManifestChecker {
    */
   private static void checkForOSSpecificFiles(final String line, final Set<BagitWarning> warnings, final Collection<BagitWarning> warningsToIgnore, final Path manifestFile){
     if(!warningsToIgnore.contains(BagitWarning.OS_SPECIFIC_FILES) && line.matches(OS_FILES_REGEX)){
-      logger.warn("In manifest [{}] line [{}] contains a OS specific file.", manifestFile, line);
+      logger.warn(messages.getString("os_specific_files_warning"), manifestFile, line);
       warnings.add(BagitWarning.OS_SPECIFIC_FILES);
     }
   }
@@ -195,14 +201,12 @@ public final class ManifestChecker {
     final String upperCaseAlg = algorithm.toUpperCase();
     if(!warningsToIgnore.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM) && 
         (upperCaseAlg.startsWith("MD") || upperCaseAlg.matches("SHA(1|224|256|384)?"))){
-      logger.warn("Detected a known weak algorithm [{}]. With the great advances in computer hardware there is little penalty "
-          + "to using more bits to calculate the checksum.", algorithm);
+      logger.warn(messages.getString("weak_algorithm_warning"), algorithm);
       warnings.add(BagitWarning.WEAK_CHECKSUM_ALGORITHM);
     }
     
     else if(!warningsToIgnore.contains(BagitWarning.NON_STANDARD_ALGORITHM) && !"SHA-512".equals(upperCaseAlg)){
-      logger.warn("Detected algorithm [{}] which is not included by default in Java. This will make it more difficult "
-          + "to read this bag on some systems. Consider changing it to SHA-512.", algorithm);
+      logger.warn(messages.getString("non_standard_algorithm_warning"), algorithm);
       warnings.add(BagitWarning.NON_STANDARD_ALGORITHM);
     }
   }

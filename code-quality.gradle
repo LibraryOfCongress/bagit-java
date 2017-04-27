@@ -79,10 +79,10 @@ jacocoTestReport {
 
 cpdCheck {
     source = sourceSets.main.allJava
-//    reports {
-//        text.enabled = true
-//        xml.enabled = false
-//    }
+    reports {
+        text.enabled = true
+        xml.enabled = false
+    }
 }
 
 dependencyCheck {

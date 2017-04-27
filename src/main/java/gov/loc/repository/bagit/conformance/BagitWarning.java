@@ -1,42 +1,35 @@
 package gov.loc.repository.bagit.conformance;
 
+import java.util.ResourceBundle;
+
 /**
  * The BagIt specification is very flexible in what it allows. 
  * This leads to situations where something may be technically allowed, but should be discouraged. 
  * This class is for that purpose, to allow reporting of these allowed but discouraged situations to the user.
  */
 public enum BagitWarning {
-  BAG_WITHIN_A_BAG("A data directory can contain anything,"
-      + " including another bag. However it would be better to merge the bags together."),
-  DIFFERENT_CASE("The bag contains two files that differ only in case. "
-      + "This can cause problems on a filesystem like the one used by apple (HFS)."),
-  DIFFERENT_NORMALIZATION("The bag contains two files that differ only in the normalization. "
-      + "This can cause verification to fail on some systems, and general user confusion."),
-  EXTRA_LINES_IN_BAGIT_FILES("The bagit specification says it must only contain 2 lines. "
-      + "However, some implementations have decided to ignore this which may cause compatibility issues"),
-  LEADING_DOT_SLASH("A manifest lists all data files as relative to the bag root directory,"
-      + " it is superfluous to therefore specify it with a dot."),
-  NON_STANDARD_ALGORITHM("The checksum algorithm used does not come standard with the Java runtime. Consider using SHA512 instead."),
-  MD5SUM_TOOL_GENERATED_MANIFEST("The manifest was created using a using checksum utilities such as those\n" + 
-      "contained in the GNU Coreutils package (md5sum, sha1sum, etc.), collectively referred to here as 'md5sum'. "
-      + "This creates slight differences in generated manifests that can cause problems in some implementations."),
-  MISSING_TAG_MANIEST("The tag manifest guards against a truncated payload manifest as well as other potental "
-      + "problems and is always recommened that it be included."),
-  OLD_BAGIT_VERSION("The bagit specification version is not the newest. Consider converting to the latest version."),
-  OS_SPECIFIC_FILES("Files created by the operating system (OS) for its own use. They are non-portable across OS versions "
-      + "and should not be included in any manifest. Examples Thumbs.db on Windows or .DS_Store on OS X"),
-  PAYLOAD_OXUM_MISSING("It is recommended to always include the Payload-Oxum in the bag metadata "
-      + "since it allows for a 'quick verification' of the bag."),
-  TAG_FILES_ENCODING("It is recommended to always use UTF-8"),
-  WEAK_CHECKSUM_ALGORITHM("The checksum algorithm used is known to be weak. We recommend using SHA512 at a minium");
+  BAG_WITHIN_A_BAG("bag_within_a_bag"),
+  DIFFERENT_CASE("different_case"),
+  DIFFERENT_NORMALIZATION("different_normalization"),
+  EXTRA_LINES_IN_BAGIT_FILES("extra_lines_in_bagit_files"),
+  LEADING_DOT_SLASH("leading_dot_slash"),
+  NON_STANDARD_ALGORITHM("non_standard_algorithm"),
+  MD5SUM_TOOL_GENERATED_MANIFEST("md5sum_tool_generated_manifest"),
+  MISSING_TAG_MANIFEST("missing_tag_manifest"),
+  OLD_BAGIT_VERSION("old_bagit_version"),
+  OS_SPECIFIC_FILES("os_specific_files"),
+  PAYLOAD_OXUM_MISSING("payload_oxum_missing"),
+  TAG_FILES_ENCODING("tag_files_encoding"),
+  WEAK_CHECKSUM_ALGORITHM("weak_checksum_algorithm");
   
-  private final String reason;
+  private final String messageBundleKey;
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private BagitWarning(final String reason){
-    this.reason = reason;
+    this.messageBundleKey = reason;
   }
 
   public String getReason() {
-    return reason;
+    return messages.getString(messageBundleKey);
   }
 }

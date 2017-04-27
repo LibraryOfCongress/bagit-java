@@ -3,10 +3,12 @@ package gov.loc.repository.bagit.verify;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ResourceBundle;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
@@ -20,6 +22,7 @@ import gov.loc.repository.bagit.util.PathUtils;
  */
 public final class QuickVerifier {
   private static final Logger logger = LoggerFactory.getLogger(QuickVerifier.class);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   private static final String PAYLOAD_OXUM_REGEX = "\\d+\\.\\d+";
   
   private QuickVerifier(){
@@ -34,7 +37,7 @@ public final class QuickVerifier {
    */
   public static boolean canQuickVerify(final Bag bag){
     final String payloadOxum = getPayloadOxum(bag);
-    logger.debug("Found payload-oxum [{}] for bag [{}]", payloadOxum, bag.getRootDir());
+    logger.debug(messages.getString("found_payload_oxum"), payloadOxum, bag.getRootDir());
     return payloadOxum != null && payloadOxum.matches(PAYLOAD_OXUM_REGEX) && bag.getItemsToFetch().size() == 0;
   }
   
@@ -64,25 +67,27 @@ public final class QuickVerifier {
   public static void quicklyVerify(final Bag bag) throws IOException, InvalidPayloadOxumException{
     final String payloadOxum = getPayloadOxum(bag);
     if(payloadOxum == null || !payloadOxum.matches(PAYLOAD_OXUM_REGEX)){
-      throw new PayloadOxumDoesNotExistException("Payload-Oxum does not exist in bag.");
+      throw new PayloadOxumDoesNotExistException(messages.getString("payload_oxum_missing_error"));
     }
 
     final String[] parts = payloadOxum.split("\\.");
-    logger.debug("Parsing [{}] for the total byte size of the payload oxum", parts[0]);
+    logger.debug(messages.getString("parse_size_in_bytes"), parts[0]);
     final long totalSize = Long.parseLong(parts[0]);
-    logger.debug("Parsing [{}] for the number of files to find in the payload directory", parts[1]);
+    logger.debug(messages.getString("parse_number_of_files"), parts[1]);
     final long numberOfFiles = Long.parseLong(parts[1]);
     
     final Path payloadDir = PathUtils.getDataDir(bag);
     final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor();
     Files.walkFileTree(payloadDir, vistor);
-    logger.info("supplied payload-oxum: [{}], Calculated payload-oxum: [{}.{}], for payload directory [{}]", payloadOxum, vistor.getTotalSize(), vistor.getCount(), payloadDir);
+    logger.debug(messages.getString("compare_payload_oxums"), payloadOxum, vistor.getTotalSize(), vistor.getCount(), payloadDir);
     
     if(totalSize != vistor.getTotalSize()){
-      throw new InvalidPayloadOxumException("Invalid total size. Expected " + totalSize + "but calculated " + vistor.getTotalSize());
+      final String formattedMessage = messages.getString("invalid_total_size_error");
+      throw new InvalidPayloadOxumException(MessageFormatter.format(formattedMessage, totalSize, vistor.getTotalSize()).getMessage());
     }
     if(numberOfFiles != vistor.getCount()){
-      throw new InvalidPayloadOxumException("Invalid file count. Expected " + numberOfFiles + "but found " + vistor.getCount() + " files");
+      final String formattedMessage = messages.getString("invalid_file_cound_error");
+      throw new InvalidPayloadOxumException(MessageFormatter.format(formattedMessage, numberOfFiles, vistor.getCount()).getMessage());
     }
   }
 }

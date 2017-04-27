@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import gov.loc.repository.bagit.domain.Version;
 public final class PayloadWriter {
   private static final Logger logger = LoggerFactory.getLogger(PayloadWriter.class);
   private static final Version VERSION_2_0 = new Version(2, 0);
+  private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   private PayloadWriter(){
     //intentionally left empty
@@ -54,13 +56,13 @@ public final class PayloadWriter {
   * @throws IOException if there was a problem writing a file
   */
  public static void writePayloadFiles(final Set<Manifest> payloadManifests, final Path outputDir, final Path bagDataDir) throws IOException{
-   logger.info("Writing payload files");
+   logger.info(messages.getString("writing_payload_files"));
    for(final Manifest payloadManifest : payloadManifests){
      for(final Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
        final Path relativePayloadPath = bagDataDir.relativize(payloadFile); 
            
        final Path writeToPath = outputDir.resolve(relativePayloadPath);
-       logger.debug("Writing payload file [{}] to [{}]", payloadFile, writeToPath);
+       logger.debug(messages.getString("writing_payload_file_to_path"), payloadFile, writeToPath);
        final Path parent = writeToPath.getParent();
        if(parent != null){
          Files.createDirectories(parent);
