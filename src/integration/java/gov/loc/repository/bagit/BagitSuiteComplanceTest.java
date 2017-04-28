@@ -8,12 +8,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.conformance.BagLinter;
 import gov.loc.repository.bagit.conformance.BagitWarning;
@@ -37,6 +42,8 @@ import gov.loc.repository.bagit.writer.BagWriter;
  * This class assumes that the compliance test suite repo has been cloned and is available locally
  */
 public class BagitSuiteComplanceTest extends Assert {
+  private static final Logger logger = LoggerFactory.getLogger(BagitSuiteComplanceTest.class);
+  
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
   
@@ -67,6 +74,7 @@ public class BagitSuiteComplanceTest extends Assert {
   public void testInvalidBags(){
     int errorCount = 0;
     Bag bag;
+    ConcurrentMap<Class<? extends Exception>, AtomicLong> map = new ConcurrentHashMap<>();
     
     for(Path invalidBagDir : visitor.getInvalidTestCases()){
       try{
@@ -76,11 +84,47 @@ public class BagitSuiteComplanceTest extends Assert {
         MissingPayloadManifestException | MissingBagitFileException | MissingPayloadDirectoryException | 
         FileNotInPayloadDirectoryException | InterruptedException | MaliciousPathException | 
         CorruptChecksumException | VerificationException | UnsupportedAlgorithmException e){
+        
+        logger.info("Found invalid os specific bag with message: {}", e.getMessage());
+        map.putIfAbsent(e.getClass(), new AtomicLong(0));
+        map.get(e.getClass()).incrementAndGet();
         errorCount++;
       }
     }
     
     assertEquals("every test case should throw an error", visitor.getInvalidTestCases().size(), errorCount);
+    logger.debug("Count of all errors found in generic invalid cases: {}", map);
+  }
+  
+  @Test
+  public void testInvalidOperatingSystemSpecificBags(){
+    int errorCount = 0;
+    Bag bag;
+    List<Path> osSpecificInvalidPaths = visitor.getLinuxOnlyTestCases();
+    ConcurrentMap<Class<? extends Exception>, AtomicLong> map = new ConcurrentHashMap<>();
+    
+    if(TestUtils.isExecutingOnWindows()){
+      osSpecificInvalidPaths = visitor.getWindowsOnlyTestCases();
+    }
+    
+    for(Path invalidBagDir : osSpecificInvalidPaths){
+      try{
+        bag = reader.read(invalidBagDir);
+        verifier.isValid(bag, true);
+      }catch(InvalidBagitFileFormatException | IOException | UnparsableVersionException | 
+        MissingPayloadManifestException | MissingBagitFileException | MissingPayloadDirectoryException | 
+        FileNotInPayloadDirectoryException | InterruptedException | MaliciousPathException | 
+        CorruptChecksumException | VerificationException | UnsupportedAlgorithmException e){
+
+        logger.info("Found invalid os specific bag with message: {}", e.getMessage());
+        map.putIfAbsent(e.getClass(), new AtomicLong(0));
+        map.get(e.getClass()).incrementAndGet();
+        errorCount++;
+      }
+    }
+    
+    assertEquals("every test case should throw an error", osSpecificInvalidPaths.size(), errorCount);
+    logger.debug("Count of all errors found in os specific invalid cases: {}", map);
   }
   
   @Test
