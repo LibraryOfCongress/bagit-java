@@ -101,6 +101,9 @@ dependencyCheck {
 
 import java.util.Map.Entry;
 task checkMessageBundle(){
+  description "Checks the message bundles(which are used for language translation) that all entries are used, " +
+    "and that there are no duplicates."
+  group "Verification"
   inputs.files(fileTree(dir: "src/main/resources", include: "**/MessageBundle*.properties"))
   outputs.dir("$buildDir/checkMessageBundle") //hack: define a output dir so gradle will check if up-to-date
   

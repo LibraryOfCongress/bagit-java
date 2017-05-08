@@ -42,7 +42,7 @@ test { //show test output
 import org.ajoberstar.grgit.*
 task cloneConformanceSuite(){
   group "Verification"
-  description "get the bagit conformance suite"
+  description "Download the bagit-conformance-suite if it doesn't exist."
   File location = file("${project.projectDir}/bagit-conformance-suite")
   outputs.dir(location)
   
