@@ -11,6 +11,7 @@ plugins {
 apply from: 'eclipse.gradle'
 apply from: 'maven-central.gradle'
 apply from: 'code-quality.gradle'
+apply from: 'message-bundle.gradle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
