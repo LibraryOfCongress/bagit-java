@@ -23,6 +23,7 @@ import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 public final class FetchReader {
   private static final Logger logger = LoggerFactory.getLogger(FetchReader.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
+  private static final String FETCH_LINE_REGEX = ".*[ \t]*(\\d*|-)[ \t]*.*";
 
   private FetchReader(){
     //intentionally left empty
@@ -51,14 +52,19 @@ public final class FetchReader {
       long length = 0;
       URL url = null;
       while(line != null){
-        parts = line.split("\\s+", 3);
-        final Path path = TagFileReader.createFileFromManifest(bagRootDir, parts[2]);
-        length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
-        url = new URL(parts[0]);
-        
-        logger.debug(messages.getString("read_fetch_file_line"), url, length, parts[2], fetchFile);
-        final FetchItem itemToFetch = new FetchItem(url, length, path);
-        itemsToFetch.add(itemToFetch);
+        if(line.matches(FETCH_LINE_REGEX) && !line.matches("\\s*")){
+          parts = line.split("\\s+", 3);
+          final Path path = TagFileReader.createFileFromManifest(bagRootDir, parts[2]);
+          length = parts[1].equals("-") ? -1 : Long.decode(parts[1]);
+          url = new URL(parts[0]);
+          
+          logger.debug(messages.getString("read_fetch_file_line"), url, length, parts[2], fetchFile);
+          final FetchItem itemToFetch = new FetchItem(url, length, path);
+          itemsToFetch.add(itemToFetch);
+        }
+        else{
+          throw new InvalidBagitFileFormatException(messages.getString("invalid_fetch_file_line_error").replace("{}", line));
+        }
         
         line = reader.readLine();
       }

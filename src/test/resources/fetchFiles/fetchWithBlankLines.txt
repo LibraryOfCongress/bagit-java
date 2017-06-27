@@ -1,0 +1,7 @@
+http://localhost/foo/data/dir1/test3.txt 1 data/dir1/test3.txt
+http://localhost/foo/data/dir2/dir3/test5.txt 2 data/dir2/dir3/test5.txt
+http://localhost/foo/data/dir2/test4.txt 3 data/dir2/test4.txt
+http://localhost/foo/data/test%201.txt 4 data/test 1.txt
+http://localhost/foo/data/test2.txt 5 data/test2.txt
+ 
+ 

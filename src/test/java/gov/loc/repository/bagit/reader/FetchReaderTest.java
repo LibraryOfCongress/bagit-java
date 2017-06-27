@@ -67,6 +67,12 @@ public class FetchReaderTest extends PrivateConstructorTest {
   }
   
   @Test(expected=InvalidBagitFileFormatException.class)
+  public void testReadBlankLinesThrowsException() throws Exception{
+    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithBlankLines.txt").toURI());
+    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
   public void testReadWindowsSpecialDirMaliciousFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/windowsSpecialDirectoryName.txt").toURI());
     FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
@@ -91,5 +97,17 @@ public class FetchReaderTest extends PrivateConstructorTest {
       FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
     }
     throw new MaliciousPathException("Skipping for windows cause it isn't valid");
+  }
+  
+  @Test
+  public void foo(){
+    String regex = ".*[ \t]*(\\d*|-)[ \t]*.*";
+    String test1 = "http://localhost/foo/data/test2.txt - ~/foo/bar/ham.txt";
+    String test2 = "http://localhost/foo/data/dir1/test3.txt 100057 data/dir1/test3.txt";
+    String test3 = "http://localhost/foo/data/dir1/test3.txt \t 100057 \t data/dir1/test3.txt";
+    
+    System.err.println(test1.matches(regex));
+    System.err.println(test2.matches(regex));
+    System.err.println(test3.matches(regex));
   }
 }
