@@ -53,7 +53,7 @@ public final class BagCreator {
     Files.createDirectory(dataDir);
     try(final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root)){
       for(final Path path : directoryStream){
-        if(!path.equals(dataDir) && !Files.isHidden(path) || includeHidden){
+        if(!path.equals(dataDir) && (!Files.isHidden(path) || includeHidden)){
           Files.move(path, dataDir.resolve(path.getFileName()));
         }
       }

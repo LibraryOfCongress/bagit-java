@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class BagCreatorTest extends Assert {
   
   @Test
   public void testBagInPlace() throws IOException, NoSuchAlgorithmException{
-    List<Path> expectedPayloadFiles = createTestStructure();
+    TestStructure structure = createTestStructure();
     
     Bag bag = BagCreator.bagInPlace(Paths.get(folder.getRoot().toURI()), Arrays.asList(StandardSupportedAlgorithms.MD5), false);
     
@@ -43,12 +44,40 @@ public class BagCreatorTest extends Assert {
     
     for(Manifest manifest : bag.getPayLoadManifests()){
       for(Path expectedPayloadFile : manifest.getFileToChecksumMap().keySet()){
-        assertTrue(expectedPayloadFiles.contains(expectedPayloadFile));
+        assertTrue(structure.regularPayloadFiles.contains(expectedPayloadFile));
       }
     }
   }
   
-  private List<Path> createTestStructure() throws IOException{
+  @Test
+  public void testBagInPlaceIncludingHidden() throws IOException, NoSuchAlgorithmException{
+    TestStructure structure = createTestStructure();
+    
+    Bag bag = BagCreator.bagInPlace(Paths.get(folder.getRoot().toURI()), Arrays.asList(StandardSupportedAlgorithms.MD5), true);
+    
+    assertEquals(new Version(0, 97), bag.getVersion());
+    
+    File expectedManifest = new File(folder.getRoot(), "manifest-md5.txt");
+    assertTrue(expectedManifest.exists());
+    
+    File expectedTagManifest = new File(folder.getRoot(), "tagmanifest-md5.txt");
+    assertTrue(expectedTagManifest.exists());
+    
+    File bagitFile = new File(folder.getRoot(), "bagit.txt");
+    assertTrue(bagitFile.exists());
+    
+    for(Manifest manifest : bag.getPayLoadManifests()){
+      for(Path expectedPayloadFile : manifest.getFileToChecksumMap().keySet()){
+        assertTrue(expectedPayloadFile + " doesn't exist but it should!",
+            structure.regularPayloadFiles.contains(expectedPayloadFile) || 
+            structure.hiddenPayloadFiles.contains(expectedPayloadFile));
+      }
+    }
+  }
+  
+  private TestStructure createTestStructure() throws IOException{
+    TestStructure structure = new TestStructure();
+    
     Path rootDir = Paths.get(folder.getRoot().toURI());
     Path dataDir = rootDir.resolve("data");
     
@@ -74,7 +103,15 @@ public class BagCreatorTest extends Assert {
     File file3 = new File(hiddenDirectory, "file3.txt");
     file3.createNewFile();
     
-    return Arrays.asList(dataDir.resolve(file1Path.getFileName()), dataDir.resolve(file2Path.getFileName()));
+    structure.regularPayloadFiles.add(dataDir.resolve(file1Path.getFileName()));
+    structure.regularPayloadFiles.add(dataDir.resolve(file2Path.getFileName()));
+    
+    structure.hiddenPayloadFiles.add(dataDir.resolve(hiddenFile.getName()));
+    Path hiddenDirPath = dataDir.resolve(hiddenDirectory.getName());
+    Path hiddenFile2Path = hiddenDirPath.resolve(hiddenFile2.getName());
+    structure.hiddenPayloadFiles.add(hiddenFile2Path);
+    structure.hiddenPayloadFiles.add(hiddenDirPath.resolve(file3.getName()));
+    return structure;
   }
   
   @Test
@@ -98,5 +135,10 @@ public class BagCreatorTest extends Assert {
     
     assertTrue(Files.exists(expectedTagManifestFile));
     assertTrue(Files.size(expectedTagManifestFile) > 0);
+  }
+  
+  private class TestStructure{
+    List<Path> regularPayloadFiles = new ArrayList<>();
+    List<Path> hiddenPayloadFiles = new ArrayList<>();
   }
 }
