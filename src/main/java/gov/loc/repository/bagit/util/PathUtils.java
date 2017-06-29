@@ -7,6 +7,7 @@ import java.nio.file.attribute.DosFileAttributes;
 
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
+import gov.loc.repository.bagit.verify.FileCountAndTotalSizeVistor;
 
 /**
  * Convenience class for dealing with various path issues
@@ -122,5 +123,22 @@ public final class PathUtils {
     }
     
     return bagRoot;
+  }
+  
+  /**
+   * Calculate the total file and byte count of the files in the payload directory
+   * 
+   * @param dataDir the directory to calculate the payload-oxum
+   * 
+   * @return the string representation of the payload-oxum value
+   * 
+   * @throws IOException if there is an error reading any of the files
+   */
+  public static String generatePayloadOxum(final Path dataDir) throws IOException{
+    final FileCountAndTotalSizeVistor visitor = new FileCountAndTotalSizeVistor();
+    
+    Files.walkFileTree(dataDir, visitor);
+    
+    return visitor.getTotalSize() + "." + visitor.getCount();
   }
 }

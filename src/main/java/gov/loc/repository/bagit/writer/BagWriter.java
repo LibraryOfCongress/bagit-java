@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
-import java.util.ResourceBundle;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -17,7 +17,6 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.Hasher;
 import gov.loc.repository.bagit.util.PathUtils;
-import gov.loc.repository.bagit.verify.FileCountAndTotalSizeVistor;
 
 /**
  * responsible for writing out a {@link Bag}
@@ -47,7 +46,7 @@ public final class BagWriter {
     final Path bagitDir = PayloadWriter.writeVersionDependentPayloadFiles(bag, outputDir);
     
     logger.debug(messages.getString("upsert_payload_oxum"));
-    final String payloadOxum = generatePayloadOxum(PathUtils.getDataDir(bag.getVersion(), outputDir));
+    final String payloadOxum = PathUtils.generatePayloadOxum(PathUtils.getDataDir(bag.getVersion(), outputDir));
     bag.getMetadata().upsertPayloadOxum(payloadOxum);
     
     logger.debug(messages.getString("writing_bagit_file"));
@@ -71,23 +70,6 @@ public final class BagWriter {
       bag.setTagManifests(updatedTagManifests);
       ManifestWriter.writeTagManifests(updatedTagManifests, bagitDir, outputDir, bag.getFileEncoding());
     }
-  }
-  
-  /**
-   * Calculate the total file and byte count of the files in the payload directory
-   * 
-   * @param dataDir the directory to calculate the payload-oxum
-   * 
-   * @return the string representation of the payload-oxum value
-   * 
-   * @throws IOException if there is an error reading any of the files
-   */
-  private static String generatePayloadOxum(final Path dataDir) throws IOException{
-    final FileCountAndTotalSizeVistor visitor = new FileCountAndTotalSizeVistor();
-    
-    Files.walkFileTree(dataDir, visitor);
-    
-    return visitor.getTotalSize() + "." + visitor.getCount();
   }
   
   /*
