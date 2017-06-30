@@ -112,6 +112,22 @@ public final class PathUtils {
    * With bagit version 2.0 (.bagit) bagit specific files are no longer at the bag root directory.
    * This method accounts for this and will return the directory that contains the bag specific files.
    * 
+   * @param bag the bag
+   * 
+   * @return the directory which contains the bag specific files, like manifests or bagit.txt
+   */
+  public static Path getBagitDir(final Bag bag){
+    if(bag.getVersion().isSameOrNewer(new Version(2, 0))){ //is it a .bagit version?
+      return bag.getRootDir().resolve(DOT_BAGIT_DIR_NAME);
+    }
+    
+    return bag.getRootDir();
+  }
+  
+  /**
+   * With bagit version 2.0 (.bagit) bagit specific files are no longer at the bag root directory.
+   * This method accounts for this and will return the directory that contains the bag specific files.
+   * 
    * @param version the bag version
    * @param bagRoot the root directory of the bag
    * 
