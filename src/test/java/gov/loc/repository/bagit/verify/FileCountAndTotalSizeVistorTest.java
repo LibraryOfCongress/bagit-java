@@ -23,13 +23,12 @@ public class FileCountAndTotalSizeVistorTest extends Assert {
   public void setup() throws IOException{
     TestUtils.makeFilesHiddenOnWindows(payloadDir);
   }
-
+  
   @Test
-  public void testIgnoreHidden() throws IOException{
+  public void testGeneratePayloadOxum() throws IOException{
     final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor();
-    
     Files.walkFileTree(payloadDir, vistor);
-    
-    assertEquals(2, vistor.getCount());
+    assertEquals(5, vistor.getCount());
+    assertEquals(101, vistor.getTotalSize());
   }
 }
