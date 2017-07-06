@@ -1,5 +1,6 @@
 package gov.loc.repository.bagit.util;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,6 +9,8 @@ import org.junit.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.TestUtils;
+import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Version;
 
 public class PathUtilsTest extends PrivateConstructorTest {
   
@@ -58,5 +61,77 @@ public class PathUtilsTest extends PrivateConstructorTest {
       actualEncoded = PathUtils.encodeFilename(testPath);
       assertEquals(expectedEncoded, actualEncoded);
     }
+  }
+  
+  @Test
+  public void testGetDataDirUsingBag() throws IOException{
+    Bag bag = new Bag(new Version(2,0));
+    bag.setRootDir(Paths.get("foo"));
+    
+    Path expectedPath = bag.getRootDir();
+    Path actualPath = PathUtils.getDataDir(bag);
+    
+    assertEquals(expectedPath, actualPath);
+    
+    bag = new Bag(new Version(0, 97));
+    bag.setRootDir(Paths.get("foo"));
+    
+    expectedPath = bag.getRootDir().resolve("data");
+    actualPath = PathUtils.getDataDir(bag);
+    
+    assertEquals(expectedPath, actualPath);
+  }
+  
+  @Test
+  public void testGetDataDirUsingVersion() throws IOException{
+    Path input = Paths.get("foo");
+    Path expectedPath = input;
+    Path actualPath = PathUtils.getDataDir(new Version(2,0), input);
+    
+    assertEquals(expectedPath, actualPath);
+    
+    expectedPath = input.resolve("data");
+    actualPath = PathUtils.getDataDir(new Version(0, 97), input);
+    
+    assertEquals(expectedPath, actualPath);
+  }
+  
+  @Test
+  public void testGetBagitDirUsingBag(){
+    Bag bag = new Bag(new Version(2,0));
+    bag.setRootDir(Paths.get("foo"));
+    
+    Path expectedPath = bag.getRootDir().resolve(".bagit");
+    Path actualPath = PathUtils.getBagitDir(bag);
+    
+    assertEquals(expectedPath, actualPath);
+    
+    bag = new Bag(new Version(0, 97));
+    bag.setRootDir(Paths.get("foo"));
+    
+    expectedPath = bag.getRootDir();
+    actualPath = PathUtils.getBagitDir(bag);
+    
+    assertEquals(expectedPath, actualPath);
+  }
+  
+  @Test
+  public void testGetBagitDirUsingVersion() throws IOException{
+    Path input = Paths.get("foo");
+    Path expectedPath = input.resolve(".bagit");
+    Path actualPath = PathUtils.getBagitDir(new Version(2,0), input);
+    
+    assertEquals(expectedPath, actualPath);
+    
+    expectedPath = input;
+    actualPath = PathUtils.getBagitDir(new Version(0, 97), input);
+    
+    assertEquals(expectedPath, actualPath);
+  }
+  
+  @Test
+  public void testGeneratePayloadOxum() throws IOException{
+    Path testPath = Paths.get("src", "test", "resources", "bags", "v0_97", "bag", "data");
+    assertEquals("25.5", PathUtils.generatePayloadOxum(testPath));
   }
 }
