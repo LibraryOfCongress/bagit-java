@@ -13,7 +13,6 @@ shallow_clone: true
 cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
-  - '%USERPROFILE%\.gradle\caches'
 
 notifications:
 - provider: Email
