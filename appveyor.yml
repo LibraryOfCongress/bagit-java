@@ -9,7 +9,7 @@ install:
 - cmd: git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git
 
 build_script:
-- cmd: gradle check
+- cmd: gradle check --no-daemon
 
 shallow_clone: true
 
