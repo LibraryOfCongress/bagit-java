@@ -10,7 +10,7 @@ build_script:
 shallow_clone: true
 
 cache:
-  - '%USERPROFILE%\.gradle\caches'
+  - '%USERPROFILE%\.gradle'
 
 notifications:
 - provider: Email
