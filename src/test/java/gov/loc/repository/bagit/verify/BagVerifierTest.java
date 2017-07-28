@@ -119,8 +119,9 @@ public class BagVerifierTest extends Assert{
     MySupportedNameToAlgorithmMapping mapping = new MySupportedNameToAlgorithmMapping();
     BagReader extendedReader = new BagReader(mapping);
     Bag bag = extendedReader.read(sha3BagDir);
-    BagVerifier extendedSut = new BagVerifier(mapping);
-    extendedSut.isValid(bag, true);
+    try(BagVerifier extendedSut = new BagVerifier(mapping)){
+      extendedSut.isValid(bag, true);
+    }
   }
   
   /*
@@ -153,5 +154,4 @@ public class BagVerifierTest extends Assert{
     
     BagVerifier.quicklyVerify(bag);
   }
-  
 }

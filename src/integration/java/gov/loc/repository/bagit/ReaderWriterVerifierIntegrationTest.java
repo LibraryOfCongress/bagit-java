@@ -20,18 +20,19 @@ public class ReaderWriterVerifierIntegrationTest {
   
   @Test
   public void testReaderWriterVersion93() throws Exception{
-    BagVerifier verifier = new BagVerifier();
-    BagReader reader = new BagReader();
-    Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_93/bag").toURI());
-    Path outputDir = Paths.get(folder.newFolder().toURI());
-    
-    Bag bag = reader.read(rootDir);
-    verifier.isValid(bag, true);
-    
-    BagWriter.write(bag, outputDir);
-    testBagsEqual(rootDir, outputDir);
-    
-    verifier.isValid(reader.read(outputDir), true);
+    try(BagVerifier verifier = new BagVerifier()){
+      BagReader reader = new BagReader();
+      Path rootDir = Paths.get(this.getClass().getClassLoader().getResource("bags/v0_93/bag").toURI());
+      Path outputDir = Paths.get(folder.newFolder().toURI());
+      
+      Bag bag = reader.read(rootDir);
+      verifier.isValid(bag, true);
+      
+      BagWriter.write(bag, outputDir);
+      testBagsEqual(rootDir, outputDir);
+      
+      verifier.isValid(reader.read(outputDir), true);
+    }
   }
   
   @Test
@@ -44,8 +45,9 @@ public class ReaderWriterVerifierIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
-    BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    try(BagVerifier verifier = new BagVerifier()){
+      verifier.isValid(reader.read(outputDir), true);
+    }
   }
   
   @Test
@@ -58,8 +60,9 @@ public class ReaderWriterVerifierIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
-    BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    try(BagVerifier verifier = new BagVerifier()){
+      verifier.isValid(reader.read(outputDir), true);
+    }
   }
   
   @Test
@@ -72,8 +75,9 @@ public class ReaderWriterVerifierIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
-    BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    try(BagVerifier verifier = new BagVerifier()){
+      verifier.isValid(reader.read(outputDir), true);
+    }
   }
 
   @Test
@@ -86,8 +90,9 @@ public class ReaderWriterVerifierIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
-    BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    try(BagVerifier verifier = new BagVerifier()){
+      verifier.isValid(reader.read(outputDir), true);
+    }
   }
   
   @Test
@@ -100,8 +105,10 @@ public class ReaderWriterVerifierIntegrationTest {
     BagWriter.write(bag, outputDir);
     
     testBagsEqual(rootDir, outputDir);
-    BagVerifier verifier = new BagVerifier();
-    verifier.isValid(reader.read(outputDir), true);
+    
+    try(BagVerifier verifier = new BagVerifier()){
+      verifier.isValid(reader.read(outputDir), true);
+    }
   }
   
   private void testBagsEqual(Path originalBag, Path newBag) throws IOException{

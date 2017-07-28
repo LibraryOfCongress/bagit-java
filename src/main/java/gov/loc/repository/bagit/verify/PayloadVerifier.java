@@ -31,7 +31,7 @@ import gov.loc.repository.bagit.util.PathUtils;
 /**
  * Responsible for all things related to the manifest during verification.
  */
-public class PayloadVerifier {
+public class PayloadVerifier implements AutoCloseable{
   private static final Logger logger = LoggerFactory.getLogger(PayloadVerifier.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
@@ -76,14 +76,10 @@ public class PayloadVerifier {
     this.executor = executor;
   }
   
-  //right before this object is garbage collected, shutdown the thread pool so the resource isn't leaked
   @Override
-  protected void finalize() throws Throwable {
-    try {
-        executor.shutdown();
-    } finally {
-        super.finalize();
-    }
+  public void close() throws SecurityException{
+    //shutdown the thread pool so the resource isn't leaked
+    executor.shutdown();
   }
 
   /**

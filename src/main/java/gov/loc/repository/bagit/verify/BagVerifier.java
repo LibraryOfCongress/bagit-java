@@ -32,7 +32,7 @@ import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgori
 /**
  * Responsible for verifying if a bag is valid, complete
  */
-public final class BagVerifier {
+public final class BagVerifier implements AutoCloseable{
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
@@ -73,18 +73,15 @@ public final class BagVerifier {
    * @param executor the thread pool to use when doing work
    */
   public BagVerifier(final ExecutorService executor, final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    manifestVerifier = new PayloadVerifier(nameMapping);
+    manifestVerifier = new PayloadVerifier(nameMapping, executor);
     this.executor = executor;
   }
   
-  //right before this object is garbage collected, shutdown the thread pool so the resource isn't leaked
   @Override
-  protected void finalize() throws Throwable {
-    try {
-        executor.shutdown();
-    } finally {
-        super.finalize();
-    }
+  public void close() throws SecurityException{
+    //shutdown the thread pool so the resource isn't leaked
+    executor.shutdown();
+    manifestVerifier.close();
   }
   
   /**
