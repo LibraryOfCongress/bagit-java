@@ -1,6 +1,5 @@
 //this build file is responsible for all the configuration of code quality items, such as code coverage, syntax style checking, static bug finding, etc.
 apply plugin: "jacoco"
-apply plugin: "findbugs"
 apply plugin: "pmd"
 
 sourceSets {
