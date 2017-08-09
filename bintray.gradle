@@ -1,0 +1,107 @@
+//This build file is for all the configuration specifics of building and deploying to jcenter (bintray)
+apply plugin: "maven"
+apply plugin: "maven-publish"
+apply plugin: "java-library"
+
+if(!project.hasProperty("bintrayUser")){ //so CI doesn't break
+  project.ext.bintrayUser = "foo"
+  project.ext.bintrayApiKey = "foo"
+}
+
+if(!project.hasProperty("ossrhUsername")){ //so CI doesn't break
+  project.ext.ossrhUsername = "foo"
+  project.ext.ossrhPassword = "foo"
+}
+
+task javadocJar(type: Jar) {
+  group "Build"
+  description "Create the jar that contains all the class documentation (javadoc)."
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  group "Build"
+  description "Create the jar that contains all the .class files."
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+bintray {
+  user = project.ext.bintrayUser
+  key = project.ext.bintrayApiKey
+
+  publications = ['BagitPublication']
+
+  publish = true //Whether version should be auto published after an upload
+
+  pkg {
+    repo = "maven"
+    name = "bagit-java"
+    userOrg = user
+    desc = "The BAGIT LIBRARY is a software library intended to support the creation, manipulation, and validation of bags. It is version aware with the earliest supported version being 0.93."
+    websiteUrl = "https://github.com/LibraryOfCongress/bagit-java"
+    issueTrackerUrl = "https://github.com/LibraryOfCongress/bagit-java/issues"
+    licenses = ["Public Domain"]
+    vcsUrl = "https://github.com/LibraryOfCongress/bagit-java"
+    labels = ["bagit", "library of congress"]
+    publicDownloadNumbers = true
+    githubRepo = 'LibraryOfCongress/bagit-java'
+    githubReleaseNotesFile = 'README.md'
+
+    version{
+      name = project.version
+      vcsTag = 'v' + project.version
+      mavenCentralSync{
+        user = ossrhUsername
+        password = ossrhPassword
+        close = '0' //release the version manually on Maven Central
+      }
+    }
+  }
+}
+
+def pomConfig = {
+  licenses {
+    license {
+      name 'Public Domain'
+      url 'https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt'
+    }
+  }
+
+  developers {
+    developer {
+      id 'johnscancella'
+      name 'John Scancella'
+      email 'jsca@loc.gov'
+    }
+  }
+
+  scm {
+    connection 'scm:git:https://github.com/LibraryOfCongress/bagit-java'
+    developerConnection 'scm:git:ssh://github.com/LibraryOfCongress/bagit-java'
+    url 'https://github.com/LibraryOfCongress/bagit-java'
+  }
+}
+
+publishing {
+    publications {
+        BagitPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar //needed for syncing with maven central
+            artifact javadocJar //needed for syncing with maven central
+            
+            groupId 'gov.loc'
+            artifactId 'bagit'
+            version project.version
+
+            pom.withXml{
+              def root = asNode()
+              root.appendNode('description', 'The BAGIT LIBRARY is a software library intended to support the creation, manipulation, and validation of bags. Its current version is 0.97. It is version aware with the earliest supported version being 0.93.')
+              root.appendNode('name', 'bagit-java')
+              root.appendNode('url', 'https://github.com/LibraryOfCongress/bagit-java')
+              root.children().last() + pomConfig
+            }
+        }
+    }
+}
