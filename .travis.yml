@@ -18,8 +18,8 @@ git:
 #include the conformance suite repo
 before_install: "git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git"
 install: true #skip having travis-ci trying te run assemble
-script: "gradle clean check"
-after_success: "gradle coveralls"
+script: "./gradlew clean check"
+after_success: "./gradlew coveralls"
 env:
   global:
     - secure: "hxoE+e6yrSkpP9/+04jgaI4o6kJdMk+vz3eVRnxc7xGzWh4D8N9UsEL/iviDdKgaxrKKik1rkD0U8222NbGFNZSfmeL0j5e+LSTm6Wz5FL0n4t75z5kge4dfH33ndoNJsRfc2CknocXflw0R+Vcn6fb3Dk0osMsdZmhgaObf4zI="
