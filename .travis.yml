@@ -3,6 +3,9 @@ matrix:
     - os: linux
       jdk: oraclejdk8
       dist: trusty
+    - os: linux
+      jdk: oraclejdk9
+      dist: trusty
     - os: osx
       osx_image: xcode8
       before_script: 
