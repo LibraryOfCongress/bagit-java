@@ -41,6 +41,11 @@ public class BagitTextFileReaderTest extends PrivateConstructorTest {
     BagitTextFileReader.parseVersion(" 1.0");
   }
   
+  @Test(expected=UnparsableVersionException.class)
+  public void testParsePartlyMissingVersion() throws Exception{
+    BagitTextFileReader.parseVersion(".97");
+  }
+  
   @Test
   public void testReadBagitFile()throws Exception{
     Path bagitFile = Paths.get(new File("src/test/resources/bagitFiles/bagit-0.97.txt").toURI());
