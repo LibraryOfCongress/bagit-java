@@ -28,6 +28,20 @@ public class BagitTextFileReaderTest extends PrivateConstructorTest {
   }
   
   @Test
+  public void testParseKnownVersions() throws Exception{
+    String[] knownVersions = new String[] {"0.93", "0.94", "0.95", "0.96", "0.97", "1.0"};
+    for(String knownVersion : knownVersions){
+      BagitTextFileReader.parseVersion(knownVersion);
+    }
+  }
+  
+  @Test
+  public void testParseVersionsWithSpaces() throws Exception{
+    BagitTextFileReader.parseVersion("1.0 ");
+    BagitTextFileReader.parseVersion(" 1.0");
+  }
+  
+  @Test
   public void testReadBagitFile()throws Exception{
     Path bagitFile = Paths.get(new File("src/test/resources/bagitFiles/bagit-0.97.txt").toURI());
     SimpleImmutableEntry<Version, Charset> actualBagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);

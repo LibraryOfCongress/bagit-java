@@ -86,7 +86,7 @@ public final class BagitTextFileReader {
       throw new UnparsableVersionException(messages.getString("unparsable_version_error"), version);
     }
     
-    final String[] parts = version.split("\\.");
+    final String[] parts = version.trim().split("\\.");
     final int major = Integer.parseInt(parts[0]);
     final int minor = Integer.parseInt(parts[1]);
     
