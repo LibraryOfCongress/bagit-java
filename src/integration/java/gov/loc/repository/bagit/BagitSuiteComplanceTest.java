@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,6 +81,7 @@ public class BagitSuiteComplanceTest extends Assert {
       try{
         bag = reader.read(invalidBagDir);
         verifier.isValid(bag, true);
+        System.err.println(bag.getRootDir() + " should have failed but didn't!");
       }catch(InvalidBagitFileFormatException | IOException | UnparsableVersionException | 
         MissingPayloadManifestException | MissingBagitFileException | MissingPayloadDirectoryException | 
         FileNotInPayloadDirectoryException | InterruptedException | MaliciousPathException | 
@@ -154,20 +156,24 @@ public class BagitSuiteComplanceTest extends Assert {
   }
   
   private void testTagFileContents(final Bag originalBag, final Path newBagDir) throws IOException{
+    Path original = originalBag.getRootDir().resolve("bagit.txt");
+    Path newFile = newBagDir.resolve("bagit.txt");
     assertTrue("bagit.txt files differ", 
-        compareFileContents(originalBag.getRootDir().resolve("bagit.txt"), 
-            newBagDir.resolve("bagit.txt"), StandardCharsets.UTF_8));
+        compareFileContents(original, 
+            newFile, StandardCharsets.UTF_8));
     
     if(originalBag.getVersion().isSameOrOlder(new Version(0, 95))){
-      assertTrue("package-info.txt files differ", 
-          compareFileContents(originalBag.getRootDir().resolve("package-info.txt"), 
-              newBagDir.resolve("package-info.txt"), originalBag.getFileEncoding()));
+      original = originalBag.getRootDir().resolve("package-info.txt");
+      newFile = newBagDir.resolve("package-info.txt");
+      assertTrue(original + " differs from " + newFile, 
+          compareFileContents(original, newFile, originalBag.getFileEncoding()));
     }
     else{
       if(Files.exists(originalBag.getRootDir().resolve("bag-info.txt"))){
-        assertTrue("bag-info.txt files differ", 
-            compareFileContents(originalBag.getRootDir().resolve("bag-info.txt"), 
-                newBagDir.resolve("bag-info.txt"), originalBag.getFileEncoding()));
+        original = originalBag.getRootDir().resolve("bag-info.txt");
+        newFile = newBagDir.resolve("bag-info.txt");
+        assertTrue(original + " differs from " + newFile, 
+            compareFileContents(original,newFile, originalBag.getFileEncoding()));
       }
     }
     
@@ -178,15 +184,15 @@ public class BagitSuiteComplanceTest extends Assert {
     List<String> lines1 = Files.readAllLines(file1, encoding);
     List<String> lines2 = Files.readAllLines(file2, encoding);
     
+    List<String> strippedLines1 = new ArrayList<>(lines1.size());
+    List<String> strippedLines2 = new ArrayList<>(lines2.size());
+    
     for(int index=0; index<lines1.size(); index++){
-      String strippedLine1 = lines1.get(index).replaceAll("\\r|\\n", "");
-      String strippedLine2 = lines2.get(index).replaceAll("\\r|\\n", "");
-      if(!strippedLine1.equals(strippedLine2)){
-        return false;
-      }
+      strippedLines1.add(lines1.get(index).replaceAll("\\r|\\n| ", ""));
+      strippedLines2.add(lines2.get(index).replaceAll("\\r|\\n| ", ""));
     }
     
-    return true;
+    return strippedLines1.containsAll(strippedLines2);
   }
   
   private void testBagsStructureAreEqual(Path originalBag, Path newBag) throws IOException{
