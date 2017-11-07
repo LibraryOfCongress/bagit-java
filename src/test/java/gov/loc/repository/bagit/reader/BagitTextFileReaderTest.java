@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -20,6 +22,33 @@ public class BagitTextFileReaderTest extends PrivateConstructorTest {
   @Test
   public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
     assertUtilityClassWellDefined(BagitTextFileReader.class);
+  }
+  
+  @Test
+  public void testLinesMatchesStrict() throws Exception{
+    List<String> lines = Arrays.asList("BagIt-Version: 1.0", "Tag-File-Character-Encoding: UTF-8");
+    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
+  public void testFirstLineMatchesStrict() throws Exception{
+    //should fail because it has spaces before the colon
+    List<String> lines = Arrays.asList("BagIt-Version    : 1.0", "Tag-File-Character-Encoding: UTF-8");
+    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
+  public void testSecondLineMatchesStrict() throws Exception{
+    //should fail because it has spaces before the colon
+    List<String> lines = Arrays.asList("BagIt-Version: 1.0", "Tag-File-Character-Encoding      : UTF-8");
+    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
+  }
+  
+  @Test(expected=InvalidBagitFileFormatException.class)
+  public void testMatchesStrictWithTooManyLines() throws Exception{
+    //should fail because it has 3 lines
+    List<String> lines = Arrays.asList("BagIt-Version: 1.0", "Tag-File-Character-Encoding: UTF-8", "");
+    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
   }
   
   @Test(expected=UnparsableVersionException.class)
