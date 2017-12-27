@@ -9,9 +9,8 @@ task checkMessageBundle(){
   outputs.dir("$buildDir/checkMessageBundle") //hack: define a output dir so gradle will check if up-to-date
   
   doLast{
-    Set<String> messageKeys = new HashSet<>()
-  
     inputs.getFiles().each{File file -> 
+      Set<String> messageKeys = new HashSet<>()
       file.eachLine {String line -> 
         if(line && !line.trim().startsWith('#')){
           String[] keyValue = checkMessageBundleLineIsCorrectlyFormatted(line, file)
@@ -22,9 +21,8 @@ task checkMessageBundle(){
           messageKeys.add(keyValue[0])
         }
       }
+      checkAllMessageKeysAreUsed(messageKeys)
     }
-    
-    checkAllMessageKeysAreUsed(messageKeys)
   }
 }
 check.dependsOn checkMessageBundle
