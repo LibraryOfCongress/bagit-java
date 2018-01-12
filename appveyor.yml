@@ -4,6 +4,10 @@ version: "{build}"
 install:
 - cmd: git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git
 
+branches:
+  except:
+  - crowdin_translations
+
 build_script:
 - cmd: ./gradlew.bat check --no-daemon
 
