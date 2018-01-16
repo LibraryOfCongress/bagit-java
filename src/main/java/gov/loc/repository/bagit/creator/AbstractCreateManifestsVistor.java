@@ -2,7 +2,6 @@ package gov.loc.repository.bagit.creator;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -49,7 +48,7 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
 
   @Override
   public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs)throws IOException{
-    if(!includeHiddenFiles && Files.isHidden(path) && !path.endsWith(".keep")){
+    if(!includeHiddenFiles && PathUtils.isHidden(path) && !path.endsWith(".keep")){
       logger.debug(messages.getString("skipping_hidden_file"), path);
     }
     else{

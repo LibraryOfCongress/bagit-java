@@ -42,6 +42,10 @@ public class BagCreatorTest extends Assert {
     File bagitFile = new File(folder.getRoot(), "bagit.txt");
     assertTrue(bagitFile.exists());
     
+    //make sure the hidden folder was not included in the data directory
+    File hiddenFolder = new File(bag.getRootDir().resolve("data").toFile(), ".hiddenFolder");
+    assertFalse(hiddenFolder.exists());
+    
     for(Manifest manifest : bag.getPayLoadManifests()){
       for(Path expectedPayloadFile : manifest.getFileToChecksumMap().keySet()){
         assertTrue(structure.regularPayloadFiles.contains(expectedPayloadFile));

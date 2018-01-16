@@ -2,7 +2,6 @@ package gov.loc.repository.bagit.verify;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -11,6 +10,8 @@ import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.loc.repository.bagit.util.PathUtils;
 
 /**
  * Implements {@link SimpleFileVisitor} to ensure that the encountered file is in one of the manifests.
@@ -26,7 +27,7 @@ abstract public class AbstractPayloadFileExistsInManifestsVistor extends SimpleF
   
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-    if(ignoreHiddenFiles && Files.isHidden(dir) || dir.endsWith(Paths.get(".bagit"))){
+    if(ignoreHiddenFiles && PathUtils.isHidden(dir) || dir.endsWith(Paths.get(".bagit"))){
       logger.debug(messages.getString("skipping_hidden_file"), dir);
       return FileVisitResult.SKIP_SUBTREE;
     }

@@ -159,7 +159,7 @@ public final class BagCreator {
       final Path dataDir = PathUtils.getDataDir(bag);
       try(final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(bag.getRootDir())){
         for(final Path path : directoryStream){
-          if(!path.equals(dataDir) && (!Files.isHidden(path) || includeHidden)){
+          if(!path.equals(dataDir) && (!PathUtils.isHidden(path) || includeHidden)){
             Files.move(path, dataDir.resolve(path.getFileName()));
           }
         }
