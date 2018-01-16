@@ -37,7 +37,7 @@ public class FetchWriterTest extends PrivateConstructorTest {
     
     
     assertFalse(fetch.exists());
-    FetchWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), rootPath, StandardCharsets.UTF_8);
+    FetchWriter.writeFetchFile(itemsToFetch, Paths.get(rootDir.toURI()), StandardCharsets.UTF_8);
     assertTrue(fetch.exists());
   }
 }
