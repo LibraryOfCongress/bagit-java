@@ -20,18 +20,19 @@ import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
-public class PayloadWriterTest extends PrivateConstructorTest{
+public class PayloadWriterTest extends PrivateConstructorTest {
 
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
 
   @Test
-  public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
+  public void testClassIsWellDefined()
+      throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
     assertUtilityClassWellDefined(PayloadWriter.class);
   }
 
   @Test
-  public void testWritePayloadFiles() throws IOException, URISyntaxException{
+  public void testWritePayloadFiles() throws IOException, URISyntaxException {
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Path testFile = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").toURI());
     Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
@@ -47,7 +48,7 @@ public class PayloadWriterTest extends PrivateConstructorTest{
   }
 
   @Test
-  public void testWritePayloadFilesMinusFetchFiles() throws IOException, URISyntaxException{
+  public void testWritePayloadFilesMinusFetchFiles() throws IOException, URISyntaxException {
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Path testFile = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag/data/dir1/test3.txt").toURI());
     Manifest manifest = new Manifest(StandardSupportedAlgorithms.MD5);
@@ -58,7 +59,9 @@ public class PayloadWriterTest extends PrivateConstructorTest{
     File copiedFile = new File(outputDir, "data/dir1/test3.txt");
 
     assertFalse(copiedFile.exists() || copiedFile.getParentFile().exists());
-    PayloadWriter.writePayloadFiles(payloadManifests, Arrays.asList(new FetchItem(null, null, Paths.get("data/dir1/test3.txt"))), Paths.get(outputDir.toURI()), rootDir.resolve("data"));
+    PayloadWriter.writePayloadFiles(payloadManifests,
+        Arrays.asList(new FetchItem(null, null, Paths.get("data/dir1/test3.txt"))), Paths.get(outputDir.toURI()),
+        rootDir.resolve("data"));
     assertFalse(copiedFile.exists() && copiedFile.getParentFile().exists());
   }
 }
