@@ -6,6 +6,11 @@ checkout:
   post:
     - git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git
 
+general:
+  branches:
+    only:
+      - master
+
 test:
   override:
     - ./gradlew check
