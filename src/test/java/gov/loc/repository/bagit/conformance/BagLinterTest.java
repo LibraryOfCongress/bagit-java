@@ -20,44 +20,44 @@ import java.nio.file.FileSystems;
 
 public class BagLinterTest extends PrivateConstructorTest{
 
-   private final Path rootDir = Paths.get("src", "test", "resources", "linterTestBag");
+  private final Path rootDir = Paths.get("src", "test", "resources", "linterTestBag");
 
-   @Test
-   public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
-      assertUtilityClassWellDefined(BagLinter.class);
-   }
+  @Test
+  public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
+    assertUtilityClassWellDefined(BagLinter.class);
+  }
 
-   @Test
-   public void testLintBag() throws Exception{
-      Set<BagitWarning> expectedWarnings = new HashSet<>();
-      expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
-      Set<BagitWarning> warnings = BagLinter.lintBag(rootDir);
+  @Test
+  public void testLintBag() throws Exception{
+    Set<BagitWarning> expectedWarnings = new HashSet<>();
+    expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
+    Set<BagitWarning> warnings = BagLinter.lintBag(rootDir);
 
-      if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
-         expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
-      }
+    if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
+      expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
+    }
 
-      Set<BagitWarning> diff = new HashSet<>(expectedWarnings);
-      diff.removeAll(warnings);
+    Set<BagitWarning> diff = new HashSet<>(expectedWarnings);
+    diff.removeAll(warnings);
 
-      assertEquals("Warnings missing: " + diff.toString() + "\n", expectedWarnings, warnings);
-   }
+    assertEquals("Warnings missing: " + diff.toString() + "\n", expectedWarnings, warnings);
+  }
 
-   @Test
-   public void testCheckAgainstProfile() throws Exception{
-      Path profileJson = new File("src/test/resources/bagitProfiles/exampleProfile.json").toPath();
-      Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/profileConformantBag").toPath();
-      BagReader reader = new BagReader();
-      Bag bag = reader.read(bagRootPath);
+  @Test
+  public void testCheckAgainstProfile() throws Exception{
+    Path profileJson = new File("src/test/resources/bagitProfiles/exampleProfile.json").toPath();
+    Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/profileConformantBag").toPath();
+    BagReader reader = new BagReader();
+    Bag bag = reader.read(bagRootPath);
 
-      try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-         BagLinter.checkAgainstProfile(inputStream, bag);
-      }
-   }
+    try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
+      BagLinter.checkAgainstProfile(inputStream, bag);
+    }
+  }
 
-   @Test
-   public void testIgnoreCheckForExtraLines() throws Exception{
-      Set<BagitWarning> warnings = BagLinter.lintBag(rootDir, Arrays.asList(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
-      assertFalse(warnings.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
-   }
+  @Test
+  public void testIgnoreCheckForExtraLines() throws Exception{
+    Set<BagitWarning> warnings = BagLinter.lintBag(rootDir, Arrays.asList(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
+    assertFalse(warnings.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
+  }
 }
