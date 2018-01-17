@@ -16,6 +16,7 @@ import org.junit.Test;
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.reader.BagReader;
+import java.nio.file.FileSystems;
 
 public class BagLinterTest extends PrivateConstructorTest{
 
@@ -32,9 +33,9 @@ public class BagLinterTest extends PrivateConstructorTest{
         expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
         Set<BagitWarning> warnings = BagLinter.lintBag(rootDir);
         
-        /*if (FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
+        if (FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
             expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
-        }*/
+        }
 
         Set<BagitWarning> diff = new HashSet<>(expectedWarnings);
         diff.removeAll(warnings);
