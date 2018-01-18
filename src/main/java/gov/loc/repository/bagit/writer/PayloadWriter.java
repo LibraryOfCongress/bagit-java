@@ -85,9 +85,12 @@ public final class PayloadWriter {
  
   private static Set<Path> getFetchPaths(final List<FetchItem> fetchItems, final Path bagDataDir) {
     final Set<Path> fetchPaths = new HashSet<>();
-   for(final FetchItem fetchItem : fetchItems) {
-      fetchPaths.add(bagDataDir.relativize(bagDataDir.getParent().resolve(fetchItem.getPath())));
+    for (final FetchItem fetchItem : fetchItems) {
+      Path parent = bagDataDir.getParent();
+      if(parent != null){
+      fetchPaths.add(bagDataDir.relativize(parent.resolve(fetchItem.getPath())));
+      }
     }
-   return fetchPaths;
+    return fetchPaths;
  }
 }
