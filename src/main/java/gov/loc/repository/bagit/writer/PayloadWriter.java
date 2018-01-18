@@ -61,7 +61,7 @@ public final class PayloadWriter {
   */
  public static void writePayloadFiles(final Set<Manifest> payloadManifests, final List<FetchItem> fetchItems, final Path outputDir, final Path bagDataDir) throws IOException{
    logger.info(messages.getString("writing_payload_files"));
-   final Set<Path> fetchPaths = getFetchPaths(fetchItems);
+    final Set<Path> fetchPaths = getFetchPaths(fetchItems, bagDataDir);
    
    for(final Manifest payloadManifest : payloadManifests){
      for(final Path payloadFile : payloadManifest.getFileToChecksumMap().keySet()){
@@ -83,11 +83,11 @@ public final class PayloadWriter {
    }
  }
  
- private static Set<Path> getFetchPaths(final List<FetchItem> fetchItems){
-   final Set<Path> fetchPaths = new HashSet<>();
+  private static Set<Path> getFetchPaths(final List<FetchItem> fetchItems, final Path bagDataDir) {
+    final Set<Path> fetchPaths = new HashSet<>();
    for(final FetchItem fetchItem : fetchItems) {
-     fetchPaths.add(fetchItem.getPath());
-   }
+      fetchPaths.add(bagDataDir.relativize(bagDataDir.getParent().resolve(fetchItem.getPath())));
+    }
    return fetchPaths;
  }
 }
