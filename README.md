@@ -67,7 +67,7 @@ to follow modern Java practices and will require some changes to existing code:
 Path folder = Paths.get("FolderYouWantToBag");
 StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 boolean includeHiddenFiles = false;
-Bag bag = BagCreator.bagInPlace(folder, algorithm, includeHiddenFiles);
+Bag bag = BagCreator.bagInPlace(folder, Arrays.asList(algorithm), includeHiddenFiles);
 ```
 
 ##### Read an existing bag (version 0.93 and higher)
