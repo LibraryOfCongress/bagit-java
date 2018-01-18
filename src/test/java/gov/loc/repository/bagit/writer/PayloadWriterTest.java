@@ -58,7 +58,9 @@ public class PayloadWriterTest extends PrivateConstructorTest {
     File copiedFile = new File(outputDir, "data/dir1/test3.txt");
     
     assertFalse(copiedFile.exists() || copiedFile.getParentFile().exists());
-    PayloadWriter.writePayloadFiles(payloadManifests, Arrays.asList(new FetchItem(null, null, Paths.get("data/dir1/test3.txt"))),Paths.get(outputDir.toURI()), rootDir);
+    PayloadWriter.writePayloadFiles(payloadManifests,
+        Arrays.asList(new FetchItem(null, null, Paths.get("data/dir1/test3.txt"))), Paths.get(outputDir.toURI()),
+        rootDir.resolve("data"));
     assertFalse(copiedFile.exists() && copiedFile.getParentFile().exists());
   }
 }
