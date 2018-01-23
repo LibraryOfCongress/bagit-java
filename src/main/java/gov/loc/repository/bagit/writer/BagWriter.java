@@ -61,7 +61,7 @@ public final class BagWriter {
     }
     if(bag.getItemsToFetch().size() > 0){
       logger.debug(messages.getString("writing_fetch_file"));
-      FetchWriter.writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getFileEncoding());
+      FetchWriter.writeFetchFile(bag.getItemsToFetch(), bagitDir, bag.getRootDir(), bag.getFileEncoding());
     }
     if(bag.getTagManifests().size() > 0){
       logger.debug(messages.getString("writing_tag_manifests"));
