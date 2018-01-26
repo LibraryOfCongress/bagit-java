@@ -122,7 +122,6 @@ public final class BagCreator {
     logger.info(messages.getString("creating_bag"), bag.getVersion(), root);
     bag.setRootDir(root);
     
-    createDirectories(bag);
     moveDataFilesIfNeeded(bag, includeHidden);
     
     createBagitFile(bag);
@@ -136,17 +135,16 @@ public final class BagCreator {
     return bag;
   }
   
-  //create the data or .bagit directory
-  private static void createDirectories(final Bag bag) throws IOException{
-    if(bag.getVersion().isSameOrNewer(DOT_BAGIT_VERSION)){
-      //create .bagit directory
+  private static void moveDataFilesIfNeeded(final Bag bag, final boolean includeHidden) throws IOException {
+    if(bag.getVersion().isOlder(DOT_BAGIT_VERSION)) {
+      Path tempDir = bag.getRootDir().resolve(System.currentTimeMillis() + ".temp");
+      Files.createDirectory(tempDir);
+      moveDataFiles(bag.getRootDir(), tempDir, includeHidden);
+      Files.move(tempDir, PathUtils.getDataDir(bag));
+    }
+    else {
       final Path dotbagitDir = bag.getRootDir().resolve(".bagit");
       Files.createDirectories(dotbagitDir);
-    }
-    else{
-      //create data directory
-      final Path dataDir = bag.getRootDir().resolve("data");
-      Files.createDirectories(dataDir);
     }
   }
   
@@ -154,14 +152,11 @@ public final class BagCreator {
     BagitFileWriter.writeBagitFile(bag.getVersion(), bag.getFileEncoding(), PathUtils.getBagitDir(bag));
   }
   
-  private static void moveDataFilesIfNeeded(final Bag bag, final boolean includeHidden) throws IOException{
-    if(bag.getVersion().isOlder(DOT_BAGIT_VERSION)){
-      final Path dataDir = PathUtils.getDataDir(bag);
-      try(final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(bag.getRootDir())){
-        for(final Path path : directoryStream){
-          if(!path.equals(dataDir) && (!PathUtils.isHidden(path) || includeHidden)){
-            Files.move(path, dataDir.resolve(path.getFileName()));
-          }
+  private static void moveDataFiles(final Path rootDir, final Path dataDir, final boolean includeHidden) throws IOException{
+    try(final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(rootDir)){
+      for(final Path path : directoryStream){
+        if(!path.equals(dataDir) && (!PathUtils.isHidden(path) || includeHidden)){
+          Files.move(path, dataDir.resolve(path.getFileName()));
         }
       }
     }

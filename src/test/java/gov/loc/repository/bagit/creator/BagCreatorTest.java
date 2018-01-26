@@ -26,6 +26,16 @@ public class BagCreatorTest extends Assert {
   public TemporaryFolder folder= new TemporaryFolder();
   
   @Test
+  public void testBagInPlaceWithFileNamedData() throws IOException, NoSuchAlgorithmException{
+    File testFolder = folder.newFolder();
+    File dataFile = new File(testFolder, "data");
+    Files.createFile(dataFile.toPath());
+    
+    BagCreator.bagInPlace(Paths.get(testFolder.toURI()), Arrays.asList(StandardSupportedAlgorithms.MD5), false);
+    assertTrue(Files.exists(testFolder.toPath().resolve("data").resolve("data")));
+  }
+  
+  @Test
   public void testBagInPlace() throws IOException, NoSuchAlgorithmException{
     TestStructure structure = createTestStructure();
     
