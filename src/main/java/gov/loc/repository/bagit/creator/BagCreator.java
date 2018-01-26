@@ -137,7 +137,7 @@ public final class BagCreator {
   
   private static void moveDataFilesIfNeeded(final Bag bag, final boolean includeHidden) throws IOException {
     if(bag.getVersion().isOlder(DOT_BAGIT_VERSION)) {
-      Path tempDir = bag.getRootDir().resolve(System.currentTimeMillis() + ".temp");
+      final Path tempDir = bag.getRootDir().resolve(System.currentTimeMillis() + ".temp");
       Files.createDirectory(tempDir);
       moveDataFiles(bag.getRootDir(), tempDir, includeHidden);
       Files.move(tempDir, PathUtils.getDataDir(bag));
