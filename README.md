@@ -20,9 +20,8 @@ supported version being 0.93.
 
 ## Support
 1. The Digital Curation Google Group (https://groups.google.com/d/forum/digital-curation) is an open discussion list that reaches many of the contributors to and users of this open-source project
-2. If you have found a bug please create a new issue on [the issues page](https://github.com/LibraryOfCongress/bagit-java/issues)
-3. To contact a developer at the Library of Congress please email repo-dev@listserv.loc.gov
-4. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
+2. If you have found a bug please create a new issue on [the issues page](https://github.com/LibraryOfCongress/bagit-java/issues/new)
+3. If you would like to contribute, please submit a [pull request](https://help.github.com/articles/creating-a-pull-request/)
 
 ## Major differences between version 5 and 4.*
 ##### Command Line Interface
