@@ -11,23 +11,36 @@ public class BagitProfileTest extends AbstractBagitProfileTest{
   @Test
   public void testToString() throws Exception{
     String expectedOutput = "BagitProfile [bagitProfileIdentifier=http://canadiana.org/standards/bagit/tdr_ingest.json, "
-        + "sourceOrganization=Candiana.org, externalDescription=BagIt profile for ingesting content into the C.O. TDR "
-        + "loading dock., contactName=William Wueppelmann, contactEmail=tdr@canadiana.com, version=1.2, "
-        + "bagInfoRequirements={Payload-Oxum=[required=true, acceptableValues=[]], Bag-Size=[required=true, "
-        + "acceptableValues=[]], Bagging-Date=[required=true, acceptableValues=[]], Source-Organization=[required=true, "
-        + "acceptableValues=[Simon Fraser University, York University]], Bag-Count=[required=true, acceptableValues=[]], "
-        + "Organization-Address=[required=true, acceptableValues=[8888 University Drive Burnaby, B.C. V5A 1S6 Canada, "
-        + "4700 Keele Street Toronto, Ontario M3J 1P3 Canada]], Bag-Group-Identifier=[required=false, "
-        + "acceptableValues=[]], External-Identifier=[required=false, acceptableValues=[]], "
-        + "Internal-Sender-Identifier=[required=false, acceptableValues=[]], Contact-Email=[required=true, "
-        + "acceptableValues=[]], Contact-Phone=[required=false, acceptableValues=[]], "
-        + "Internal-Sender-Description=[required=false, acceptableValues=[]], External-Description=[required=true, "
-        + "acceptableValues=[]], Contact-Name=[required=true, acceptableValues=[Mark Jordan, Nick Ruest]]}, "
-        + "manifestTypesRequired=[md5], fetchFileAllowed=false, serialization=forbidden, "
-        + "acceptableMIMESerializationTypes=[application/zip], acceptableBagitVersions=[0.96], "
-        + "tagManifestTypesRequired=[md5], tagFilesRequired=[DPN/dpnFirstNode.txt, DPN/dpnRegistry]]";
+        + "sourceOrganization=Candiana.org, "
+        + "externalDescription=BagIt profile for ingesting content into the C.O. TDR loading dock., "
+        + "contactName=William Wueppelmann, "
+        + "contactEmail=tdr@canadiana.com, "
+        + "version=1.2, "
+        + "bagInfoRequirements={"
+        + "Payload-Oxum=[required=true, acceptableValues=[], repeatable=false], "
+        + "Bag-Size=[required=true, acceptableValues=[], repeatable=false], "
+        + "Bagging-Date=[required=true, acceptableValues=[], repeatable=false], "
+        + "Source-Organization=[required=true, acceptableValues=[Simon Fraser University, York University], repeatable=false], "
+        + "Bag-Count=[required=true, acceptableValues=[], repeatable=false], "
+        + "Organization-Address=[required=true, acceptableValues=[8888 University Drive Burnaby, B.C. V5A 1S6 Canada, 4700 Keele Street Toronto, Ontario M3J 1P3 Canada], repeatable=false], "
+        + "Bag-Group-Identifier=[required=false, acceptableValues=[], repeatable=false], "
+        + "External-Identifier=[required=false, acceptableValues=[], repeatable=false], "
+        + "Internal-Sender-Identifier=[required=false, acceptableValues=[], repeatable=false], "
+        + "Contact-Email=[required=true, acceptableValues=[], repeatable=false], "
+        + "Contact-Phone=[required=false, acceptableValues=[], repeatable=false], "
+        + "Internal-Sender-Description=[required=false, acceptableValues=[], repeatable=false], "
+        + "External-Description=[required=true, acceptableValues=[], repeatable=false], "
+        + "Contact-Name=[required=true, acceptableValues=[Mark Jordan, Nick Ruest], repeatable=false]}, "
+        + "manifestTypesRequired=[md5], "
+        + "fetchFileAllowed=false, "
+        + "serialization=forbidden, "
+        + "acceptableMIMESerializationTypes=[application/zip], "
+        + "acceptableBagitVersions=[0.96], "
+        + "tagManifestTypesRequired=[md5], "
+        + "tagFilesRequired=[DPN/dpnFirstNode.txt, DPN/dpnRegistry]]";
     
     BagitProfile profile = mapper.readValue(new File("src/test/resources/bagitProfiles/exampleProfile.json"), BagitProfile.class);
+    System.err.println(profile.toString());
     assertEquals(expectedOutput, profile.toString());
   }
   

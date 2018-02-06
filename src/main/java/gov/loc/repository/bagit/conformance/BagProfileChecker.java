@@ -30,6 +30,7 @@ import gov.loc.repository.bagit.domain.Metadata;
 import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
+import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotRepeatableException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
@@ -59,6 +60,7 @@ public final class BagProfileChecker {
    * 
    * @throws FetchFileNotAllowedException if there is a fetch file when the profile prohibits it
    * @throws MetatdataValueIsNotAcceptableException if a metadata value is not in the list of acceptable values
+   * @throws MetatdataValueIsNotRepeatableException if a metadata value shows up more than once when not repeatable
    * @throws RequiredMetadataFieldNotPresentException if a metadata field is not present but it should be
    * @throws RequiredManifestNotPresentException if a payload or tag manifest type is not present but should be
    * @throws BagitVersionIsNotAcceptableException if the version of the bag is not in the list of acceptable versions
@@ -66,7 +68,7 @@ public final class BagProfileChecker {
    */
   public static void bagConformsToProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
   IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, 
-  RequiredManifestNotPresentException, BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
+  RequiredManifestNotPresentException, BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException, MetatdataValueIsNotRepeatableException{
     
     final BagitProfile profile = parseBagitProfile(jsonProfile);
     checkFetch(bag.getRootDir(), profile.isFetchFileAllowed(), bag.getItemsToFetch());
@@ -101,27 +103,45 @@ public final class BagProfileChecker {
   }
   
   private static void checkMetadata(final Metadata bagMetadata, final Map<String, BagInfoRequirement> bagInfoEntryRequirements) 
-      throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException{
+      throws RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, MetatdataValueIsNotRepeatableException{
     
     for(final Entry<String, BagInfoRequirement> bagInfoEntryRequirement : bagInfoEntryRequirements.entrySet()){
       final boolean metadataContainsKey = bagMetadata.contains(bagInfoEntryRequirement.getKey());
       
-      logger.debug(messages.getString("checking_metadata_entry_required"), bagInfoEntryRequirement.getKey());
-      //is it required and not there?
-      if(bagInfoEntryRequirement.getValue().isRequired() && !metadataContainsKey){
-        throw new RequiredMetadataFieldNotPresentException(messages.getString("required_metadata_field_not_present_error"), bagInfoEntryRequirement.getKey());
-      }
+      checkIfMetadataEntryIsRequired(bagInfoEntryRequirement, metadataContainsKey);
       
-      //a size of zero implies that all values are acceptable
-      if(!bagInfoEntryRequirement.getValue().getAcceptableValues().isEmpty()){
-        logger.debug(messages.getString("check_values_acceptable"), bagInfoEntryRequirement.getKey());
-        for(final String metadataValue : bagMetadata.get(bagInfoEntryRequirement.getKey())){
-          if(!bagInfoEntryRequirement.getValue().getAcceptableValues().contains(metadataValue)){
-            throw new MetatdataValueIsNotAcceptableException(messages.getString("metadata_value_not_acceptable_error"), 
-                bagInfoEntryRequirement.getKey(), bagInfoEntryRequirement.getValue().getAcceptableValues(), metadataValue);
-          }
+      checkForAcceptableValues(bagMetadata, bagInfoEntryRequirement);
+      
+      checkForNoneRepeatableMetadata(bagMetadata, bagInfoEntryRequirement, metadataContainsKey);
+    }
+  }
+  
+  private static void checkIfMetadataEntryIsRequired(final Entry<String, BagInfoRequirement> bagInfoEntryRequirement, final boolean metadataContainsKey) throws RequiredMetadataFieldNotPresentException{
+    logger.debug(messages.getString("checking_metadata_entry_required"), bagInfoEntryRequirement.getKey());
+    //is it required and not there?
+    if(bagInfoEntryRequirement.getValue().isRequired() && !metadataContainsKey){
+      throw new RequiredMetadataFieldNotPresentException(messages.getString("required_metadata_field_not_present_error"), bagInfoEntryRequirement.getKey());
+    }
+  }
+  
+  private static void checkForAcceptableValues(final Metadata bagMetadata, final Entry<String, BagInfoRequirement> bagInfoEntryRequirement) throws MetatdataValueIsNotAcceptableException{
+    //a size of zero implies that all values are acceptable
+    if(!bagInfoEntryRequirement.getValue().getAcceptableValues().isEmpty()){
+      logger.debug(messages.getString("check_values_acceptable"), bagInfoEntryRequirement.getKey());
+      for(final String metadataValue : bagMetadata.get(bagInfoEntryRequirement.getKey())){
+        if(!bagInfoEntryRequirement.getValue().getAcceptableValues().contains(metadataValue)){
+          throw new MetatdataValueIsNotAcceptableException(messages.getString("metadata_value_not_acceptable_error"), 
+              bagInfoEntryRequirement.getKey(), bagInfoEntryRequirement.getValue().getAcceptableValues(), metadataValue);
         }
       }
+    }
+  }
+  
+  private static void checkForNoneRepeatableMetadata(final Metadata bagMetadata, final Entry<String, BagInfoRequirement> bagInfoEntryRequirement, final boolean metadataContainsKey) throws MetatdataValueIsNotRepeatableException{
+    //if it is none repeatable, but shows up multiple times
+    if(!bagInfoEntryRequirement.getValue().isRepeatable() && metadataContainsKey 
+        && bagMetadata.get(bagInfoEntryRequirement.getKey()).size() > 1){
+      throw new MetatdataValueIsNotRepeatableException(messages.getString("metadata_value_not_repeatable_error"), bagInfoEntryRequirement.getKey());
     }
   }
   

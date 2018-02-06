@@ -1,0 +1,11 @@
+Bag-Software-Agent: bagit.py v1.5.4 <http://github.com/libraryofcongress/bagit-python>
+Bagging-Date: 2017-01-30
+Bagging-Date: 2017-01-30
+Payload-Oxum: 6.1
+Source-Organization: York University
+Organization-Address: 4700 Keele Street Toronto, Ontario M3J 1P3 Canada
+Contact-Name: Nick Ruest
+Contact-Email: foo@foo.com
+External-Description: description here
+Bag-Size: 6kb
+Bag-Count: 1 of 1

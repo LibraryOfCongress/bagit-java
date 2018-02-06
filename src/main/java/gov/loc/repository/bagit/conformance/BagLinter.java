@@ -29,6 +29,7 @@ import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
 import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
+import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotRepeatableException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
@@ -62,6 +63,7 @@ public final class BagLinter {
    * 
    * @throws FetchFileNotAllowedException if there is a fetch file when the profile prohibits it
    * @throws MetatdataValueIsNotAcceptableException if a metadata value is not in the list of acceptable values
+   * @throws MetatdataValueIsNotRepeatableException if a metadata value shows up more than once when not repeatable
    * @throws RequiredMetadataFieldNotPresentException if a metadata field is not present but it should be
    * @throws RequiredManifestNotPresentException if a payload or tag manifest type is not present but should be
    * @throws BagitVersionIsNotAcceptableException if the version of the bag is not in the list of acceptable versions
@@ -69,7 +71,7 @@ public final class BagLinter {
    */
   public static void checkAgainstProfile(final InputStream jsonProfile, final Bag bag) throws JsonParseException, JsonMappingException, 
   IOException, FetchFileNotAllowedException, RequiredMetadataFieldNotPresentException, MetatdataValueIsNotAcceptableException, RequiredManifestNotPresentException, 
-  BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException{
+  BagitVersionIsNotAcceptableException, RequiredTagFileNotPresentException, MetatdataValueIsNotRepeatableException{
     BagProfileChecker.bagConformsToProfile(jsonProfile, bag);
   }
   

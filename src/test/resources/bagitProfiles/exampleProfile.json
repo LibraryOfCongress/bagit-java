@@ -57,7 +57,8 @@
          "required":false
       },
       "Bagging-Date":{
-         "required":true
+         "required":true,
+         "repeatable": false
       },
       "Payload-Oxum":{
          "required":true

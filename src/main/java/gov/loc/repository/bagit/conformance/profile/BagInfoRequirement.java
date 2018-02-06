@@ -10,6 +10,7 @@ import java.util.Objects;
 public class BagInfoRequirement {
   private boolean required;
   private List<String> acceptableValues = new ArrayList<>();
+  private boolean repeatable;
   
   @Override
   public boolean equals(final Object other) {
@@ -18,12 +19,13 @@ public class BagInfoRequirement {
     }
     final BagInfoRequirement castOther = (BagInfoRequirement) other;
     return Objects.equals(required, castOther.required)
-        && Objects.equals(acceptableValues, castOther.acceptableValues);
+        && Objects.equals(acceptableValues, castOther.acceptableValues)
+        && Objects.equals(repeatable, castOther.repeatable);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(required, acceptableValues);
+    return Objects.hash(required, acceptableValues, repeatable);
   }
 
   public BagInfoRequirement(){
@@ -37,7 +39,7 @@ public class BagInfoRequirement {
   
   @Override
   public String toString() {
-    return "[required=" + required + ", acceptableValues=" + acceptableValues + "]";
+    return "[required=" + required + ", acceptableValues=" + acceptableValues + ", repeatable=" + repeatable + "]";
   }
   
   public boolean isRequired() {
@@ -51,5 +53,11 @@ public class BagInfoRequirement {
   }
   public void setAcceptableValues(final List<String> acceptableValues) {
     this.acceptableValues = acceptableValues;
+  }
+  public boolean isRepeatable() {
+    return repeatable;
+  }
+  public void setRepeatable(final boolean repeatable) {
+    this.repeatable = repeatable;
   }
 }

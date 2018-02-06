@@ -14,6 +14,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
+import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotRepeatableException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredManifestNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredMetadataFieldNotPresentException;
 import gov.loc.repository.bagit.exceptions.conformance.RequiredTagFileNotPresentException;
@@ -61,6 +62,16 @@ public class BagProfileCheckerTest extends PrivateConstructorTest {
   @Test(expected=MetatdataValueIsNotAcceptableException.class)
   public void testMetatdataValueIsNotAcceptableException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/wrongValueForContactNameBag").toPath();
+    Bag bag = reader.read(bagRootPath);
+    
+    try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
+      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+    }
+  }
+  
+  @Test(expected=MetatdataValueIsNotRepeatableException.class)
+  public void testMetadataValueIsNotRepeatableException() throws Exception{
+    Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/repeatedMetadataBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
