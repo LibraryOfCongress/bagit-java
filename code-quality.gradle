@@ -89,11 +89,3 @@ dependencyCheck {
     skipConfigurations=['spotbugs','cpd'] //don't look for vulnerabilities in the build plugins
     outputDirectory="build/reports/OWASP"
 }
-
-//Keep this for easy viewing of html spotbugs report
-//tasks.withType(SpotBugs) {
-//  reports {
-//      xml.enabled = false
-//      html.enabled = true
-//  }
-//}
