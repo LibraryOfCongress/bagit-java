@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Map.Entry;
@@ -30,11 +31,11 @@ public class CheckManifestHashesTask implements Runnable {
   private final List<Exception> exceptions;
   private final String algorithm;
   
-  public CheckManifestHashesTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
+  public CheckManifestHashesTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch) {
     this.entry = entry;
     this.algorithm = algorithm;
     this.latch = latch;
-    this.exceptions = exceptions;
+    this.exceptions = new ArrayList<>();
   }
 
   @Override
