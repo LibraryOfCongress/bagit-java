@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
@@ -27,10 +27,10 @@ public class CheckManifestHashesTask implements Runnable {
   
   private final Entry<Path, String> entry;
   private final CountDownLatch latch;
-  private final List<Exception> exceptions;
+  private final Collection<Exception> exceptions;
   private final String algorithm;
   
-  public CheckManifestHashesTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final List<Exception> exceptions) {
+  public CheckManifestHashesTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final Collection<Exception> exceptions) {
     this.entry = entry;
     this.algorithm = algorithm;
     this.latch = latch;
@@ -68,7 +68,7 @@ public class CheckManifestHashesTask implements Runnable {
     return latch;
   }
 
-  public List<Exception> getExceptions() {
+  public Collection<Exception> getExceptions() {
     return exceptions;
   }
 

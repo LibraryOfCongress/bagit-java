@@ -3,9 +3,10 @@ package gov.loc.repository.bagit.verify;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -151,10 +152,8 @@ public final class BagVerifier implements AutoCloseable{
   void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     
-    //TODO maybe return all of these at some point... 
-    //if that is ever the case make sure to use Collections.synchronizedCollection(new ArrayList<>())
-    //we aren't doing it now because it is a huge performance hit for little value
-    final List<Exception> exceptions = new ArrayList<>(); 
+    //TODO maybe return all of these at some point...
+    final Collection<Exception> exceptions = Collections.synchronizedCollection(new ArrayList<>());
     
     for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
       executor.execute(new CheckManifestHashesTask(entry, manifest.getAlgorithm().getMessageDigestName(), latch, exceptions));
@@ -163,7 +162,7 @@ public final class BagVerifier implements AutoCloseable{
     latch.await();
     
     if(!exceptions.isEmpty()){
-      final Exception e = exceptions.get(0);
+      final Exception e = exceptions.iterator().next();
       if(e instanceof CorruptChecksumException){
         logger.debug(messages.getString("checksums_not_matching_error"), exceptions.size());
         throw (CorruptChecksumException)e;
