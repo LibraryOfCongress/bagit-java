@@ -20,7 +20,7 @@ git:
 #include the conformance suite repo
 before_install: "git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git"
 install: true #skip having travis-ci trying te run assemble
-script: "./gradlew clean check"
+script: "./gradlew clean check dependencyCheckUpdate dependencyCheckAnalyze"
 after_success: "./gradlew coveralls"
 env:
   global:
