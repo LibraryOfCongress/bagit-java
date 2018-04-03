@@ -4,7 +4,7 @@ plugins {
   //these have to be in the main project for now see - https://discuss.gradle.org/t/how-do-i-include-buildscript-block-from-external-gradle-script/7016/2
   id "com.github.kt3k.coveralls" version "2.8.1" 
   id "de.aaschmid.cpd" version "1.0"
-  id "org.owasp.dependencycheck" version "3.1.1"
+  id "org.owasp.dependencycheck" version "3.1.2"
   id "com.dorongold.task-tree" version "1.3"
   id "org.ajoberstar.grgit" version "2.0.1"
   id "com.github.spotbugs" version "1.4"
