@@ -14,7 +14,7 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache
-      - run: ./gradlew check
+      - run: ./gradlew check dependencyCheckUpdate dependencyCheckAnalyze --no-daemon
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit
       - run: find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
       - store_test_results:
