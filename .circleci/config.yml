@@ -1,19 +1,20 @@
-machine:
-  java:
-    version: oraclejdk8
-
-checkout:
-  post:
-    - git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git
-
-general:
-  branches:
-    only:
-      - master
-
-test:
-  override:
-    - ./gradlew check
-  post:
-    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+version: 2
+jobs:
+  build:
+    working_directory: ~/LibraryOfCongress/bagit-java
+    docker:
+      - image: circleci/openjdk:8-jdk
+#    filters:
+#      branches:
+#        only: master
+    steps:
+      - checkout #checks out your code to your working directory
+      - restore_cache:
+          keys:
+            - dependency-cache
+      - run ./gradlew check
+      # Save dependency cache
+      - save_cache:
+          key: dependency-cache
+          paths:
+            - ~/.gradle
