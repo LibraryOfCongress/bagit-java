@@ -2,6 +2,8 @@ version: 2
 jobs:
   build:
     working_directory: ~/LibraryOfCongress/bagit-java
+    environment:
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
       - image: circleci/openjdk:8-jdk
 #    filters:
@@ -13,6 +15,10 @@ jobs:
           keys:
             - dependency-cache
       - run: ./gradlew check
+      - run: mkdir -p $CIRCLE_TEST_REPORTS/junit
+      - run: find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+      - store_test_results:
+          path: $CIRCLE_TEST_REPORTS
       # Save dependency cache
       - save_cache:
           key: dependency-cache
