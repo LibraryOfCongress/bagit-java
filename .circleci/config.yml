@@ -18,7 +18,7 @@ jobs:
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit
       - run: find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
       - store_test_results:
-          path: $CIRCLE_TEST_REPORTS
+          path: /tmp/circleci-test-results
       # Save dependency cache
       - save_cache:
           key: dependency-cache
