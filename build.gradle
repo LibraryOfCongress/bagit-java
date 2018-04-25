@@ -12,6 +12,7 @@ plugins {
 }
 apply from: 'eclipse.gradle'
 apply from: 'bintray.gradle'
+apply from: 'maven-central.gradle'
 apply from: 'code-quality.gradle'
 apply from: 'message-bundle.gradle'
 

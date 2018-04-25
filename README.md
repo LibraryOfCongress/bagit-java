@@ -165,7 +165,13 @@ Inside the bagit-java root directory, run `gradle check`.
 1. Follow their guides
   1. http://central.sonatype.org/pages/releasing-the-deployment.html
   2. https://issues.sonatype.org/secure/Dashboard.jspa
-2. Once you have access, to create an office release and upload it you should specify the version by running `gradle -Pversion=<VERSION> uploadArchives`
+2. Once you have access, to create an official release and upload it you should specify the version by running `gradle -Pversion=<VERSION> uploadArchives`
+  1. *Don't forget to tag the repository!*
+
+##### Uploading to jcenter
+1. Follow their guide
+  1. https://github.com/bintray/bintray-examples/tree/master/gradle-bintray-plugin-examples
+2. Once you have access, to create an official release and upload it you should specify the version by running `gradle -Pversion=<VERSION> bintrayUpload`
   1. *Don't forget to tag the repository!*
 
 ### Note if using with Eclipse
