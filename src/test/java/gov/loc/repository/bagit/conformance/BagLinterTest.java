@@ -12,7 +12,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
@@ -40,7 +41,7 @@ public class BagLinterTest extends PrivateConstructorTest{
     Set<BagitWarning> diff = new HashSet<>(expectedWarnings);
     diff.removeAll(warnings);
     
-    assertEquals("Warnings missing: " + diff.toString() + "\n", expectedWarnings, warnings);
+    Assertions.assertEquals(expectedWarnings, warnings, "Warnings missing: " + diff.toString() + "\n");
   }
   
   @Test
@@ -58,6 +59,6 @@ public class BagLinterTest extends PrivateConstructorTest{
   @Test
   public void testIgnoreCheckForExtraLines() throws Exception{
     Set<BagitWarning> warnings = BagLinter.lintBag(rootDir, Arrays.asList(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
-    assertFalse(warnings.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
+    Assertions.assertFalse(warnings.contains(BagitWarning.EXTRA_LINES_IN_BAGIT_FILES));
   }
 }

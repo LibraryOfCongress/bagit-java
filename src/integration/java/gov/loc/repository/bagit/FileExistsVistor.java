@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class FileExistsVistor extends SimpleFileVisitor<Path>{
   private transient final Path originalBag;
@@ -21,7 +21,7 @@ public class FileExistsVistor extends SimpleFileVisitor<Path>{
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
     Path relative = originalBag.relativize(dir);
-    Assert.assertTrue(Files.exists(newBag.resolve(relative)));
+    Assertions.assertTrue(Files.exists(newBag.resolve(relative)));
     
     return FileVisitResult.CONTINUE;
   }
@@ -29,7 +29,7 @@ public class FileExistsVistor extends SimpleFileVisitor<Path>{
   @Override
   public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs)throws IOException{
     final Path relative = originalBag.relativize(path);
-    Assert.assertTrue(Files.exists(newBag.resolve(relative)));
+    Assertions.assertTrue(Files.exists(newBag.resolve(relative)));
     
     return FileVisitResult.CONTINUE;
   }

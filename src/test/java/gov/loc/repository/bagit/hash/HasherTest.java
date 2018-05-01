@@ -9,15 +9,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 
 public class HasherTest extends PrivateConstructorTest {
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
 
   @Test
   public void testClassIsWellDefined() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException{
@@ -31,13 +28,13 @@ public class HasherTest extends PrivateConstructorTest {
     String expectedHash = "41b89090f32a9ef33226b48f1b98dddf";
     
     String hash = Hasher.hash(path, messageDigest);
-    assertEquals(expectedHash, hash);
+    Assertions.assertEquals(expectedHash, hash);
   }
   
-  @Test(expected=IOException.class)
+  @Test
   public void testHashBadInput() throws IOException, NoSuchAlgorithmException{
-    Path path = folder.newFolder().toPath();
+    Path path = createDirectory("newPath");
     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-    Hasher.updateMessageDigests(path, Arrays.asList(messageDigest));
+    Assertions.assertThrows(IOException.class, () -> { Hasher.updateMessageDigests(path, Arrays.asList(messageDigest)); });
   }
 }

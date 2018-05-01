@@ -1,25 +1,20 @@
 package gov.loc.repository.bagit.verify;
 
-import java.io.File;
 import java.util.HashSet;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import gov.loc.repository.bagit.TempFolderTest;
 import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 
-public class PayloadFileExistsInAtLeastOneManifestVistorTest extends Assert {
-  
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
+public class PayloadFileExistsInAtLeastOneManifestVistorTest extends TempFolderTest {
 
-  @Test(expected=FileNotInManifestException.class)
+  @Test
   public void testFileNotInManifestException() throws Exception{
-    File file = folder.newFile();
     
     PayloadFileExistsInAtLeastOneManifestVistor sut = new PayloadFileExistsInAtLeastOneManifestVistor(new HashSet<>(), true);
-    sut.visitFile(file.toPath(), null);
+    Assertions.assertThrows(FileNotInManifestException.class, 
+        () -> { sut.visitFile(createFile("aNewFile"), null); });
   }
 }

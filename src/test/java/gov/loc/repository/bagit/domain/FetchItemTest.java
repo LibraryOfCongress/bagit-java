@@ -5,16 +5,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class FetchItemTest extends Assert {
+public class FetchItemTest {
   
-  private URL url;
+  private static URL url;
   
-  @Before
-  public void setup() throws MalformedURLException{
+  @BeforeAll
+  public static void setup() throws MalformedURLException{
     url = new URL("https://github.com/LibraryOfCongress/bagit-java");
   }
 
@@ -23,7 +23,7 @@ public class FetchItemTest extends Assert {
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     String expected = "https://github.com/LibraryOfCongress/bagit-java 1 " + File.separator + "foo";
     
-    assertEquals("expected [" + expected + "] but got [" + item.toString() + "]", expected, item.toString());
+    Assertions.assertEquals(expected, item.toString(), "expected [" + expected + "] but got [" + item.toString() + "]");
   }
   
   @Test
@@ -31,7 +31,7 @@ public class FetchItemTest extends Assert {
     FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
     FetchItem item2 = new FetchItem(url, 1l, Paths.get("/foo"));
     
-    assertEquals(item1.hashCode(), item2.hashCode());
+    Assertions.assertEquals(item1.hashCode(), item2.hashCode());
   }
   
   @Test
@@ -39,28 +39,28 @@ public class FetchItemTest extends Assert {
     FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
     FetchItem item2 = new FetchItem(url, 1l, Paths.get("/bar"));
     
-    assertNotEquals(item1.hashCode(), item2.hashCode());
+    Assertions.assertNotEquals(item1.hashCode(), item2.hashCode());
   }
   
   @Test
   public void testEqualsReturnsTrueWhenSameObject(){
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     
-    assertTrue(item.equals(item));
+    Assertions.assertTrue(item.equals(item));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenNull(){
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     
-    assertFalse(item.equals(null));
+    Assertions.assertFalse(item.equals(null));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenDifferentTypes(){
     FetchItem item = new FetchItem(url, 1l, Paths.get("/foo"));
     
-    assertFalse(item.equals("foo"));
+    Assertions.assertFalse(item.equals("foo"));
   }
   
   @Test
@@ -68,7 +68,7 @@ public class FetchItemTest extends Assert {
     FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
     FetchItem item2 = new FetchItem(url, 1l, Paths.get("/foo"));
     
-    assertTrue(item1.equals(item2));
+    Assertions.assertTrue(item1.equals(item2));
   }
   
   @Test
@@ -76,6 +76,6 @@ public class FetchItemTest extends Assert {
     FetchItem item1 = new FetchItem(url, 1l, Paths.get("/foo"));
     FetchItem item2 = new FetchItem(url, 1l, Paths.get("/bar"));
     
-    assertFalse(item1.equals(item2));
+    Assertions.assertFalse(item1.equals(item2));
   }
 }

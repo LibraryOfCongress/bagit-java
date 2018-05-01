@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class BagitProfileTest extends AbstractBagitProfileTest{
   
@@ -41,69 +42,69 @@ public class BagitProfileTest extends AbstractBagitProfileTest{
     
     BagitProfile profile = mapper.readValue(new File("src/test/resources/bagitProfiles/exampleProfile.json"), BagitProfile.class);
     System.err.println(profile.toString());
-    assertEquals(expectedOutput, profile.toString());
+    Assertions.assertEquals(expectedOutput, profile.toString());
   }
   
   @Test
   public void testEquals(){
     BagitProfile profile = createExpectedProfile();
     
-    assertFalse(profile.equals(null));
+    Assertions.assertFalse(profile.equals(null));
     
     BagitProfile differentBagitProfileIdentifier = createExpectedProfile();
     differentBagitProfileIdentifier.setBagitProfileIdentifier("foo");
-    assertFalse(profile.equals(differentBagitProfileIdentifier));
+    Assertions.assertFalse(profile.equals(differentBagitProfileIdentifier));
     
     BagitProfile differentSourceOrganization = createExpectedProfile();
     differentSourceOrganization.setSourceOrganization("foo");
-    assertFalse(profile.equals(differentSourceOrganization));
+    Assertions.assertFalse(profile.equals(differentSourceOrganization));
     
     BagitProfile differentExternalDescription = createExpectedProfile();
     differentExternalDescription.setExternalDescription("foo");
-    assertFalse(profile.equals(differentExternalDescription));
+    Assertions.assertFalse(profile.equals(differentExternalDescription));
     
     BagitProfile differentContactName = createExpectedProfile();
     differentContactName.setContactName("foo");
-    assertFalse(profile.equals(differentContactName));
+    Assertions.assertFalse(profile.equals(differentContactName));
     
     BagitProfile differentContactEmail = createExpectedProfile();
     differentContactEmail.setContactEmail("foo");
-    assertFalse(profile.equals(differentContactEmail));
+    Assertions.assertFalse(profile.equals(differentContactEmail));
     
     BagitProfile differentVersion = createExpectedProfile();
     differentVersion.setVersion("foo");
-    assertFalse(profile.equals(differentVersion));
+    Assertions.assertFalse(profile.equals(differentVersion));
     
     BagitProfile differentBagInfoRequirements = createExpectedProfile();
     differentBagInfoRequirements.setBagInfoRequirements(new HashMap<>());
-    assertFalse(profile.equals(differentBagInfoRequirements));
+    Assertions.assertFalse(profile.equals(differentBagInfoRequirements));
     
     BagitProfile differentManifestTypesRequired = createExpectedProfile();
     differentManifestTypesRequired.setManifestTypesRequired(Arrays.asList("foo"));
-    assertFalse(profile.equals(differentManifestTypesRequired));
+    Assertions.assertFalse(profile.equals(differentManifestTypesRequired));
     
     BagitProfile differentFetchFileAllowed = createExpectedProfile();
     differentFetchFileAllowed.setFetchFileAllowed(true);
-    assertFalse(profile.equals(differentFetchFileAllowed));
+    Assertions.assertFalse(profile.equals(differentFetchFileAllowed));
     
     BagitProfile differentSerialization = createExpectedProfile();
     differentSerialization.setSerialization(Serialization.required);
-    assertFalse(profile.equals(differentSerialization));
+    Assertions.assertFalse(profile.equals(differentSerialization));
     
     BagitProfile differentAcceptableMIMESerializationTypes = createExpectedProfile();
     differentAcceptableMIMESerializationTypes.setAcceptableMIMESerializationTypes(Arrays.asList("foo"));
-    assertFalse(profile.equals(differentAcceptableMIMESerializationTypes));
+    Assertions.assertFalse(profile.equals(differentAcceptableMIMESerializationTypes));
     
     BagitProfile differentAcceptableBagitVersions = createExpectedProfile();
     differentAcceptableBagitVersions.setAcceptableBagitVersions(Arrays.asList("foo"));
-    assertFalse(profile.equals(differentAcceptableBagitVersions));
+    Assertions.assertFalse(profile.equals(differentAcceptableBagitVersions));
     
     BagitProfile differentTagManifestTypesRequired = createExpectedProfile();
     differentTagManifestTypesRequired.setTagManifestTypesRequired(Arrays.asList("foo"));
-    assertFalse(profile.equals(differentTagManifestTypesRequired));
+    Assertions.assertFalse(profile.equals(differentTagManifestTypesRequired));
     
     BagitProfile differentTagFilesRequired = createExpectedProfile();
     differentTagFilesRequired.setTagFilesRequired(Arrays.asList("foo"));
-    assertFalse(profile.equals(differentTagFilesRequired));
+    Assertions.assertFalse(profile.equals(differentTagFilesRequired));
   }
 }

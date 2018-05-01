@@ -11,26 +11,24 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarOutputStream;
 
-public class CreateTarBagExample extends Assert {
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
+import gov.loc.repository.bagit.TempFolderTest;
+
+public class CreateTarBagExample extends TempFolderTest {
   
   private Path bagRoot;
   private Path tarredBagPath;
   private OutputStream outputStream;
   
-  @Before
+  @BeforeEach
   public void setup() throws IOException{
     bagRoot = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
-    tarredBagPath = Paths.get(folder.newFile("bag.tar").toURI());
+    tarredBagPath = createFile("bag.tar");
     outputStream = Files.newOutputStream(tarredBagPath, StandardOpenOption.CREATE);
   }
   
@@ -42,7 +40,7 @@ public class CreateTarBagExample extends Assert {
     try(TarOutputStream out = new TarOutputStream(outputStream);) {
       TarVistor visitor = new TarVistor(out, bagRoot);
       Files.walkFileTree(bagRoot, visitor);
-      assertTrue(Files.exists(tarredBagPath));
+      Assertions.assertTrue(Files.exists(tarredBagPath));
     } catch (IOException e) {
       e.printStackTrace();
     }

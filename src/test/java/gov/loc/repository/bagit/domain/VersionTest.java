@@ -1,16 +1,16 @@
 package gov.loc.repository.bagit.domain;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class VersionTest extends Assert {
+public class VersionTest {
   
   @Test
   public void testToString(){
     Version v = new Version(0, 0);
     String expectedString = "0.0";
     
-    assertEquals(expectedString, v.toString());
+    Assertions.assertEquals(expectedString, v.toString());
   }
   
   @Test
@@ -18,7 +18,7 @@ public class VersionTest extends Assert {
     Version v1 = new Version(0, 0);
     Version v2 = new Version(0, 0);
     
-    assertEquals(v1.hashCode(), v2.hashCode());
+    Assertions.assertEquals(v1.hashCode(), v2.hashCode());
   }
   
   @Test
@@ -26,7 +26,7 @@ public class VersionTest extends Assert {
     Version v1 = new Version(0, 0);
     Version v2 = new Version(0, 1);
     
-    assertNotEquals(v1.hashCode(), v2.hashCode());
+    Assertions.assertNotEquals(v1.hashCode(), v2.hashCode());
   }
   
   @Test
@@ -35,17 +35,17 @@ public class VersionTest extends Assert {
     Version middle = new Version(0, 1);
     Version largest = new Version(0, 2);
     
-    assertEquals(0, smallest.compareTo(smallest));
-    assertEquals(-1, smallest.compareTo(middle));
-    assertEquals(-1, smallest.compareTo(largest));
+    Assertions.assertEquals(0, smallest.compareTo(smallest));
+    Assertions.assertEquals(-1, smallest.compareTo(middle));
+    Assertions.assertEquals(-1, smallest.compareTo(largest));
     
-    assertEquals(1, middle.compareTo(smallest));
-    assertEquals(0, middle.compareTo(middle));
-    assertEquals(-1, middle.compareTo(largest));
+    Assertions.assertEquals(1, middle.compareTo(smallest));
+    Assertions.assertEquals(0, middle.compareTo(middle));
+    Assertions.assertEquals(-1, middle.compareTo(largest));
     
-    assertEquals(1, largest.compareTo(smallest));
-    assertEquals(1, largest.compareTo(middle));
-    assertEquals(0, largest.compareTo(largest));
+    Assertions.assertEquals(1, largest.compareTo(smallest));
+    Assertions.assertEquals(1, largest.compareTo(middle));
+    Assertions.assertEquals(0, largest.compareTo(largest));
   }
   
   @Test
@@ -54,35 +54,35 @@ public class VersionTest extends Assert {
     Version middle = new Version(1, 0);
     Version largest = new Version(2, 0);
     
-    assertEquals(0, smallest.compareTo(smallest));
-    assertEquals(-1, smallest.compareTo(middle));
-    assertEquals(-1, smallest.compareTo(largest));
+    Assertions.assertEquals(0, smallest.compareTo(smallest));
+    Assertions.assertEquals(-1, smallest.compareTo(middle));
+    Assertions.assertEquals(-1, smallest.compareTo(largest));
     
-    assertEquals(1, middle.compareTo(smallest));
-    assertEquals(0, middle.compareTo(middle));
-    assertEquals(-1, middle.compareTo(largest));
+    Assertions.assertEquals(1, middle.compareTo(smallest));
+    Assertions.assertEquals(0, middle.compareTo(middle));
+    Assertions.assertEquals(-1, middle.compareTo(largest));
     
-    assertEquals(1, largest.compareTo(smallest));
-    assertEquals(1, largest.compareTo(middle));
-    assertEquals(0, largest.compareTo(largest));
+    Assertions.assertEquals(1, largest.compareTo(smallest));
+    Assertions.assertEquals(1, largest.compareTo(middle));
+    Assertions.assertEquals(0, largest.compareTo(largest));
   }
   
   @Test
   public void testEqualsReturnsTrueWhenSameObject(){
     Version v = new Version(0, 0);
-    assertTrue(v.equals(v));
+    Assertions.assertTrue(v.equals(v));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenNull(){
     Version v = new Version(0, 0);
-    assertFalse(v.equals(null));
+    Assertions.assertFalse(v.equals(null));
   }
   
   @Test
   public void testEqualsReturnsFalseWhenNotAVersion(){
     Version v = new Version(0, 0);
-    assertFalse(v.equals("foo"));
+    Assertions.assertFalse(v.equals("foo"));
   }
   
   @Test
@@ -90,7 +90,7 @@ public class VersionTest extends Assert {
     Version v1 = new Version(0, 0);
     Version v2 = new Version(0, 0);
     
-    assertTrue(v1.equals(v2));
+    Assertions.assertTrue(v1.equals(v2));
   }
   
   @Test
@@ -98,18 +98,18 @@ public class VersionTest extends Assert {
     Version older = new Version(0, 0);
     Version newer = new Version(0, 1);
     
-    assertTrue(newer.isNewer(older));
+    Assertions.assertTrue(newer.isNewer(older));
     
     older = new Version(1, 0);
     newer = new Version(1, 1);
-    assertTrue(newer.isNewer(older));
+    Assertions.assertTrue(newer.isNewer(older));
   }
   
   @Test
   public void testIsSameOrNewer(){
     Version same1 = new Version(0, 0);
     Version same2 = new Version(0, 0);
-    assertTrue(same1.isSameOrNewer(same2));
+    Assertions.assertTrue(same1.isSameOrNewer(same2));
   }
   
   @Test
@@ -117,17 +117,17 @@ public class VersionTest extends Assert {
     Version older = new Version(0, 0);
     Version newer = new Version(0, 1);
     
-    assertTrue(older.isOlder(newer));
+    Assertions.assertTrue(older.isOlder(newer));
     
     older = new Version(1, 0);
     newer = new Version(1, 1);
-    assertTrue(older.isOlder(newer));
+    Assertions.assertTrue(older.isOlder(newer));
   }
   
   @Test
   public void testIsSameOrOlder(){
     Version same1 = new Version(0, 0);
     Version same2 = new Version(0, 0);
-    assertTrue(same1.isSameOrOlder(same2));
+    Assertions.assertTrue(same1.isSameOrOlder(same2));
   }
 }

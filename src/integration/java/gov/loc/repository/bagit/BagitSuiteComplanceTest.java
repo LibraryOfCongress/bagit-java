@@ -13,11 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,18 +40,15 @@ import gov.loc.repository.bagit.writer.BagWriter;
 /**
  * This class assumes that the compliance test suite repo has been cloned and is available locally
  */
-public class BagitSuiteComplanceTest extends Assert {
+public class BagitSuiteComplanceTest extends TempFolderTest {
   private static final Logger logger = LoggerFactory.getLogger(BagitSuiteComplanceTest.class);
-  
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
   
   private static final Path complianceRepoRootDir = Paths.get("bagit-conformance-suite");
   private static final BagTestCaseVistor visitor = new BagTestCaseVistor();
   private static final BagReader reader = new BagReader();
   private static final BagVerifier verifier = new BagVerifier();
   
-  @BeforeClass
+  @BeforeAll
   public static void setupOnce() throws IOException{
     if(!Files.exists(complianceRepoRootDir)){
       throw new IOException("bagit-conformance-suite git repo was not found, did you clone it?");
@@ -94,7 +89,7 @@ public class BagitSuiteComplanceTest extends Assert {
       }
     }
     
-    assertEquals("every test case should throw an error", visitor.getInvalidTestCases().size(), errorCount);
+    Assertions.assertEquals(visitor.getInvalidTestCases().size(), errorCount, "every test case should throw an error");
     logger.debug("Count of all errors found in generic invalid cases: {}", map);
   }
   
@@ -125,7 +120,7 @@ public class BagitSuiteComplanceTest extends Assert {
       }
     }
     
-    assertEquals("every test case should throw an error", osSpecificInvalidPaths.size(), errorCount);
+    Assertions.assertEquals(osSpecificInvalidPaths.size(), errorCount, "every test case should throw an error");
     logger.debug("Count of all errors found in os specific invalid cases: {}", map);
   }
   
@@ -135,7 +130,7 @@ public class BagitSuiteComplanceTest extends Assert {
     
     for(Path bagDir : visitor.getWarningTestCases()){
       warnings = BagLinter.lintBag(bagDir);
-      assertTrue(warnings.size() > 0);
+      Assertions.assertTrue(warnings.size() > 0);
     }
   }
   
@@ -145,7 +140,7 @@ public class BagitSuiteComplanceTest extends Assert {
     Path newBagDir;
     
     for(final Path bagDir : visitor.getValidTestCases()){
-      newBagDir = folder.newFolder().toPath();
+      newBagDir = folder.resolve("readWriteProducesSameBag");
       bag = reader.read(bagDir);
       BagWriter.write(bag, newBagDir);
       
@@ -158,22 +153,20 @@ public class BagitSuiteComplanceTest extends Assert {
   private void testTagFileContents(final Bag originalBag, final Path newBagDir) throws IOException{
     Path original = originalBag.getRootDir().resolve("bagit.txt");
     Path newFile = newBagDir.resolve("bagit.txt");
-    assertTrue("bagit.txt files differ", 
-        compareFileContents(original, 
-            newFile, StandardCharsets.UTF_8));
+    Assertions.assertTrue(compareFileContents(original, newFile, StandardCharsets.UTF_8), "bagit.txt files differ");
     
     if(originalBag.getVersion().isSameOrOlder(new Version(0, 95))){
       original = originalBag.getRootDir().resolve("package-info.txt");
       newFile = newBagDir.resolve("package-info.txt");
-      assertTrue(original + " differs from " + newFile, 
-          compareFileContents(original, newFile, originalBag.getFileEncoding()));
+      Assertions.assertTrue(compareFileContents(original, newFile, originalBag.getFileEncoding()), 
+          original + " differs from " + newFile);
     }
     else{
       if(Files.exists(originalBag.getRootDir().resolve("bag-info.txt"))){
         original = originalBag.getRootDir().resolve("bag-info.txt");
         newFile = newBagDir.resolve("bag-info.txt");
-        assertTrue(original + " differs from " + newFile, 
-            compareFileContents(original,newFile, originalBag.getFileEncoding()));
+        Assertions.assertTrue(compareFileContents(original,newFile, originalBag.getFileEncoding()),
+            original + " differs from " + newFile);
       }
     }
     

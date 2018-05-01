@@ -9,21 +9,23 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
-import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.FetchItem;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 
 public class FetchReaderTest extends PrivateConstructorTest {
 
-  private List<URL> urls;
+  private static List<URL> urls;
   
-  @Before
-  public void setup() throws MalformedURLException{
+  @BeforeAll
+  public static void setup() throws MalformedURLException{
     urls = Arrays.asList(new URL("http://localhost/foo/data/dir1/test3.txt"), 
         new URL("http://localhost/foo/data/dir2/dir3/test5.txt"),
         new URL("http://localhost/foo/data/dir2/test4.txt"),
@@ -42,12 +44,12 @@ public class FetchReaderTest extends PrivateConstructorTest {
     List<FetchItem> returnedItems = FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, fetchFile.getParent());
     
     for(FetchItem item : returnedItems){
-      assertNotNull(item.url);
-      assertTrue(urls.contains(item.url));
+      Assertions.assertNotNull(item.url);
+      Assertions.assertTrue(urls.contains(item.url));
       
-      assertEquals(Long.valueOf(-1), item.length);
+      Assertions.assertEquals(Long.valueOf(-1), item.length);
       
-      assertNotNull(item.path);
+      Assertions.assertNotNull(item.path);
     }
   }
   
@@ -57,46 +59,49 @@ public class FetchReaderTest extends PrivateConstructorTest {
     List<FetchItem> returnedItems = FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
     
     for(FetchItem item : returnedItems){
-      assertNotNull(item.url);
-      assertTrue(urls.contains(item.url));
+      Assertions.assertNotNull(item.url);
+      Assertions.assertTrue(urls.contains(item.url));
       
-      assertTrue(item.length > 0);
+      Assertions.assertTrue(item.length > 0);
       
-      assertNotNull(item.path);
+      Assertions.assertNotNull(item.path);
     }
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testReadBlankLinesThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("fetchFiles/fetchWithBlankLines.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo")); });
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testReadWindowsSpecialDirMaliciousFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/windowsSpecialDirectoryName.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo"));
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/foo")); });
   }
   
-  @Test(expected=MaliciousPathException.class)
+  @Test
   public void testReadUpADirMaliciousFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/upAdirectoryReference.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+    Assertions.assertThrows(MaliciousPathException.class, 
+        () -> { FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar")); });
   }
   
-  @Test(expected=MaliciousPathException.class)
+  @Test
   public void testReadTildeFetchThrowsException() throws Exception{
     Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/tildeReference.txt").toURI());
-    FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
+    Assertions.assertThrows(MaliciousPathException.class, 
+        () -> { FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar")); });
   }
   
-  @Test(expected=MaliciousPathException.class)
+  @Test
+  @EnabledOnOs(OS.WINDOWS)
   public void testReadFileUrlMaliciousFetchThrowsException() throws Exception{
-    if(!TestUtils.isExecutingOnWindows()){
-      Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/fileUrl.txt").toURI());
-      FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar"));
-    }
-    throw new MaliciousPathException("Skipping for windows cause it isn't valid");
+    Path fetchFile = Paths.get(getClass().getClassLoader().getResource("maliciousFetchFile/fileUrl.txt").toURI());
+    Assertions.assertThrows(MaliciousPathException.class, 
+        () -> { FetchReader.readFetch(fetchFile, StandardCharsets.UTF_8, Paths.get("/bar")); });
   }
   
   @Test

@@ -3,16 +3,13 @@ package gov.loc.repository.bagit.domain;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.AbstractMap.SimpleImmutableEntry;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
-public class BagTest extends Assert {
+public class BagTest {
 
   @Test
   public void testToString() throws MalformedURLException{
@@ -22,7 +19,7 @@ public class BagTest extends Assert {
     bag.getTagManifests().add(new Manifest(StandardSupportedAlgorithms.MD5));
     bag.getItemsToFetch().add(new FetchItem(new URL("http://www.wiki.com"), -1l, Paths.get("foo")));
     
-    assertEquals(expectedToString, bag.toString());
+    Assertions.assertEquals(expectedToString, bag.toString());
   }
   
   @Test
@@ -30,7 +27,7 @@ public class BagTest extends Assert {
     Bag bag1 = new Bag();
     Bag bag2 = new Bag();
     
-    assertEquals(bag1.hashCode(), bag2.hashCode());
+    Assertions.assertEquals(bag1.hashCode(), bag2.hashCode());
   }
   
   
@@ -39,7 +36,7 @@ public class BagTest extends Assert {
     Bag bag1 = new Bag();
     Bag bag2 = new Bag();
     
-    assertTrue(bag1.equals(bag2));
+    Assertions.assertTrue(bag1.equals(bag2));
   }
   
   @Test
@@ -49,48 +46,27 @@ public class BagTest extends Assert {
     
     Bag bag2 = new Bag(bag1);
     
-    assertTrue(bag1.equals(bag2));
+    Assertions.assertTrue(bag1.equals(bag2));
   }
   
   @Test
   public void testEqualsShouldReturnTrueWhenSameObject(){
     Bag bag1 = new Bag();
     
-    assertTrue(bag1.equals(bag1));
+    Assertions.assertTrue(bag1.equals(bag1));
   }
   
   @Test
   public void testEqualsShouldReturnFalseWhenNull(){
     Bag bag1 = new Bag();
     
-    assertFalse(bag1.equals(null));
+    Assertions.assertFalse(bag1.equals(null));
   }
   
   @Test
   public void testEqualsShouldReturnFalseWhenNotABag(){
     Bag bag1 = new Bag();
     
-    assertFalse(bag1.equals("foo"));
-  }
-  
-  @Test
-  public void foo(){
-    List<SimpleImmutableEntry<String, String>> list = new ArrayList<>();
-    list.add(new SimpleImmutableEntry<>("foo", "bar"));
-    list.add(new SimpleImmutableEntry<>("bar", "ham"));
-    list.add(new SimpleImmutableEntry<>("ham", "hungry"));
-    
-    SimpleImmutableEntry<String, String> entryToRemove = null;
-    for(final SimpleImmutableEntry<String, String> entry : list){
-      if(!"ham".equals(entry.getKey())){
-        entryToRemove = entry;
-        continue;
-      }
-    }
-    if(entryToRemove != null){
-      list.remove(entryToRemove);
-    }
-    
-    System.err.println(list);
+    Assertions.assertFalse(bag1.equals("foo"));
   }
 }

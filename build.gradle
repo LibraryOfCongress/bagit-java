@@ -33,14 +33,23 @@ dependencies {
   'com.fasterxml.jackson.core:jackson-core:2.9.0.pr4', 
   'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr4'
     
-  testCompile 'junit:junit:4.12', 
+  testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0', 
     'org.springframework.boot:spring-boot-starter-logging:1.5.4.RELEASE',
     'org.bouncycastle:bcprov-jdk15on:1.57',
     'org.kamranzafar:jtar:2.3'
+
+  testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
 }
 
-test { //show test output
-  testLogging.showStandardStreams = true
+test { 
+  useJUnitPlatform()
+  testLogging {
+    events "passed", "skipped", "failed"
+  }
+  reports {
+    html.enabled = true
+  }
+  //testLogging.showStandardStreams = true
 }
 
 tasks.withType(com.github.spotbugs.SpotBugsTask) {
