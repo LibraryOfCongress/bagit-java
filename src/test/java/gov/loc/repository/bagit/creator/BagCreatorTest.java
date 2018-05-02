@@ -18,6 +18,7 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.util.PathUtils;
 
 public class BagCreatorTest extends TempFolderTest {
   
@@ -100,7 +101,8 @@ public class BagCreatorTest extends TempFolderTest {
     TestUtils.makeFilesHiddenOnWindows(folder);
     
     Assertions.assertTrue(Files.isHidden(hiddenFile));
-    Assertions.assertTrue(Files.isHidden(hiddenDirectory));
+    //because the Files.isHidden() always returns false for windows if it is a directory
+    Assertions.assertTrue(PathUtils.isHidden(hiddenDirectory)); 
     
     Path hiddenFile2 = hiddenDirectory.resolve(".hiddenFile2.txt");
     Files.createFile(hiddenFile2);
