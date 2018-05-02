@@ -21,6 +21,7 @@ public class BagInfoRequirementTest {
     BagInfoRequirement differentListOfAcceptableValues = new BagInfoRequirement();
     differentListOfAcceptableValues.setRequired(true);
     differentListOfAcceptableValues.setAcceptableValues(Arrays.asList("bar"));
+    differentListOfAcceptableValues.setRepeatable(false);
     Assertions.assertFalse(requirement.equals(differentListOfAcceptableValues));
   }
 }
