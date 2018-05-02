@@ -5,19 +5,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.domain.Version;
 
-public class VersionCheckerTest extends Assert {
+public class VersionCheckerTest {
 
   @Test
   public void testCheckOldVersion(){
     Set<BagitWarning> warnings = new HashSet<>();
     VersionChecker.checkVersion(new Version(0, 95), warnings, Collections.emptyList());
     
-    assertTrue(warnings.contains(BagitWarning.OLD_BAGIT_VERSION));
+    Assertions.assertTrue(warnings.contains(BagitWarning.OLD_BAGIT_VERSION));
   }
   
   @Test
@@ -25,6 +25,6 @@ public class VersionCheckerTest extends Assert {
     Set<BagitWarning> warnings = new HashSet<>();
     VersionChecker.checkVersion(new Version(0, 95), warnings, Arrays.asList(BagitWarning.OLD_BAGIT_VERSION));
     
-    assertFalse(warnings.contains(BagitWarning.OLD_BAGIT_VERSION));
+    Assertions.assertFalse(warnings.contains(BagitWarning.OLD_BAGIT_VERSION));
   }
 }

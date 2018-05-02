@@ -5,7 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.TestUtils;
@@ -25,19 +26,19 @@ public class PathUtilsTest extends PrivateConstructorTest {
     String testString = "/foo/bar/ham%0D";
     String expectedDecoded = "/foo/bar/ham\r";
     String actualDecoded = PathUtils.decodeFilname(testString);
-    assertEquals(expectedDecoded, actualDecoded);
+    Assertions.assertEquals(expectedDecoded, actualDecoded);
     
     //just new line
     testString = "/foo/bar/ham%0A";
     expectedDecoded = "/foo/bar/ham\n";
     actualDecoded = PathUtils.decodeFilname(testString);
-    assertEquals(expectedDecoded, actualDecoded);
+    Assertions.assertEquals(expectedDecoded, actualDecoded);
     
     //both carriage return and new line
     testString = "/foo/bar/ham%0D%0A";
     expectedDecoded = "/foo/bar/ham\r\n";
     actualDecoded = PathUtils.decodeFilname(testString);
-    assertEquals(expectedDecoded, actualDecoded);
+    Assertions.assertEquals(expectedDecoded, actualDecoded);
   }
   
   @Test
@@ -47,19 +48,19 @@ public class PathUtilsTest extends PrivateConstructorTest {
       Path testPath = Paths.get("foo/bar/ham\r");
       String expectedEncoded = "foo/bar/ham%0D";
       String actualEncoded = PathUtils.encodeFilename(testPath);
-      assertEquals(expectedEncoded, actualEncoded);
+      Assertions.assertEquals(expectedEncoded, actualEncoded);
       
       //just new line
       testPath = Paths.get("foo/bar/ham\n");
       expectedEncoded = "foo/bar/ham%0A";
       actualEncoded = PathUtils.encodeFilename(testPath);
-      assertEquals(expectedEncoded, actualEncoded);
+      Assertions.assertEquals(expectedEncoded, actualEncoded);
       
       //both carriage return and new line
       testPath = Paths.get("foo/bar/ham\r\n");
       expectedEncoded = "foo/bar/ham%0D%0A";
       actualEncoded = PathUtils.encodeFilename(testPath);
-      assertEquals(expectedEncoded, actualEncoded);
+      Assertions.assertEquals(expectedEncoded, actualEncoded);
     }
   }
   
@@ -71,7 +72,7 @@ public class PathUtilsTest extends PrivateConstructorTest {
     Path expectedPath = bag.getRootDir();
     Path actualPath = PathUtils.getDataDir(bag);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
     
     bag = new Bag(new Version(0, 97));
     bag.setRootDir(Paths.get("foo"));
@@ -79,7 +80,7 @@ public class PathUtilsTest extends PrivateConstructorTest {
     expectedPath = bag.getRootDir().resolve("data");
     actualPath = PathUtils.getDataDir(bag);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
   }
   
   @Test
@@ -88,12 +89,12 @@ public class PathUtilsTest extends PrivateConstructorTest {
     Path expectedPath = input;
     Path actualPath = PathUtils.getDataDir(new Version(2,0), input);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
     
     expectedPath = input.resolve("data");
     actualPath = PathUtils.getDataDir(new Version(0, 97), input);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
   }
   
   @Test
@@ -104,7 +105,7 @@ public class PathUtilsTest extends PrivateConstructorTest {
     Path expectedPath = bag.getRootDir().resolve(".bagit");
     Path actualPath = PathUtils.getBagitDir(bag);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
     
     bag = new Bag(new Version(0, 97));
     bag.setRootDir(Paths.get("foo"));
@@ -112,7 +113,7 @@ public class PathUtilsTest extends PrivateConstructorTest {
     expectedPath = bag.getRootDir();
     actualPath = PathUtils.getBagitDir(bag);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
   }
   
   @Test
@@ -121,17 +122,17 @@ public class PathUtilsTest extends PrivateConstructorTest {
     Path expectedPath = input.resolve(".bagit");
     Path actualPath = PathUtils.getBagitDir(new Version(2,0), input);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
     
     expectedPath = input;
     actualPath = PathUtils.getBagitDir(new Version(0, 97), input);
     
-    assertEquals(expectedPath, actualPath);
+    Assertions.assertEquals(expectedPath, actualPath);
   }
   
   @Test
   public void testGeneratePayloadOxum() throws IOException{
     Path testPath = Paths.get("src", "test", "resources", "bags", "v0_97", "bag", "data");
-    assertEquals("25.5", PathUtils.generatePayloadOxum(testPath));
+    Assertions.assertEquals("25.5", PathUtils.generatePayloadOxum(testPath));
   }
 }

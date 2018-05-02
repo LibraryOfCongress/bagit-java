@@ -10,16 +10,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 
 public class ManifestCheckerTest extends PrivateConstructorTest{
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
   
   private final Path rootDir = Paths.get("src","test","resources","linterTestBag");
   
@@ -34,25 +31,25 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Collections.emptyList());
     
-    assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
-    assertTrue(warnings.contains(BagitWarning.DIFFERENT_CASE));
+    Assertions.assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
+    Assertions.assertTrue(warnings.contains(BagitWarning.DIFFERENT_CASE));
     if(FileSystems.getDefault().getClass().getName() != "sun.nio.fs.MacOSXFileSystem"){ //don't test normalization on mac
-      assertTrue(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
+      Assertions.assertTrue(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
     }
-    assertTrue(warnings.contains(BagitWarning.BAG_WITHIN_A_BAG));
-    assertTrue(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
-    assertTrue(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
-    assertTrue(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
-    assertTrue(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
+    Assertions.assertTrue(warnings.contains(BagitWarning.BAG_WITHIN_A_BAG));
+    Assertions.assertTrue(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
+    Assertions.assertTrue(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
+    Assertions.assertTrue(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
+    Assertions.assertTrue(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
   }
   
   @Test
   public void testCheckTagManifest() throws Exception{
-    folder.newFile("tagmanifest-md5.txt");
+    createFile("tagmanifest-md5.txt");
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(folder.getRoot().toPath(), StandardCharsets.UTF_16, warnings, Collections.emptyList());
-    assertFalse(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
+    ManifestChecker.checkManifests(folder, StandardCharsets.UTF_16, warnings, Collections.emptyList());
+    Assertions.assertFalse(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
   }
   
   @Test
@@ -61,7 +58,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
     
-    assertFalse(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
+    Assertions.assertFalse(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
   }
   
   @Test
@@ -70,7 +67,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.DIFFERENT_CASE));
     
-    assertFalse(warnings.contains(BagitWarning.DIFFERENT_CASE));
+    Assertions.assertFalse(warnings.contains(BagitWarning.DIFFERENT_CASE));
   }
   
   @Test
@@ -79,7 +76,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.DIFFERENT_NORMALIZATION));
     
-    assertFalse(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
+    Assertions.assertFalse(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
   }
   
   @Test
@@ -88,7 +85,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.BAG_WITHIN_A_BAG));
     
-    assertFalse(warnings.contains(BagitWarning.BAG_WITHIN_A_BAG));
+    Assertions.assertFalse(warnings.contains(BagitWarning.BAG_WITHIN_A_BAG));
   }
   
   @Test
@@ -97,7 +94,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.LEADING_DOT_SLASH));
     
-    assertFalse(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
+    Assertions.assertFalse(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
   }
   
   @Test
@@ -106,7 +103,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.NON_STANDARD_ALGORITHM));
     
-    assertFalse(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
+    Assertions.assertFalse(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
   }
   
   @Test
@@ -115,7 +112,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
 
     ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.OS_SPECIFIC_FILES));
     
-    assertFalse(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
+    Assertions.assertFalse(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
   }
 
   @Test
@@ -125,13 +122,14 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
         "data/._.Trashes", "data/.fseventsd"};
     
     for(String osFileToTest : osFilesToTest){
-      assertTrue(osFileToTest + " should match regex but it doesn't", osFileToTest.matches(regex));
+      Assertions.assertTrue(osFileToTest.matches(regex), osFileToTest + " should match regex but it doesn't");
     }
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testParsePath() throws InvalidBagitFileFormatException{
-    ManifestChecker.parsePath("foobarham");
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { ManifestChecker.parsePath("foobarham"); });
   }
   
   @Test
@@ -141,7 +139,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
     for(String algorithm : algorithms){
      warnings = new HashSet<>();
      ManifestChecker.checkAlgorthm(algorithm, warnings, Collections.emptyList());
-       assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
+       Assertions.assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
     }
   }
 }

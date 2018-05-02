@@ -6,20 +6,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.TestUtils;
 
 /**
  * Tests the ignore of hidden files while walking the file tree. 
  */
-public class FileCountAndTotalSizeVistorTest extends Assert {
+public class FileCountAndTotalSizeVistorTest {
   
   private Path payloadDir = Paths.get(new File("src/test/resources/hiddenFoldersAndFiles").toURI());
   
-  @Before
+  @BeforeEach
   public void setup() throws IOException{
     TestUtils.makeFilesHiddenOnWindows(payloadDir);
   }
@@ -28,7 +28,7 @@ public class FileCountAndTotalSizeVistorTest extends Assert {
   public void testGeneratePayloadOxum() throws IOException{
     final FileCountAndTotalSizeVistor vistor = new FileCountAndTotalSizeVistor();
     Files.walkFileTree(payloadDir, vistor);
-    assertEquals(5, vistor.getCount());
-    assertEquals(101, vistor.getTotalSize());
+    Assertions.assertEquals(5, vistor.getCount());
+    Assertions.assertEquals(101, vistor.getTotalSize());
   }
 }

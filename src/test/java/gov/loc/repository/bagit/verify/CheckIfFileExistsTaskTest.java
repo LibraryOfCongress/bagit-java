@@ -8,14 +8,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class CheckIfFileExistsTaskTest extends Assert {
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
+import gov.loc.repository.bagit.TempFolderTest;
+
+public class CheckIfFileExistsTaskTest extends TempFolderTest {
 
   @Test
   public void testNormalizedFileExists() throws Exception{
@@ -25,16 +23,16 @@ public class CheckIfFileExistsTaskTest extends Assert {
     String filename = "Núñez.txt";
     String filenameNFC = Normalizer.normalize(filename, Normalizer.Form.NFC);
     String filenameNFD = Normalizer.normalize(filename, Normalizer.Form.NFD);
+    Path NFCPath = folder.resolve(filenameNFC);
     
-    folder.newFile(filenameNFD); //create the test file on disk
+    createFile(filenameNFD);
     
-    Path NFCPath = folder.getRoot().toPath().resolve(filenameNFC);
     CheckIfFileExistsTask sut = new CheckIfFileExistsTask(NFCPath, missingFiles, latch);
     
     executor.execute(sut);
     latch.await();
     executor.shutdown();
     
-    assertTrue(missingFiles.size() == 0);
+    Assertions.assertTrue(missingFiles.size() == 0);
   }
 }

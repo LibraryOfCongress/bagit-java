@@ -10,19 +10,15 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import gov.loc.repository.bagit.TempFolderTest;
 import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 
-public class AddPayloadToBagManifestVistorTest extends Assert {
-  
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
+public class AddPayloadToBagManifestVistorTest extends TempFolderTest {
 
   @Test
   public void includeDotKeepFilesInManifest() throws Exception{
@@ -36,16 +32,16 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
     CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(map, includeHiddenFiles);
     Files.walkFileTree(start, sut);
     
-    assertEquals(1, manifest.getFileToChecksumMap().size());
-    assertTrue(manifest.getFileToChecksumMap().containsKey(start.resolve("fooDir/.keep")));
+    Assertions.assertEquals(1, manifest.getFileToChecksumMap().size());
+    Assertions.assertTrue(manifest.getFileToChecksumMap().containsKey(start.resolve("fooDir/.keep")));
   }
   
   @Test
   public void testSkipDotBagitDir() throws IOException{
-    Path dotBagitDirectory = Paths.get(folder.newFolder(".bagit").toURI());
+    Path dotBagitDirectory = createDirectory(".bagit");
     CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, true);
     FileVisitResult returned = sut.preVisitDirectory(dotBagitDirectory, null);
-    assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
+    Assertions.assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
   }
   
   @Test
@@ -53,7 +49,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
     Path hiddenDirectory = createHiddenDirectory();
     CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, false);
     FileVisitResult returned = sut.preVisitDirectory(hiddenDirectory, null);
-    assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
+    Assertions.assertEquals(FileVisitResult.SKIP_SUBTREE, returned);
   }
   
   @Test
@@ -61,7 +57,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
     Path hiddenDirectory = createHiddenDirectory();
     CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, true);
     FileVisitResult returned = sut.preVisitDirectory(hiddenDirectory, null);
-    assertEquals(FileVisitResult.CONTINUE, returned);
+    Assertions.assertEquals(FileVisitResult.CONTINUE, returned);
   }
   
   @Test
@@ -69,11 +65,11 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
     Path hiddenFile = createHiddenFile();
     CreatePayloadManifestsVistor sut = new CreatePayloadManifestsVistor(null, false);
     FileVisitResult returned = sut.visitFile(hiddenFile, null);
-    assertEquals(FileVisitResult.CONTINUE, returned);
+    Assertions.assertEquals(FileVisitResult.CONTINUE, returned);
   }
   
   private Path createHiddenDirectory() throws IOException{
-    Path hiddenDirectory = Paths.get(folder.newFolder(".someHiddenDir").toURI());
+    Path hiddenDirectory = createDirectory(".someHiddenDir");
     
     if(TestUtils.isExecutingOnWindows()){
       Files.setAttribute(hiddenDirectory, "dos:hidden", Boolean.TRUE);
@@ -83,7 +79,7 @@ public class AddPayloadToBagManifestVistorTest extends Assert {
   }
   
   private Path createHiddenFile() throws IOException{
-    Path hiddenDirectory = Paths.get(folder.newFile(".someHiddenFile").toURI());
+    Path hiddenDirectory = createFile(".someHiddenFile");
     
     if(TestUtils.isExecutingOnWindows()){
       Files.setAttribute(hiddenDirectory, "dos:hidden", Boolean.TRUE);

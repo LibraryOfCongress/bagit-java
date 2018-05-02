@@ -5,7 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
@@ -27,12 +28,14 @@ public class QuickVerifierTest extends PrivateConstructorTest {
   public void testCanQuickVerify() throws Exception{
     Bag bag = reader.read(rootDir);
     boolean canQuickVerify = QuickVerifier.canQuickVerify(bag);
-    assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
+    Assertions.assertFalse(canQuickVerify,
+        "Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!");
     
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     bag = reader.read(passingRootDir);
     canQuickVerify = QuickVerifier.canQuickVerify(bag);
-    assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
+    Assertions.assertTrue(canQuickVerify,
+        "Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!");
   }
   
   @Test 
@@ -43,26 +46,28 @@ public class QuickVerifierTest extends PrivateConstructorTest {
     QuickVerifier.quicklyVerify(bag);
   }
   
-  @Test(expected=PayloadOxumDoesNotExistException.class)
+  @Test
   public void testExceptionIsThrownWhenPayloadOxumDoesntExist() throws Exception{
     Bag bag = reader.read(rootDir);
-    QuickVerifier.quicklyVerify(bag);
-    
+    Assertions.assertThrows(PayloadOxumDoesNotExistException.class, 
+        () -> { QuickVerifier.quicklyVerify(bag); });
   }
   
-  @Test(expected=InvalidPayloadOxumException.class)
+  @Test
   public void testInvalidByteSizeForQuickVerify() throws Exception{
     Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumByteSize/bag").toURI());
     Bag bag = reader.read(badRootDir);
     
-    QuickVerifier.quicklyVerify(bag);
+    Assertions.assertThrows(InvalidPayloadOxumException.class, 
+        () -> { QuickVerifier.quicklyVerify(bag); });
   }
   
-  @Test(expected=InvalidPayloadOxumException.class)
+  @Test
   public void testInvalidFileCountForQuickVerify() throws Exception{
     Path badRootDir = Paths.get(new File("src/test/resources/badPayloadOxumFileCount/bag").toURI());
     Bag bag = reader.read(badRootDir);
     
-    QuickVerifier.quicklyVerify(bag);
+    Assertions.assertThrows(InvalidPayloadOxumException.class, 
+        () -> { QuickVerifier.quicklyVerify(bag); });
   }
 }

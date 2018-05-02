@@ -10,7 +10,8 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Version;
@@ -30,30 +31,34 @@ public class BagitTextFileReaderTest extends PrivateConstructorTest {
     BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testFirstLineMatchesStrict() throws Exception{
     //should fail because it has spaces before the colon
     List<String> lines = Arrays.asList("BagIt-Version    : 1.0", "Tag-File-Character-Encoding: UTF-8");
-    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines); });
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testSecondLineMatchesStrict() throws Exception{
     //should fail because it has spaces before the colon
     List<String> lines = Arrays.asList("BagIt-Version: 1.0", "Tag-File-Character-Encoding      : UTF-8");
-    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines); });
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testMatchesStrictWithTooManyLines() throws Exception{
     //should fail because it has 3 lines
     List<String> lines = Arrays.asList("BagIt-Version: 1.0", "Tag-File-Character-Encoding: UTF-8", "");
-    BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines);
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { BagitTextFileReader.throwErrorIfLinesDoNotMatchStrict(lines); });
   }
   
-  @Test(expected=UnparsableVersionException.class)
+  @Test
   public void testParseVersionWithBadVersion() throws UnparsableVersionException{
-    BagitTextFileReader.parseVersion("someVersionThatIsUnparsable");
+    Assertions.assertThrows(UnparsableVersionException.class, 
+        () -> { BagitTextFileReader.parseVersion("someVersionThatIsUnparsable"); });
   }
   
   @Test
@@ -70,22 +75,24 @@ public class BagitTextFileReaderTest extends PrivateConstructorTest {
     BagitTextFileReader.parseVersion(" 1.0");
   }
   
-  @Test(expected=UnparsableVersionException.class)
+  @Test
   public void testParsePartlyMissingVersion() throws Exception{
-    BagitTextFileReader.parseVersion(".97");
+    Assertions.assertThrows(UnparsableVersionException.class, 
+        () -> { BagitTextFileReader.parseVersion(".97"); });
   }
   
   @Test
   public void testReadBagitFile()throws Exception{
     Path bagitFile = Paths.get(new File("src/test/resources/bagitFiles/bagit-0.97.txt").toURI());
     SimpleImmutableEntry<Version, Charset> actualBagitInfo = BagitTextFileReader.readBagitTextFile(bagitFile);
-    assertEquals(new Version(0, 97), actualBagitInfo.getKey());
-    assertEquals(StandardCharsets.UTF_8, actualBagitInfo.getValue());
+    Assertions.assertEquals(new Version(0, 97), actualBagitInfo.getKey());
+    Assertions.assertEquals(StandardCharsets.UTF_8, actualBagitInfo.getValue());
   }
   
-  @Test(expected=InvalidBagitFileFormatException.class)
+  @Test
   public void testReadBagitFileWithBomShouldThrowException()throws Exception{
     Path bagitFile = Paths.get(new File("src/test/resources/bagitFiles/bagit-with-bom.txt").toURI());
-    BagitTextFileReader.readBagitTextFile(bagitFile);
+    Assertions.assertThrows(InvalidBagitFileFormatException.class, 
+        () -> { BagitTextFileReader.readBagitTextFile(bagitFile); });
   }
 }

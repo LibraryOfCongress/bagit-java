@@ -10,9 +10,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
@@ -24,9 +23,6 @@ import gov.loc.repository.bagit.reader.BagReader;
 
 public class MandatoryVerifierTest extends PrivateConstructorTest {
   
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
-  
   private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   private BagReader reader = new BagReader();
 
@@ -35,42 +31,46 @@ public class MandatoryVerifierTest extends PrivateConstructorTest {
     assertUtilityClassWellDefined(MandatoryVerifier.class);
   }
   
-  @Test(expected=FileNotInPayloadDirectoryException.class)
+  @Test
   public void testErrorWhenFetchItemsDontExist() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/bad-fetch-bag").toURI());
     Bag bag = reader.read(rootDir);
     
-    MandatoryVerifier.checkFetchItemsExist(bag.getItemsToFetch(), bag.getRootDir());
+    Assertions.assertThrows(FileNotInPayloadDirectoryException.class, 
+        () -> { MandatoryVerifier.checkFetchItemsExist(bag.getItemsToFetch(), bag.getRootDir()); });
   }
   
-  @Test(expected=MissingPayloadDirectoryException.class)
+  @Test
   public void testErrorWhenMissingPayloadDirectory() throws Exception{
     copyBagToTestFolder();
-    Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
-    File dataDir = new File(folder.getRoot(), "data");
-    deleteDirectory(Paths.get(dataDir.toURI()));
+    Bag bag = reader.read(folder);
+    Path dataDir = createDirectory("data");
+    deleteDirectory(dataDir);
     
-    MandatoryVerifier.checkPayloadDirectoryExists(bag);
+    Assertions.assertThrows(MissingPayloadDirectoryException.class, 
+        () -> { MandatoryVerifier.checkPayloadDirectoryExists(bag); });
   }
   
-  @Test(expected=MissingPayloadManifestException.class)
+  @Test
   public void testErrorWhenMissingPayloadManifest() throws Exception{
     copyBagToTestFolder();
-    Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
-    File manifestFile = new File(folder.getRoot(), "manifest-md5.txt");
-    manifestFile.delete();
+    Bag bag = reader.read(folder);
+    Path manifestFile = folder.resolve("manifest-md5.txt");
+    Files.delete(manifestFile);
     
-    MandatoryVerifier.checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), bag.getVersion());
+    Assertions.assertThrows(MissingPayloadManifestException.class, 
+        () -> { MandatoryVerifier.checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), bag.getVersion()); });
   }
   
-  @Test(expected=MissingBagitFileException.class)
+  @Test
   public void testErrorWhenMissingBagitTextFile() throws Exception{
     copyBagToTestFolder();
-    Bag bag = reader.read(Paths.get(folder.getRoot().toURI()));
-    File bagitFile = new File(folder.getRoot(), "bagit.txt");
-    bagitFile.delete();
+    Bag bag = reader.read(folder);
+    Path bagitFile = folder.resolve("bagit.txt");
+    Files.delete(bagitFile);
     
-    MandatoryVerifier.checkBagitFileExists(bag.getRootDir(), bag.getVersion());
+    Assertions.assertThrows(MissingBagitFileException.class, 
+        () -> { MandatoryVerifier.checkBagitFileExists(bag.getRootDir(), bag.getVersion()); });
   }
   
   private void copyBagToTestFolder() throws Exception{
@@ -78,7 +78,7 @@ public class MandatoryVerifierTest extends PrivateConstructorTest {
       try {
           Files.copy(path, Paths.get(path.toString().replace(
               rootDir.toString(),
-              folder.getRoot().toString())));
+              folder.toString())));
       } catch (Exception e) {}});
   }
   

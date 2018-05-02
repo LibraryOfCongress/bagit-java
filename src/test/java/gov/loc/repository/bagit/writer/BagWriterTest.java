@@ -1,6 +1,5 @@
 package gov.loc.repository.bagit.writer;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,9 +7,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.creator.BagCreator;
@@ -20,8 +18,6 @@ import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.reader.BagReader;
 
 public class BagWriterTest extends PrivateConstructorTest {
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
   
   private BagReader reader = new BagReader();
   
@@ -32,7 +28,7 @@ public class BagWriterTest extends PrivateConstructorTest {
   
   @Test
   public void testGetCorrectRelativeOuputPath() throws Exception{
-    Path root = Paths.get(folder.newFolder().toURI());
+    Path root = createDirectory("newFolder");
     Bag bag = BagCreator.bagInPlace(root, Arrays.asList(StandardSupportedAlgorithms.MD5), false);
     
     Path testFile = root.resolve("data").resolve("fooFile.txt");
@@ -41,17 +37,16 @@ public class BagWriterTest extends PrivateConstructorTest {
     manifest.getFileToChecksumMap().put(testFile, "CHECKSUM");
     bag.getPayLoadManifests().add(manifest);
     
-    Path newRoot = Paths.get(folder.newFolder().toURI());
+    Path newRoot = createDirectory("newRoot");
     BagWriter.write(bag, newRoot);
-    assertTrue(Files.exists(newRoot.resolve("data").resolve("fooFile.txt")));
+    Assertions.assertTrue(Files.exists(newRoot.resolve("data").resolve("fooFile.txt")));
   }
   
   @Test
   public void testWriteVersion95() throws Exception{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_95/bag").toURI());
     Bag bag = reader.read(rootDir); 
-    File bagitDir = folder.newFolder();
-    Path bagitDirPath = Paths.get(bagitDir.toURI());
+    Path bagitDirPath = createDirectory("version95");
     List<Path> expectedPaths = Arrays.asList(bagitDirPath.resolve("tagmanifest-md5.txt"),
         bagitDirPath.resolve("manifest-md5.txt"),
         bagitDirPath.resolve("bagit.txt"),
@@ -68,7 +63,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     
     BagWriter.write(bag, bagitDirPath);
     for(Path expectedPath : expectedPaths){
-      assertTrue("Expected " + expectedPath + " to exist!", Files.exists(expectedPath));
+      Assertions.assertTrue(Files.exists(expectedPath), "Expected " + expectedPath + " to exist!");
     }
   }
   
@@ -76,8 +71,7 @@ public class BagWriterTest extends PrivateConstructorTest {
   public void testWriteVersion97() throws Exception{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_97/bag").toURI());
     Bag bag = reader.read(rootDir); 
-    File bagitDir = folder.newFolder();
-    Path bagitDirPath = Paths.get(bagitDir.toURI());
+    Path bagitDirPath = createDirectory("version97");
     List<Path> expectedPaths = Arrays.asList(bagitDirPath.resolve("tagmanifest-md5.txt"),
         bagitDirPath.resolve("manifest-md5.txt"),
         bagitDirPath.resolve("bagit.txt"),
@@ -96,7 +90,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     
     BagWriter.write(bag, bagitDirPath);
     for(Path expectedPath : expectedPaths){
-      assertTrue("Expected " + expectedPath + " to exist!", Files.exists(expectedPath));
+      Assertions.assertTrue(Files.exists(expectedPath), "Expected " + expectedPath + " to exist!");
     }
   }
   
@@ -105,8 +99,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v2_0/bag").toURI());
     Bag bag = reader.read(rootDir);
     
-    File bagitDir = folder.newFolder();
-    Path bagitDirPath = Paths.get(bagitDir.toURI());
+    Path bagitDirPath = createDirectory("version2");
     List<Path> expectedPaths = Arrays.asList(bagitDirPath.resolve(".bagit"),
         bagitDirPath.resolve(".bagit").resolve("manifest-md5.txt"),
         bagitDirPath.resolve(".bagit").resolve("bagit.txt"),
@@ -123,7 +116,7 @@ public class BagWriterTest extends PrivateConstructorTest {
     
     BagWriter.write(bag, bagitDirPath);
     for(Path expectedPath : expectedPaths){
-      assertTrue("Expected " + expectedPath + " to exist!", Files.exists(expectedPath));
+      Assertions.assertTrue(Files.exists(expectedPath), "Expected " + expectedPath + " to exist!");
     }
   }
   
@@ -131,22 +124,22 @@ public class BagWriterTest extends PrivateConstructorTest {
   public void testWriteHoley() throws Exception{
     Path rootDir = Paths.get(getClass().getClassLoader().getResource("bags/v0_96/holey-bag").toURI());
     Bag bag = reader.read(rootDir); 
-    File bagitDir = folder.newFolder();
+    Path bagitDir = createDirectory("holyBag");
     
-    BagWriter.write(bag, Paths.get(bagitDir.toURI()));
-    assertTrue(bagitDir.exists());
+    BagWriter.write(bag, bagitDir);
+    Assertions.assertTrue(Files.exists(bagitDir));
     
-    File fetchFile = new File(bagitDir, "fetch.txt");
-    assertTrue(fetchFile.exists());
+    Path fetchFile = bagitDir.resolve("fetch.txt");
+    Assertions.assertTrue(Files.exists(fetchFile));
   }
   
   @Test
   public void testWriteEmptyBagStillCreatesDataDir() throws Exception{
     Bag bag = new Bag();
-    bag.setRootDir(Paths.get(folder.newFolder().toURI()));
+    bag.setRootDir(createDirectory("emptyBag"));
     Path dataDir = bag.getRootDir().resolve("data");
     
     BagWriter.write(bag, bag.getRootDir());
-    assertTrue(Files.exists(dataDir));
+    Assertions.assertTrue(Files.exists(dataDir));
   }
 }

@@ -8,7 +8,8 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 
@@ -42,6 +43,6 @@ public class MetadataReaderTest extends PrivateConstructorTest {
     Path bagInfoFile = Paths.get(getClass().getClassLoader().getResource("baginfoFiles").toURI());
     List<SimpleImmutableEntry<String, String>> actualMetadata = MetadataReader.readBagMetadata(bagInfoFile, StandardCharsets.UTF_8);
     
-    assertEquals(expectedValues, actualMetadata);
+    Assertions.assertEquals(expectedValues, actualMetadata);
   }
 }

@@ -4,16 +4,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-public abstract class AbstractBagitProfileTest extends Assert {
+public abstract class AbstractBagitProfileTest {
   protected ObjectMapper mapper;
   
-  @Before
+  @BeforeEach
   public void setup(){
     mapper = new ObjectMapper();
     SimpleModule module = new SimpleModule();

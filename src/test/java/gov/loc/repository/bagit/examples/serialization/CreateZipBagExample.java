@@ -13,27 +13,25 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import gov.loc.repository.bagit.TempFolderTest;
 
 /**
  * Example(s) for creating a zipped bag.
  */
-public class CreateZipBagExample extends Assert{
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
+public class CreateZipBagExample extends TempFolderTest{
   
   private Path bagRoot;
   private Path zippedBagPath;
   private OutputStream outputStream;
   
-  @Before
+  @BeforeEach
   public void setup() throws IOException{
     bagRoot = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
-    zippedBagPath = Paths.get(folder.newFile("bag.zip").toURI());
+    zippedBagPath = createFile("bag.zip");
     outputStream = Files.newOutputStream(zippedBagPath, StandardOpenOption.CREATE);
   }
 
@@ -46,7 +44,7 @@ public class CreateZipBagExample extends Assert{
       ZipVistor visitor = new ZipVistor(bagRoot, zip);
       Files.walkFileTree(bagRoot, visitor);
       
-      assertTrue(Files.exists(zippedBagPath));
+      Assertions.assertTrue(Files.exists(zippedBagPath));
     }
     catch(Exception e){
       e.printStackTrace();

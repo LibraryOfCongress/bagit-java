@@ -9,7 +9,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 
@@ -27,7 +28,7 @@ public class MetadataCheckerTest extends PrivateConstructorTest {
     Set<BagitWarning> warnings = new HashSet<>();
     MetadataChecker.checkBagMetadata(rootDir, StandardCharsets.UTF_16, warnings, Collections.emptySet());
     
-    assertTrue(warnings.contains(BagitWarning.PAYLOAD_OXUM_MISSING));
+    Assertions.assertTrue(warnings.contains(BagitWarning.PAYLOAD_OXUM_MISSING));
   }
   
   @Test
@@ -35,6 +36,6 @@ public class MetadataCheckerTest extends PrivateConstructorTest {
     Set<BagitWarning> warnings = new HashSet<>();
     MetadataChecker.checkBagMetadata(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.PAYLOAD_OXUM_MISSING));
     
-    assertFalse(warnings.contains(BagitWarning.PAYLOAD_OXUM_MISSING));
+    Assertions.assertFalse(warnings.contains(BagitWarning.PAYLOAD_OXUM_MISSING));
   }
 }

@@ -7,7 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
 import gov.loc.repository.bagit.domain.Bag;
@@ -39,83 +40,91 @@ public class BagProfileCheckerTest extends PrivateConstructorTest {
     }
   }
   
-  @Test(expected=FetchFileNotAllowedException.class)
+  @Test
   public void testFetchFileNotAllowedException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/failFetchBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(FetchFileNotAllowedException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); }); 
     }
   }
   
-  @Test(expected=RequiredMetadataFieldNotPresentException.class)
+  @Test
   public void testRequiredMetadataFieldNotPresentException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/emailFieldMissingBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(RequiredMetadataFieldNotPresentException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
   
-  @Test(expected=MetatdataValueIsNotAcceptableException.class)
+  @Test
   public void testMetatdataValueIsNotAcceptableException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/wrongValueForContactNameBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(MetatdataValueIsNotAcceptableException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
   
-  @Test(expected=MetatdataValueIsNotRepeatableException.class)
+  @Test
   public void testMetadataValueIsNotRepeatableException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/repeatedMetadataBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(MetatdataValueIsNotRepeatableException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
   
-  @Test(expected=RequiredManifestNotPresentException.class)
+  @Test
   public void testRequiredPayloadManifestNotPresentException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/missingRequiredPayloadManifestBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(RequiredManifestNotPresentException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
   
-  @Test(expected=RequiredManifestNotPresentException.class)
+  @Test
   public void testRequiredTagManifestNotPresentException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/missingRequiredTagManifestBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(RequiredManifestNotPresentException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
   
-  @Test(expected=RequiredTagFileNotPresentException.class)
+  @Test
   public void testRequiredTagFileNotPresentException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/missingRequiredTagFileBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(RequiredTagFileNotPresentException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
   
-  @Test(expected=BagitVersionIsNotAcceptableException.class)
+  @Test
   public void testBagitVersionIsNotAcceptableException() throws Exception{
     Path bagRootPath = new File("src/test/resources/bagitProfileTestBags/wrongBagitVersionBag").toPath();
     Bag bag = reader.read(bagRootPath);
     
     try(InputStream inputStream = Files.newInputStream(profileJson, StandardOpenOption.READ)){
-      BagProfileChecker.bagConformsToProfile(inputStream, bag);
+      Assertions.assertThrows(BagitVersionIsNotAcceptableException.class, 
+          () -> { BagProfileChecker.bagConformsToProfile(inputStream, bag); });
     }
   }
 }

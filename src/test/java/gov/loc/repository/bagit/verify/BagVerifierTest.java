@@ -8,11 +8,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import gov.loc.repository.bagit.TempFolderTest;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
@@ -22,15 +21,12 @@ import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import gov.loc.repository.bagit.hash.SupportedAlgorithm;
 import gov.loc.repository.bagit.reader.BagReader;
 
-public class BagVerifierTest extends Assert{
+public class BagVerifierTest extends TempFolderTest{
   static {
     if (Security.getProvider("BC") == null) {
       Security.addProvider(new BouncyCastleProvider());
     }
   }
-  
-  @Rule
-  public TemporaryFolder folder= new TemporaryFolder();
   
   private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   
@@ -69,34 +65,35 @@ public class BagVerifierTest extends Assert{
     sut.isComplete(bag, true);
   }
   
-  @Test(expected=CorruptChecksumException.class)
+  @Test
   public void testCorruptPayloadFile() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/corruptPayloadFile").toURI());
     Bag bag = reader.read(rootDir);
     
-    sut.isValid(bag, true);
+    Assertions.assertThrows(CorruptChecksumException.class, () -> { sut.isValid(bag, true); });
   }
   
-  @Test(expected=CorruptChecksumException.class)
+  @Test
   public void testCorruptTagFile() throws Exception{
     rootDir = Paths.get(new File("src/test/resources/corruptTagFile").toURI());
     Bag bag = reader.read(rootDir);
     
-    sut.isValid(bag, true);
+    Assertions.assertThrows(CorruptChecksumException.class, () -> { sut.isValid(bag, true); });
   }
   
-  @Test(expected=UnsupportedAlgorithmException.class)
+  @Test
   public void testErrorWhenUnspportedAlgorithmException() throws Exception{
     Path sha3BagDir = Paths.get(getClass().getClassLoader().getResource("sha3Bag").toURI());
-    BagReader extendedReader = new BagReader();
+    MySupportedNameToAlgorithmMapping mapping = new MySupportedNameToAlgorithmMapping();
+    BagReader extendedReader = new BagReader(mapping);
     Bag bag = extendedReader.read(sha3BagDir);
     
-    sut.isValid(bag, true);
+    Assertions.assertThrows(UnsupportedAlgorithmException.class, () -> { sut.isValid(bag, true); });
   }
   
-  @Test(expected=VerificationException.class)
+  @Test
   public void testVerificationExceptionIsThrownForNoSuchAlgorithmException() throws Exception{
-    Path unreadableFile = Paths.get(folder.newFile().toURI());
+    Path unreadableFile = createFile("newFile");
     
     Manifest manifest = new Manifest(new SupportedAlgorithm() {
       @Override
@@ -110,7 +107,7 @@ public class BagVerifierTest extends Assert{
     });
     manifest.getFileToChecksumMap().put(unreadableFile, "foo");
     
-    sut.checkHashes(manifest);
+    Assertions.assertThrows(VerificationException.class, () -> { sut.checkHashes(manifest); });
   }
   
   @Test
@@ -139,12 +136,14 @@ public class BagVerifierTest extends Assert{
   public void testCanQuickVerify() throws Exception{
     Bag bag = reader.read(rootDir);
     boolean canQuickVerify = BagVerifier.canQuickVerify(bag);
-    assertFalse("Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!", canQuickVerify);
+    Assertions.assertFalse(canQuickVerify,
+        "Since " + bag.getRootDir() + " DOES NOT contain the metadata Payload-Oxum then it should return false!");
     
     Path passingRootDir = Paths.get(new File("src/test/resources/bags/v0_94/bag").toURI());
     bag = reader.read(passingRootDir);
     canQuickVerify = BagVerifier.canQuickVerify(bag);
-    assertTrue("Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!", canQuickVerify);
+    Assertions.assertTrue(canQuickVerify,
+        "Since " + bag.getRootDir() + " DOES contain the metadata Payload-Oxum then it should return true!");
   }
   
   @Test 

@@ -19,8 +19,8 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
   private static final Logger logger = LoggerFactory.getLogger(FileCountAndTotalSizeVistor.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
-  private long totalSize;
-  private long count;
+  private transient long totalSize;
+  private transient long count;
 
   @Override
   public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
@@ -48,13 +48,5 @@ public class FileCountAndTotalSizeVistor extends SimpleFileVisitor<Path> {
 
   public long getTotalSize() {
     return totalSize;
-  }
-
-  public void setTotalSize(final long totalSize) {
-    this.totalSize = totalSize;
-  }
-
-  public void setCount(final long count) {
-    this.count = count;
   }
 }
