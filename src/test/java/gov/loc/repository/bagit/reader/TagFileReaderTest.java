@@ -26,6 +26,14 @@ public class TagFileReaderTest {
   }
   
   @Test
+  public void testCreateFileFromManifestWithURISyntax() throws Exception{
+    Path bagRootDir = Paths.get("/foo");
+    String uri = "file:///foo/data/bar/ham.txt";
+    Path path = TagFileReader.createFileFromManifest(bagRootDir, uri);
+    Assertions.assertEquals(bagRootDir.resolve("data/bar/ham.txt"), path);
+  }
+  
+  @Test
   public void testBackslashThrowsException() throws Exception{
     Path bagRootDir = Paths.get("foo");
     Assertions.assertThrows(InvalidBagitFileFormatException.class, 

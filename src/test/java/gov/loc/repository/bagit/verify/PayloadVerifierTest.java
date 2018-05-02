@@ -3,6 +3,7 @@ package gov.loc.repository.bagit.verify;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,18 @@ public class PayloadVerifierTest {
   @BeforeEach
   public void setup(){
     sut = new PayloadVerifier(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
+  }
+  
+  @Test
+  public void testOtherConstructors() throws Exception {
+    rootDir = Paths.get(new File("src/test/resources/bags/v0_96/bag-with-tagfiles-in-payload-manifest").toURI());
+    Bag bag = reader.read(rootDir);
+    
+    sut = new PayloadVerifier();
+    sut.verifyPayload(bag, true);
+    
+    sut = new PayloadVerifier(Executors.newCachedThreadPool());
+    sut.verifyPayload(bag, true);
   }
 
   @Test

@@ -25,8 +25,8 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
   private static final Logger logger = LoggerFactory.getLogger(AbstractCreateManifestsVistor.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
-  protected final Map<Manifest, MessageDigest> manifestToMessageDigestMap;
-  protected final boolean includeHiddenFiles;
+  protected transient final Map<Manifest, MessageDigest> manifestToMessageDigestMap;
+  protected transient final boolean includeHiddenFiles;
   
   public AbstractCreateManifestsVistor(final Map<Manifest, MessageDigest> manifestToMessageDigestMap, final boolean includeHiddenFiles){
     this.manifestToMessageDigestMap = manifestToMessageDigestMap;
@@ -56,13 +56,5 @@ public abstract class AbstractCreateManifestsVistor extends SimpleFileVisitor<Pa
     }
     
     return FileVisitResult.CONTINUE;
-  }
-
-  public Map<Manifest, MessageDigest> getManifestToMessageDigestMap() {
-    return manifestToMessageDigestMap;
-  }
-
-  public boolean isIncludeHiddenFiles() {
-    return includeHiddenFiles;
   }
 }

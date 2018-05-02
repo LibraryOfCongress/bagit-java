@@ -25,10 +25,10 @@ public class CheckManifestHashesTask implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(CheckManifestHashesTask.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
-  private final Entry<Path, String> entry;
-  private final CountDownLatch latch;
-  private final Collection<Exception> exceptions;
-  private final String algorithm;
+  private transient final Entry<Path, String> entry;
+  private transient final CountDownLatch latch;
+  private transient final Collection<Exception> exceptions;
+  private transient final String algorithm;
   
   public CheckManifestHashesTask(final Entry<Path, String> entry, final String algorithm, final CountDownLatch latch, final Collection<Exception> exceptions) {
     this.entry = entry;
@@ -59,21 +59,4 @@ public class CheckManifestHashesTask implements Runnable {
     }
     //if the file doesn't exist it will be caught by checkAllFilesListedInManifestExist method
   }
-
-  public Entry<Path, String> getEntry() {
-    return entry;
-  }
-
-  public CountDownLatch getLatch() {
-    return latch;
-  }
-
-  public Collection<Exception> getExceptions() {
-    return exceptions;
-  }
-
-  public String getAlgorithm() {
-    return algorithm;
-  }
-
 }

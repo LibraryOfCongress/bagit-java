@@ -35,8 +35,8 @@ public class PayloadVerifier implements AutoCloseable{
   private static final Logger logger = LoggerFactory.getLogger(PayloadVerifier.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
-  private final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
-  private final ExecutorService executor;
+  private transient final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
+  private transient final ExecutorService executor;
   
   /**
    * Create a PayloadVerifier using a cached thread pool and the 
@@ -175,13 +175,5 @@ public class PayloadVerifier implements AutoCloseable{
     if (Files.exists(payloadDir)) {
       Files.walkFileTree(payloadDir, new PayloadFileExistsInAllManifestsVistor(payLoadManifests, ignoreHiddenFiles));
     }
-  }
-
-  public BagitAlgorithmNameToSupportedAlgorithmMapping getNameMapping() {
-    return nameMapping;
-  }
-
-  public ExecutorService getExecutor() {
-    return executor;
   }
 }
