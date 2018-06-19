@@ -15,7 +15,7 @@ import gov.loc.repository.bagit.domain.Version;
  */
 public interface VersionChecker {
   Logger logger = LoggerFactory.getLogger(VersionChecker.class);
-  Version LATEST_BAGIT_VERSION = new Version(0, 97);
+  Version LATEST_BAGIT_VERSION = Version.LATEST_BAGIT_VERSION();
   ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
   /*

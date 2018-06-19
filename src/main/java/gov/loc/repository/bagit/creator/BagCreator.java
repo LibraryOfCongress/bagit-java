@@ -37,7 +37,7 @@ public final class BagCreator {
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   private static final String DATE_FORMAT = "yyyy-MM-dd";
   private static final Version DOT_BAGIT_VERSION = new Version(2, 0);
-  private static final Version LATEST_NON_DOT_BAGIT_VERSION = new Version(0, 97);
+  private static final Version LATEST_NON_DOT_BAGIT_VERSION = Version.LATEST_BAGIT_VERSION();
   
   private BagCreator(){}
   

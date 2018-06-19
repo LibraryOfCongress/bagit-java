@@ -25,7 +25,9 @@ import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.conformance.BagitVersionIsNotAcceptableException;
 import gov.loc.repository.bagit.exceptions.conformance.FetchFileNotAllowedException;
 import gov.loc.repository.bagit.exceptions.conformance.MetatdataValueIsNotAcceptableException;
@@ -39,6 +41,8 @@ import gov.loc.repository.bagit.verify.BagVerifier;
 
 /**
  * Responsible for checking a bag and providing insight into how it cause problems.
+ * This class is only to be used on VALID bags, using it on un-validated bags may result in
+ * exceptions being thrown (like {@link java.io.IOException} )
  */
 public final class BagLinter {
   private static final Logger logger = LoggerFactory.getLogger(BagLinter.class);
@@ -57,7 +61,7 @@ public final class BagLinter {
    * @param jsonProfile the input stream to the json string describing the profile
    * @param bag the bag to check against the profile
    * 
-   * @throws IOException if there is a problem reading the profile
+   * @throws IOException if there is a problem reading the profile or some of the bag files
    * @throws JsonMappingException if there is a problem mapping the profile to the {@link BagitProfile}
    * @throws JsonParseException if there is a problem parsing the json while mapping to java object
    * 
@@ -88,8 +92,10 @@ public final class BagLinter {
    * @throws InvalidBagMetadataException if the bag metadata does not conform to the bagit specification
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
+   * @throws UnsupportedAlgorithmException if there is an error while reading one of the manifests due to the algorithm being unsupported
+   * @throws MaliciousPathException if the path is crafted to be malicious (overwrite non bag files)
    */
-  public static Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
+  public static Set<BagitWarning> lintBag(final Path rootDir) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException, MaliciousPathException, UnsupportedAlgorithmException{
     return lintBag(rootDir, Collections.emptyList());
   }
   
@@ -107,8 +113,10 @@ public final class BagLinter {
    * @throws InvalidBagMetadataException if the bag metadata does not conform to the bagit specification
    * @throws UnparsableVersionException if there is an error reading the bagit version
    * @throws IOException if there was an error reading a file
+   * @throws UnsupportedAlgorithmException if there is an error while reading one of the manifests due to the algorithm being unsupported
+   * @throws MaliciousPathException if the path is crafted to be malicious (overwrite non bag files)
    */
-  public static Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException{
+  public static Set<BagitWarning> lintBag(final Path rootDir, final Collection<BagitWarning> warningsToIgnore) throws IOException, UnparsableVersionException, InvalidBagMetadataException, InvalidBagitFileFormatException, MaliciousPathException, UnsupportedAlgorithmException{
     final Set<BagitWarning> warnings = new HashSet<>();
     
     //@Incubating
@@ -128,7 +136,7 @@ public final class BagLinter {
     VersionChecker.checkVersion(bagitInfo.getKey(), warnings, warningsToIgnore);
     
     logger.info(messages.getString("checking_manifest_problems"));
-    ManifestChecker.checkManifests(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
+    ManifestChecker.checkManifests(bagitInfo.getKey(), bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);
 
     logger.info(messages.getString("checking_metadata_problems"));
     MetadataChecker.checkBagMetadata(bagitDir, bagitInfo.getValue(), warnings, warningsToIgnore);

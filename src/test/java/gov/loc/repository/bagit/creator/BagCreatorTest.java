@@ -38,7 +38,7 @@ public class BagCreatorTest extends TempFolderTest {
     
     Bag bag = BagCreator.bagInPlace(folder, Arrays.asList(StandardSupportedAlgorithms.MD5), false);
     
-    Assertions.assertEquals(new Version(0, 97), bag.getVersion());
+    Assertions.assertEquals(Version.LATEST_BAGIT_VERSION(), bag.getVersion());
     
     Path expectedManifest = folder.resolve("manifest-md5.txt");
     Assertions.assertTrue(Files.exists(expectedManifest));
@@ -66,7 +66,7 @@ public class BagCreatorTest extends TempFolderTest {
     
     Bag bag = BagCreator.bagInPlace(folder, Arrays.asList(StandardSupportedAlgorithms.MD5), true);
     
-    Assertions.assertEquals(new Version(0, 97), bag.getVersion());
+    Assertions.assertEquals(Version.LATEST_BAGIT_VERSION(), bag.getVersion());
     
     Path expectedManifest = folder.resolve("manifest-md5.txt");
     Assertions.assertTrue(Files.exists(expectedManifest));
