@@ -20,7 +20,8 @@ public enum BagitWarning {
   OS_SPECIFIC_FILES("os_specific_files"),
   PAYLOAD_OXUM_MISSING("payload_oxum_missing"),
   TAG_FILES_ENCODING("tag_files_encoding"),
-  WEAK_CHECKSUM_ALGORITHM("weak_checksum_algorithm");
+  WEAK_CHECKSUM_ALGORITHM("weak_checksum_algorithm"),
+  MANIFEST_SETS_DIFFER("manifest_file_sets_differ_between_algorithms");
   
   private final String messageBundleKey;
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");

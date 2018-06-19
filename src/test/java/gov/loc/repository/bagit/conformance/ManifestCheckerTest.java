@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.PrivateConstructorTest;
+import gov.loc.repository.bagit.domain.Version;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 
 public class ManifestCheckerTest extends PrivateConstructorTest{
@@ -29,7 +30,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testCheckManifests() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Collections.emptyList());
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Collections.emptyList());
     
     Assertions.assertTrue(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
     Assertions.assertTrue(warnings.contains(BagitWarning.DIFFERENT_CASE));
@@ -44,11 +45,29 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   }
   
   @Test
+  public void testPayloadManifestSetsShouldBeSame() throws Exception{
+    Set<BagitWarning> warnings = new HashSet<>();
+    Path manifestPath = Paths.get("src","test","resources","payloadManifestsDiffer");
+    ManifestChecker.checkManifests(new Version(1,0), manifestPath, StandardCharsets.UTF_8, warnings, Collections.emptyList());
+    
+    Assertions.assertTrue(warnings.contains(BagitWarning.MANIFEST_SETS_DIFFER));
+  }
+  
+  @Test
+  public void testTagManifestSetsShouldBeSame() throws Exception{
+    Set<BagitWarning> warnings = new HashSet<>();
+    Path manifestPath = Paths.get("src","test","resources","payloadManifestsDiffer");
+    ManifestChecker.checkManifests(new Version(1,0), manifestPath, StandardCharsets.UTF_8, warnings, Collections.emptyList());
+    
+    Assertions.assertTrue(warnings.contains(BagitWarning.MANIFEST_SETS_DIFFER));
+  }
+  
+  @Test
   public void testCheckTagManifest() throws Exception{
     createFile("tagmanifest-md5.txt");
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(folder, StandardCharsets.UTF_16, warnings, Collections.emptyList());
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), folder, StandardCharsets.UTF_16, warnings, Collections.emptyList());
     Assertions.assertFalse(warnings.contains(BagitWarning.MISSING_TAG_MANIFEST));
   }
   
@@ -56,7 +75,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterIgnoreWeakChecksum() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.WEAK_CHECKSUM_ALGORITHM));
   }
@@ -65,7 +84,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterIgnoreCase() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.DIFFERENT_CASE));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.DIFFERENT_CASE));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.DIFFERENT_CASE));
   }
@@ -74,7 +93,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterNormalization() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.DIFFERENT_NORMALIZATION));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.DIFFERENT_NORMALIZATION));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.DIFFERENT_NORMALIZATION));
   }
@@ -83,7 +102,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterIgnoreBagWithinABag() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.BAG_WITHIN_A_BAG));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.BAG_WITHIN_A_BAG));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.BAG_WITHIN_A_BAG));
   }
@@ -92,7 +111,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterIgnoreRelativePath() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.LEADING_DOT_SLASH));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.LEADING_DOT_SLASH));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.LEADING_DOT_SLASH));
   }
@@ -101,7 +120,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterIgnoreNonStandardChecksumAlgorithm() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.NON_STANDARD_ALGORITHM));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.NON_STANDARD_ALGORITHM));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.NON_STANDARD_ALGORITHM));
   }
@@ -110,7 +129,7 @@ public class ManifestCheckerTest extends PrivateConstructorTest{
   public void testLinterIgnoreOSSpecificFiles() throws Exception{
     Set<BagitWarning> warnings = new HashSet<>();
 
-    ManifestChecker.checkManifests(rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.OS_SPECIFIC_FILES));
+    ManifestChecker.checkManifests(Version.LATEST_BAGIT_VERSION(), rootDir, StandardCharsets.UTF_16, warnings, Arrays.asList(BagitWarning.OS_SPECIFIC_FILES));
     
     Assertions.assertFalse(warnings.contains(BagitWarning.OS_SPECIFIC_FILES));
   }

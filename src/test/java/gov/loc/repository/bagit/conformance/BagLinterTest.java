@@ -32,6 +32,7 @@ public class BagLinterTest extends PrivateConstructorTest{
   public void testLintBag() throws Exception{
     Set<BagitWarning> expectedWarnings = new HashSet<>();
     expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));
+    expectedWarnings.remove(BagitWarning.MANIFEST_SETS_DIFFER); //only applies to version 1.0 but need older version for other warnings, so we test this separately
     Set<BagitWarning> warnings = BagLinter.lintBag(rootDir);
 
     if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){

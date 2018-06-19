@@ -17,7 +17,7 @@ public final class Version implements Comparable<Version>{
     this.cachedToString = major + "." + minor;
   }
   
-  public static Version LATEST_BAGIT_VERSION(){
+  public static Version LATEST_BAGIT_VERSION() {
     return new Version(1, 0);
   }
 
