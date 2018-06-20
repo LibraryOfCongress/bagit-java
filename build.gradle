@@ -72,3 +72,8 @@ task cloneConformanceSuite(){
                   uri: 'https://github.com/libraryofcongress/bagit-conformance-suite.git')
     }
 }
+
+task dumpDependencies(type: Copy){
+  into "$buildDir/dependencies"
+  from configurations.runtime
+}
