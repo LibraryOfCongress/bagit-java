@@ -22,6 +22,7 @@ task sourcesJar(type: Jar) {
 artifacts {
   archives javadocJar
   archives sourcesJar
+  archives jar
 }
 
 //artifacts need to be signed in order to upload them to maven central
