@@ -63,7 +63,6 @@ public final class ManifestChecker {
    * @throws MaliciousPathException if someone crafted the bag to specifically try and write outside the bag directory
    * @throws UnsupportedAlgorithmException if a manifest uses an algorithm that the computer doesn't know how to use
    */
-  //@SuppressWarnings("PMD.CyclomaticComplexity")
   public static void checkManifests(final Version version, final Path bagitDir, final Charset encoding, final Set<BagitWarning> warnings, 
       final Collection<BagitWarning> warningsToIgnore) throws IOException, InvalidBagitFileFormatException, MaliciousPathException, UnsupportedAlgorithmException{
         
