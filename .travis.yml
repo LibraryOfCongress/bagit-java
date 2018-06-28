@@ -9,12 +9,12 @@ matrix:
     - os: linux
       jdk: openjdk8
       dist: trusty
-    - os: linux
-      jdk: openjdk10
-      dist: trusty
-    - os: linux
-      jdk: openjdk11
-      dist: trusty
+#    - os: linux
+#      jdk: openjdk10
+#      dist: trusty
+#    - os: linux
+#      jdk: openjdk11
+#      dist: trusty
     - os: osx
 
 language: java
