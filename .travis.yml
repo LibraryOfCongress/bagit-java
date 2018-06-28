@@ -6,6 +6,12 @@ matrix:
     - os: linux
       jdk: oraclejdk9
       dist: trusty
+    - os: linux
+      jdk: openjdk10
+      dist: trusty
+    - os: linux
+      jdk: openjdk11
+      dist: trusty
     - os: osx
       before_script: 
         - brew update
@@ -26,8 +32,7 @@ env:
   global:
     - secure: "hxoE+e6yrSkpP9/+04jgaI4o6kJdMk+vz3eVRnxc7xGzWh4D8N9UsEL/iviDdKgaxrKKik1rkD0U8222NbGFNZSfmeL0j5e+LSTm6Wz5FL0n4t75z5kge4dfH33ndoNJsRfc2CknocXflw0R+Vcn6fb3Dk0osMsdZmhgaObf4zI="
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -fr $HOME/.gradle/caches/*
 cache:
   directories:
     - $HOME/.gradle/caches/
