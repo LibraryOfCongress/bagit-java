@@ -23,6 +23,15 @@ language: java
 git:
   depth: 3
 
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
 #include the conformance suite repo
 before_install: "git clone --depth 3 https://github.com/loc-rdc/bagit-conformance-suite.git"
 install: true #skip having travis-ci trying te run assemble
