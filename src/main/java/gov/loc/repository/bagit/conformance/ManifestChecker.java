@@ -123,9 +123,9 @@ public final class ManifestChecker {
         String path = parsePath(line);
         
         path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
-        paths.add(path.toLowerCase());
-        
         checkForDifferentCase(path, paths, manifestFile, warnings, warningsToIgnore);
+        paths.add(path.toLowerCase());
+
         if(encoding.name().startsWith("UTF")){
           checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
         }
