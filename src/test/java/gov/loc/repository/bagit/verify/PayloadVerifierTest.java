@@ -20,11 +20,11 @@ public class PayloadVerifierTest {
   private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   private BagReader reader = new BagReader();
   
-  private PayloadVerifier sut;
+  private ManifestVerifier sut;
   
   @BeforeEach
   public void setup(){
-    sut = new PayloadVerifier(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
+    sut = new ManifestVerifier(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
   }
   
   @Test
@@ -32,11 +32,11 @@ public class PayloadVerifierTest {
     rootDir = Paths.get(new File("src/test/resources/bags/v0_96/bag-with-tagfiles-in-payload-manifest").toURI());
     Bag bag = reader.read(rootDir);
     
-    sut = new PayloadVerifier();
-    sut.verifyPayload(bag, true);
+    sut = new ManifestVerifier();
+    sut.verifyManifests(bag, true);
     
-    sut = new PayloadVerifier(Executors.newCachedThreadPool());
-    sut.verifyPayload(bag, true);
+    sut = new ManifestVerifier(Executors.newCachedThreadPool());
+    sut.verifyManifests(bag, true);
   }
 
   @Test
@@ -45,7 +45,7 @@ public class PayloadVerifierTest {
     Bag bag = reader.read(rootDir);
     
     Assertions.assertThrows(FileNotInPayloadDirectoryException.class, 
-        () -> { sut.verifyPayload(bag, true); });
+        () -> { sut.verifyManifests(bag, true); });
   }
   
   @Test
@@ -54,7 +54,7 @@ public class PayloadVerifierTest {
     Bag bag = reader.read(rootDir);
     
     Assertions.assertThrows(FileNotInManifestException.class, 
-        () -> { sut.verifyPayload(bag, true); });
+        () -> { sut.verifyManifests(bag, true); });
   }
   
   @Test
@@ -62,7 +62,7 @@ public class PayloadVerifierTest {
     rootDir = Paths.get(new File("src/test/resources/bags/v0_96/bag-with-tagfiles-in-payload-manifest").toURI());
     Bag bag = reader.read(rootDir);
     
-    sut.verifyPayload(bag, true);
+    sut.verifyManifests(bag, true);
   }
   
   @Test
@@ -70,6 +70,6 @@ public class PayloadVerifierTest {
     Path bagDir = Paths.get(new File("src/test/resources/notAllFilesListedInAllManifestsBag").toURI());
     Bag bag = reader.read(bagDir);
     Assertions.assertThrows(FileNotInManifestException.class, 
-        () -> { sut.verifyPayload(bag, true); });
+        () -> { sut.verifyManifests(bag, true); });
   }
 }

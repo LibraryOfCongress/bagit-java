@@ -37,7 +37,7 @@ public final class BagVerifier implements AutoCloseable{
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
-  private final PayloadVerifier manifestVerifier;
+  private final ManifestVerifier manifestVerifier;
   private final ExecutorService executor;
   
   /**
@@ -74,7 +74,7 @@ public final class BagVerifier implements AutoCloseable{
    * @param executor the thread pool to use when doing work
    */
   public BagVerifier(final ExecutorService executor, final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    manifestVerifier = new PayloadVerifier(nameMapping, executor);
+    manifestVerifier = new ManifestVerifier(nameMapping, executor);
     this.executor = executor;
   }
   
@@ -209,14 +209,14 @@ public final class BagVerifier implements AutoCloseable{
     
     MandatoryVerifier.checkIfAtLeastOnePayloadManifestsExist(bag.getRootDir(), bag.getVersion());
     
-    manifestVerifier.verifyPayload(bag, ignoreHiddenFiles);
+    manifestVerifier.verifyManifests(bag, ignoreHiddenFiles);
   }
   
   public ExecutorService getExecutor() {
     return executor;
   }
 
-  public PayloadVerifier getManifestVerifier() {
+  public ManifestVerifier getManifestVerifier() {
     return manifestVerifier;
   }
 }

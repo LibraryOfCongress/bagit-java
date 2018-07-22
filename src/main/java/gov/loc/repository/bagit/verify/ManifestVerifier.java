@@ -31,8 +31,8 @@ import gov.loc.repository.bagit.util.PathUtils;
 /**
  * Responsible for all things related to the manifest during verification.
  */
-public class PayloadVerifier implements AutoCloseable{
-  private static final Logger logger = LoggerFactory.getLogger(PayloadVerifier.class);
+public class ManifestVerifier implements AutoCloseable{
+  private static final Logger logger = LoggerFactory.getLogger(ManifestVerifier.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
 
   private transient final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping;
@@ -42,7 +42,7 @@ public class PayloadVerifier implements AutoCloseable{
    * Create a PayloadVerifier using a cached thread pool and the 
    * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping} mapping
    */
-  public PayloadVerifier(){
+  public ManifestVerifier(){
     this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), Executors.newCachedThreadPool());
   }
 
@@ -51,7 +51,7 @@ public class PayloadVerifier implements AutoCloseable{
    * 
    * @param nameMapping the mapping between BagIt algorithm name and the java supported algorithm
    */
-  public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
+  public ManifestVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
     this(nameMapping, Executors.newCachedThreadPool());
   }
   
@@ -61,7 +61,7 @@ public class PayloadVerifier implements AutoCloseable{
    * 
    * @param executor the thread pool to use when doing work
    */
-  public PayloadVerifier(final ExecutorService executor) {
+  public ManifestVerifier(final ExecutorService executor) {
     this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), executor);
   }
   
@@ -71,7 +71,7 @@ public class PayloadVerifier implements AutoCloseable{
    * @param nameMapping the mapping between BagIt algorithm name and the java supported algorithm
    * @param executor the thread pool to use when doing work
    */
-  public PayloadVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final ExecutorService executor) {
+  public ManifestVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping, final ExecutorService executor) {
     this.nameMapping = nameMapping;
     this.executor = executor;
   }
@@ -83,11 +83,12 @@ public class PayloadVerifier implements AutoCloseable{
   }
 
   /**
-   * Verify that all the files in the payload directory are listed in the manifest and 
-   * all files listed in the manifests exist.
+   * Verify that all the files in the payload directory are listed in the payload manifest and 
+   * all files listed in all manifests exist.
    * 
    * @param bag the bag to check to check
    * @param ignoreHiddenFiles to ignore hidden files unless they are specifically listed in a manifest
+   * 
    * @throws IOException if there is a problem reading a file
    * @throws MaliciousPathException the path in the manifest was specifically crafted to cause harm
    * @throws UnsupportedAlgorithmException if the algorithm used for the manifest is unsupported
@@ -95,7 +96,7 @@ public class PayloadVerifier implements AutoCloseable{
    * @throws FileNotInPayloadDirectoryException if a file is listed in a manifest but doesn't exist in the payload directory
    * @throws InterruptedException if a thread is interrupted while doing work
    */
-  public void verifyPayload(final Bag bag, final boolean ignoreHiddenFiles)
+  public void verifyManifests(final Bag bag, final boolean ignoreHiddenFiles)
       throws IOException, MaliciousPathException, UnsupportedAlgorithmException, 
       InvalidBagitFileFormatException, FileNotInPayloadDirectoryException, InterruptedException {
     
