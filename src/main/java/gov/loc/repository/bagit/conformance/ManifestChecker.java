@@ -123,9 +123,10 @@ public final class ManifestChecker {
         String path = parsePath(line);
         
         path = checkForManifestCreatedWithMD5SumTools(path, warnings, warningsToIgnore);
-        paths.add(path.toLowerCase());
         
         checkForDifferentCase(path, paths, manifestFile, warnings, warningsToIgnore);
+        paths.add(path.toLowerCase());
+        
         if(encoding.name().startsWith("UTF")){
           checkNormalization(path, manifestFile.getParent(), warnings, warningsToIgnore);
         }
@@ -256,7 +257,7 @@ public final class ManifestChecker {
       warnings.add(BagitWarning.WEAK_CHECKSUM_ALGORITHM);
     }
     
-    else if(!warningsToIgnore.contains(BagitWarning.NON_STANDARD_ALGORITHM) && !"SHA-512".equals(upperCaseAlg)){
+    else if(!warningsToIgnore.contains(BagitWarning.NON_STANDARD_ALGORITHM) && !"SHA512".equals(upperCaseAlg)){
       logger.warn(messages.getString("non_standard_algorithm_warning"), algorithm);
       warnings.add(BagitWarning.NON_STANDARD_ALGORITHM);
     }
