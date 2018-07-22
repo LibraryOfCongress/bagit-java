@@ -45,7 +45,7 @@ public final class BagVerifier implements AutoCloseable{
    * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping}
    */
   public BagVerifier(){
-    this(Executors.newCachedThreadPool(), new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
+    this(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()), new StandardBagitAlgorithmNameToSupportedAlgorithmMapping());
   }
   
   /**
@@ -54,7 +54,7 @@ public final class BagVerifier implements AutoCloseable{
    * @param nameMapping the mapping between BagIt algorithm name and the java supported algorithm
    */
   public BagVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping){
-    this(Executors.newCachedThreadPool(), nameMapping);
+    this(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()), nameMapping);
   }
   
   /**

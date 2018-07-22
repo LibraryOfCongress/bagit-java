@@ -43,7 +43,7 @@ public class ManifestVerifier implements AutoCloseable{
    * {@link StandardBagitAlgorithmNameToSupportedAlgorithmMapping} mapping
    */
   public ManifestVerifier(){
-    this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), Executors.newCachedThreadPool());
+    this(new StandardBagitAlgorithmNameToSupportedAlgorithmMapping(), Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
   }
 
   /**
@@ -52,7 +52,7 @@ public class ManifestVerifier implements AutoCloseable{
    * @param nameMapping the mapping between BagIt algorithm name and the java supported algorithm
    */
   public ManifestVerifier(final BagitAlgorithmNameToSupportedAlgorithmMapping nameMapping) {
-    this(nameMapping, Executors.newCachedThreadPool());
+    this(nameMapping, Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
   }
   
   /**
