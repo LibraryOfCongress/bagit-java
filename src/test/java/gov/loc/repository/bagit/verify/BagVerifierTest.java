@@ -44,6 +44,41 @@ public class BagVerifierTest extends TempFolderTest{
   }
   
   @Test
+  public void testMD5Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "md5Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA1Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha1Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA224Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha224Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA256Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha256Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA512Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha512Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
   public void testVersion0_97IsValid() throws Exception{
     Bag bag = reader.read(rootDir);
     

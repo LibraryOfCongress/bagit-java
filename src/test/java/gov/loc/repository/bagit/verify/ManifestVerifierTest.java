@@ -15,7 +15,7 @@ import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
 import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgorithmMapping;
 import gov.loc.repository.bagit.reader.BagReader;
 
-public class PayloadVerifierTest {
+public class ManifestVerifierTest {
   
   private Path rootDir = Paths.get(new File("src/test/resources/bags/v0_97/bag").toURI());
   private BagReader reader = new BagReader();

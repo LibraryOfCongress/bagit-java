@@ -5,7 +5,7 @@ package gov.loc.repository.bagit.hash;
  */
 public enum StandardSupportedAlgorithms implements SupportedAlgorithm{
   MD5("MD5"),
-  SHA1("SHA-1"),
+  SHA1("SHA1"),
   SHA224("SHA224"),
   SHA256("SHA256"),
   SHA512("SHA512");
