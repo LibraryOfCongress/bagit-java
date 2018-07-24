@@ -23,15 +23,10 @@ task integrationTest(type: Test, dependsOn: "cloneConformanceSuite") {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   //testLogging.showStandardStreams = true
+  useJUnitPlatform()
   
   testLogging {
     events "passed", "skipped", "failed"
-  }
-  useJUnitPlatform()
-  
-  jacoco {
-  	destinationFile = file("$buildDir/jacoco/integrationTest.exec")
-  	classDumpDir = file("$buildDir/classes/integrationTest")
   }
 }
 
