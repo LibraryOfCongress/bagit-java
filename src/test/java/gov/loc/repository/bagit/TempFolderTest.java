@@ -8,6 +8,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 
 abstract public class TempFolderTest {
@@ -21,6 +22,8 @@ abstract public class TempFolderTest {
   @AfterEach
   public void teardownTempFolder() throws IOException{
     delete(folder);
+    Assertions.assertFalse(Files.exists(folder));
+    //Assertions.assertEquals(0, Files.list(folder).count());
   }
   
   public Path createDirectory(String name) throws IOException {
@@ -33,7 +36,7 @@ abstract public class TempFolderTest {
     return Files.createFile(newFile);
   }
   
-  private void delete(Path tempDirectory) throws IOException {
+  protected void delete(Path tempDirectory) throws IOException {
     Files.walkFileTree(tempDirectory, new SimpleFileVisitor<Path>() {
 
       @Override
