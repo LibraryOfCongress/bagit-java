@@ -17,7 +17,7 @@ public class CheckIfFileExistsTaskTest extends TempFolderTest {
 
   @Test
   public void testNormalizedFileExists() throws Exception{
-    ExecutorService executor = Executors.newCachedThreadPool();
+    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     CountDownLatch latch = new CountDownLatch(1);
     Set<Path> missingFiles = new ConcurrentSkipListSet<>();
     String filename = "Núñez.txt";
