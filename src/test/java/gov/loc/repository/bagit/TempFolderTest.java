@@ -36,6 +36,24 @@ abstract public class TempFolderTest {
     return Files.createFile(newFile);
   }
   
+  public Path copyBagToTempFolder(Path bagFolder) throws IOException{
+	  Path bagCopyDir = createDirectory(bagFolder.getFileName() + "_copy");
+	  Files.walkFileTree(bagFolder, new SimpleFileVisitor<Path>() {
+
+	      @Override
+	      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+	    	Path relative = bagFolder.relativize(file);
+	    	if(relative.getParent() != null) {
+	    	  Files.createDirectories(bagCopyDir.resolve(relative.getParent()));
+	    	}
+	    	Files.copy(file, bagCopyDir.resolve(relative));
+	        return FileVisitResult.CONTINUE;
+	      }
+	    });
+	  
+	  return bagCopyDir;
+  }
+  
   protected void delete(Path tempDirectory) throws IOException {
     Files.walkFileTree(tempDirectory, new SimpleFileVisitor<Path>() {
 

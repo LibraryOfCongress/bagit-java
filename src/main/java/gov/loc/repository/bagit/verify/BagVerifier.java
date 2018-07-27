@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
@@ -120,6 +121,7 @@ public final class BagVerifier implements AutoCloseable{
    * 
    * @throws CorruptChecksumException when the computed hash doesn't match given hash
    * @throws IOException if there was an error with the file
+   * @throws FileNotInManifestException if a file is found in the payload directory but not in manifest(s)
    * @throws MissingPayloadManifestException if there is not at least one payload manifest
    * @throws MissingBagitFileException  if there is no bagit.txt file
    * @throws MissingPayloadDirectoryException if there is no /data directory
@@ -130,7 +132,7 @@ public final class BagVerifier implements AutoCloseable{
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
-  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, FileNotInManifestException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.info(messages.getString("checking_bag_is_valid"), bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     

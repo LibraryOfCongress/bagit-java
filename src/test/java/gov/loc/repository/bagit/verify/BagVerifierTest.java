@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.verify;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.TempFolderTest;
+import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
@@ -32,6 +35,36 @@ public class BagVerifierTest extends TempFolderTest{
   
   private BagVerifier sut = new BagVerifier();
   private BagReader reader = new BagReader();
+  
+  @Test
+  public void testValidWhenHiddenFolderNotIncluded() throws Exception{
+	  Path copyDir = copyBagToTempFolder(rootDir);
+	  Files.createDirectory(copyDir.resolve("data").resolve(".someHiddenFolder"));
+	  TestUtils.makeFilesHiddenOnWindows(copyDir);
+	  
+	  Bag bag = reader.read(copyDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testValidWithHiddenFile() throws Exception{
+	  Path copyDir = copyBagToTempFolder(rootDir);
+	  Files.createFile(copyDir.resolve("data").resolve(".someHiddenFile"));
+	  TestUtils.makeFilesHiddenOnWindows(copyDir);
+	  
+	  Bag bag = reader.read(copyDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testInvalidWithHiddenFile() throws Exception{
+	  Path copyDir = copyBagToTempFolder(rootDir);
+	  Files.createFile(copyDir.resolve("data").resolve(".someHiddenFile"));
+	  TestUtils.makeFilesHiddenOnWindows(copyDir);
+	  
+	  Bag bag = reader.read(copyDir);
+	  Assertions.assertThrows(FileNotInManifestException.class, () -> { sut.isValid(bag, false); });
+  }
   
   @Test
   public void testStandardSupportedAlgorithms() throws Exception{
