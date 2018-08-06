@@ -149,7 +149,7 @@ public class BagVerifier implements AutoCloseable{
    * Check the supplied checksum hashes against the generated checksum hashes
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  protected void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
+  protected final void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     
     //TODO maybe return all of these at some point...
