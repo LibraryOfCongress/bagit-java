@@ -33,7 +33,7 @@ import gov.loc.repository.bagit.hash.StandardBagitAlgorithmNameToSupportedAlgori
 /**
  * Responsible for verifying if a bag is valid, complete
  */
-public final class BagVerifier implements AutoCloseable{
+public class BagVerifier implements AutoCloseable{
   private static final Logger logger = LoggerFactory.getLogger(BagVerifier.class);
   private static final ResourceBundle messages = ResourceBundle.getBundle("MessageBundle");
   
@@ -130,7 +130,7 @@ public final class BagVerifier implements AutoCloseable{
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly
    */
-  public void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
+  public final void isValid(final Bag bag, final boolean ignoreHiddenFiles) throws IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, CorruptChecksumException, VerificationException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.info(messages.getString("checking_bag_is_valid"), bag.getRootDir());
     isComplete(bag, ignoreHiddenFiles);
     
@@ -149,7 +149,7 @@ public final class BagVerifier implements AutoCloseable{
    * Check the supplied checksum hashes against the generated checksum hashes
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
+  protected void checkHashes(final Manifest manifest) throws CorruptChecksumException, InterruptedException, VerificationException{
     final CountDownLatch latch = new CountDownLatch( manifest.getFileToChecksumMap().size());
     
     //TODO maybe return all of these at some point...
@@ -196,7 +196,7 @@ public final class BagVerifier implements AutoCloseable{
    * @throws UnsupportedAlgorithmException if the manifest uses a algorithm that isn't supported
    * @throws InvalidBagitFileFormatException if the manifest is not formatted properly 
    */
-  public void isComplete(final Bag bag, final boolean ignoreHiddenFiles) throws 
+  public final void isComplete(final Bag bag, final boolean ignoreHiddenFiles) throws 
     IOException, MissingPayloadManifestException, MissingBagitFileException, MissingPayloadDirectoryException, 
     FileNotInPayloadDirectoryException, InterruptedException, MaliciousPathException, UnsupportedAlgorithmException, InvalidBagitFileFormatException{
     logger.info(messages.getString("checking_bag_is_complete"), bag.getRootDir());
@@ -212,11 +212,11 @@ public final class BagVerifier implements AutoCloseable{
     manifestVerifier.verifyPayload(bag, ignoreHiddenFiles);
   }
   
-  public ExecutorService getExecutor() {
+  public final ExecutorService getExecutor() {
     return executor;
   }
 
-  public PayloadVerifier getManifestVerifier() {
+  public final PayloadVerifier getManifestVerifier() {
     return manifestVerifier;
   }
 }
