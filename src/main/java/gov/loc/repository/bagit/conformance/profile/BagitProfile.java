@@ -147,7 +147,7 @@ public class BagitProfile {
   public String getContactPhone() {
     return contactPhone;
   }
-  public void setContactPhone(String contactPhone) {
+  public void setContactPhone(final String contactPhone) {
     this.contactPhone = contactPhone;
   }
   public String getVersion() {
