@@ -174,9 +174,10 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
   private static List<String> parseRequiredTagmanifestTypes(final JsonNode node) {
     final JsonNode tagManifestsRequiredNodes = node.get("Tag-Manifests-Required");
     final List<String> requiredTagmanifestTypes = new ArrayList<>();
-
-    for (final JsonNode tagManifestsRequiredNode : tagManifestsRequiredNodes) {
-      requiredTagmanifestTypes.add(tagManifestsRequiredNode.asText());
+    if (tagManifestsRequiredNodes != null) {
+      for (final JsonNode tagManifestsRequiredNode : tagManifestsRequiredNodes) {
+        requiredTagmanifestTypes.add(tagManifestsRequiredNode.asText());
+      }
     }
     logger.debug(messages.getString("required_tagmanifest_types"), requiredTagmanifestTypes);
 
