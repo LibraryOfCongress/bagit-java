@@ -36,8 +36,6 @@ public class BagitProfileDeserializerTest extends AbstractBagitProfileTest{
     BagitProfile minimalProfile = createMinimalProfile();
     
     BagitProfile profile = mapper.readValue(new File("src/test/resources/bagitProfiles/exampleProfileOnlyRequiredFields.json"), BagitProfile.class);
-    System.err.println(minimalProfile.toString());
-    System.err.println(profile.toString());
     Assertions.assertEquals(minimalProfile, profile);
     Assertions.assertEquals(minimalProfile.getAcceptableBagitVersions(), profile.getAcceptableBagitVersions());
     Assertions.assertEquals(minimalProfile.getAcceptableMIMESerializationTypes(), profile.getAcceptableMIMESerializationTypes());
