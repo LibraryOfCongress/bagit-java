@@ -8,9 +8,9 @@ import java.util.Objects;
  * This class is used to define elements in a bag-info.txt file used by a bagit-profile.
  */
 public class BagInfoRequirement {
-  private boolean required;
+  private boolean required = false;
   private List<String> acceptableValues = new ArrayList<>();
-  private boolean repeatable;
+  private boolean repeatable = true;
   
   @Override
   public boolean equals(final Object other) {
@@ -35,6 +35,12 @@ public class BagInfoRequirement {
   public BagInfoRequirement(final boolean required, final List<String> acceptableValues){
     this.required = required;
     this.acceptableValues = acceptableValues;
+  }
+  
+  public BagInfoRequirement(final boolean required, final List<String> acceptableValues, boolean repeatable){
+    this.required = required;
+    this.acceptableValues = acceptableValues;
+    this.repeatable = repeatable;
   }
   
   @Override
