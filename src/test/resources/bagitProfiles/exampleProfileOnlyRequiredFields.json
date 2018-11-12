@@ -78,10 +78,6 @@
   "Accept-Serialization": [
     "application/zip"
   ],
-  "Tag-Files-Required": [
-    "DPN/dpnFirstNode.txt",
-    "DPN/dpnRegistry"
-  ],
   "Accept-BagIt-Version": [
     "0.96"
   ]

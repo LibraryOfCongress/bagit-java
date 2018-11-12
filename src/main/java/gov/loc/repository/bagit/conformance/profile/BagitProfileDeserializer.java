@@ -188,8 +188,10 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     final JsonNode tagFilesRequiredNodes = node.get("Tag-Files-Required");
     final List<String> requiredTagFiles = new ArrayList<>();
 
-    for (final JsonNode tagFilesRequiredNode : tagFilesRequiredNodes) {
-      requiredTagFiles.add(tagFilesRequiredNode.asText());
+    if (tagFilesRequiredNodes != null) {
+      for (final JsonNode tagFilesRequiredNode : tagFilesRequiredNodes) {
+        requiredTagFiles.add(tagFilesRequiredNode.asText());
+      }
     }
     logger.debug(messages.getString("tag_files_required"), requiredTagFiles);
 

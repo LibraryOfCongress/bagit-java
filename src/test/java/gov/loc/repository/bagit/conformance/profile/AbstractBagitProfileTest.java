@@ -57,7 +57,6 @@ public abstract class AbstractBagitProfileTest {
     expectedProfile.setSerialization(Serialization.forbidden);
     expectedProfile.setAcceptableMIMESerializationTypes(Arrays.asList("application/zip"));
     expectedProfile.setAcceptableBagitVersions(Arrays.asList("0.96"));
-    expectedProfile.setTagFilesRequired(Arrays.asList("DPN/dpnFirstNode.txt", "DPN/dpnRegistry"));
     
     return expectedProfile;
   }
