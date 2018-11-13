@@ -31,12 +31,22 @@ public class BagInfoRequirement {
   public BagInfoRequirement(){
     //intentionally left empty
   }
-  
+  /**
+   * Constructs a new BagInfoRequirement setting {@link #repeatable} to true (default).
+   * @param required Indicates whether or not the tag is required.
+   * @param acceptableValues List of acceptable values.
+   */
   public BagInfoRequirement(final boolean required, final List<String> acceptableValues){
     this.required = required;
     this.acceptableValues = acceptableValues;
   }
   
+  /**
+   * Constructs a new BagInfoRequirement.
+   * @param required Indicates whether or not the tag is required.
+   * @param acceptableValues List of acceptable values.
+   * @param repeatable Indicates whether or not the tag is repeatable.
+   */
   public BagInfoRequirement(final boolean required, final List<String> acceptableValues, final boolean repeatable){
     this.required = required;
     this.acceptableValues = acceptableValues;

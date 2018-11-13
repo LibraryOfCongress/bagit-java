@@ -68,7 +68,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     final JsonNode bagitProfileInfoNode = node.get("BagIt-Profile-Info");
     logger.debug(messages.getString("parsing_bagit_profile_info_section"));
 
-    // Read required tags first
+    // Read required tags 
     // due to specification defined at https://github.com/bagit-profiles/bagit-profiles
     final String profileIdentifier = bagitProfileInfoNode.get("BagIt-Profile-Identifier").asText();
     logger.debug(messages.getString("identifier"), profileIdentifier);
@@ -86,6 +86,7 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     logger.debug(messages.getString("version"), version);
     profile.setVersion(version);
 
+    // Read optional tags 
     final JsonNode contactNameNode = bagitProfileInfoNode.get("Contact-Name");
     if (contactNameNode != null) {
       final String contactName = contactNameNode.asText();
