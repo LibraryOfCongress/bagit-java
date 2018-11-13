@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.Manifest;
+import java.io.BufferedWriter;
 
 /**
  * Responsible for writing out a {@link Manifest} to the filesystem
@@ -65,14 +66,16 @@ public final class ManifestWriter{
 
       Files.deleteIfExists(manifestPath);
       Files.createFile(manifestPath);
-      
-      for(final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()){
-        //there are 2 spaces between the checksum and the path so that the manifests are compatible with the md5sum tools available on most unix systems.
-        //This may cause problems on windows due to it being text mode, in which case either replace with a * or try verifying in binary mode with --binary
-        final String line = entry.getValue() + "  " + RelativePathWriter.formatRelativePathString(relativeTo, entry.getKey());
-        logger.debug(messages.getString("writing_line_to_file"), line, manifestPath);
-        Files.write(manifestPath, line.getBytes(charsetName), 
-            StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+
+      try (BufferedWriter writer = Files.newBufferedWriter(manifestPath, charsetName,
+            StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+        for (final Entry<Path, String> entry : manifest.getFileToChecksumMap().entrySet()) {
+          //there are 2 spaces between the checksum and the path so that the manifests are compatible with the md5sum tools available on most unix systems.
+          //This may cause problems on windows due to it being text mode, in which case either replace with a * or try verifying in binary mode with --binary
+          final String line = entry.getValue() + "  " + RelativePathWriter.formatRelativePathString(relativeTo, entry.getKey());
+          logger.debug(messages.getString("writing_line_to_file"), line, manifestPath);
+          writer.append(line);
+        }
       }
     }
   }
