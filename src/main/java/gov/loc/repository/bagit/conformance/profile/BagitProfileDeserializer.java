@@ -65,11 +65,24 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
   }
 
   private static void parseBagitProfileInfo(final JsonNode node, final BagitProfile profile) {
-    final JsonNode bagitProfileInfoNode = node.get("BagIt-Profile-Info");
     logger.debug(messages.getString("parsing_bagit_profile_info_section"));
+    
+    final JsonNode bagitProfileInfoNode = node.get("BagIt-Profile-Info");
+    parseMandatoryTagsOfBagitProfileInfo(bagitProfileInfoNode, profile);
+    parseOptionalTagsOfBagitProfileInfo(bagitProfileInfoNode, profile);
+  }
 
-    // Read required tags 
-    // due to specification defined at https://github.com/bagit-profiles/bagit-profiles
+  /**
+   * Parse required tags due to specification defined at
+   * {@link https://github.com/bagit-profiles/bagit-profiles}
+   * Note: If one of the tags is missing, a NullPointerException is thrown.
+   *
+   * @param bagitProfileInfoNode Root node of the bagit profile info section.
+   * @param profile Representation of bagit profile.
+   */
+  private static void parseMandatoryTagsOfBagitProfileInfo(final JsonNode bagitProfileInfoNode, final BagitProfile profile) {
+    logger.debug(messages.getString("parsing_mandatory_tags_of_bagit_profile_info_section"));
+    
     final String profileIdentifier = bagitProfileInfoNode.get("BagIt-Profile-Identifier").asText();
     logger.debug(messages.getString("identifier"), profileIdentifier);
     profile.setBagitProfileIdentifier(profileIdentifier);
@@ -85,8 +98,18 @@ public class BagitProfileDeserializer extends StdDeserializer<BagitProfile> {
     final String version = bagitProfileInfoNode.get("Version").asText();
     logger.debug(messages.getString("version"), version);
     profile.setVersion(version);
+  }
 
-    // Read optional tags 
+  /**
+   * Parse optional tags due to specification defined at
+   * {@link https://github.com/bagit-profiles/bagit-profiles}
+   *
+   * @param bagitProfileInfoNode Root node of the bagit profile info section.
+   * @param profile Representation of bagit profile .
+   */
+  private static void parseOptionalTagsOfBagitProfileInfo(final JsonNode bagitProfileInfoNode, final BagitProfile profile) {
+    logger.debug(messages.getString("parsing_optional_tags_of_bagit_profile_info_section"));
+
     final JsonNode contactNameNode = bagitProfileInfoNode.get("Contact-Name");
     if (contactNameNode != null) {
       final String contactName = contactNameNode.asText();
