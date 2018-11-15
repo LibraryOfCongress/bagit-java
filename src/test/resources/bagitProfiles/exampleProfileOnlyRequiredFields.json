@@ -2,9 +2,6 @@
   "BagIt-Profile-Info": {
     "BagIt-Profile-Identifier": "http://canadiana.org/standards/bagit/tdr_ingest.json",
     "Source-Organization": "Candiana.org",
-    "Contact-Name": "William Wueppelmann",
-    "Contact-Email": "tdr@canadiana.com",
-    "Contact-Phone": "+1 613 907 7040",
     "External-Description": "BagIt profile for ingesting content into the C.O. TDR loading dock.",
     "Version": "1.2"
   },
@@ -34,7 +31,6 @@
       "repeatable": false
     },
     "Contact-Phone": {
-      "required": false,
       "repeatable": false
     },
     "Contact-Email": {
@@ -46,7 +42,6 @@
       "repeatable": false
     },
     "External-Identifier": {
-      "required": false,
       "repeatable": false
     },
     "Bag-Size": {
@@ -54,7 +49,6 @@
       "repeatable": false
     },
     "Bag-Group-Identifier": {
-      "required": false,
       "repeatable": false
     },
     "Bag-Count": {
@@ -62,11 +56,9 @@
       "repeatable": false
     },
     "Internal-Sender-Identifier": {
-      "required": false,
       "repeatable": false
     },
     "Internal-Sender-Description": {
-      "required": false,
       "repeatable": false
     },
     "Bagging-Date": {
@@ -85,13 +77,6 @@
   "Serialization": "forbidden",
   "Accept-Serialization": [
     "application/zip"
-  ],
-  "Tag-Manifests-Required": [
-    "md5"
-  ],
-  "Tag-Files-Required": [
-    "DPN/dpnFirstNode.txt",
-    "DPN/dpnRegistry"
   ],
   "Accept-BagIt-Version": [
     "0.96"
