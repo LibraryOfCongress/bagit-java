@@ -84,7 +84,7 @@ public final class MandatoryVerifier {
     final Path dataDir = PathUtils.getDataDir(bag);
     
     if(!Files.exists(dataDir)){
-      throw new MissingPayloadDirectoryException(messages.getString("file_should_exist_error"));
+      throw new MissingPayloadDirectoryException(messages.getString("file_should_exist_error"), dataDir);
     }
   }
   

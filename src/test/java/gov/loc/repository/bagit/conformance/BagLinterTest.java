@@ -29,6 +29,13 @@ public class BagLinterTest extends PrivateConstructorTest{
   }
   
   @Test
+  public void testConformantBag() throws Exception{
+	  Path goodBag = Paths.get("src", "test", "resources", "bags", "v1_0", "bag");
+	  Set<BagitWarning> warnings = BagLinter.lintBag(goodBag);
+	  Assertions.assertTrue(warnings.size() == 0);
+  }
+  
+  @Test
   public void testLintBag() throws Exception{
     Set<BagitWarning> expectedWarnings = new HashSet<>();
     expectedWarnings.addAll(Arrays.asList(BagitWarning.values()));

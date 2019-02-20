@@ -1,6 +1,7 @@
 package gov.loc.repository.bagit.verify;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import gov.loc.repository.bagit.TempFolderTest;
+import gov.loc.repository.bagit.TestUtils;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
@@ -34,6 +37,36 @@ public class BagVerifierTest extends TempFolderTest{
   private BagReader reader = new BagReader();
   
   @Test
+  public void testValidWhenHiddenFolderNotIncluded() throws Exception{
+	  Path copyDir = copyBagToTempFolder(rootDir);
+	  Files.createDirectory(copyDir.resolve("data").resolve(".someHiddenFolder"));
+	  TestUtils.makeFilesHiddenOnWindows(copyDir);
+	  
+	  Bag bag = reader.read(copyDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testValidWithHiddenFile() throws Exception{
+	  Path copyDir = copyBagToTempFolder(rootDir);
+	  Files.createFile(copyDir.resolve("data").resolve(".someHiddenFile"));
+	  TestUtils.makeFilesHiddenOnWindows(copyDir);
+	  
+	  Bag bag = reader.read(copyDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testInvalidWithHiddenFile() throws Exception{
+	  Path copyDir = copyBagToTempFolder(rootDir);
+	  Files.createFile(copyDir.resolve("data").resolve(".someHiddenFile"));
+	  TestUtils.makeFilesHiddenOnWindows(copyDir);
+	  
+	  Bag bag = reader.read(copyDir);
+	  Assertions.assertThrows(FileNotInManifestException.class, () -> { sut.isValid(bag, false); });
+  }
+  
+  @Test
   public void testStandardSupportedAlgorithms() throws Exception{
     List<String> algorithms = Arrays.asList("md5", "sha1", "sha256", "sha512");
     for(String alg : algorithms){
@@ -41,6 +74,41 @@ public class BagVerifierTest extends TempFolderTest{
       Manifest manifest = new Manifest(algorithm);
       sut.checkHashes(manifest);
     }
+  }
+  
+  @Test
+  public void testMD5Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "md5Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA1Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha1Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA224Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha224Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA256Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha256Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
+  }
+  
+  @Test
+  public void testSHA512Bag() throws Exception{
+	  Path bagDir = Paths.get("src", "test", "resources", "sha512Bag");
+	  Bag bag = reader.read(bagDir);
+	  sut.isValid(bag, true);
   }
   
   @Test

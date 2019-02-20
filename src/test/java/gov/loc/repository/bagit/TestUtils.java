@@ -12,6 +12,12 @@ public class TestUtils {
     return System.getProperty("os.name").contains("Windows");
   }
   
+  /**
+   * walk a directory and make sure that files/folders are hidden if they start with a . on windows.
+   * 
+   * @param startingDir the directory to start walking
+   * @throws IOException if there is a problem setting the file/folder to be hidden
+   */
   public static void makeFilesHiddenOnWindows(Path startingDir) throws IOException {
     if (isExecutingOnWindows()) {
       Files.walkFileTree(startingDir, new SimpleFileVisitor<Path>() {
