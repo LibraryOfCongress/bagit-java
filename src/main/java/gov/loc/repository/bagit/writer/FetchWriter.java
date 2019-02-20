@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.repository.bagit.domain.FetchItem;
+import java.io.BufferedWriter;
 
 /**
  * Responsible for writing out the list of {@link FetchItem} to the fetch.txt file on the filesystem
@@ -37,11 +38,14 @@ public final class FetchWriter {
   public static void writeFetchFile(final List<FetchItem> itemsToFetch, final Path outputDir, final Path bagitRootDir, final Charset charsetName) throws IOException{
     logger.debug(messages.getString("writing_fetch_file_to_path"), outputDir);
     final Path fetchFilePath = outputDir.resolve("fetch.txt");
-    
-    for(final FetchItem item : itemsToFetch){
-      final String line = formatFetchLine(item, bagitRootDir);
-      logger.debug(messages.getString("writing_line_to_file"), line, fetchFilePath);
-      Files.write(fetchFilePath, line.getBytes(charsetName), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+
+    try (BufferedWriter writer = Files.newBufferedWriter(fetchFilePath, charsetName,
+            StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+      for (final FetchItem item : itemsToFetch) {
+        final String line = formatFetchLine(item, bagitRootDir);
+        logger.debug(messages.getString("writing_line_to_file"), line, fetchFilePath);
+        writer.append(line);
+      }
     }
   }
   
