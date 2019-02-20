@@ -35,8 +35,9 @@ public class BagLinterTest extends PrivateConstructorTest{
     expectedWarnings.remove(BagitWarning.MANIFEST_SETS_DIFFER); //only applies to version 1.0 but need older version for other warnings, so we test this separately
     Set<BagitWarning> warnings = BagLinter.lintBag(rootDir);
 
-    if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){
-      expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION); //don't test normalization on mac
+    if(FileSystems.getDefault().getClass().getName() == "sun.nio.fs.MacOSXFileSystem"){ //don't test normalization on mac
+      expectedWarnings.remove(BagitWarning.DIFFERENT_NORMALIZATION);
+      warnings.remove(BagitWarning.DIFFERENT_NORMALIZATION);
     }
     
     Set<BagitWarning> diff = new HashSet<>(expectedWarnings);
