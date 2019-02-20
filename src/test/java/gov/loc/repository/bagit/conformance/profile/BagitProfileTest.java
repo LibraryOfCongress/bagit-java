@@ -16,6 +16,7 @@ public class BagitProfileTest extends AbstractBagitProfileTest{
         + "externalDescription=BagIt profile for ingesting content into the C.O. TDR loading dock., "
         + "contactName=William Wueppelmann, "
         + "contactEmail=tdr@canadiana.com, "
+        + "contactPhone=+1 613 907 7040, "
         + "version=1.2, "
         + "bagInfoRequirements={"
         + "Payload-Oxum=[required=true, acceptableValues=[], repeatable=false], "
@@ -70,6 +71,10 @@ public class BagitProfileTest extends AbstractBagitProfileTest{
     BagitProfile differentContactEmail = createExpectedProfile();
     differentContactEmail.setContactEmail("foo");
     Assertions.assertFalse(profile.equals(differentContactEmail));
+    
+    BagitProfile differentContactPhone = createExpectedProfile();
+    differentContactPhone.setContactPhone("foo");
+    Assertions.assertFalse(profile.equals(differentContactPhone));
     
     BagitProfile differentVersion = createExpectedProfile();
     differentVersion.setVersion("foo");
