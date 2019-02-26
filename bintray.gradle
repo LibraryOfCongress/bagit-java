@@ -13,20 +13,6 @@ if(!project.hasProperty("ossrhUsername")){ //so CI doesn't break
   project.ext.ossrhPassword = "foo"
 }
 
-task javadocJar(type: Jar) {
-  group "Build"
-  description "Create the jar that contains all the class documentation (javadoc)."
-  classifier = 'javadoc'
-  from javadoc
-}
-
-task sourcesJar(type: Jar) {
-  group "Build"
-  description "Create the jar that contains all the .class files."
-  classifier = 'sources'
-  from sourceSets.main.allSource
-}
-
 bintray {
   user = project.ext.bintrayUser
   key = project.ext.bintrayApiKey
@@ -38,7 +24,7 @@ bintray {
   pkg {
     repo = "maven"
     name = "bagit-java"
-    userOrg = user
+    userOrg = "dans-knaw"
     desc = "The BAGIT LIBRARY is a software library intended to support the creation, manipulation, and validation of bags. It is version aware with the earliest supported version being 0.93."
     websiteUrl = "https://github.com/DANS-KNAW/bagit-java"
     issueTrackerUrl = "https://github.com/DANS-KNAW/bagit-java/issues"
@@ -52,11 +38,6 @@ bintray {
     version{
       name = project.version
       vcsTag = 'v' + project.version
-      mavenCentralSync{
-        user = ossrhUsername
-        password = ossrhPassword
-        close = '0' //release the version manually on Maven Central
-      }
     }
   }
 }
