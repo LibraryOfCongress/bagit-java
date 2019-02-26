@@ -91,7 +91,7 @@ publishing {
             artifact sourcesJar //needed for syncing with maven central
             artifact javadocJar //needed for syncing with maven central
             
-            groupId 'gov.loc'
+            groupId 'nl.knaw.dans'
             artifactId 'bagit'
             version project.version
 

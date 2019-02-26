@@ -2,7 +2,7 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-group = 'gov.loc'
+group = 'nl.knaw.dans'
 
 //javadocs and sources required for uploading to maven central
 /*task javadocJar(type: Jar) {
