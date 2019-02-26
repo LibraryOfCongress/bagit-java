@@ -26,7 +26,7 @@ task sourcesJar(type: Jar) {
   from sourceSets.main.allSource
 }
 
-//apply from: 'eclipse.gradle'
+apply from: 'eclipse.gradle'
 apply from: 'bintray.gradle'
 apply from: 'maven-central.gradle'
 apply from: 'code-quality.gradle'
