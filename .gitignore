@@ -9,3 +9,4 @@ bagit-conformance-suite/
 .DS_Store
 .idea/
 out/
+/gradle.properties
