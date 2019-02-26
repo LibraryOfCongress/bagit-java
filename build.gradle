@@ -9,8 +9,24 @@ plugins {
   id "org.ajoberstar.grgit" version "2.2.1"
   id "com.github.spotbugs" version "1.6.2"
   id "com.jfrog.bintray" version "1.8.2"
+  id 'io.codearte.nexus-staging' version '0.11.0'
 }
-apply from: 'eclipse.gradle'
+
+task javadocJar(type: Jar) {
+  group "Build"
+  description "Create the jar that contains all the class documentation (javadoc)."
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  group "Build"
+  description "Create the jar that contains all the .class files."
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+//apply from: 'eclipse.gradle'
 apply from: 'bintray.gradle'
 apply from: 'maven-central.gradle'
 apply from: 'code-quality.gradle'
