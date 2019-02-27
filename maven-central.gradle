@@ -2,22 +2,7 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-group = 'gov.loc'
-
-//javadocs and sources required for uploading to maven central
-/*task javadocJar(type: Jar) {
-  group "Build"
-  description "Create the jar that contains all the class documentation (javadoc)."
-  classifier = 'javadoc'
-  from javadoc
-}
-
-task sourcesJar(type: Jar) {
-  group "Build"
-  description "Create the jar that contains all the .class files."
-  classifier = 'sources'
-  from sourceSets.main.allSource
-}*/
+group = 'nl.knaw.dans'
 
 artifacts {
   archives javadocJar
@@ -56,18 +41,18 @@ uploadArchives {
         packaging 'jar'
         // optionally artifactId can be defined here
         description 'The BAGIT LIBRARY is a software library intended to support the creation, manipulation, and validation of bags. Its current version is 0.97. It is version aware with the earliest supported version being 0.93.'
-        url 'https://github.com/LibraryOfCongress/bagit-java'
+        url 'https://github.com/DANS-KNAW/bagit-java'
 
         scm {
-          connection 'scm:git:https://github.com/LibraryOfCongress/bagit-java'
-          developerConnection 'scm:git:ssh://github.com/LibraryOfCongress/bagit-java'
-          url 'https://github.com/LibraryOfCongress/bagit-java'
+          connection 'scm:git:https://github.com/DANS-KNAW/bagit-java'
+          developerConnection 'scm:git:ssh://github.com/DANS-KNAW/bagit-java'
+          url 'https://github.com/DANS-KNAW/bagit-java'
         }
 
         licenses {
           license {
             name 'No Copyright'
-            url 'https://github.com/LibraryOfCongress/bagit-java/blob/master/LICENSE.txt'
+            url 'https://github.com/DANS-KNAW/bagit-java/blob/master/LICENSE.txt'
           }
         }
 
@@ -81,4 +66,9 @@ uploadArchives {
       }
     }
   }
+}
+
+nexusStaging {
+  packageGroup = "nl.knaw.dans"
+  //stagingProfileId = "yourStagingProfileId" // when not defined will be got from server using "packageGroup"
 }

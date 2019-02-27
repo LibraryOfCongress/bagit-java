@@ -147,6 +147,7 @@ public class BagitSuiteComplanceTest extends TempFolderTest {
       testTagFileContents(bag, newBagDir);
       
       testBagsStructureAreEqual(bagDir, newBagDir);
+      delete(newBagDir);
     }
   }
   

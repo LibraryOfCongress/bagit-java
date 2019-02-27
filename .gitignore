@@ -7,3 +7,6 @@ bagit-conformance-suite/
 .classpath
 .gradle/
 .DS_Store
+.idea/
+out/
+/gradle.properties

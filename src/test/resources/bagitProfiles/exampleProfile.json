@@ -1,85 +1,99 @@
 {
-     "BagIt-Profile-Info":{
-      "BagIt-Profile-Identifier":"http://canadiana.org/standards/bagit/tdr_ingest.json",
-      "Source-Organization":"Candiana.org",
-      "Contact-Name":"William Wueppelmann",
-      "Contact-Email":"tdr@canadiana.com",
-      "External-Description":"BagIt profile for ingesting content into the C.O. TDR loading dock.",
-      "Version":"1.2"
-   },
-   "Bag-Info":{
-      "Source-Organization":{
-         "required":true,
-         "values":[
-            "Simon Fraser University",
-            "York University"
-         ]
-      },
-      "Organization-Address":{
-         "required":true,
-         "values":[
-            "8888 University Drive Burnaby, B.C. V5A 1S6 Canada",
-            "4700 Keele Street Toronto, Ontario M3J 1P3 Canada"
-         ]
-      },
-      "Contact-Name":{
-         "required":true,
-         "values":[
-            "Mark Jordan",
-            "Nick Ruest"
-         ]
-      },
-      "Contact-Phone":{
-         "required":false
-      },
-      "Contact-Email":{
-         "required":true
-      },
-      "External-Description":{
-         "required":true
-      },
-      "External-Identifier":{
-         "required":false
-      },
-      "Bag-Size":{
-         "required":true
-      },
-      "Bag-Group-Identifier":{
-         "required":false
-      },
-      "Bag-Count":{
-         "required":true
-      },
-      "Internal-Sender-Identifier":{
-         "required":false
-      },
-      "Internal-Sender-Description":{
-         "required":false
-      },
-      "Bagging-Date":{
-         "required":true,
-         "repeatable": false
-      },
-      "Payload-Oxum":{
-         "required":true
-      }
-   },
-   "Manifests-Required":[
-      "md5"
-   ],
-   "Allow-Fetch.txt":false,
-   "Serialization":"forbidden",
-   "Accept-Serialization":[
-      "application/zip"
-   ],
-   "Tag-Manifests-Required":[
-     "md5"
-   ],
-   "Tag-Files-Required":[
-      "DPN/dpnFirstNode.txt",
-      "DPN/dpnRegistry"
-   ],
-   "Accept-BagIt-Version":[
-      "0.96"
-   ]
+  "BagIt-Profile-Info": {
+    "BagIt-Profile-Identifier": "http://canadiana.org/standards/bagit/tdr_ingest.json",
+    "Source-Organization": "Candiana.org",
+    "Contact-Name": "William Wueppelmann",
+    "Contact-Email": "tdr@canadiana.com",
+    "Contact-Phone": "+1 613 907 7040",
+    "External-Description": "BagIt profile for ingesting content into the C.O. TDR loading dock.",
+    "Version": "1.2"
+  },
+  "Bag-Info": {
+    "Source-Organization": {
+      "required": true,
+      "values": [
+        "Simon Fraser University",
+        "York University"
+      ],
+      "repeatable": false
+    },
+    "Organization-Address": {
+      "required": true,
+      "values": [
+        "8888 University Drive Burnaby, B.C. V5A 1S6 Canada",
+        "4700 Keele Street Toronto, Ontario M3J 1P3 Canada"
+      ],
+      "repeatable": false
+    },
+    "Contact-Name": {
+      "required": true,
+      "values": [
+        "Mark Jordan",
+        "Nick Ruest"
+      ],
+      "repeatable": false
+    },
+    "Contact-Phone": {
+      "required": false,
+      "repeatable": false
+    },
+    "Contact-Email": {
+      "required": true,
+      "repeatable": false
+    },
+    "External-Description": {
+      "required": true,
+      "repeatable": false
+    },
+    "External-Identifier": {
+      "required": false,
+      "repeatable": false
+    },
+    "Bag-Size": {
+      "required": true,
+      "repeatable": false
+    },
+    "Bag-Group-Identifier": {
+      "required": false,
+      "repeatable": false
+    },
+    "Bag-Count": {
+      "required": true,
+      "repeatable": false
+    },
+    "Internal-Sender-Identifier": {
+      "required": false,
+      "repeatable": false
+    },
+    "Internal-Sender-Description": {
+      "required": false,
+      "repeatable": false
+    },
+    "Bagging-Date": {
+      "required": true,
+      "repeatable": false
+    },
+    "Payload-Oxum": {
+      "required": true,
+      "repeatable": false
+    }
+  },
+  "Manifests-Required": [
+    "md5"
+  ],
+  "Allow-Fetch.txt": false,
+  "Serialization": "forbidden",
+  "Accept-Serialization": [
+    "application/zip"
+  ],
+  "Tag-Manifests-Required": [
+    "md5"
+  ],
+  "Tag-Files-Required": [
+    "DPN/dpnFirstNode.txt",
+    "DPN/dpnRegistry"
+  ],
+  "Accept-BagIt-Version": [
+    "0.96"
+  ]
 }
