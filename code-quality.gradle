@@ -64,14 +64,16 @@ pmd {
 
 jacocoTestReport {
   reports {
-      xml.enabled = true // coveralls plugin depends on xml format report
-      html.enabled = true
+      xml.required = true // coveralls plugin depends on xml format report
+      html.required = true
   }
   afterEvaluate {
-    classDirectories = files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: ['gov.loc.repository.bagit/domain/**',
+    classDirectories.from = files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+          'gov.loc.repository.bagit/domain/**',
           'gov.loc.repository.bagit/annotation/**',
-          'gov.loc.repository.bagit/exceptions/**'])
+          'gov.loc.repository.bagit/exceptions/**'
+        ])
     })
   }
 }
@@ -79,8 +81,8 @@ jacocoTestReport {
 cpdCheck {
     source = sourceSets.main.allJava
     reports {
-        text.enabled = true
-        xml.enabled = false
+        text.required = true
+        xml.required = false
     }
 }
 

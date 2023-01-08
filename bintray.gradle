@@ -1,5 +1,5 @@
 //This build file is for all the configuration specifics of building and deploying to jcenter (bintray)
-apply plugin: "maven"
+// apply plugin: "maven"
 apply plugin: "maven-publish"
 apply plugin: "java-library"
 
