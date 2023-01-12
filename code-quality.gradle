@@ -13,6 +13,7 @@ sourceSets {
 }
 
 configurations {
+  integrationTestImplementation.extendsFrom testImplementation
   integrationTestCompile.extendsFrom testCompile
   integrationTestRuntime.extendsFrom testRuntime
 }
@@ -40,7 +41,7 @@ pmdIntegrationTest.enabled = false
 pmdTest.enabled = false
 
 pmd {
-  toolVersion = "5.5.4"
+  toolVersion = "6.53.0"
   ruleSets = [
     "java-basic", 
     "java-braces",

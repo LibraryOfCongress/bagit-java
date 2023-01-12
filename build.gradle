@@ -40,6 +40,13 @@ dependencies {
     'org.bouncycastle:bcprov-jdk15on:1.57',
     'org.kamranzafar:jtar:2.3',
     'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+
+  testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0',
+    'org.springframework.boot:spring-boot-starter-logging:1.5.4.RELEASE',
+    'org.bouncycastle:bcprov-jdk15on:1.57',
+    'org.kamranzafar:jtar:2.3'
+
+  testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
 }
 
 spotbugs {
