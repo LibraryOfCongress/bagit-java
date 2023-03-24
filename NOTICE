@@ -1,0 +1,9 @@
+Acknowledgements
+----------------
+This software was based on https://github.com/LibraryOfCongress/bagit-java.
+Please see LICENSE for the licenses that apply to this project.
+
+This software uses code from the following projects:
+ * slf4j (http://www.slf4j.org/)
+
+Please see LICENSE for the licenses that apply to these dependencies.
