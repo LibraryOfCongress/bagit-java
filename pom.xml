@@ -39,7 +39,6 @@
         <tag>1.0.0-SNAPSHOT</tag>
     </scm>
 
-
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
