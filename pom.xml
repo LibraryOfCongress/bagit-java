@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2023 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>nl.knaw.dans</groupId>
+        <artifactId>dd-parent</artifactId>
+        <version>0.16.0</version>
+    </parent>
+
+    <artifactId>dans-bagit-lib</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <name>bagit</name>
+    <url>https://github.com/DANS-KNAW/dans-bagit-lib</url>
+    <description>The BAGIT LIBRARY is a software library intended to support the creation, manipulation, and validation of bags. Its current version is 0.97. It is version aware with the earliest supported version being 0.93.</description>
+    <inceptionYear>2023</inceptionYear>
+
+    <scm>
+        <developerConnection>scm:git:ssh://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
+        <tag>1.0.0-SNAPSHOT</tag>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apiguardian</groupId>
+            <artifactId>apiguardian-api</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kamranzafar</groupId>
+            <artifactId>jtar</artifactId>
+            <version>2.3</version>
+        </dependency>
+
+        <!-- logging -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludes combine.children="append">
+                        <exclude>bagit-conformance-suite/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- adds integration tests to test sources output -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>add-integration-test-source</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/integration/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- generate javadocs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <show>private</show>
+                    <nohelp>true</nohelp>
+                </configuration>
+            </plugin>
+
+            <!-- generate site with project information -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.9.0</version>
+            </plugin>
+
+            <!-- publish code coverage reports to coveralls.io -->
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.3.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.3.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- generate jacoco files -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+                <configuration>
+                    <excludes>
+                        <exclude>gov/loc/repository/bagit/domain/**</exclude>
+                        <exclude>gov/loc/repository/bagit/annotations/**</exclude>
+                        <exclude>gov/loc/repository/bagit/exceptions/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>COMPLEXITY</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.60</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
+
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jarsigner-plugin</artifactId>-->
+<!--                <version>3.0.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>sign</id>-->
+<!--                        <goals>-->
+<!--                            <goal>sign</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>verify</id>-->
+<!--                        <goals>-->
+<!--                            <goal>verify</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <keystore>keystore.jks</keystore>-->
+<!--                    <alias>bagit-java</alias>-->
+<!--                    <storepass>secret</storepass>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+            <!-- execute rules against codebase and output to site -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.20.0</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>/category/java/bestpractices.xml</ruleset>
+                        <ruleset>/category/java/codestyle.xml</ruleset>
+                        <ruleset>/category/java/design.xml</ruleset>
+                        <ruleset>/category/java/documentation.xml</ruleset>
+                        <ruleset>/category/java/errorprone.xml</ruleset>
+                        <ruleset>/category/java/performance.xml</ruleset>
+                        <ruleset>/category/java/multithreading.xml</ruleset>
+                    </rulesets>
+                </configuration>
+            </plugin>
+
+            <!-- output code coverage report to site -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>gov/loc/repository/bagit/domain/**</exclude>
+                        <exclude>gov/loc/repository/bagit/annotations/**</exclude>
+                        <exclude>gov/loc/repository/bagit/exceptions/**</exclude>
+                    </excludes>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <!-- select non-aggregate reports -->
+                            <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.7.2.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <repositories>
+        <repository>
+            <id>dans-releases</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://maven.dans.knaw.nl/releases/</url>
+        </repository>
+        <repository>
+            <id>dans-snapshots</id>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://maven.dans.knaw.nl/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>dans-releases</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://maven.dans.knaw.nl/releases/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>dans-snapshots</id>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://maven.dans.knaw.nl/snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <profiles>
+
+    </profiles>
+
+</project>

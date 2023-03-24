@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- No logging during the build -->
+    <root level="off">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- Set log level during test with system property, e.g., mvn test -DLOG_LEVEL=debug -->
+    <logger name="nl.knaw.dans" level="${LOG_LEVEL:-off}"/>
+</configuration>

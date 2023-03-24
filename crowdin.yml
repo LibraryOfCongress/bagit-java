@@ -1,3 +1,0 @@
-files:
-  - source: /src/main/resources/MessageBundle.properties
-    translation: /src/main/resources/MessageBundle_%locale_with_underscore%.properties

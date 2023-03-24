@@ -1,0 +1,3 @@
+[submodule "bagit-conformance-suite"]
+	path = bagit-conformance-suite
+	url = https://github.com/LibraryOfCongress/bagit-conformance-suite.git
