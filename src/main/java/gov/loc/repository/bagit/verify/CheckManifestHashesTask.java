@@ -53,7 +53,7 @@ public class CheckManifestHashesTask implements Runnable {
       logger.debug(messages.getString("checking_checksums"), entry.getKey(), entry.getValue());
       final String hash = Hasher.hash(entry.getKey(), messageDigest);
       logger.debug("computed hash [{}] for file [{}]", hash, entry.getKey());
-      if(!hash.equals(entry.getValue())){
+      if(!hash.equalsIgnoreCase(entry.getValue())){
         throw new CorruptChecksumException(messages.getString("corrupt_checksum_error"), entry.getKey(), algorithm, entry.getValue(), hash);
       }
     }
