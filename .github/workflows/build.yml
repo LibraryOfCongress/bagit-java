@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - DD-1316
   pull_request:
     branches:
       - master
@@ -63,13 +62,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-site-report
           restore-keys: |
             ${{ runner.os }}-maven-
-
       - name: Generate reports and publish reports
         run: mvn -B clean test site jacoco:report coveralls:report --file pom.xml -DrepoToken=${{ secrets.COVERALLS_REPO_TOKEN }} -Djarsigner.skip=true
-
       - name: Generate pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
