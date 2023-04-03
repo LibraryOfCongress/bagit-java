@@ -1,0 +1,3 @@
+mkdocs==1.3.0
+pyyaml==6.0
+mkdocs-markdownextradata-plugin==0.2.5

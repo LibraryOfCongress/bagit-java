@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2023 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+site_name: dans-bagit-lib
+theme:
+  name: readthedocs
+
+repo_name: DANS-KNAW/dans-bagit-lib
+repo_url: https://github.com/DANS-KNAW/dans-bagit-lib
+
+nav:
+  - Manual: index.md
+  - Getting started: getting-started.md
+  - JavaDoc: javadoc.md
+  - Maven project info: api.md
+  - Development: dev.md
+
+extra:
+  deposit_directory: https://dans-knaw.github.io/dans-datastation-architecture/deposit-directory/
+  dans_bagit_profile: https://dans-knaw.github.io/dans-bagit-profile/versions/1.0.0/
+
+plugins:
+  - markdownextradata
+  - search
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - codehilite:
+      guess_lang: False
+      use_pygments: False
+  - def_list
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
