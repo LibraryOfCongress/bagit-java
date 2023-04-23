@@ -30,3 +30,4 @@ release.properties
 site
 target/
 venv/
+docs/mvnsite/
