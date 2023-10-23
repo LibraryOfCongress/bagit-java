@@ -26,7 +26,7 @@
     </parent>
 
     <artifactId>dans-bagit-lib</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>bagit</name>
     <url>https://github.com/DANS-KNAW/dans-bagit-lib</url>
@@ -35,7 +35,7 @@
 
     <scm>
         <developerConnection>scm:git:ssh://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
-        <tag>v1.0.0</tag>
+        <tag>1.0.0-SNAPSHOT</tag>
     </scm>
 
     <dependencies>
