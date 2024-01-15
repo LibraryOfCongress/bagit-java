@@ -12,4 +12,4 @@ Fixes DD-
 
 # Notify
 
-@DANS-KNAW/dataversedans
+@DANS-KNAW/core-systems
